@@ -14,7 +14,6 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
-- **spec-x-roadmap-migration** — ROADMAP.md → harness-kit backlog 마이그레이션 (in progress)
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -47,6 +46,7 @@
 
 <!-- sdd:done:start -->
 없음
+- [x] spec-x-roadmap-migration (완료)
 <!-- sdd:done:end -->
 
 ---
