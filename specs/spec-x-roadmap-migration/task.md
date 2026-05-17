@@ -60,12 +60,12 @@
 
 ## Task 5: backlog/phase-04.md 작성 (apps)
 
-- [ ] ROADMAP §2 Phase 4 본문 매핑.
-- [ ] SPEC 요점(api / worker / frontend/ui / frontend/sdk / frontend/auth / web-next / web-vite / admin / edge-api).
-- [ ] 성공 기준: vertical-slice acceptance(FE → API → DB → JWT → protected → logout).
-- [ ] 의존성: phase-02 + phase-03.
-- [ ] 연관 ADR: 0003 / 0005 / 0006.
-- [ ] Commit: `docs(spec-x-roadmap-migration): add backlog/phase-04.md for apps`
+- [x] ROADMAP §2 Phase 4 본문 매핑.
+- [x] SPEC 요점(api / worker / frontend/ui / frontend/sdk / frontend/auth / web-next / web-vite / admin / edge-api).
+- [x] 성공 기준: vertical-slice acceptance(FE → API → DB → JWT → protected → logout).
+- [x] 의존성: phase-02 + phase-03.
+- [x] 연관 ADR: 0003 / 0005 / 0006.
+- [x] Commit: `docs(spec-x-roadmap-migration): add backlog/phase-04.md for apps`
 
 ---
 
