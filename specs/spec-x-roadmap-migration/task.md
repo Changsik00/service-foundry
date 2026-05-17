@@ -89,13 +89,14 @@
 
 ## Task 8: backlog/queue.md 작성 + phase-01 활성화
 
-- [ ] `.harness-kit/agent/templates/queue.md` 기반 `backlog/queue.md` 작성.
-- [ ] `active` / `specx` / `done` 마커 영역은 빈 상태 유지 (sdd 관리).
-- [ ] **Icebox 섹션**: ROADMAP §4.2 항목 9개 한 줄씩 (plan.md §Proposed Changes 참고).
-- [ ] **대기 Phase 섹션**: phase-02 ~ phase-06 한 줄씩.
-- [ ] `bash .harness-kit/bin/sdd phase activate phase-01` 실행 — queue.md의 `active` 마커가 자동으로 채워지고 `state.json` 갱신 확인.
-- [ ] `bash .harness-kit/bin/sdd status` — Active Phase = phase-01 표시 확인.
-- [ ] Commit: `docs(spec-x-roadmap-migration): add backlog/queue.md and activate phase-01`
+- [x] `.harness-kit/agent/templates/queue.md` 기반 `backlog/queue.md` 작성.
+- [x] `active` / `specx` / `done` 마커 영역은 빈 상태 유지 (sdd 관리).
+- [x] **Icebox 섹션**: ROADMAP §4.2 항목 9개 한 줄씩.
+- [x] **대기 Phase 섹션**: phase-02 ~ phase-06 한 줄씩.
+- [x] `bash .harness-kit/bin/sdd phase activate phase-01` 실행 — queue.md의 `active` 마커 채워짐 확인.
+- [x] **부작용 발견 및 복원**: `sdd phase activate`가 state.json의 `spec` / `planAccepted`를 리셋함. 진행 중인 spec-x 컨텍스트가 sdd 추적에서 사라짐. 사용자 임시 권한 받아 state.json 수기 복원 (`phase=phase-01`, `spec=spec-x-roadmap-migration`, `planAccepted=true`). specx 마커도 수기 채움. 학습: spec-x 실행 중 phase activate는 *동시 active* 가능 하지만 sdd가 그 의도를 알 수 없어 reset 발생 — Ship 시 sdd가 정상 흐름 회복. 자세한 기록은 walkthrough.md.
+- [x] `bash .harness-kit/bin/sdd status` — Active Phase=phase-01, Active Spec=spec-x-roadmap-migration, Plan Accept=yes 확인.
+- [x] Commit: `docs(spec-x-roadmap-migration): add backlog/queue.md and activate phase-01`
 
 ---
 
