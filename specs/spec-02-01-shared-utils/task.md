@@ -79,15 +79,15 @@
 
 > walkthrough.md / pr_description.md 작성 후 push + PR.
 
-- [ ] `pnpm lint` + `pnpm typecheck` + `pnpm test` 최종 그린 재확인.
-- [ ] `bash .harness-kit/bin/sdd test passed` — lastTestPass 갱신.
-- [ ] **walkthrough.md 최종 정리**: 결정 기록 + 4 함수군 디자인 노트 + depcruise 회귀 검증 + ADR-0008 링크.
-- [ ] **pr_description.md 작성**.
-- [ ] `bash .harness-kit/bin/sdd ship --check` 통과.
-- [ ] `bash .harness-kit/bin/sdd ship` — Ship commit 자동 생성.
-- [ ] **Push**: `git push -u origin spec-02-01-shared-utils`.
-- [ ] **PR 생성**: `gh pr create`.
-- [ ] **사용자 알림**: push 완료 + PR URL 보고.
+- [x] `pnpm lint` + `pnpm typecheck` + `pnpm test` 최종 그린.
+- [x] `sdd test passed` — lastTestPass=2026-05-17T14:13:11Z.
+- [x] **walkthrough.md 작성** (결정 기록 + TDD 흐름 + 발견 사항 — lefthook quirk + DOM lib 패턴).
+- [x] **pr_description.md 작성**.
+- [x] `sdd ship --check` 통과.
+- [x] **Ship Commit**: `docs(spec-02-01): ship walkthrough and pr description` (sdd ship 자동).
+- [x] **Push**: `git push -u origin spec-02-01-shared-utils`.
+- [x] **PR 생성**: `gh pr create`.
+- [x] **사용자 알림**: push 완료 + PR URL 보고.
 
 ---
 
@@ -97,5 +97,5 @@
 |---|---|
 | **총 Task 수** | 6 (T1 브랜치 + T2 cleanup+sleep + T3 pick+omit + T4 Result + T5 ADR + T6 ship) — *T2/T3 합침* |
 | **예상 commit 수** | 5 (T1은 브랜치 생성만) |
-| **현재 단계** | Planning |
+| **현재 단계** | Ship (push + PR 직전) |
 | **마지막 업데이트** | 2026-05-17 |
