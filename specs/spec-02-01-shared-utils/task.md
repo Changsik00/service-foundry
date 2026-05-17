@@ -55,20 +55,14 @@
 ## Task 4: `Result<T, E>` + 6 helpers 구현
 
 ### 4-1. TDD red
-- [ ] `describe("Result")` 추가:
-  - `ok(42)` → `{ ok: true, value: 42 }`
-  - `err(new Error("x"))` → `{ ok: false, error: Error("x") }`
-  - `isOk` / `isErr` 타입 가드 동작
-  - `map(ok(2), (x) => x + 1)` → `ok(3)`
-  - `map(err(e), fn)` → `err(e)` (fn 호출 안 됨)
-  - `flatMap(ok(2), (x) => ok(x + 1))` → `ok(3)`
-  - `flatMap(err(e), fn)` → `err(e)` (fn 호출 안 됨)
-- [ ] test → Fail 확인.
+- [x] `describe("Result")` 추가 (8 tests: ok / err / isOk / isErr / map ok / map err / flatMap ok / flatMap err+no-call).
+- [x] test → Fail 확인 (8 failed | 8 passed).
 
 ### 4-2. TDD green
-- [ ] `Result<T, E = Error>` type + `ok` / `err` / `isOk` / `isErr` / `map` / `flatMap` 구현.
-- [ ] test → Pass 확인.
-- [ ] Commit: `feat(spec-02-01): add Result type and helpers to @repo/utils`
+- [x] `Result<T, E = Error>` discriminated union + `ok` / `err` / `isOk` / `isErr` / `map` / `flatMap` 구현.
+- [x] test → Pass 확인 (16/16).
+- [x] typecheck → PASS.
+- [x] Commit: `feat(spec-02-01): add Result type and helpers to @repo/utils`
 
 ---
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { omit, pick, sleep } from "./index.js";
+import { err, flatMap, isErr, isOk, map, ok, omit, pick, type Result, sleep } from "./index.js";
 
 describe("sleep", () => {
   it("resolves after at least the requested duration", async () => {
@@ -48,5 +48,58 @@ describe("omit", () => {
 
   it("returns an empty object when all keys are omitted", () => {
     expect(omit({ a: 1, b: 2 }, ["a", "b"])).toEqual({});
+  });
+});
+
+describe("Result", () => {
+  it("ok wraps a value", () => {
+    expect(ok(42)).toEqual({ ok: true, value: 42 });
+  });
+
+  it("err wraps an error", () => {
+    const e = new Error("boom");
+    expect(err(e)).toEqual({ ok: false, error: e });
+  });
+
+  it("isOk narrows to ok branch", () => {
+    const r: Result<number, Error> = ok(1);
+    expect(isOk(r)).toBe(true);
+    if (isOk(r)) {
+      expect(r.value).toBe(1);
+    }
+  });
+
+  it("isErr narrows to err branch", () => {
+    const e = new Error("x");
+    const r: Result<number, Error> = err(e);
+    expect(isErr(r)).toBe(true);
+    if (isErr(r)) {
+      expect(r.error).toBe(e);
+    }
+  });
+
+  it("map transforms ok value", () => {
+    expect(map(ok(2), (x: number) => x + 1)).toEqual({ ok: true, value: 3 });
+  });
+
+  it("map leaves err untouched", () => {
+    const e = new Error("x");
+    const result = map(err<Error>(e) as Result<number, Error>, (x: number) => x + 1);
+    expect(result).toEqual({ ok: false, error: e });
+  });
+
+  it("flatMap chains ok results", () => {
+    expect(flatMap(ok(2), (x: number) => ok(x + 1))).toEqual({ ok: true, value: 3 });
+  });
+
+  it("flatMap leaves err untouched and does not call fn", () => {
+    let called = false;
+    const e = new Error("x");
+    const result = flatMap(err<Error>(e) as Result<number, Error>, (x: number) => {
+      called = true;
+      return ok(x);
+    });
+    expect(result).toEqual({ ok: false, error: e });
+    expect(called).toBe(false);
   });
 });

@@ -34,3 +34,34 @@ export const omit = <T extends object, K extends keyof T>(
   }
   return result as Omit<T, K>;
 };
+
+/**
+ * Discriminated-union Result type for explicit success/failure.
+ *
+ * Helpers are function-form (no method chaining, no `unwrap`).
+ * Branch with `isOk(r)` / `isErr(r)` for safe narrowing.
+ * See ADR-0008.
+ */
+export type Result<T, E = Error> =
+  | { readonly ok: true; readonly value: T }
+  | { readonly ok: false; readonly error: E };
+
+export const ok = <T>(value: T): Result<T, never> => ({ ok: true, value });
+
+export const err = <E>(error: E): Result<never, E> => ({ ok: false, error });
+
+export const isOk = <T, E>(
+  result: Result<T, E>,
+): result is { readonly ok: true; readonly value: T } => result.ok;
+
+export const isErr = <T, E>(
+  result: Result<T, E>,
+): result is { readonly ok: false; readonly error: E } => !result.ok;
+
+export const map = <T, U, E>(result: Result<T, E>, fn: (value: T) => U): Result<U, E> =>
+  result.ok ? ok(fn(result.value)) : result;
+
+export const flatMap = <T, U, E, F>(
+  result: Result<T, E>,
+  fn: (value: T) => Result<U, F>,
+): Result<U, E | F> => (result.ok ? fn(result.value) : result);
