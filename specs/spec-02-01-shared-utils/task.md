@@ -68,15 +68,10 @@
 
 ## Task 5: ADR-0008 작성 + depcruise 검증
 
-- [ ] `docs/adr/0008-result-type.md` 작성:
-  - 메타: status=채택됨, date=2026-05-17, type=convention
-  - 배경: 에러 처리 표준화 필요성
-  - 결정: discriminated union + 함수 helper
-  - 대안 분석: class chaining / Either monad / `unwrap` 제공 / try-throw 일변도
-  - 결과: phase-02/03/04 전체에서 본 패턴 사용
-- [ ] `pnpm exec depcruise --config packages/config/depcruise-config/base.cjs packages/` 실행 → violation 0건 확인.
-- [ ] `wc -l packages/shared/utils/src/index.ts` → 100~200줄 범위 확인.
-- [ ] Commit: `docs(spec-02-01): add ADR-0008 result-type convention`
+- [x] `docs/adr/0008-result-type.md` 작성 (frontmatter + Context + Decision + Consequences + Alternatives + Status + Related).
+- [x] `pnpm exec depcruise --config packages/config/depcruise-config/base.cjs packages/` → ✔ no dependency violations found (10 modules, 6 dependencies, 0 errors).
+- [x] `wc -l packages/shared/utils/src/index.ts` → 67줄 (예상 100~200 하한 미만이나 minimal 4 함수군이라 자연).
+- [x] Commit: `docs(spec-02-01): add ADR-0008 result-type convention`
 
 ---
 
