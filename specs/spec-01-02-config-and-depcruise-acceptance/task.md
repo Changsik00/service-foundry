@@ -35,11 +35,13 @@
 
 ## Task 3: Acceptance 7 (depcruise violation 0건) 실측
 
-- [ ] **호출 방식 결정**: 시도 순서 — (a) `pnpm exec depcruise --config packages/config/depcruise-config/base.cjs packages/` → (b) 실패 시 `--ts-config <path>` 추가 → (c) 실패 시 `--include-only` 등 escalate.
-- [ ] **시범 실행**: 결정된 명령으로 실행 → 출력 캡처.
-- [ ] **violation 판정**: error severity 0건 = 통과. warn (예: no-orphans)은 *해석* 명시 후 통과 판정.
-- [ ] walkthrough.md `🧪 검증 결과`에 acceptance 7 로그 + 호출 방식 결정 이유 누적.
-- [ ] Commit: `docs(spec-01-02): record acceptance 7 (depcruise) evidence`
+- [x] **호출 방식 결정**: `pnpm exec depcruise --config packages/config/depcruise-config/base.cjs packages/` (단순 형태로 동작).
+- [x] **1차 시범 실행**: 0 errors + 1 warning (`no-orphans: depcruise-config/base.cjs` — 의도된 false positive).
+- [x] **사용자 결정**: 옵션 A (1줄 fix) — `no-orphans.pathNot`에 `^packages/config/.+\\.(?:cjs|mjs|cts|mts|js|ts)$` 추가.
+- [x] **2차 시범 실행**: ✔ no dependency violations found (10 modules, 6 dependencies cruised). 0 errors + 0 warnings.
+- [x] walkthrough.md `🧪 검증 결과`에 acceptance 7 로그 + 호출 방식 결정 이유 + fix 결정 누적.
+- [x] **Phase 1 Acceptance 전수 통과 선언** walkthrough에 박음.
+- [x] Commit: `fix(spec-01-02): add config preset paths to no-orphans pathNot + record acceptance 7 evidence`
 
 ---
 

@@ -62,7 +62,42 @@ cat packages/shared/utils/vitest.config.ts
 
 #### Acceptance 7 — `dependency-cruiser` violation 0건
 
-(Task 3에서 실측, 본 섹션 갱신 예정)
+- **호출 방식 결정**: `pnpm exec depcruise --config packages/config/depcruise-config/base.cjs packages/` — 가장 단순한 형태로 동작. `--ts-config` 옵션 불필요 (스텁이 단순 TS이고 base.cjs의 `tsPreCompilationDeps: true`로 충분). 후속 turbo task 정의 시 동일 명령 사용.
+
+- **1차 실행 결과** (fix 전):
+
+```text
+  warn no-orphans: packages/config/depcruise-config/base.cjs
+
+x 1 dependency violations (0 errors, 1 warnings). 10 modules, 6 dependencies cruised.
+```
+
+- **발견**: `depcruise-config/base.cjs` 자체가 orphan 검출됨 — 외부 도구(depcruise CLI)만 사용하고 다른 모듈은 import하지 않는 *의도된 상태*. 기존 `pathNot` 패턴(dotfile / d.ts / tsconfig.json / *.config.*)이 `packages/config/*/base.cjs` 패턴을 커버하지 않음.
+
+- **Fix 결정**: `no-orphans` 룰의 `pathNot`에 `^packages/config/.+\\.(?:cjs|mjs|cts|mts|js|ts)$` 추가. `packages/config/*` 내부의 모든 preset 본문 파일을 orphan 검사에서 제외. 이유: config preset은 *외부 도구가 직접 사용*하는 자산이므로 import 그래프에 안 나오는 게 자연. `config-pure` 룰이 이미 config/* 가 다른 패키지를 import하지 못하도록 보호하므로 안전.
+
+- **2차 실행 결과** (fix 후):
+
+```text
+✔ no dependency violations found (10 modules, 6 dependencies cruised)
+```
+
+- **결과**: ✅ Pass (0 errors, 0 warnings, 10 modules cruised)
+- **연관 SPEC 룰 6개 검증**: no-circular / no-orphans / packages-no-app-imports / shared-no-backend-imports / frontend-no-backend-imports / config-pure — 모두 활성 + 위반 0건 (현재 1 스텁뿐이라 자연).
+
+### 2. 🎉 Phase 1 Acceptance 전수 통과
+
+| # | 항목 | 검증 spec | 결과 |
+|:---:|---|:---:|:---:|
+| 1 | `pnpm install` 무경고 (engines warning 외) | spec-01-01 | ✅ |
+| 2 | `turbo run lint` 그린 | spec-01-01 | ✅ |
+| 3 | `turbo run typecheck` 그린 | spec-01-01 | ✅ |
+| 4 | `turbo run test` 그린 | spec-01-02 | ✅ |
+| 5 | 두 번째 `turbo run lint` 캐시 100% hit | spec-01-01 | ✅ |
+| 6 | `lefthook run pre-commit` 통과 | spec-01-01 | ✅ |
+| 7 | dependency-cruiser violation 0건 | spec-01-02 | ✅ |
+
+→ phase-01의 모든 success criteria 충족. `sdd phase done phase-01` 실행 후보.
 
 ### 2. 6 Config 패키지 전수 점검 결과 (변경 없음)
 
@@ -79,11 +114,17 @@ cat packages/shared/utils/vitest.config.ts
 
 ## 🔍 발견 사항
 
-(Task 3 완료 후 갱신)
+1. **depcruise `no-orphans` 룰의 pathNot 누락** (본 spec에서 fix): 기존 패턴이 `packages/config/*/base.cjs` 형태의 *외부 도구가 직접 사용하는* preset 파일을 커버하지 못해 false positive 발생. 본 fix는 룰 *수정*에 해당하나 spec out of scope 엄격 해석보다 *acceptance 매번 통과 만들기*의 가치가 높다고 판단(사용자 결정).
+2. **6 config 패키지 본문이 모두 ADR과 완전 일치**: 정찰 단계에서 예상했지만 1:1 대조 결과 변경 없음 확정. d3894b4 / 2e3469c commit이 ADR-0001/0004 결정을 충실히 반영.
+3. **depcruise 호출 방식**: `--config` 단일 인자로 충분. `--ts-config`는 *복잡한 TS 프로젝트*에서만 필요 — 현재 스텁 수준에서는 base.cjs의 `tsPreCompilationDeps: true`로 자동 추적. 후속 phase에서 패키지가 늘어나면 호출 방식 재검토 필요.
+4. **`@repo/utils:test`의 `vitest.config.ts`가 1줄 re-export** (`export { default } from "@repo/vitest-config/node"`): 매우 깔끔한 preset round-trip 패턴. Phase 2 이후 신규 패키지의 baseline.
 
 ## 🚧 이월 항목
 
-(Task 3 완료 후 갱신)
+- **depcruise turbo task 정의** (`pnpm depcruise` script + `turbo.json` task) — phase-02 또는 phase-06(CI) 진입 시 처리. 본 spec은 *시범 실행*에 그침.
+- **lefthook pre-commit에 depcruise 추가 여부** — phase-02 진입 시 결정. 현재는 biome + typecheck만.
+- **config-pure 룰의 활성 검증** — Phase 2 진입 시 새 패키지 추가하면 자동으로 검증됨.
+- **`packages/config/*`에 lint script 추가 여부** — Icebox 이슈, phase-02 진입 시 결정.
 
 ## 📅 메타
 
