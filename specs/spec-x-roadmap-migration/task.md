@@ -49,12 +49,12 @@
 
 ## Task 4: backlog/phase-03.md 작성 (backend)
 
-- [ ] ROADMAP §2 Phase 3 본문 매핑.
-- [ ] 상태 = `Planning` (블로커 표기).
-- [ ] 블로커 3건(ADR-0005 spike / ADR-0006 결정 / `docs/conventions/backend-module-layout.md`)을 "선행 결정" 섹션에 명시.
-- [ ] SPEC 요점(spec-03-01 ~ spec-03-10) 10개 backend 패키지.
-- [ ] 연관 ADR: 0005 / 0006.
-- [ ] Commit: `docs(spec-x-roadmap-migration): add backlog/phase-03.md for backend`
+- [x] ROADMAP §2 Phase 3 본문 매핑.
+- [x] 상태 = `Planning` (블로커 표기).
+- [x] 블로커 3건(ADR-0005 spike / ADR-0006 결정 / `docs/conventions/backend-module-layout.md`)을 "선행 결정" 섹션에 명시.
+- [x] SPEC 요점(spec-03-01 ~ spec-03-10) 10개 backend 패키지.
+- [x] 연관 ADR: 0005 / 0006.
+- [x] Commit: `docs(spec-x-roadmap-migration): add backlog/phase-03.md for backend`
 
 ---
 
