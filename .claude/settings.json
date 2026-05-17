@@ -1,0 +1,208 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Glob",
+      "Grep",
+
+      "Edit",
+      "Write",
+      "MultiEdit",
+
+      "Bash(ls)",
+      "Bash(ls:*)",
+      "Bash(pwd)",
+      "Bash(cd:*)",
+      "Bash(echo:*)",
+      "Bash(printf:*)",
+      "Bash(date)",
+      "Bash(date:*)",
+      "Bash(env)",
+      "Bash(env:*)",
+      "Bash(which:*)",
+      "Bash(type:*)",
+      "Bash(test:*)",
+      "Bash(true)",
+      "Bash(false)",
+      "Bash(stat:*)",
+      "Bash(uname:*)",
+
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(sort:*)",
+      "Bash(uniq:*)",
+      "Bash(diff:*)",
+      "Bash(file:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(fd:*)",
+      "Bash(jq:*)",
+      "Bash(yq:*)",
+      "Bash(sed:*)",
+      "Bash(awk:*)",
+      "Bash(tr:*)",
+      "Bash(cut:*)",
+      "Bash(xargs:*)",
+      "Bash(tee:*)",
+
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(ln:*)",
+      "Bash(chmod:*)",
+      "Bash(rm:*)",
+
+      "Bash(git:*)",
+
+      "Bash(bash:*)",
+      "Bash(sh:*)",
+
+      "Bash(npm:*)",
+      "Bash(pnpm:*)",
+      "Bash(yarn:*)",
+      "Bash(bun:*)",
+      "Bash(npx:*)",
+      "Bash(bunx:*)",
+      "Bash(node:*)",
+      "Bash(curl:*)",
+      "Bash(gh:*)",
+
+      "Bash(.harness-kit/bin/sdd:*)",
+      "Bash(.harness-kit/bin/bb-pr:*)",
+      "Bash(.harness-kit/hooks/*)",
+      "Bash(doctor.sh:*)"
+    ],
+    "ask": ["Bash(git merge)", "Bash(git merge:*)", "Bash(gh pr merge)", "Bash(gh pr merge:*)"],
+    "deny": [
+      "Bash(sudo:*)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /:*)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf /*:*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf ~:*)",
+      "Bash(rm -rf $HOME)",
+      "Bash(rm -rf $HOME:*)",
+
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push --force-with-lease:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean -f:*)",
+      "Bash(git clean -fd:*)",
+      "Bash(git clean -fdx:*)",
+      "Bash(git rebase --onto:*)",
+
+      "Bash(curl * | bash:*)",
+      "Bash(curl * | sh:*)",
+      "Bash(wget * | bash:*)",
+      "Bash(wget * | sh:*)",
+
+      "Edit(**/.env)",
+      "Edit(**/.env.*)",
+      "Edit(**/secrets/**)",
+      "Edit(**/*.pem)",
+      "Edit(**/*.key)",
+      "Edit(**/id_rsa*)",
+      "Edit(**/id_ed25519*)",
+      "Edit(**/credentials*)",
+      "Edit(**/.npmrc)",
+      "Edit(**/.netrc)",
+      "Write(**/.env)",
+      "Write(**/.env.*)",
+      "Write(**/secrets/**)",
+      "Write(**/*.pem)",
+      "Write(**/*.key)",
+      "Write(**/id_rsa*)",
+      "Write(**/id_ed25519*)",
+      "Write(**/credentials*)",
+      "Write(**/.npmrc)",
+      "Write(**/.netrc)",
+
+      "Edit(/tmp/**)",
+      "Edit(/var/**)",
+      "Edit(/etc/**)",
+      "Edit(/usr/**)",
+      "Edit(~/.ssh/**)",
+      "Edit(~/.aws/**)",
+      "Edit(~/.gnupg/**)",
+      "Edit(~/.config/gcloud/**)",
+      "Write(/tmp/**)",
+      "Write(/var/**)",
+      "Write(/etc/**)",
+      "Write(/usr/**)",
+      "Write(~/.ssh/**)",
+      "Write(~/.aws/**)",
+      "Write(~/.gnupg/**)",
+      "Write(~/.config/gcloud/**)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".harness-kit/hooks/check-branch.sh"
+          },
+          {
+            "type": "command",
+            "command": ".harness-kit/hooks/check-test-passed.sh"
+          },
+          {
+            "type": "command",
+            "command": ".harness-kit/hooks/check-commit-msg.sh"
+          },
+          {
+            "type": "command",
+            "command": ".harness-kit/hooks/check-diff-size.sh"
+          },
+          {
+            "type": "command",
+            "command": ".harness-kit/hooks/check-secrets.sh"
+          },
+          {
+            "type": "command",
+            "command": ".harness-kit/hooks/check-task-checkbox.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".harness-kit/hooks/check-plan-accept.sh"
+          },
+          {
+            "type": "command",
+            "command": ".harness-kit/hooks/check-scope.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".harness-kit/bin/sdd status --brief 2>/dev/null || true"
+          },
+          {
+            "type": "command",
+            "command": ".harness-kit/hooks/check-kit-version.sh 2>&1 || true"
+          },
+          {
+            "type": "command",
+            "command": "echo 'IMPORTANT: New session started. You MUST proactively recommend the user to run /hk-align before starting any work.' >&2"
+          }
+        ]
+      }
+    ]
+  }
+}

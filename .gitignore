@@ -40,3 +40,7 @@ Thumbs.db
 # Tooling caches
 .eslintcache
 .cache/
+
+# harness-kit (runtime / backup only — .harness-kit/ and .claude/commands|settings are tracked)
+.harness-backup-*/
+.claude/state/

@@ -1,0 +1,2160 @@
+#!/usr/bin/env bash
+# sdd — harness-kit 메타 명령
+# Spec-Driven Development 작업을 사람과 AI 가 같은 인터페이스로 진행하기 위한 진입점.
+#
+# 환경: macOS + bash 3.2+ + jq 필요 (bash 4+ 전용 기능 미사용)
+
+set -uo pipefail
+
+# 자기 위치에서 lib 찾기
+SDD_BIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/common.sh
+source "$SDD_BIN_DIR/lib/common.sh"
+# shellcheck source=lib/state.sh
+source "$SDD_BIN_DIR/lib/state.sh"
+
+# ============================================================
+# help
+# ============================================================
+cmd_help() {
+  cat <<'EOF'
+sdd — harness-kit 메타 명령
+
+기본 사용:
+  sdd <명령> [옵션]
+
+명령:
+  status [--brief] [--verbose] [--json] [--no-drift]
+                                현재 상태 출력 (사람용 / 간단 / 자세히 / JSON)
+                                --no-drift: 🔄 동기화 상태 섹션 생략 (오프라인/CI)
+  queue                         backlog/queue.md 출력 (대시보드)
+
+  phase new <slug> [--base] [--force]
+                                새 phase-{N}.md 생성 + queue 갱신.
+                                backlog/ 에 미활성 phase 파일이 있으면 거부 —
+                                기존 파일을 쓰려면 'sdd phase activate <id>',
+                                정말 새로 추가해야 하면 --force.
+  phase activate <phase-NN> [--base]
+                                backlog/ 에 미리 작성한 phase 활성화 (본문 미수정).
+                                --base: phase.md 메타의 'Base Branch' 필드를 사용.
+  phase list                    모든 phase 와 spec 카운트
+  phase show [phase-N]          phase 상세 (생략 시 active)
+  phase done [phase-N]          phase 를 완료 처리 (queue 의 done 으로 이동)
+
+  spec new <slug>               active phase 안에 새 spec-{phaseN}-{seq}-{slug} 생성
+                                phase-{N}.md 의 spec 표 자동 append + queue 갱신
+  spec list [--phase=N]         spec 목록
+  spec show [spec-NN-NN-slug]  spec 상세 (생략 시 active)
+
+  plan accept                   현재 spec 의 plan 을 승인 (planAccepted=true)
+
+  config ux-mode [interactive|text]
+                                uxMode 설정 조회/변경 (생략 시 현재값 출력)
+
+  task done <num>               task.md 의 N 번 항목을 [x] 로 마킹
+
+  test passed                   .claude/state/current.json 에 lastTestPass 갱신
+                                (테스트 직후 호출 — hook 가 검사함)
+
+  ship [--check]                walkthrough/pr_description 작성 검증 (--check 시 변경 없음)
+                                통과 시 docs(spec-NN-NN): ship ... commit 생성
+
+  archive [--keep=N] [--dry-run]  완료된 phase 의 spec/backlog 를 archive/ 로 이동
+                                  --keep=N: 최근 N 개 완료 phase 유지 (기본: 0)
+                                  --dry-run: 이동 대상만 출력 (변경 없음)
+
+  specx new <slug>             spec-x-{slug} 디렉토리 생성 + 템플릿 복사
+  specx done <slug>            spec-x 완료 → queue.md done 이동
+
+  hooks [status]                hook 모드 현황 출력
+  hooks block|warn|off <name>  특정 hook 모드 전환 안내
+
+  doctor                        환경 진단 — 필수 도구/설치 파일/훅 권한 체크리스트 출력
+  pr-watch <pr-number>          PR merge 감지 — merge 확인 시 post-merge 안내 자동 출력
+  run-test <cmd...>             테스트 실행 + 통과 시 자동으로 sdd test passed 기록
+
+  help                          이 도움말
+  version                       키트 버전
+
+환경변수:
+  HARNESS_HOOK_MODE               글로벌 모드: warn (기본) / block / off
+  HARNESS_HOOK_MODE_{NAME}        per-hook 모드 (BRANCH, PLAN_ACCEPT, TEST_PASSED)
+  HARNESS_TEST_WINDOW_MIN         기본 30 (test passed 만료 분)
+  HARNESS_DRIFT_FETCH             drift 검사 시 git fetch 여부 (1=on, 0=off; 기본 1)
+
+문서:
+  .harness-kit/agent/constitution.md   거버넌스 규약
+  .harness-kit/agent/agent.md          작업 절차
+EOF
+}
+
+_read_kit_ver() {
+  local v
+  v=$(jq -r '.kitVersion // empty' "$SDD_ROOT/.harness-kit/installed.json" 2>/dev/null || echo "")
+  [ -z "$v" ] && v="?"
+  echo "$v"
+}
+
+cmd_version() {
+  echo "harness-kit $(_read_kit_ver)"
+}
+
+# ============================================================
+# status
+# ============================================================
+
+# 브랜치명에서 work mode 를 추론한다.
+# 반환: "SDD-P (phase-{N})" | "phase base (phase-{N})" | "SDD-x" | "" (미식별/main)
+_infer_work_mode() {
+  local br="$1"
+  case "$br" in
+    spec-x-*)
+      echo "SDD-x"
+      ;;
+    spec-[0-9]*-[0-9][0-9]-*)
+      local phase_num
+      phase_num="$(echo "$br" | sed 's/^spec-\([0-9]*\)-.*/\1/')"
+      echo "SDD-P (phase-${phase_num})"
+      ;;
+    phase-[0-9]*-*)
+      local phase_num
+      phase_num="$(echo "$br" | sed 's/^phase-\([0-9]*\)-.*/\1/')"
+      echo "phase base (phase-${phase_num})"
+      ;;
+    *)
+      echo ""
+      ;;
+  esac
+}
+
+# ─────────────────────────────────────────────────────────
+# Drift detection — multi-device 환경에서 발생하는 sync 어긋남 감지
+# 4 카테고리: 원격 / 워킹트리 / 정합성 / install
+# 각 _drift_* 함수는 drift 발견 시 메시지 출력 + return 0, 없으면 return 1.
+# ─────────────────────────────────────────────────────────
+
+# 원격 동기 상태: behind/ahead 카운트
+# HARNESS_DRIFT_FETCH=0 시 fetch 생략 (오프라인/CI 환경 고려).
+_drift_remote() {
+  # upstream 미설정 시 skip
+  local upstream
+  upstream=$(git -C "$SDD_ROOT" rev-parse --abbrev-ref '@{u}' 2>/dev/null || echo "")
+  if [ -z "$upstream" ]; then
+    return 1
+  fi
+
+  # fetch (best-effort, 실패 silent)
+  if [ "${HARNESS_DRIFT_FETCH:-1}" != "0" ]; then
+    git -C "$SDD_ROOT" fetch --quiet 2>/dev/null || true
+  fi
+
+  # behind ahead 카운트
+  local counts behind ahead
+  counts=$(git -C "$SDD_ROOT" rev-list --left-right --count "HEAD...$upstream" 2>/dev/null || echo "")
+  if [ -z "$counts" ]; then
+    return 1
+  fi
+  ahead=$(echo "$counts" | awk '{print $1}')
+  behind=$(echo "$counts" | awk '{print $2}')
+  if [ "${ahead:-0}" -eq 0 ] && [ "${behind:-0}" -eq 0 ]; then
+    return 1
+  fi
+
+  printf "  ${C_YLW}원격: behind %s / ahead %s  (%s)${C_RST}\n" "$behind" "$ahead" "$upstream"
+  return 0
+}
+
+# 워킹트리 drift: spec 디렉토리 / install 영역 / 일반 미커밋 분류
+_drift_worktree() {
+  local porcelain
+  porcelain=$(git -C "$SDD_ROOT" status --porcelain 2>/dev/null || echo "")
+  [ -z "$porcelain" ] && return 1
+
+  local spec_cnt=0 install_cnt=0 other_cnt=0
+  local line path
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    # porcelain 형식: "XY <path>" — 앞 3 글자 (XY + 공백) 제거
+    path=$(echo "$line" | sed 's/^...//; s/ -> .*//')
+    case "$path" in
+      specs/*)               spec_cnt=$((spec_cnt + 1)) ;;
+      .harness-kit/*|.claude/*) install_cnt=$((install_cnt + 1)) ;;
+      *)                     other_cnt=$((other_cnt + 1)) ;;
+    esac
+  done <<EOF
+$porcelain
+EOF
+
+  local total=$((spec_cnt + install_cnt + other_cnt))
+  [ "$total" -eq 0 ] && return 1
+
+  printf "  ${C_YLW}워킹트리: %d 변경 (%d spec drift / %d install drift / %d 일반)${C_RST}\n" \
+    "$total" "$spec_cnt" "$install_cnt" "$other_cnt"
+  return 0
+}
+
+# 정합성: queue.md 의 active phase 가 phase-N.md 에서 모든 spec Merged 면 phase done 미실행 의심
+_drift_consistency() {
+  local queue="$SDD_BACKLOG/queue.md"
+  [ -f "$queue" ] || return 1
+
+  # active 섹션에서 phase ID 추출 (첫 번째)
+  local active_phase
+  active_phase=$(awk '
+    /<!-- sdd:active:start -->/ { in_a=1; next }
+    /<!-- sdd:active:end -->/ { in_a=0; exit }
+    in_a {
+      if (match($0, /phase-[0-9]+/)) {
+        print substr($0, RSTART, RLENGTH)
+        exit
+      }
+    }
+  ' "$queue")
+  [ -z "$active_phase" ] && return 1
+
+  local phase_file="$SDD_BACKLOG/${active_phase}.md"
+  [ -f "$phase_file" ] || return 1
+
+  # spec 표 — 총 row 수, non-Merged row 수 카운트
+  local counts total non_merged
+  counts=$(awk -F'|' '
+    /<!-- sdd:specs:start -->/ { in_t=1; next }
+    /<!-- sdd:specs:end -->/ { in_t=0; next }
+    in_t {
+      id = $2; gsub(/[[:space:]]/, "", id); gsub(/`/, "", id)
+      st = $5; gsub(/[[:space:]]/, "", st)
+      if (id != "" && id !~ /^-+$/ && id !~ /^ID$/ && st != "") {
+        total++
+        if (st != "Merged") non_merged++
+      }
+    }
+    END { printf "%d %d", total+0, non_merged+0 }
+  ' "$phase_file")
+  total=$(echo "$counts" | awk '{print $1}')
+  non_merged=$(echo "$counts" | awk '{print $2}')
+
+  if [ "$total" -gt 0 ] && [ "$non_merged" -eq 0 ]; then
+    printf "  ${C_YLW}정합성: %s 의 모든 spec Merged 인데 active — sdd phase done 미실행 의심${C_RST}\n" "$active_phase"
+    return 0
+  fi
+  return 1
+}
+
+# install 부산물: .harness-kit/agent/templates, .harness-kit/hooks, .claude/commands 안 untracked 가
+# sources/ 의 대응본과 동일하면 "keep 안전", 다르면 "정체불명".
+_drift_install() {
+  local untracked
+  untracked=$(git -C "$SDD_ROOT" ls-files --others --exclude-standard 2>/dev/null \
+    | grep -E '^(\.harness-kit/agent/templates/|\.harness-kit/hooks/|\.claude/commands/)' \
+    || true)
+  [ -z "$untracked" ] && return 1
+
+  local safe_cnt=0 unknown_cnt=0
+  local f sources_path
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    # .harness-kit/agent/templates/X.md → sources/templates/X.md
+    # .harness-kit/hooks/X.sh         → sources/hooks/X.sh
+    # .claude/commands/X.md           → sources/commands/X.md
+    case "$f" in
+      .harness-kit/agent/templates/*) sources_path="sources/templates/${f#.harness-kit/agent/templates/}" ;;
+      .harness-kit/hooks/*)           sources_path="sources/hooks/${f#.harness-kit/hooks/}" ;;
+      .claude/commands/*)             sources_path="sources/commands/${f#.claude/commands/}" ;;
+      *)                              sources_path="" ;;
+    esac
+    if [ -n "$sources_path" ] && [ -f "$SDD_ROOT/$sources_path" ] \
+       && diff -q "$SDD_ROOT/$f" "$SDD_ROOT/$sources_path" >/dev/null 2>&1; then
+      safe_cnt=$((safe_cnt + 1))
+    else
+      unknown_cnt=$((unknown_cnt + 1))
+    fi
+  done <<EOF
+$untracked
+EOF
+
+  local total=$((safe_cnt + unknown_cnt))
+  [ "$total" -eq 0 ] && return 1
+
+  printf "  ${C_DIM}install 부산물: %d (sources 동일 %d / 정체불명 %d)${C_RST}\n" \
+    "$total" "$safe_cnt" "$unknown_cnt"
+  return 0
+}
+
+# kit 버전 감지: kitOrigin 에서 raw version.json 을 curl 로 조회 (다운로드 없음)
+# 24시간 캐시: lastVersionCheck + latestKnownVersion 을 .harness-kit/cache.json 에 저장
+# (이전엔 installed.json 이었으나 tracked 파일이라 매 SessionStart drift 발생 — spec-17-03)
+_drift_kit_version() {
+  local installed_json="$SDD_ROOT/.harness-kit/installed.json"
+  local cache_json="$SDD_ROOT/.harness-kit/cache.json"
+  [ -f "$installed_json" ] || return 1
+  [ "${HARNESS_DRIFT_FETCH:-1}" = "0" ] && return 1
+  command -v curl >/dev/null 2>&1 || return 1
+
+  local origin installed_ver
+  origin=$(jq -r '.kitOrigin // empty' "$installed_json" 2>/dev/null || echo "")
+  installed_ver=$(jq -r '.kitVersion // empty' "$installed_json" 2>/dev/null || echo "")
+  [ -z "$origin" ] || [ -z "$installed_ver" ] && return 1
+
+  # github.com 이 아니면 skip
+  echo "$origin" | grep -q "github.com" || return 1
+
+  # SSH/HTTPS → owner/repo 추출
+  local slug
+  slug=$(echo "$origin" | sed 's|git@github.com:||; s|https://github.com/||; s|\.git$||')
+  [ -z "$slug" ] && return 1
+
+  # Migration (1회만): installed.json 캐시 필드 있으면 cache.json 으로 이동
+  if jq -e 'has("lastVersionCheck") or has("latestKnownVersion")' "$installed_json" >/dev/null 2>&1; then
+    local legacy_last legacy_known
+    legacy_last=$(jq -r '.lastVersionCheck // empty' "$installed_json" 2>/dev/null || echo "")
+    legacy_known=$(jq -r '.latestKnownVersion // empty' "$installed_json" 2>/dev/null || echo "")
+    if [ -n "$legacy_last" ] || [ -n "$legacy_known" ]; then
+      jq -n --arg ts "$legacy_last" --arg v "$legacy_known" \
+        '{lastVersionCheck: $ts, latestKnownVersion: $v}' > "$cache_json" 2>/dev/null
+    fi
+    local tmp_inst
+    tmp_inst=$(jq 'del(.lastVersionCheck, .latestKnownVersion)' "$installed_json" 2>/dev/null || echo "")
+    [ -n "$tmp_inst" ] && echo "$tmp_inst" > "$installed_json"
+  fi
+
+  local last_check="" latest_known="" cache_valid=0
+  if [ -f "$cache_json" ]; then
+    last_check=$(jq -r '.lastVersionCheck // empty' "$cache_json" 2>/dev/null || echo "")
+    latest_known=$(jq -r '.latestKnownVersion // empty' "$cache_json" 2>/dev/null || echo "")
+  fi
+
+  if [ -n "$last_check" ]; then
+    local now_epoch cache_epoch
+    now_epoch=$(date -u +%s 2>/dev/null || echo "0")
+    cache_epoch=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$last_check" +%s 2>/dev/null \
+      || date -d "$last_check" +%s 2>/dev/null || echo "0")
+    [ $((now_epoch - cache_epoch)) -lt 86400 ] && cache_valid=1
+  fi
+
+  local latest
+  if [ "$cache_valid" -eq 1 ] && [ -n "$latest_known" ]; then
+    latest="$latest_known"
+  else
+    local raw_url="https://raw.githubusercontent.com/${slug}/main/version.json"
+    latest=$(curl -sf --max-time 3 "$raw_url" 2>/dev/null \
+      | jq -r '.version // empty' 2>/dev/null || echo "")
+    [ -z "$latest" ] && return 1
+    local now_iso
+    now_iso=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+    jq -n --arg ts "$now_iso" --arg v "$latest" \
+      '{lastVersionCheck: $ts, latestKnownVersion: $v}' > "$cache_json" 2>/dev/null || true
+  fi
+
+  # latest > installed_ver 일 때만 알림 (다운그레이드/개발 브랜치 무시)
+  [ "$latest" = "$installed_ver" ] && return 1
+  local newer
+  newer=$(printf '%s\n%s\n' "$installed_ver" "$latest" | sort -t. -k1,1n -k2,2n -k3,3n | tail -1)
+  [ "$newer" != "$latest" ] && return 1
+
+  printf "  ${C_YLW}kit: %s 사용 가능 (현재 %s) — /hk-update${C_RST}\n" \
+    "$latest" "$installed_ver"
+  return 0
+}
+
+# Stale ADR 탐지: 본문의 backtick-wrapped 경로 중 존재하지 않는 것 검사
+# - 검사 대상: docs/decisions/ADR-*.md (RCA 제외)
+# - 추출 규칙: backtick(`) 안 토큰 중 슬래시 포함 + URL 제외 + 확장자/끝슬래시
+# - 출력: 1 줄 (ADR 별 missing path 1 개 이상이면 stale 카운트 ++)
+_drift_stale_adr() {
+  local adr_dir="$SDD_ROOT/docs/decisions"
+  [ -d "$adr_dir" ] || return 1
+
+  local stale_count=0
+  local stale_list=""
+  local adr token has_missing
+
+  for adr in "$adr_dir"/ADR-*.md; do
+    [ -f "$adr" ] || continue
+
+    has_missing=0
+    # 본문에서 backtick 토큰 추출 → 한 줄씩 필터 → 존재 검사
+    while IFS= read -r token; do
+      [ -z "$token" ] && continue
+      # 1) 슬래시 포함 필수
+      echo "$token" | grep -q '/' || continue
+      # 2) URL/SSH 패턴 제외
+      echo "$token" | grep -qE '^(https?:|git@)' && continue
+      # 3) 확장자 또는 끝 슬래시 보유
+      echo "$token" | grep -qE '\.[a-zA-Z0-9]+$|/$' || continue
+      # 4) 존재하면 skip
+      [ -e "$SDD_ROOT/$token" ] && continue
+      has_missing=1
+      break
+    done < <(grep -oE '`[^`]+`' "$adr" 2>/dev/null | tr -d '`')
+
+    if [ "$has_missing" -eq 1 ]; then
+      stale_count=$((stale_count + 1))
+      local rel
+      rel="${adr#$SDD_ROOT/}"
+      if [ -z "$stale_list" ]; then
+        stale_list="$rel"
+      else
+        stale_list="$stale_list; $rel"
+      fi
+    fi
+  done
+
+  [ "$stale_count" -eq 0 ] && return 1
+
+  # 리스트 최대 3 개 + "…" (초과 시)
+  local display="$stale_list"
+  if [ "$stale_count" -gt 3 ]; then
+    display=$(echo "$stale_list" | cut -d';' -f1-3)
+    display="$display; …"
+  fi
+
+  printf "  ${C_YLW}stale ADR: %d (missing-path) — %s${C_RST}\n" \
+    "$stale_count" "$display"
+  return 0
+}
+
+# drift 섹션 통합 출력
+_status_drift() {
+  echo ""
+  echo "🔄 동기화 상태"
+
+  local has_drift=0
+  _drift_kit_version && has_drift=1
+  _drift_remote      && has_drift=1
+  _drift_worktree    && has_drift=1
+  _drift_consistency && has_drift=1
+  _drift_install     && has_drift=1
+  _drift_stale_adr   && has_drift=1
+
+  if [ "$has_drift" -eq 0 ]; then
+    echo "  ${C_DIM}깔끔${C_RST}"
+  fi
+}
+
+# status 자기 진단: phase.md ↔ git 교차 검증 + state.json 정합성
+# 경고가 있을 때만 🔍 진단 섹션을 출력한다.
+_status_diagnose() {
+  local phase="$1" spec="$2" plan_accepted="$3"
+  local warnings=""
+
+  # 1. phase.md ↔ git 교차 검증
+  if [ -n "${phase:-}" ] && [ "$phase" != "null" ]; then
+    local phase_file="$SDD_BACKLOG/${phase}.md"
+    if [ -f "$phase_file" ]; then
+      # non-Merged spec 목록 추출 (ID + 상태)
+      # -F'|' 사용 시 $0에서 | 가 제거되므로 $5(상태 컬럼)로 직접 비교
+      local non_merged
+      non_merged=$(awk -F'|' '
+        /<!-- sdd:specs:start -->/ { in_t=1; next }
+        /<!-- sdd:specs:end -->/ { in_t=0; next }
+        in_t {
+          id = $2; gsub(/[[:space:]]/, "", id); gsub(/`/, "", id)
+          st = $5; gsub(/[[:space:]]/, "", st)
+          if (id != "" && id !~ /^-+$/ && id !~ /^ID$/ && st != "Merged") {
+            printf "%s|%s\n", id, st
+          }
+        }
+      ' "$phase_file")
+
+      # base branch 결정: baseBranch from state.json, fallback to main
+      local base_branch="main"
+      if [ -f "$SDD_STATE" ]; then
+        local bb
+        bb="$(jq -r '.baseBranch // empty' "$SDD_STATE" 2>/dev/null)"
+        [ -n "$bb" ] && base_branch="$bb"
+      fi
+
+      # 각 non-Merged spec에 대해 git 머지 커밋 확인
+      local git_log_cache
+      git_log_cache="$(git -C "$SDD_ROOT" log --oneline "$base_branch" 2>/dev/null || true)"
+      while IFS='|' read -r sid sstatus; do
+        [ -z "$sid" ] && continue
+        if echo "$git_log_cache" | grep -q "$sid"; then
+          warnings="${warnings}  ⚠ ${sid}: phase.md(${sstatus}) ↔ git(머지됨) → sdd ship 실행 권장\n"
+        fi
+      done <<< "$non_merged"
+    fi
+  fi
+
+  # 2. state.json 정합성
+  if [ -z "${spec:-}" ] || [ "$spec" = "null" ]; then
+    if [ -n "${phase:-}" ] && [ "$phase" != "null" ]; then
+      # phase active + spec null → 안내
+      local phase_file="$SDD_BACKLOG/${phase}.md"
+      if [ -f "$phase_file" ]; then
+        local has_non_merged
+        has_non_merged=$(awk -F'|' '
+          /<!-- sdd:specs:start -->/ { in_t=1; next }
+          /<!-- sdd:specs:end -->/ { in_t=0; next }
+          in_t {
+            id = $2; gsub(/[[:space:]]/, "", id); gsub(/`/, "", id)
+            st = $5; gsub(/[[:space:]]/, "", st)
+            if (id != "" && id !~ /^-+$/ && id !~ /^ID$/ && st != "Merged" && st != "") found=1
+          }
+          END { print found+0 }
+        ' "$phase_file")
+        if [ "$has_non_merged" -eq 0 ]; then
+          warnings="${warnings}  ℹ 모든 spec Merged — phase done 가능 여부 확인 필요\n"
+        else
+          # non-Merged spec이 있지만, git에 모두 머지되었는지 교차 확인
+          local all_in_git=1
+          local nm_ids
+          nm_ids=$(awk -F'|' '
+            /<!-- sdd:specs:start -->/ { in_t=1; next }
+            /<!-- sdd:specs:end -->/ { in_t=0; next }
+            in_t {
+              id = $2; gsub(/[[:space:]]/, "", id); gsub(/`/, "", id)
+              st = $5; gsub(/[[:space:]]/, "", st)
+              if (id != "" && id !~ /^-+$/ && id !~ /^ID$/ && st != "Merged" && st != "") print id
+            }
+          ' "$phase_file")
+          while IFS= read -r sid; do
+            [ -z "$sid" ] && continue
+            if ! echo "$git_log_cache" | grep -q "$sid"; then
+              all_in_git=0
+              break
+            fi
+          done <<< "$nm_ids"
+          if [ "$all_in_git" -eq 1 ] && [ -n "$git_log_cache" ]; then
+            warnings="${warnings}  ℹ git 기준 모든 spec 머지 완료 — phase done 가능 (phase.md 상태 갱신 필요)\n"
+          else
+            warnings="${warnings}  ℹ Active Spec 없음 — 다음 spec 시작 필요\n"
+          fi
+        fi
+      fi
+    fi
+  fi
+
+  if [ "${plan_accepted:-}" = "true" ] && [ -n "${spec:-}" ] && [ "$spec" != "null" ]; then
+    local spec_dir="$SDD_SPECS/$spec"
+    if [ ! -f "$spec_dir/plan.md" ]; then
+      warnings="${warnings}  ⚠ planAccepted=true이지만 plan.md 없음\n"
+    fi
+  fi
+
+  # 3. specs 디렉토리 수 검사
+  local spec_dir_count
+  spec_dir_count=$(find "$SDD_SPECS" -maxdepth 1 -type d -name "spec-*" 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$spec_dir_count" -ge 20 ]; then
+    warnings="${warnings}  💡 specs/ 에 ${spec_dir_count}개 디렉토리 — sdd archive 로 정리 가능\n"
+  fi
+
+  # archive 항목 수 표시
+  local archive_spec_count=0
+  if [ -d "$SDD_ROOT/archive/specs" ]; then
+    archive_spec_count=$(find "$SDD_ROOT/archive/specs" -maxdepth 1 -type d -name "spec-*" 2>/dev/null | wc -l | tr -d ' ')
+  fi
+  if [ "$archive_spec_count" -gt 0 ]; then
+    warnings="${warnings}  ℹ archive/ 에 ${archive_spec_count}개 spec 보관 중\n"
+  fi
+
+  # 4. 출력
+  if [ -n "$warnings" ]; then
+    echo ""
+    echo "🔍 진단"
+    printf "%b" "$warnings"
+  fi
+}
+
+# phase.md spec 표에서 다음 처리 필요한 spec ID를 반환한다.
+# 우선순위: Done(ship 필요) > Backlog(새 작업). 없으면 '없음'.
+compute_next_spec() {
+  local phase_id="$1"
+  local phase_file="$SDD_BACKLOG/${phase_id}.md"
+  [ -f "$phase_file" ] || { echo "없음"; return; }
+  local next
+  next=$(awk -F'|' '
+    /<!-- sdd:specs:start -->/ { in_table=1; next }
+    /<!-- sdd:specs:end -->/ { in_table=0; next }
+    in_table {
+      id = $2; gsub(/[[:space:]]/, "", id); gsub(/`/, "", id)
+      st = $5; gsub(/[[:space:]]/, "", st)
+      if (id != "" && id !~ /^-+$/ && id !~ /^ID$/) {
+        if (st == "Done" && done_id == "") done_id = id
+        if (st == "Backlog" && backlog_id == "") backlog_id = id
+      }
+    }
+    END {
+      if (done_id != "") print done_id
+      else if (backlog_id != "") print backlog_id
+    }
+  ' "$phase_file")
+  echo "${next:-없음}"
+}
+
+cmd_status() {
+  local brief=0 verbose=0 json=0 no_drift=0
+  for a in "$@"; do
+    case "$a" in
+      --brief)    brief=1; no_drift=1 ;;
+      --verbose)  verbose=1 ;;
+      --json)     json=1; no_drift=1 ;;
+      --no-drift) no_drift=1 ;;
+    esac
+  done
+
+  # state 파일 유무에 따라 분기: 있으면 정상 경로, 없으면 폴백
+  local has_state=1
+  [ -f "$SDD_STATE" ] || has_state=0
+
+  local phase spec branch plan_accepted last_test kit_ver
+  if [ $has_state -eq 1 ]; then
+    phase="$(state_get phase)"
+    spec="$(state_get spec)"
+    plan_accepted="$(state_get planAccepted)"
+    last_test="$(state_get lastTestPass)"
+    kit_ver="$(_read_kit_ver)"
+  else
+    phase="" spec="" plan_accepted="false" last_test=""
+    kit_ver="$(_read_kit_ver)"
+  fi
+  branch="$(git -C "$SDD_ROOT" branch --show-current 2>/dev/null || echo '')"
+
+  if [ $json -eq 1 ]; then
+    if [ $has_state -eq 1 ]; then
+      state_dump
+    else
+      printf '{"phase":null,"spec":null,"branch":"%s","planAccepted":false,"fallback":true}\n' "$branch"
+    fi
+    return 0
+  fi
+
+  if [ $brief -eq 1 ]; then
+    printf '%s | phase=%s spec=%s branch=%s plan=%s\n' \
+      "harness-kit $kit_ver" "${phase:-none}" "${spec:-none}" "${branch:-?}" "${plan_accepted:-false}"
+    return 0
+  fi
+
+  echo "${C_BLU}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RST}"
+  echo "${C_BLU}harness-kit $kit_ver${C_RST}"
+  echo "${C_BLU}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RST}"
+  echo ""
+  echo "📊 현재 상태"
+  local next_spec=""
+  if [ -n "${phase:-}" ] && [ "${phase}" != "null" ]; then
+    next_spec="$(compute_next_spec "$phase")"
+  fi
+
+  printf "  Active Phase: %s\n" "${phase:-${C_DIM}없음${C_RST}}"
+  printf "  Active Spec:  %s\n" "${spec:-${C_DIM}없음${C_RST}}"
+  printf "  NEXT:         %s\n" "${next_spec:-${C_DIM}없음${C_RST}}"
+  local work_mode=""
+  if [ -n "${branch:-}" ]; then
+    work_mode="$(_infer_work_mode "$branch")"
+  fi
+  if [ -n "$work_mode" ]; then
+    printf "  Branch:       %s (%s)\n" "${branch}" "${C_CYN}${work_mode}${C_RST}"
+  else
+    printf "  Branch:       %s\n" "${branch:-${C_DIM}?${C_RST}}"
+  fi
+  printf "  Plan Accept:  %s\n" "$([ "$plan_accepted" = "true" ] && echo "${C_GRN}yes${C_RST}" || echo "${C_DIM}no${C_RST}")"
+  printf "  Last Test:    %s\n" "${last_test:-${C_DIM}없음${C_RST}}"
+
+  # task 진행률 (Pre-flight 섹션 후의 task 만 카운트)
+  local spec_dir
+  if spec_dir="$(state_spec_dir)" && [ -f "$spec_dir/task.md" ]; then
+    local total done_cnt pass_cnt pending_cnt
+    # awk 로 'Task 1:' 같은 헤딩 이후의 체크박스만 카운트 (Pre-flight 제외)
+    local counts
+    counts=$(awk '
+      /^## (Task |Pre-flight)/ {
+        in_pre = ($0 ~ /Pre-flight/) ? 1 : 0
+        in_task = ($0 ~ /^## Task /) ? 1 : 0
+      }
+      in_task && /^- \[x\]/ { d++ }
+      in_task && /^- \[-\]/ { p++ }
+      in_task && /^- \[ \]/ { n++ }
+      END { printf "%d %d %d", d+0, p+0, n+0 }
+    ' "$spec_dir/task.md")
+    done_cnt=$(echo "$counts" | awk '{print $1}')
+    pass_cnt=$(echo "$counts" | awk '{print $2}')
+    pending_cnt=$(echo "$counts" | awk '{print $3}')
+    total=$((done_cnt + pass_cnt + pending_cnt))
+    printf "  Tasks:        %s done, %s pending, %s passed (총 %s)\n" \
+      "${C_GRN}$done_cnt${C_RST}" "${C_YLW}$pending_cnt${C_RST}" "${C_DIM}$pass_cnt${C_RST}" "$total"
+  fi
+
+  # 산출물 완성도 체크리스트
+  if [ -n "${spec:-}" ] && [ "$spec" != "null" ]; then
+    local sd
+    sd="$SDD_SPECS/$spec"
+    if [ -d "$sd" ]; then
+      local art_line="" stage=""
+      local has_spec=0 has_plan=0 has_task=0 has_walk=0 has_pr=0
+      [ -f "$sd/spec.md" ] && has_spec=1
+      [ -f "$sd/plan.md" ] && has_plan=1
+      [ -f "$sd/task.md" ] && has_task=1
+      [ -f "$sd/walkthrough.md" ] && has_walk=1
+      [ -f "$sd/pr_description.md" ] && has_pr=1
+
+      local ck_spec ck_plan ck_task ck_walk ck_pr
+      ck_spec=$([ $has_spec -eq 1 ] && echo "${C_GRN}✓${C_RST}" || echo "${C_RED}✗${C_RST}")
+      ck_plan=$([ $has_plan -eq 1 ] && echo "${C_GRN}✓${C_RST}" || echo "${C_RED}✗${C_RST}")
+      ck_task=$([ $has_task -eq 1 ] && echo "${C_GRN}✓${C_RST}" || echo "${C_RED}✗${C_RST}")
+      ck_walk=$([ $has_walk -eq 1 ] && echo "${C_GRN}✓${C_RST}" || echo "${C_RED}✗${C_RST}")
+      ck_pr=$([ $has_pr -eq 1 ] && echo "${C_GRN}✓${C_RST}" || echo "${C_RED}✗${C_RST}")
+
+      if [ $has_walk -eq 1 ] && [ $has_pr -eq 1 ]; then
+        stage="Ship-ready"
+      elif [ $has_task -eq 1 ]; then
+        stage="Executing"
+      elif [ $has_spec -eq 1 ] || [ $has_plan -eq 1 ]; then
+        stage="Planning"
+      else
+        stage="Empty"
+      fi
+
+      printf "  Artifacts:    %s spec %s plan %s task %s walkthrough %s pr_description (%s)\n" \
+        "$ck_spec" "$ck_plan" "$ck_task" "$ck_walk" "$ck_pr" "${C_CYN}${stage}${C_RST}"
+    fi
+  fi
+
+  # verbose 또는 폴백 시 추가 정보 출력
+  if [ $verbose -eq 1 ] || [ $has_state -eq 0 ]; then
+    echo ""
+    echo "📝 최근 활동 (git log -5)"
+    git -C "$SDD_ROOT" log --oneline -5 2>/dev/null | sed 's/^/  /' || echo "  (git history 없음)"
+
+    if [ $has_state -eq 0 ]; then
+      echo ""
+      echo "📁 backlog/"
+      ls "$SDD_BACKLOG"/*.md 2>/dev/null | xargs -I{} basename {} | sed 's/^/  /' || echo "  (없음)"
+      echo ""
+      echo "📁 specs/"
+      ls -d "$SDD_SPECS"/spec-* 2>/dev/null | xargs -I{} basename {} | sed 's/^/  /' || echo "  (없음)"
+      if [ -d "$SDD_ROOT/archive/specs" ]; then
+        local archive_count
+        archive_count=$(find "$SDD_ROOT/archive/specs" -maxdepth 1 -type d -name "spec-*" 2>/dev/null | wc -l | tr -d ' ')
+        [ "$archive_count" -gt 0 ] && echo "  (+ archive/ 에 ${archive_count}개 보관 중)"
+      fi
+    fi
+
+    if [ $verbose -eq 1 ]; then
+      echo ""
+      echo "📝 변경 파일 (git status -s)"
+      local st
+      st="$(git -C "$SDD_ROOT" status -s 2>/dev/null)"
+      if [ -n "$st" ]; then
+        echo "$st" | sed 's/^/  /'
+      else
+        echo "  ${C_DIM}변경 없음${C_RST}"
+      fi
+    fi
+  fi
+
+  # 동기화 상태 (drift) — --no-drift 또는 --brief / --json 에서는 생략
+  if [ $no_drift -eq 0 ]; then
+    _status_drift
+  fi
+
+  # 자기 진단 (brief/json 에서는 생략)
+  _status_diagnose "$phase" "$spec" "$plan_accepted"
+
+  echo ""
+}
+
+# ============================================================
+# phase new / list / show
+# ============================================================
+cmd_phase() {
+  local sub="${1:-list}"; shift || true
+  case "$sub" in
+    new)      phase_new "$@" ;;
+    activate) phase_activate "$@" ;;
+    list)     phase_list ;;
+    show)     phase_show "$@" ;;
+    done)     phase_done "$@" ;;
+    *)        die "알 수 없는 phase 서브명령: $sub" ;;
+  esac
+}
+
+phase_done() {
+  local id="${1:-$(state_get phase)}"
+  [ -z "$id" ] || [ "$id" = "null" ] && die "active phase 없음"
+  queue_mark_done "$id"
+  state_set phase "null"
+  state_set spec "null"
+  state_set planAccepted "false"
+  state_set baseBranch "null"
+  ok "phase done: $id (queue.md 갱신)"
+}
+
+phase_new() {
+  local slug="${1:-}"
+  [ -z "$slug" ] && die "사용법: sdd phase new <slug> [--base] [--force]"
+  sdd_slug_ok "$slug" || die "slug 형식 오류: 소문자/숫자/하이픈 (예: payment-stability)"
+  # 플래그 파싱 (slug 이후 추가 인수)
+  local base_mode=0
+  local force_mode=0
+  local arg
+  for arg in "${@:2}"; do
+    case "$arg" in
+      --base)  base_mode=1 ;;
+      --force) force_mode=1 ;;
+    esac
+  done
+  # slug 는 phase 의 제목 표시용. ID 는 phase-{N} (slug 없음).
+
+  mkdir -p "$SDD_BACKLOG"
+  ensure_queue_file
+
+  # 사전 정의 phase 가드 (--force 시 우회)
+  # backlog/ 에 done 도 active 도 아닌 phase 파일이 있으면 die.
+  if [ $force_mode -eq 0 ]; then
+    local cur_phase
+    cur_phase="$(state_get phase)"
+    local pending=""
+    local pf pid
+    for pf in "$SDD_BACKLOG"/phase-*.md; do
+      [ -f "$pf" ] || continue
+      pid="$(basename "$pf" .md)"
+      [ "$pid" = "$cur_phase" ] && continue
+      queue_phase_is_done "$pid" && continue
+      pending="${pending}${pid}\n"
+    done
+    if [ -n "$pending" ]; then
+      printf '⚠ 사전 정의된 phase 가 있습니다:\n' >&2
+      printf '%b' "$pending" | while IFS= read -r p; do
+        [ -z "$p" ] && continue
+        printf '  - %s\n' "$p" >&2
+      done
+      local first
+      first="$(printf '%b' "$pending" | head -1)"
+      printf '\n다음 중 선택:\n' >&2
+      printf '  1) sdd phase activate %s        # 기존 phase 활성화\n' "$first" >&2
+      printf '  2) sdd phase new <slug> --force # 새 phase 강제 추가\n' >&2
+      die "phase new 거부 — 사전 정의 phase 우선"
+    fi
+  fi
+
+  # 다음 phase 번호 (backlog/ + archive/backlog/ 모두 스캔)
+  local next=1
+  local n
+  n=$(find "$SDD_BACKLOG" "$SDD_ROOT/archive/backlog" -maxdepth 1 -type f -name 'phase-*.md' 2>/dev/null \
+      | sed 's|.*/phase-||;s|\.md$||' | sort -n | tail -1)
+  [ -n "$n" ] && next=$((n+1))
+
+  local id="phase-$(printf '%02d' "$next")"
+  local file="$SDD_BACKLOG/${id}.md"
+  [ -f "$file" ] && die "이미 존재: $file"
+
+  log "phase 생성: $id  (제목: $slug)"
+
+  # phase 템플릿 복사 + 치환
+  if [ -f "$SDD_TEMPLATES/phase.md" ]; then
+    sed "s/{N}/$next/g; s/{slug}/$slug/g" "$SDD_TEMPLATES/phase.md" > "$file"
+  else
+    warn "템플릿 phase.md 없음 — 빈 파일 생성"
+    : > "$file"
+  fi
+
+  # phase 첫 줄 (제목) 에 한글 슬러그 반영 — 사용자가 제목 텍스트를 직접 바꿀 수도 있음
+  # (sed 로 < 한글 제목 > placeholder 만 슬러그로 치환)
+  sed -i.tmp "s|<한글 제목>|${slug}|" "$file"
+  rm -f "$file.tmp"
+
+  # queue.md 보장 + active 섹션 갱신
+  ensure_queue_file
+  queue_set_active "$id" "$slug"
+
+  state_set phase "$id"
+  state_set spec "null"
+  state_set planAccepted "false"
+
+  # base branch 모드 처리
+  if [ $base_mode -eq 1 ]; then
+    local base_branch="${id}-${slug}"
+    state_set baseBranch "$base_branch"
+    # phase.md 메타 Base Branch 필드 갱신 (템플릿 placeholder 교체)
+    sed -i.tmp "s|없음 / phase-{N}-{slug} (opt-in)|${base_branch}|" "$file"
+    rm -f "$file.tmp"
+    ok "base branch 모드: $base_branch (첫 hk-ship 시 자동 생성)"
+  else
+    state_set baseBranch "null"
+  fi
+
+  ok "생성 완료: ${file#$SDD_ROOT/}"
+  ok "active phase 설정: $id"
+  echo ""
+  echo "다음 단계:"
+  echo "  1. ${C_CYN}${file#$SDD_ROOT/}${C_RST} 의 SPEC 표 + 시나리오 채우기"
+  echo "  2. ${C_CYN}sdd spec new <slug>${C_RST} 로 첫 spec 시작"
+}
+
+# 사전 정의된 phase-NN.md 를 활성화 (본문 미수정).
+# 사용자가 backlog/ 에 phase 를 미리 작성해 둔 경우 sdd state/queue 에 등록한다.
+phase_activate() {
+  local id="${1:-}"
+  [ -z "$id" ] && die "사용법: sdd phase activate <phase-NN> [--base]"
+  case "$id" in
+    phase-[0-9]*) : ;;
+    *) die "id 형식 오류: phase-NN (예: phase-03)" ;;
+  esac
+
+  local file="$SDD_BACKLOG/${id}.md"
+  [ -f "$file" ] || die "phase 파일 없음: $file (먼저 backlog/${id}.md 작성)"
+
+  ensure_queue_file
+
+  if queue_phase_is_done "$id"; then
+    die "이미 완료된 phase: $id (queue.md done 섹션)"
+  fi
+
+  local cur_phase
+  cur_phase="$(state_get phase)"
+  if [ "$cur_phase" != "null" ] && [ -n "$cur_phase" ] && [ "$cur_phase" != "$id" ]; then
+    die "다른 active phase 존재: $cur_phase — 'sdd phase done' 후 재시도 또는 명시적 전환"
+  fi
+
+  # --base 플래그
+  local base_mode=0
+  local arg
+  for arg in "${@:2}"; do
+    case "$arg" in --base) base_mode=1 ;; esac
+  done
+
+  # phase.md 첫 줄 제목에서 슬러그(표시용) 추출
+  local slug
+  slug="$(head -1 "$file" | sed -n "s|^# *${id}: *\(.*\)$|\1|p")"
+  [ -z "$slug" ] && slug="$id"
+
+  state_set phase "$id"
+  state_set spec "null"
+  state_set planAccepted "false"
+
+  if [ $base_mode -eq 1 ]; then
+    # phase.md 메타 표 'Base Branch' 행에서 phase-NN-... 형식 추출
+    local meta_base
+    meta_base="$(grep -E '^\| \*\*Base Branch\*\*' "$file" \
+                 | head -1 \
+                 | sed 's/.*| *\*\*Base Branch\*\* *|//; s/`//g; s/^ *//; s/ *|.*$//')"
+    local base_branch=""
+    case "$meta_base" in
+      phase-[0-9]*-*) base_branch="$meta_base" ;;
+    esac
+    if [ -z "$base_branch" ]; then
+      die "phase.md 메타의 'Base Branch' 필드를 phase-NN-<slug> 형식으로 먼저 채워주세요 (예: phase-03-stt-v2)"
+    fi
+    state_set baseBranch "$base_branch"
+    ok "base branch: $base_branch"
+  fi
+
+  queue_set_active "$id" "$slug"
+
+  ok "active phase 설정: $id ($slug)"
+  echo ""
+  echo "다음 단계:"
+  echo "  1. ${C_CYN}$file${C_RST} 본문 확인"
+  echo "  2. ${C_CYN}sdd spec new <slug>${C_RST} 로 첫 spec 시작"
+}
+
+# ─────────────────────────────────────────────────────────
+# queue.md 헬퍼
+# ─────────────────────────────────────────────────────────
+ensure_queue_file() {
+  local q="$(state_queue_file)"
+  if [ ! -f "$q" ]; then
+    if [ -f "$SDD_TEMPLATES/queue.md" ]; then
+      cp "$SDD_TEMPLATES/queue.md" "$q"
+    else
+      warn "queue.md 템플릿 없음 — 빈 파일 생성"
+      : > "$q"
+    fi
+  fi
+}
+
+queue_set_active() {
+  local phase_id="$1" slug="$2"
+  local q="$(state_queue_file)"
+  ensure_queue_file
+  local content="- **${phase_id}** — ${slug} — 0/0 spec — (다음: 첫 spec 생성 대기)"
+  sdd_marker_replace "$q" "active" "$content"
+}
+
+queue_set_active_progress() {
+  # active phase 행을 진행률로 갱신
+  local q="$(state_queue_file)"
+  [ -f "$q" ] || return 0
+  local phase_id="$(state_get phase)"
+  [ -z "$phase_id" ] || [ "$phase_id" = "null" ] && return 0
+
+  local pn="${phase_id#phase-}"
+  local total active_spec
+  total=$(find "$SDD_SPECS" "$SDD_ROOT/archive/specs" -maxdepth 1 -type d -name "spec-${pn}-*" 2>/dev/null | wc -l | tr -d ' ')
+  active_spec="$(state_get spec)"
+  [ "$active_spec" = "null" ] && active_spec=""
+
+  # phase 파일에서 제목 추출 (첫 줄 # phase-N: 제목)
+  local title=""
+  local pf="$(state_phase_file 2>/dev/null)"
+  # archive fallback
+  if [ ! -f "$pf" ]; then
+    pf="$SDD_ROOT/archive/backlog/$(basename "$pf")"
+  fi
+  if [ -f "$pf" ]; then
+    title=$(head -1 "$pf" | sed 's|^# *phase-[0-9]*: *||')
+  fi
+
+  local content="- **${phase_id}** — ${title:-?} — ${total} spec — 다음: ${active_spec:-(spec 없음)}"
+  sdd_marker_replace "$q" "active" "$content"
+}
+
+queue_phase_is_done() {
+  local phase_id="$1"
+  local q="$(state_queue_file)"
+  [ -f "$q" ] || return 1
+  sdd_marker_grep "$q" "done" "**${phase_id}**"
+}
+
+queue_mark_done() {
+  local phase_id="${1:-$(state_get phase)}"
+  [ -z "$phase_id" ] || [ "$phase_id" = "null" ] && return 0
+  # normalize: 사용자가 'phase done 16' 처럼 prefix 없이 호출 시 자동 보정
+  case "$phase_id" in
+    phase-*) ;;
+    *) phase_id="phase-$phase_id" ;;
+  esac
+  local q="$(state_queue_file)"
+  ensure_queue_file
+  local title=""
+  local pf="$SDD_BACKLOG/${phase_id}.md"
+  # archive fallback
+  if [ ! -f "$pf" ]; then
+    pf="$SDD_ROOT/archive/backlog/$(basename "$pf")"
+  fi
+  [ -f "$pf" ] && title=$(head -1 "$pf" | sed 's|^# *phase-[0-9]*: *||')
+  sdd_marker_append "$q" "done" "- **${phase_id}** — ${title:-?} — completed $(date -u +%Y-%m-%d)"
+  # active 를 비움
+  sdd_marker_replace "$q" "active" "(active phase 없음. \`bin/sdd phase new <slug>\` 로 시작)"
+}
+
+phase_list() {
+  if [ ! -d "$SDD_BACKLOG" ]; then
+    echo "${C_DIM}phase 없음. sdd phase new <slug> 로 시작하세요.${C_RST}"
+    return
+  fi
+  printf "%-15s %-10s %s\n" "Phase" "Specs" "(active)"
+  echo "----------------------------------------"
+  local active
+  active="$(state_get phase)"
+  local f
+  for f in "$SDD_BACKLOG"/phase-*.md; do
+    [ -f "$f" ] || continue
+    local id n marker pn
+    id="$(basename "$f" .md)"
+    pn="${id#phase-}"
+    n=$(find "$SDD_SPECS" "$SDD_ROOT/archive/specs" -maxdepth 1 -type d -name "spec-${pn}-*" 2>/dev/null | wc -l | tr -d ' ')
+    marker=""
+    [ "$id" = "$active" ] && marker="${C_GRN}*${C_RST}"
+    printf "%-15s %-10s %s\n" "$id" "$n" "$marker"
+  done
+
+  # archive fallback
+  local archive_backlog="$SDD_ROOT/archive/backlog"
+  if [ -d "$archive_backlog" ]; then
+    for f in "$archive_backlog"/phase-*.md; do
+      [ -f "$f" ] || continue
+      local id n pn
+      id="$(basename "$f" .md)"
+      pn="${id#phase-}"
+      # Count specs in both archive and main
+      n=$(find "$SDD_ROOT/archive/specs" -maxdepth 1 -type d -name "spec-${pn}-*" 2>/dev/null | wc -l | tr -d ' ')
+      printf "%-15s %-10s %s\n" "$id" "$n" "${C_DIM}(archived)${C_RST}"
+    done
+  fi
+}
+
+phase_show() {
+  local id="${1:-$(state_get phase)}"
+  [ -z "$id" ] || [ "$id" = "null" ] && die "active phase 없음. sdd phase new <slug>"
+  local file="$SDD_BACKLOG/${id}.md"
+  local archived=0
+  if [ ! -f "$file" ]; then
+    file="$SDD_ROOT/archive/backlog/${id}.md"
+    [ -f "$file" ] || die "phase 파일 없음: $SDD_BACKLOG/${id}.md (archive 도 확인함)"
+    archived=1
+  fi
+  local pn="${id#phase-}"
+  local lines
+  lines=$(wc -l < "$file" | tr -d ' ')
+  echo "${C_BLD}$id${C_RST}  ($lines lines)"
+  echo "  경로: ${file#$SDD_ROOT/}"
+  [ $archived -eq 1 ] && echo "  ${C_YLW}⚠ archived${C_RST}"
+  echo "  Specs (실제 디렉토리):"
+  local s
+  for s in "$SDD_SPECS"/spec-${pn}-*; do
+    [ -d "$s" ] || continue
+    echo "    - $(basename "$s")"
+  done
+  if [ -d "$SDD_ROOT/archive/specs" ]; then
+    for s in "$SDD_ROOT/archive/specs"/spec-${pn}-*; do
+      [ -d "$s" ] || continue
+      echo "    - $(basename "$s") ${C_DIM}(archived)${C_RST}"
+    done
+  fi
+}
+
+cmd_queue() {
+  local raw=0
+  for a in "$@"; do
+    case "$a" in --raw) raw=1 ;; esac
+  done
+
+  local q
+  q="$(state_queue_file)"
+  if [ ! -f "$q" ]; then
+    echo "${C_DIM}queue.md 가 아직 없습니다. sdd phase new <slug> 로 시작하세요.${C_RST}"
+    return
+  fi
+
+  if [ $raw -eq 1 ]; then
+    cat "$q"
+    return
+  fi
+
+  # 구조화 출력: 섹션 헤더에 색상 적용
+  while IFS= read -r line; do
+    case "$line" in
+      "## 🔴 NOW"*)      echo "${C_RED}${line}${C_RST}" ;;
+      "## ⏭ NEXT"*)     echo "${C_YLW}${line}${C_RST}" ;;
+      "## 🧊 Icebox"*)  echo "${C_CYN}${line}${C_RST}" ;;
+      "## 📦"*|"## 📥"*|"## 📋"*|"## ✅"*) echo "${C_BLU}${line}${C_RST}" ;;
+      *)                 echo "$line" ;;
+    esac
+  done < "$q"
+}
+
+# ============================================================
+# spec new / list / show
+# ============================================================
+cmd_spec() {
+  local sub="${1:-list}"; shift || true
+  case "$sub" in
+    new)  spec_new "$@" ;;
+    list) spec_list "$@" ;;
+    show) spec_show "$@" ;;
+    *)    die "알 수 없는 spec 서브명령: $sub" ;;
+  esac
+}
+
+# Pre-spec validation (agent.md §11 Planning Economy):
+# phase 활성 + 직전 merged spec 존재 시 *주의 환기* 출력 (gate 아님).
+# 직전 spec 의 walkthrough 발견/이월 + 잔여 spec 표 + 재검증 4 질문 표시.
+_pre_spec_validation() {
+  local slug="$1"
+  local phase_id
+  phase_id="$(state_get phase 2>/dev/null)"
+  [ -z "$phase_id" ] || [ "$phase_id" = "null" ] && return 0
+
+  local phase_file="$SDD_BACKLOG/${phase_id}.md"
+  [ -f "$phase_file" ] || return 0
+
+  # 직전 merged spec 추출 (phase.md 표에서 Merged 행 중 마지막)
+  local prev_spec
+  prev_spec=$(awk '
+    /^\| `spec-/ && /\| Merged \|/ {
+      match($0, /`spec-[^`]+`/)
+      if (RSTART > 0) print substr($0, RSTART+1, RLENGTH-2)
+    }
+  ' "$phase_file" 2>/dev/null | tail -1)
+  [ -z "$prev_spec" ] && return 0
+
+  # walkthrough 위치 (specs/<prev_spec>-*/walkthrough.md)
+  local prev_dir prev_wt
+  prev_dir=$(find "$SDD_SPECS" -maxdepth 1 -type d -name "${prev_spec}-*" 2>/dev/null | head -1)
+  [ -z "$prev_dir" ] && return 0
+  prev_wt="${prev_dir}/walkthrough.md"
+  [ -f "$prev_wt" ] || return 0
+
+  echo ""
+  echo "${C_CYN}📋 직전 spec 변경 영향 (${prev_spec})${C_RST}"
+  grep -h "^## 🔍\|^## 🚧" "$prev_wt" 2>/dev/null | sed 's/^/  /'
+  echo "  → 자세한 내용: ${prev_wt#$SDD_ROOT/}"
+
+  echo ""
+  echo "${C_CYN}📋 phase.md 잔여 spec${C_RST}"
+  local remaining
+  remaining=$(grep -E "\| (Backlog|Active) \|" "$phase_file" 2>/dev/null | wc -l | tr -d ' ')
+  echo "  남은 spec: ${remaining} 개 (${phase_file#$SDD_ROOT/} 참고)"
+
+  echo ""
+  echo "${C_YLW}💡 본 spec (${slug}) 시작 전 재검증 (agent.md §11):${C_RST}"
+  echo "  - 직전 변경으로 가정이 깨졌는가? (방향성)"
+  echo "  - scope 가 여전히 적절한가? (크기)"
+  echo "  - 잔여 spec 과 bundle 가능한가? (응집도)"
+  echo "  - 1-2 commit 이면 phase FF 가 나은가? (경제성)"
+  echo "  → 재조정 필요 시 'sdd spec new' 취소 + phase.md / queue.md 조정"
+  echo ""
+}
+
+spec_new() {
+  local slug="${1:-}"
+  [ -z "$slug" ] && die "사용법: sdd spec new <slug>"
+  sdd_slug_ok "$slug" || die "slug 형식 오류: 소문자/숫자/하이픈"
+
+  _pre_spec_validation "$slug"
+
+  local phase_id
+  phase_id="$(state_get phase)"
+  [ -z "$phase_id" ] || [ "$phase_id" = "null" ] && die "active phase 없음. sdd phase new <slug> 먼저"
+
+  local phase_n
+  phase_n="${phase_id#phase-}"
+  local phase_file="$SDD_BACKLOG/${phase_id}.md"
+  [ -f "$phase_file" ] || die "phase 파일 없음: $phase_file"
+
+  mkdir -p "$SDD_SPECS"
+
+  # 다음 spec 번호 (specs/ + archive/specs/ 모두 스캔 — phase_new 와 동일 패턴)
+  local next=1
+  local last
+  last=$(find "$SDD_SPECS" "$SDD_ROOT/archive/specs" -maxdepth 1 -type d -name "spec-${phase_n}-*" 2>/dev/null \
+         | sed "s|.*/spec-${phase_n}-||;s|-.*||" | sort -n | tail -1)
+  if [ -n "$last" ]; then
+    next=$((10#$last + 1))
+  fi
+  local seq
+  seq=$(printf '%02d' "$next")
+
+  local id="spec-${phase_n}-${seq}-${slug}"
+  local short_id="spec-${phase_n}-${seq}"
+  local dir="$SDD_SPECS/$id"
+  [ -d "$dir" ] && die "이미 존재: $dir"
+
+  log "spec 생성: $id"
+  mkdir -p "$dir"
+
+  # walkthrough, pr_description 은 Ship 시점에 생성 (Artifacts 단계 오판 방지)
+  for f in spec plan task; do
+    if [ -f "$SDD_TEMPLATES/$f.md" ]; then
+      sed "s/{phaseN}/$phase_n/g; s/{seq}/$seq/g; s/{slug}/$slug/g" \
+        "$SDD_TEMPLATES/$f.md" > "$dir/$f.md"
+    else
+      warn "템플릿 $f.md 없음"
+      : > "$dir/$f.md"
+    fi
+  done
+
+  # phase-{N}.md 의 spec 표에 행 추가 또는 갱신
+  # 기존 행 (backtick 형식 또는 plain text Backlog 행) 있으면 in-place update
+  # 없으면 새 행 append
+  local row="| \`${short_id}\` | ${slug} | P? | Active | \`specs/${id}/\` |"
+  # 매칭 패턴: 백틱 형식 (auto-generated) 또는 plain '| spec-N-NN |' (수동 작성 Backlog)
+  if sdd_marker_grep "$phase_file" "specs" "\`${short_id}\`"; then
+    sdd_marker_update_row "$phase_file" "specs" "\`${short_id}\`" "$row"
+  elif sdd_marker_grep "$phase_file" "specs" "| ${short_id} |"; then
+    sdd_marker_update_row "$phase_file" "specs" "| ${short_id} |" "$row"
+  else
+    sdd_marker_append "$phase_file" "specs" "$row"
+  fi
+
+  state_set spec "$id"
+  state_set planAccepted "false"
+  queue_set_active_progress
+
+  ok "생성 완료: ${dir#$SDD_ROOT/}"
+  ok "active spec 설정: $id"
+  ok "phase 파일 spec 표 자동 갱신: ${phase_file#$SDD_ROOT/}"
+  echo ""
+  echo "다음 단계:"
+  echo "  1. ${C_CYN}${dir#$SDD_ROOT/}/spec.md${C_RST} — phase-${phase_n}.md 의 ${short_id} 항목을 구체화"
+  echo "  2. ${C_CYN}${dir#$SDD_ROOT/}/plan.md${C_RST} 작성"
+  echo "  3. ${C_CYN}${dir#$SDD_ROOT/}/task.md${C_RST} 작성"
+  echo "  4. 사용자 검토 후 ${C_CYN}sdd plan accept${C_RST}"
+  echo "  5. 첫 task: ${C_CYN}git checkout -b $id${C_RST}"
+}
+
+spec_list() {
+  local phase_filter=""
+  for a in "$@"; do
+    case "$a" in
+      --phase=*) phase_filter="${a#--phase=}" ;;
+    esac
+  done
+
+  [ -d "$SDD_SPECS" ] || { echo "${C_DIM}spec 없음. sdd spec new <slug>${C_RST}"; return; }
+
+  local active glob s id marker
+  active="$(state_get spec)"
+
+  if [ -n "$phase_filter" ]; then
+    glob="$SDD_SPECS/spec-${phase_filter}-*"
+  else
+    glob="$SDD_SPECS/spec-*"
+  fi
+
+  for s in $glob; do
+    [ -d "$s" ] || continue
+    id="$(basename "$s")"
+    marker=""
+    [ "$id" = "$active" ] && marker=" ${C_GRN}*${C_RST}"
+    printf "  %s%s\n" "$id" "$marker"
+  done
+
+  # archive fallback
+  local archive_specs="$SDD_ROOT/archive/specs"
+  if [ -d "$archive_specs" ]; then
+    local aglob
+    if [ -n "$phase_filter" ]; then
+      aglob="$archive_specs/spec-${phase_filter}-*"
+    else
+      aglob="$archive_specs/spec-*"
+    fi
+    for s in $aglob; do
+      [ -d "$s" ] || continue
+      id="$(basename "$s")"
+      printf "  %s ${C_DIM}(archived)${C_RST}\n" "$id"
+    done
+  fi
+}
+
+spec_show() {
+  local id="${1:-$(state_get spec)}"
+  [ -z "$id" ] || [ "$id" = "null" ] && die "active spec 없음"
+  local dir="$SDD_SPECS/$id"
+  local archived=0
+  if [ ! -d "$dir" ]; then
+    dir="$SDD_ROOT/archive/specs/$id"
+    if [ ! -d "$dir" ]; then
+      # try state_spec_dir as last resort
+      dir="$(state_spec_dir 2>/dev/null)" || die "spec 디렉토리를 찾을 수 없음: $id"
+    else
+      archived=1
+    fi
+  fi
+  echo "${C_BLD}$id${C_RST}"
+  [ $archived -eq 1 ] && echo "  ${C_YLW}⚠ archived${C_RST}"
+  local rel_dir="${dir#$SDD_ROOT/}"
+  echo "  파일:"
+  for f in spec plan task walkthrough pr_description; do
+    if [ -f "$dir/$f.md" ]; then
+      local lines
+      lines=$(wc -l < "$dir/$f.md" | tr -d ' ')
+      printf "  %s/%s.md (%s lines)\n" "$rel_dir" "$f" "$lines"
+    fi
+  done
+}
+
+# ============================================================
+# plan accept / reset
+# ============================================================
+cmd_plan() {
+  local sub="${1:-}"; shift || true
+  case "$sub" in
+    accept) plan_accept ;;
+    reset)  plan_reset ;;
+    *)      die "사용법: sdd plan {accept|reset}" ;;
+  esac
+}
+
+plan_accept() {
+  local spec_dir
+  spec_dir="$(state_spec_dir 2>/dev/null)" || die "active spec 없음. sdd spec new <slug> 먼저"
+
+  # 빈 파일 검사 + placeholder 검사
+  local f
+  for f in plan task; do
+    [ -s "$spec_dir/$f.md" ] || die "$f.md 가 비어있음: $spec_dir/$f.md"
+    if grep -qE '<한글 제목>|<한 줄 설명>|<제목>' "$spec_dir/$f.md"; then
+      die "$f.md 가 아직 템플릿 placeholder 상태입니다. 내용을 채운 후 다시 시도하세요."
+    fi
+  done
+
+  state_set planAccepted "true"
+  queue_set_active_progress
+  ok "Plan Accepted: $(state_get spec)"
+  echo "  hook (check-plan-accept) 가 production 코드 편집을 통과시킵니다."
+  echo "  이제 task.md 의 첫 task 부터 Strict Loop 진행하세요."
+}
+
+plan_reset() {
+  state_set planAccepted "false"
+  queue_set_active_progress
+  ok "Plan Accept 해제. 다음 spec 을 위해 깨끗한 상태로 전환됨."
+}
+
+# ============================================================
+# task done
+# ============================================================
+cmd_task() {
+  local sub="${1:-}"; shift || true
+  case "$sub" in
+    done) task_done "$@" ;;
+    *)    die "사용법: sdd task done <num>" ;;
+  esac
+}
+
+task_done() {
+  local num="${1:-}"
+  [ -z "$num" ] && die "사용법: sdd task done <num>"
+  local spec_dir
+  spec_dir="$(state_spec_dir 2>/dev/null)" || die "active spec 없음"
+  local f="$spec_dir/task.md"
+  [ -f "$f" ] || die "task.md 없음: $f"
+
+  # N 번째 미완 task 를 [x] 로
+  local tmp
+  tmp="$(mktemp)"
+  awk -v n="$num" '
+    /^- \[ \]/ { c++; if (c==n) { sub(/\[ \]/, "[x]") } }
+    { print }
+  ' "$f" > "$tmp"
+  mv "$tmp" "$f"
+  ok "task #$num 완료 마킹"
+}
+
+# ============================================================
+# config
+# ============================================================
+cmd_config() {
+  local sub="${1:-}"; shift || true
+  case "$sub" in
+    ux-mode) _config_ux_mode "$@" ;;
+    *)       die "사용법: sdd config ux-mode [interactive|text]" ;;
+  esac
+}
+
+_config_ux_mode() {
+  local installed_json="$SDD_ROOT/.harness-kit/installed.json"
+  [ -f "$installed_json" ] || die "installed.json 없음: $installed_json"
+
+  local value="${1:-}"
+  if [ -z "$value" ]; then
+    local current
+    current=$(jq -r '.uxMode // "interactive"' "$installed_json" 2>/dev/null || echo "interactive")
+    echo "uxMode: $current"
+    return 0
+  fi
+
+  case "$value" in
+    interactive|text) ;;
+    *) die "허용된 값: interactive | text (입력: $value)" ;;
+  esac
+
+  local tmp
+  tmp=$(jq --arg v "$value" '.uxMode = $v' "$installed_json" 2>/dev/null) || die "installed.json 갱신 실패"
+  echo "$tmp" > "$installed_json"
+  ok "uxMode = $value"
+}
+
+# ============================================================
+# test passed
+# ============================================================
+cmd_test() {
+  local sub="${1:-}"; shift || true
+  case "$sub" in
+    passed) test_passed ;;
+    *)      die "사용법: sdd test passed" ;;
+  esac
+}
+
+test_passed() {
+  local now
+  now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  state_set lastTestPass "$now"
+  ok "lastTestPass = $now"
+}
+
+# ============================================================
+# ship (was: archive)
+# ============================================================
+cmd_ship() {
+  local check_only=0
+  for a in "$@"; do
+    [ "$a" = "--check" ] && check_only=1
+  done
+  local spec_dir
+  spec_dir="$(state_spec_dir 2>/dev/null)" || die "active spec 없음"
+
+  local missing=0
+  for f in walkthrough pr_description; do
+    if [ ! -s "$spec_dir/$f.md" ]; then
+      err "$f.md 비어있음 또는 없음"
+      missing=1
+    elif grep -q '<.*placeholder\|TODO\|TBD\|<제목>\|<설명>' "$spec_dir/$f.md"; then
+      warn "$f.md 에 placeholder 가 남아있음"
+    fi
+  done
+
+  [ $missing -eq 1 ] && exit 1
+
+  if [ $check_only -eq 1 ]; then
+    ok "ship 검증 통과 (변경 없음)"
+    return 0
+  fi
+
+  # ship commit (사용자 동의 가정 — 본 명령은 실행 단계)
+  local spec_id
+  spec_id="$(state_get spec)"
+  # spec-{phaseN}-{seq}-{slug} → spec-{phaseN}-{seq}
+  local scope
+  scope="$(echo "$spec_id" | awk -F- '{print $1"-"$2"-"$3}')"
+  log "git add ..."
+  git -C "$SDD_ROOT" add "$spec_dir/walkthrough.md" "$spec_dir/pr_description.md"
+  git -C "$SDD_ROOT" commit -m "docs(${scope}): ship walkthrough and pr description"
+  ok "ship commit 완료"
+
+  # phase.md spec 상태 → Merged 자동 갱신
+  local phase_id
+  phase_id="$(state_get phase)"
+  if [ -n "$phase_id" ] && [ "$phase_id" != "null" ]; then
+    local phase_file="$SDD_BACKLOG/${phase_id}.md"
+    if [ -f "$phase_file" ]; then
+      local tmp_pf
+      tmp_pf="$(mktemp)"
+      # 상태 전이 모델: Backlog → Active → In Progress → Done → Merged
+      # ship: Active/In Progress/Done → Merged.
+      # 동일 short_id 의 plain text Backlog 행이 잔류하면 제거 (한 spec = 한 행).
+      awk -v sid="$spec_id" -v short_sid="$scope" '
+        index($0, sid) && (/\| In Progress \|/ || /\| Active \|/ || /\| Done \|/) {
+          sub(/\| In Progress \|/, "| Merged |")
+          sub(/\| Active \|/, "| Merged |")
+          sub(/\| Done \|/, "| Merged |")
+          print
+          next
+        }
+        # 동일 short_id 의 plain Backlog 행 (수동 작성, sdd spec new 이전) 제거
+        $0 ~ "\\| " short_sid " \\|" && /\| Backlog \|/ {
+          next
+        }
+        { print }
+      ' "$phase_file" > "$tmp_pf" && mv "$tmp_pf" "$phase_file"
+      ok "phase.md spec 상태 → Merged: $spec_id"
+    else
+      warn "phase.md 없음, 수동 갱신 필요: $phase_file"
+    fi
+
+    # state 초기화 — 이 spec 작업 완료
+    state_set spec "null"
+    state_set planAccepted "false"
+
+    # queue.md active 섹션 갱신
+    queue_set_active_progress
+
+    # NEXT spec 안내
+    local next
+    next="$(compute_next_spec "$phase_id")"
+    if [ "$next" != "없음" ]; then
+      local next_slug="${next#*-*-*-}"
+      log "⏭ 다음: $next → sdd spec new $next_slug"
+    else
+      log "⏭ 다음 Backlog spec 없음"
+    fi
+
+    # 모든 spec Merged 여부 확인 → phase done 유도
+    _check_phase_all_merged "$phase_id"
+  fi
+}
+
+# 모든 spec이 Merged인지 확인하고 유도 메시지 출력
+_check_phase_all_merged() {
+  local phase_id="$1"
+  [ -z "$phase_id" ] || [ "$phase_id" = "null" ] && return
+  local phase_file="$SDD_BACKLOG/${phase_id}.md"
+  [ -f "$phase_file" ] || return
+
+  # Merged가 아닌 모든 상태를 미완료로 카운트 ($5 필드 직접 비교)
+  local remaining
+  remaining=$(awk -F'|' '
+    /<!-- sdd:specs:start -->/ { in_t=1; next }
+    /<!-- sdd:specs:end -->/ { in_t=0; next }
+    in_t {
+      id = $2; gsub(/[[:space:]]/, "", id); gsub(/`/, "", id)
+      st = $5; gsub(/[[:space:]]/, "", st)
+      if (id != "" && id !~ /^-+$/ && id !~ /^ID$/ && st != "Merged" && st != "") print id
+    }
+  ' "$phase_file" | wc -l | tr -d ' ')
+
+  if [ "$remaining" -eq 0 ]; then
+    echo ""
+    echo "🎉 모든 Spec이 Merged 상태입니다."
+    echo "   sdd phase done 을 실행하여 phase를 완료하세요."
+    echo ""
+  else
+    # git 기반 교차 확인: phase.md에 non-Merged가 있지만 git에 모두 머지됨
+    local base_branch="main"
+    if [ -f "$SDD_STATE" ]; then
+      local bb
+      bb="$(jq -r '.baseBranch // empty' "$SDD_STATE" 2>/dev/null)"
+      [ -n "$bb" ] && base_branch="$bb"
+    fi
+
+    local git_log_cache
+    git_log_cache="$(git -C "$SDD_ROOT" log --oneline "$base_branch" 2>/dev/null || true)"
+
+    local all_in_git=1
+    local non_merged_ids
+    non_merged_ids=$(awk -F'|' '
+      /<!-- sdd:specs:start -->/ { in_t=1; next }
+      /<!-- sdd:specs:end -->/ { in_t=0; next }
+      in_t {
+        id = $2; gsub(/[[:space:]]/, "", id); gsub(/`/, "", id)
+        st = $5; gsub(/[[:space:]]/, "", st)
+        if (id != "" && id !~ /^-+$/ && id !~ /^ID$/ && st != "Merged" && st != "") print id
+      }
+    ' "$phase_file")
+
+    while IFS= read -r sid; do
+      [ -z "$sid" ] && continue
+      if ! echo "$git_log_cache" | grep -q "$sid"; then
+        all_in_git=0
+        break
+      fi
+    done <<< "$non_merged_ids"
+
+    if [ "$all_in_git" -eq 1 ]; then
+      echo ""
+      echo "ℹ git 기준 모든 spec이 머지 완료되었지만, phase.md에 non-Merged 상태가 남아있습니다."
+      echo "  sdd ship 실행 후 phase done 가능 여부를 확인하세요."
+      echo ""
+    fi
+  fi
+}
+
+# ============================================================
+# 진입점
+# ============================================================
+# hooks
+# ============================================================
+cmd_hooks() {
+  local sub="${1:-status}"; shift || true
+
+  # hook 목록과 기본 모드 (공백 구분 문자열)
+  local hook_data="BRANCH:block:check-branch.sh PLAN_ACCEPT:warn:check-plan-accept.sh TEST_PASSED:warn:check-test-passed.sh STAGED_LINT:warn:check-staged-lint.sh"
+
+  case "$sub" in
+    status|"")
+      printf "\n${C_BLD}Hook 모드 현황${C_RST}\n\n"
+      printf "  %-20s %-10s %-10s %s\n" "Hook" "현재" "기본" "환경변수"
+      printf "  %-20s %-10s %-10s %s\n" "----" "----" "----" "--------"
+      for entry in $hook_data; do
+        local name="${entry%%:*}"
+        local rest="${entry#*:}"
+        local default="${rest%%:*}"
+        local file="${rest#*:}"
+        local per_hook_var="HARNESS_HOOK_MODE_${name}"
+        local per_hook_val
+        eval "per_hook_val=\${$per_hook_var:-}"
+        local global="${HARNESS_HOOK_MODE:-}"
+        local current
+        if [ -n "$per_hook_val" ]; then
+          current="$per_hook_val"
+        elif [ -n "$global" ]; then
+          current="$global"
+        else
+          current="$default"
+        fi
+        local color="$C_DIM"
+        [ "$current" = "block" ] && color="$C_RED"
+        [ "$current" = "warn" ] && color="$C_YLW"
+        printf "  %-20s ${color}%-10s${C_RST} %-10s %s\n" "$file" "$current" "$default" "$per_hook_var"
+      done
+      printf "\n${C_DIM}  글로벌: HARNESS_HOOK_MODE=${HARNESS_HOOK_MODE:-<미설정>}${C_RST}\n"
+      printf "${C_DIM}  전환: export HARNESS_HOOK_MODE_<NAME>=block|warn|off${C_RST}\n\n"
+      ;;
+    block|warn|off)
+      local target="${1:-}"
+      if [ -z "$target" ]; then
+        echo "사용법: sdd hooks $sub <hook-name>"
+        echo "  hook-name: BRANCH, PLAN_ACCEPT, TEST_PASSED, STAGED_LINT"
+        exit 1
+      fi
+      local TARGET
+      TARGET="$(printf '%s' "$target" | tr '[:lower:]' '[:upper:]' | tr '-' '_')"
+      echo "다음 명령으로 설정하세요:"
+      echo ""
+      echo "  export HARNESS_HOOK_MODE_${TARGET}=${sub}"
+      echo ""
+      echo "영구 적용: .bashrc 또는 .claude/settings.json 의 env 섹션에 추가"
+      ;;
+    *)
+      err "알 수 없는 hooks 서브명령: $sub"
+      echo "사용법: sdd hooks [status|block|warn|off] [hook-name]"
+      exit 1
+      ;;
+  esac
+}
+
+# ============================================================
+# specx
+# ============================================================
+cmd_specx() {
+  local sub="${1:-}"; shift || true
+  case "$sub" in
+    new)  specx_new "$@" ;;
+    done) specx_done "$@" ;;
+    *)    die "사용법: sdd specx {new|done} <slug>" ;;
+  esac
+}
+
+specx_new() {
+  local slug="${1:-}"
+  [ -z "$slug" ] && die "사용법: sdd specx new <slug>"
+  sdd_slug_ok "$slug" || die "slug 형식 오류 (소문자, 하이픈, 1-40자): $slug"
+
+  local id="spec-x-${slug}"
+  local dir="$SDD_SPECS/$id"
+  [ -d "$dir" ] && die "이미 존재: $dir"
+
+  log "spec-x 생성: $id"
+  mkdir -p "$dir"
+
+  # 템플릿 복사 (spec, plan, task, walkthrough)
+  for f in spec plan task walkthrough; do
+    if [ -f "$SDD_TEMPLATES/$f.md" ]; then
+      sed "s/{phaseN}/x/g; s/{seq}/${slug}/g; s/{slug}/${slug}/g" \
+        "$SDD_TEMPLATES/$f.md" > "$dir/$f.md"
+    else
+      : > "$dir/$f.md"
+    fi
+  done
+
+  # state 설정
+  state_set spec "$id"
+  state_set planAccepted "false"
+
+  # queue.md specx 섹션에 등록
+  local q
+  q="$(state_queue_file)"
+  if [ -f "$q" ]; then
+    sdd_marker_append "$q" "specx" "- [ ] ${id} — ${slug}"
+  fi
+
+  ok "생성 완료: ${dir#$SDD_ROOT/}"
+  echo ""
+  echo "다음 단계:"
+  echo "  1. ${dir#$SDD_ROOT/}/spec.md — 요구사항 작성"
+  echo "  2. ${dir#$SDD_ROOT/}/plan.md — 실행 계획 작성"
+  echo "  3. ${dir#$SDD_ROOT/}/task.md — 태스크 작성"
+  echo "  4. sdd plan accept"
+  echo "  5. git checkout -b $id"
+}
+
+specx_done() {
+  local slug="${1:-}"
+  [ -z "$slug" ] && die "사용법: sdd specx done <slug>"
+  # 사용자가 'spec-x-' prefix 포함해 넘긴 경우 제거 (이중 prefix 방지)
+  slug="${slug#spec-x-}"
+  local id="spec-x-${slug}"
+  local q
+  q="$(state_queue_file)"
+  [ -f "$q" ] || die "queue.md 없음"
+
+  # specx 섹션에서 해당 slug 포함 행 제거
+  local tmp
+  tmp="$(mktemp)"
+  awk -v s="<!-- sdd:specx:start -->" -v e="<!-- sdd:specx:end -->" -v slug="$slug" '
+    $0 == s { in_sec=1; print; next }
+    $0 == e { in_sec=0; print; next }
+    in_sec && index($0, slug) > 0 { next }
+    { print }
+  ' "$q" > "$tmp" && mv "$tmp" "$q"
+
+  # done 섹션에 추가
+  sdd_marker_append "$q" "done" "- [x] ${id} (완료)"
+
+  # active spec 이 방금 완료한 spec-x 면 state 리셋
+  if [ -f "$SDD_STATE" ]; then
+    local active_spec
+    active_spec="$(state_get spec)"
+    if [ "$active_spec" = "$id" ]; then
+      state_set spec "null"
+      state_set planAccepted "false"
+    fi
+  fi
+
+  ok "${id} → queue.md done 섹션으로 이동"
+}
+
+# ============================================================
+# archive
+# ============================================================
+cmd_archive() {
+  local keep=0 dry_run=0
+  for a in "$@"; do
+    case "$a" in
+      --keep=*) keep="${a#--keep=}" ;;
+      --dry-run) dry_run=1 ;;
+    esac
+  done
+
+  # Parse done phases from queue.md
+  local queue_file="$SDD_BACKLOG/queue.md"
+  [ -f "$queue_file" ] || die "queue.md 없음: $queue_file"
+
+  # Extract phase IDs from done section
+  # The done section is between <!-- sdd:done:start --> and <!-- sdd:done:end -->
+  # Format varies:
+  #   | [phase-01](phase-01.md) | title | N (Merged) |
+  #   - **phase-08** — title — completed date
+  #   - **10** — title — completed date
+  local done_phases
+  done_phases=$(awk '
+    /<!-- sdd:done:start -->/ { in_d=1; next }
+    /<!-- sdd:done:end -->/ { in_d=0; next }
+    in_d {
+      # Table format: | [phase-NN](phase-NN.md) | ...
+      if (match($0, /phase-[0-9]+/)) {
+        print substr($0, RSTART, RLENGTH)
+      }
+      # Plain format: - **NN** — ... or - **phase-NN** — ...
+      else if (match($0, /\*\*([0-9]+)\*\*/)) {
+        num = substr($0, RSTART+2, RLENGTH-4)
+        printf "phase-%02d\n", num
+      }
+    }
+  ' "$queue_file" | sort -t- -k2 -n)
+
+  # Extract spec-x slugs from done section (Pattern: spec-x-{slug})
+  local done_specx
+  done_specx=$(awk '
+    /<!-- sdd:done:start -->/ { in_d=1; next }
+    /<!-- sdd:done:end -->/ { in_d=0; next }
+    in_d {
+      if (match($0, /spec-x-[a-z0-9][a-z0-9-]*/)) {
+        print substr($0, RSTART, RLENGTH)
+      }
+    }
+  ' "$queue_file" | sort -u)
+
+  if [ -z "$done_phases" ] && [ -z "$done_specx" ]; then
+    log "완료된 phase 가 없습니다."
+    return 0
+  fi
+
+  # Get active phase to exclude
+  local active_phase=""
+  if [ -f "$SDD_STATE" ]; then
+    active_phase="$(jq -r '.phase // empty' "$SDD_STATE" 2>/dev/null)"
+    [ "$active_phase" = "null" ] && active_phase=""
+  fi
+
+  # Apply --keep=N to phases only (spec-x are not phase-ordered)
+  local target_phases=""
+  local phases_kept_by_flag=0
+  if [ -n "$done_phases" ]; then
+    local total
+    total=$(echo "$done_phases" | wc -l | tr -d ' ')
+    local to_archive=$((total - keep))
+    if [ "$to_archive" -gt 0 ]; then
+      target_phases=$(echo "$done_phases" | head -n "$to_archive")
+    else
+      phases_kept_by_flag=1
+    fi
+  fi
+
+  # Build lists of files/dirs to move
+  local specs_to_move="" backlog_to_move="" specx_to_move=""
+  local spec_count=0 backlog_count=0 specx_count=0
+
+  # Phase-bound spec collection
+  if [ -n "$target_phases" ]; then
+    while IFS= read -r pid; do
+      [ -z "$pid" ] && continue
+      # Skip active phase
+      [ "$pid" = "$active_phase" ] && continue
+
+      local pn="${pid#phase-}"
+      # Find spec dirs for this phase
+      for d in "$SDD_SPECS"/spec-${pn}-*; do
+        [ -d "$d" ] || continue
+        # Skip spec-x dirs (they are handled below via done_specx)
+        local base
+        base="$(basename "$d")"
+        case "$base" in spec-x-*) continue ;; esac
+        specs_to_move="${specs_to_move}${d}\n"
+        spec_count=$((spec_count + 1))
+      done
+
+      # Find backlog file
+      local bf="$SDD_BACKLOG/${pid}.md"
+      if [ -f "$bf" ]; then
+        backlog_to_move="${backlog_to_move}${bf}\n"
+        backlog_count=$((backlog_count + 1))
+      fi
+    done <<< "$target_phases"
+  fi
+
+  # spec-x collection — all done specx with existing dirs (independent of --keep)
+  if [ -n "$done_specx" ]; then
+    while IFS= read -r sid; do
+      [ -z "$sid" ] && continue
+      local sd="$SDD_SPECS/$sid"
+      if [ -d "$sd" ]; then
+        specx_to_move="${specx_to_move}${sd}\n"
+        specx_count=$((specx_count + 1))
+      fi
+    done <<< "$done_specx"
+  fi
+
+  if [ "$spec_count" -eq 0 ] && [ "$backlog_count" -eq 0 ] && [ "$specx_count" -eq 0 ]; then
+    if [ "$phases_kept_by_flag" -eq 1 ] && [ -z "$done_specx" ]; then
+      log "keep=$keep 로 모든 완료 phase 가 유지됩니다."
+    else
+      log "이동할 항목이 없습니다."
+    fi
+    return 0
+  fi
+
+  # Summary
+  echo ""
+  echo "📦 아카이브 대상"
+  echo "  spec 디렉토리:    ${spec_count}개"
+  echo "  backlog 파일:     ${backlog_count}개"
+  echo "  spec-x 디렉토리:  ${specx_count}개"
+  echo ""
+  if [ "$dry_run" -eq 1 ]; then
+    echo "📂 이동 대상 (--dry-run):"
+    printf "%b" "$specs_to_move" | while IFS= read -r f; do
+      [ -n "$f" ] && echo "  $(basename "$f") → archive/specs/"
+    done
+    printf "%b" "$specx_to_move" | while IFS= read -r f; do
+      [ -n "$f" ] && echo "  $(basename "$f") → archive/specs/"
+    done
+    printf "%b" "$backlog_to_move" | while IFS= read -r f; do
+      [ -n "$f" ] && echo "  $(basename "$f") → archive/backlog/"
+    done
+    echo ""
+    ok "dry-run 완료 (변경 없음)"
+    return 0
+  fi
+
+  # Create archive directories
+  mkdir -p "$SDD_ROOT/archive/specs"
+  mkdir -p "$SDD_ROOT/archive/backlog"
+
+  # Move phase-bound spec directories
+  printf "%b" "$specs_to_move" | while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    git -C "$SDD_ROOT" mv "$f" "$SDD_ROOT/archive/specs/"
+  done
+
+  # Move spec-x directories
+  printf "%b" "$specx_to_move" | while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    git -C "$SDD_ROOT" mv "$f" "$SDD_ROOT/archive/specs/"
+  done
+
+  # Move backlog files
+  printf "%b" "$backlog_to_move" | while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    git -C "$SDD_ROOT" mv "$f" "$SDD_ROOT/archive/backlog/"
+  done
+
+  # Commit (git mv 가 이미 rename 을 stage 했음 — 추가 add 없이 commit)
+  local commit_msg="chore: archive ${spec_count} spec dirs + ${backlog_count} backlog files"
+  if [ "$specx_count" -gt 0 ]; then
+    commit_msg="${commit_msg} + ${specx_count} spec-x dirs"
+  fi
+  git -C "$SDD_ROOT" commit -m "$commit_msg"
+
+  local ok_msg="아카이브 완료: spec ${spec_count}개 + backlog ${backlog_count}개"
+  if [ "$specx_count" -gt 0 ]; then
+    ok_msg="${ok_msg} + spec-x ${specx_count}개"
+  fi
+  ok "${ok_msg} → archive/"
+}
+
+cmd_doctor() {
+  local fail=0 warn=0
+
+  _doc_pass() { printf "  ✅ %s\n" "$1"; }
+  _doc_warn() { printf "  ⚠️  %s\n" "$1"; warn=$((warn + 1)); }
+  _doc_fail() { printf "  ❌ %s\n" "$1"; printf "     → %s\n" "$2"; fail=$((fail + 1)); }
+
+  _check_tool() {
+    local name="$1" min_ver="$2" required="$3" hint="$4"
+    if ! command -v "$name" >/dev/null 2>&1; then
+      if [ "$required" = "required" ]; then
+        _doc_fail "$name 미설치" "$hint"
+      else
+        _doc_warn "$name 미설치 (선택 도구 — 일부 기능 비활성)"
+      fi
+      return
+    fi
+    if [ -n "$min_ver" ]; then
+      local ver
+      ver=$("$name" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+' | head -1)
+      local major="${ver%%.*}"
+      local required_major="${min_ver%%.*}"
+      if [ -n "$major" ] && [ "$major" -lt "$required_major" ] 2>/dev/null; then
+        _doc_fail "$name ${ver} (>= ${min_ver} 필요)" "$hint"
+        return
+      fi
+    fi
+    local ver_str
+    ver_str=$("$name" --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+|[0-9]+\.[0-9]+' | head -1)
+    _doc_pass "$name ${ver_str:-(설치됨)}"
+  }
+
+  _check_file() {
+    local path="$1" label="$2" hint="$3"
+    if [ -f "$SDD_ROOT/$path" ]; then
+      _doc_pass "$label"
+    else
+      _doc_fail "$label 없음: $path" "$hint"
+    fi
+  }
+
+  _check_hooks() {
+    local hooks_dir="$SDD_ROOT/.harness-kit/hooks"
+    if [ ! -d "$hooks_dir" ]; then
+      _doc_warn "hooks 디렉토리 없음 (install.sh 미실행 또는 경로 상이)"
+      return
+    fi
+    local bad=0
+    for f in "$hooks_dir"/*.sh; do
+      [ -f "$f" ] || continue
+      if [ ! -x "$f" ]; then
+        _doc_fail "훅 실행 권한 없음: $(basename "$f")" "chmod +x $f"
+        bad=$((bad + 1))
+      fi
+    done
+    [ "$bad" -eq 0 ] && _doc_pass "훅 파일 실행 권한 OK"
+  }
+
+  printf "\n🩺 harness-kit doctor\n"
+  printf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+
+  printf "\n필수 도구\n"
+  _check_tool "bash" "3.2" "required" "macOS 기본 bash 로도 동작 — 4+ 권장 (일부 환경 일관성)"
+  _check_tool "jq"   ""    "required" "brew install jq 또는 apt-get install jq"
+  _check_tool "git"  ""    "required" "brew install git 또는 apt-get install git"
+
+  printf "\n선택 도구\n"
+  _check_tool "gh"   ""    "optional" "brew install gh — PR 감지 기능에 필요"
+
+  printf "\n설치 파일\n"
+  _check_file ".harness-kit/installed.json"        "installed.json"    "install.sh 를 먼저 실행하세요"
+  _check_file ".harness-kit/agent/constitution.md" "constitution.md"   "install.sh 재실행 또는 파일 복원"
+  _check_file ".harness-kit/agent/agent.md"        "agent.md"          "install.sh 재실행 또는 파일 복원"
+
+  printf "\nClaude Code 설정\n"
+  _check_file ".claude/settings.json" ".claude/settings.json" "install.sh 재실행 또는 수동 생성"
+
+  printf "\n훅 파일\n"
+  _check_hooks
+
+  printf "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+  if [ "$fail" -eq 0 ] && [ "$warn" -eq 0 ]; then
+    printf "결과: ✅ ALL PASS\n\n"
+  elif [ "$fail" -eq 0 ]; then
+    printf "결과: ⚠️  WARN %d건 (기능 일부 제한)\n\n" "$warn"
+  else
+    printf "결과: ❌ FAIL %d건" "$fail"
+    [ "$warn" -gt 0 ] && printf " / WARN %d건" "$warn"
+    printf "\n\n"
+  fi
+}
+
+cmd_pr_watch() {
+  local pr_num="${1:-}"
+
+  if [ -z "$pr_num" ]; then
+    printf "사용법: sdd pr-watch <pr-number>\n"
+    printf "\n  PR merge 를 30초 간격으로 폴링합니다.\n"
+    printf "  merge 감지 시 post-merge 안내를 출력합니다.\n"
+    printf "\n예시: sdd pr-watch 42\n"
+    exit 0
+  fi
+
+  if ! command -v gh >/dev/null 2>&1; then
+    printf "⚠️  gh CLI 가 설치되어 있지 않습니다.\n"
+    printf "   gh install: brew install gh\n"
+    printf "   PR merge 감지 기능은 gh CLI 가 필요합니다.\n"
+    exit 0
+  fi
+
+  local interval=30
+  local timeout_min=60
+  local max_iterations=$(( timeout_min * 60 / interval ))
+  local iter=0
+
+  _pr_watch_interrupted() {
+    printf "\n⏹  pr-watch 중단됨 (PR #%s)\n" "$pr_num"
+    exit 0
+  }
+  trap '_pr_watch_interrupted' INT TERM
+
+  printf "👀 PR #%s merge 대기 중 (폴링 간격: %ds / 최대 %d분)\n" "$pr_num" "$interval" "$timeout_min"
+  printf "   Ctrl+C 로 중단할 수 있습니다.\n\n"
+
+  while [ "$iter" -lt "$max_iterations" ]; do
+    local pr_json
+    pr_json=$(gh pr view "$pr_num" --json state,mergedAt,title 2>/dev/null || true)
+
+    if [ -n "$pr_json" ]; then
+      local state title
+      state=$(printf '%s' "$pr_json" | grep -o '"state":"[^"]*"' | cut -d'"' -f4)
+      title=$(printf '%s' "$pr_json" | grep -o '"title":"[^"]*"' | cut -d'"' -f4)
+
+      if [ "$state" = "MERGED" ]; then
+        printf "✅ Merged: #%s — %s\n" "$pr_num" "$title"
+        printf "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        printf "🎉 PR merge 완료! post-merge 절차를 진행하세요.\n"
+        printf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        bash "$0" status --brief 2>/dev/null || true
+        printf "\n다음 명령:\n"
+        printf "  sdd spec new <next-slug>   — 다음 spec 시작\n"
+        printf "  /hk-phase-ship             — phase 완료 시\n"
+        exit 0
+      fi
+    fi
+
+    iter=$(( iter + 1 ))
+    printf "  [%d/%d] 대기 중... (PR #%s)\r" "$iter" "$max_iterations" "$pr_num"
+    sleep "$interval"
+  done
+
+  printf "\n⏰ 타임아웃: %d분 초과 (PR #%s)\n" "$timeout_min" "$pr_num"
+  printf "   merge 여부는 직접 확인: gh pr view %s\n" "$pr_num"
+  exit 0
+}
+
+cmd_run_test() {
+  if [ $# -eq 0 ]; then
+    printf "사용법: sdd run-test <cmd...>\n"
+    printf "\n  테스트 명령을 실행하고 통과 시 자동으로 sdd test passed 를 기록합니다.\n"
+    printf "\n예시: sdd run-test bash tests/test-hk-doctor.sh\n"
+    exit 0
+  fi
+
+  set +e
+  "$@"
+  local code=$?
+  set -e
+
+  if [ "$code" -eq 0 ]; then
+    test_passed
+    printf "✅ 테스트 통과 기록됨\n"
+  fi
+
+  return "$code"
+}
+
+# ============================================================
+main() {
+  local cmd="${1:-help}"; shift || true
+  case "$cmd" in
+    help|-h|--help) cmd_help ;;
+    version|-v|--version) cmd_version ;;
+    status)  cmd_status "$@" ;;
+    phase)   cmd_phase "$@" ;;
+    spec)    cmd_spec "$@" ;;
+    plan)    cmd_plan "$@" ;;
+    config)  cmd_config "$@" ;;
+    task)    cmd_task "$@" ;;
+    test)    cmd_test "$@" ;;
+    ship)    cmd_ship "$@" ;;
+    archive) cmd_archive "$@" ;;
+    queue)   cmd_queue "$@" ;;
+    hooks)   cmd_hooks "$@" ;;
+    specx)   cmd_specx "$@" ;;
+    doctor)   cmd_doctor "$@" ;;
+    pr-watch)  cmd_pr_watch "$@" ;;
+    run-test)  cmd_run_test "$@" ;;
+    *)         err "알 수 없는 명령: $cmd"; cmd_help; exit 1 ;;
+  esac
+}
+
+main "$@"

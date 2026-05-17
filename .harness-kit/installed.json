@@ -1,0 +1,22 @@
+{
+  "kitVersion": "0.10.0",
+  "kitOrigin": "",
+  "installedAt": "2026-05-17T11:58:49Z",
+  "uxMode": "interactive",
+  "installedCommands": [
+    "hk-align",
+    "hk-archive",
+    "hk-cleanup",
+    "hk-code-review",
+    "hk-doctor",
+    "hk-phase-review",
+    "hk-phase-ship",
+    "hk-plan-accept",
+    "hk-pr-bb",
+    "hk-pr-gh",
+    "hk-ship",
+    "hk-spec-critique",
+    "hk-update",
+    "hk"
+  ]
+}

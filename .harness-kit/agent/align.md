@@ -1,0 +1,71 @@
+# Alignment Bootstrap
+
+> 이 문서는 `/hk-align` 슬래시 커맨드 또는 새 세션 시작 시 에이전트가 자동으로 따라야 하는 부트스트랩 프로토콜입니다.
+
+새 세션을 시작했거나 컨텍스트를 재정렬해야 한다면, 어떤 행동을 취하기 전에 반드시 다음을 수행한다.
+
+## 1. 규약 로딩 (Read Rules)
+- `.harness-kit/agent/constitution.md` 와 `.harness-kit/agent/agent.md` 를 읽고 거버넌스를 인지한다.
+- 본 프로젝트의 `CLAUDE.md` 에 import 되어 있다면 자동 로딩되었을 수 있으나, 안전을 위해 명시적으로 다시 확인한다.
+
+## 2. 컨텍스트 점검 (Context Check)
+- `bash .harness-kit/bin/sdd status` 단일 명령을 실행한다.
+- `sdd status` 는 state 파일이 없어도 자체 폴백으로 git log, backlog/, specs/ 정보를 출력한다.
+- 출력에는 **🔄 동기화 상태 (drift) 섹션** 이 자동 포함되어 multi-device 환경의 sync 어긋남을 감지한다 (원격 behind/ahead, 워킹트리 잔재, 정합성, install 부산물). 오프라인 / CI 환경에서는 `--no-drift` 또는 `HARNESS_DRIFT_FETCH=0` 으로 끌 수 있다.
+- **별도 폴백 명령을 체이닝하지 않는다** (단일 명령 원칙 — agent.md §6.4).
+
+## 3. 행동 모드 잠금 (Behavior Lock)
+
+### 언어 규칙
+- 채팅, Phase, Spec, Plan, Task, Walkthrough, PR Description: **한국어**
+- 코드, 파일 경로, 표준 기술 용어: 영어 허용
+- 거버넌스 문서 (constitution, agent.md 등): 영어 (내부 시스템 문서)
+
+### 절차 규칙
+- **SDD Process**: Phase → Spec → Plan → Task → Walkthrough → Ship
+- **TDD**: Test 작성 → Fail 확인 → Implement → Pass → Commit
+- **Strict Loop**: 한 task 완료 시마다 task.md 업데이트. 이슈 없으면 자동 진행, 이슈 시 멈추고 보고. Ship 전에는 반드시 사용자 확인
+- **Plan Accept Gate**: 사용자가 "Plan Accept" 또는 `/hk-plan-accept` 호출하기 전까지는 PLANNING 모드. 코드 편집 금지
+
+## 4. 아카이브 제안 (Archive Suggestion)
+
+`sdd status` 진단에 아카이브 제안이 포함되어 있으면 (specs/ 디렉토리 20개 이상), 상태 보고에 포함하여 사용자에게 안내한다:
+
+> "완료된 항목이 많습니다. `sdd archive`로 정리하시겠습니까?"
+
+사용자의 선택 전에 아카이브를 실행하지 않는다. 사용자가 원하면 `sdd archive --dry-run`으로 대상을 먼저 확인 후 실행.
+
+## 5. 상태 요약 보고 (State Summary)
+
+위 점검 결과를 다음 형식으로 사용자에게 한 번에 보고한다:
+
+```
+📊 현재 상태
+- Active Phase: phase-{N} (또는 없음)
+- Active Spec: spec-{phaseN}-{seq}-{slug} (또는 없음)
+- Branch: <current branch>
+- Plan Accepted: yes / no
+- Last Test: <timestamp> (PASS / FAIL / 없음)
+- Pending Tasks: <count>
+
+🔄 동기화 상태  (drift 가 있을 때만 상세; 없으면 "깔끔")
+- 원격: behind N / ahead M
+- 워킹트리: K 변경 (X spec / Y install / Z 일반)
+- 정합성: phase-N 모든 spec Merged 인데 active — sdd phase done 미실행 의심
+- install 부산물: K (sources 동일 X / 정체불명 Y)
+
+📝 최근 활동 (git log -3)
+- ...
+- ...
+- ...
+```
+
+drift 가 있으면 사용자에게 정리 옵션 (예: `git pull --ff-only`, `sdd phase done <N>`, untracked 검증) 을 제안한다. **자동 정리는 금지** — 사용자 명시 결정 후에만 실행.
+
+## 6. 단 하나의 질문 (One Question)
+
+상태 보고 후, **단 하나의 질문**만 사용자에게 던진다:
+
+> **"어떤 컨텍스트로 진행할까요?"**
+
+여러 옵션을 짧게 제시할 수 있으나, 사용자의 명시적 선택 전에 어떤 행동도 취하지 않는다.
