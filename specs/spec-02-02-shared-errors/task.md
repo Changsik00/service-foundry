@@ -23,16 +23,13 @@
 
 ## Task 2: 패키지 scaffold + AppError class + STANDARD_ERROR_REGISTRY
 
-- [ ] `./packages/shared/errors/` 디렉토리 + scaffold (package.json / tsconfig.json / biome.json / vitest.config.ts) — `@repo/utils` 패턴 복제.
-- [ ] `package.json`에 `@repo/utils` devDep 추가 (Result round-trip test용).
-- [ ] `src/index.ts`:
-  - `STANDARD_ERROR_REGISTRY` const record (8 entries)
-  - `StandardErrorCode` type
-  - `class AppError extends Error` (4 fields + 생성자 + `Error.captureStackTrace`)
-- [ ] `src/index.test.ts`: AppError construction + 필드 + REGISTRY 매핑 확인 (≥ 3 test).
-- [ ] `pnpm install`.
-- [ ] `pnpm --filter @repo/errors test` → Pass.
-- [ ] Commit: `feat(spec-02-02): scaffold @repo/errors with AppError class and STANDARD_ERROR_REGISTRY`
+- [x] `./packages/shared/errors/` 디렉토리 + 4 scaffold 파일 (package.json / tsconfig.json / biome.json / vitest.config.ts).
+- [x] `package.json`에 `@repo/utils` devDep 추가.
+- [x] `src/index.ts`: REGISTRY 8 entries + AppError class.
+- [x] `src/index.test.ts`: 5 test (AppError 3 + REGISTRY 2).
+- [x] `pnpm install` + lockfile 갱신.
+- [x] `pnpm --filter @repo/errors test` → 5 PASS, typecheck PASS.
+- [x] Commit: `feat(spec-02-02): scaffold @repo/errors with AppError class and STANDARD_ERROR_REGISTRY`
 
 ---
 
