@@ -64,14 +64,10 @@
 
 ## Task 6: 8 factory 함수
 
-### 6-1. TDD red
-- [ ] 8 describe 블록 (validationError ~ badGatewayError) × 2 test ≈ 16.
-- [ ] test → Fail.
-
-### 6-2. TDD green
-- [ ] 8 factory 구현 — 모두 `STANDARD_ERROR_REGISTRY` lookup 패턴.
-- [ ] test → Pass.
-- [ ] Commit: `feat(spec-02-02): add 8 standard error factories`
+- [x] 8 factory 구현 (validation/unauthenticated/forbidden/notFound/conflict/rateLimit/internal/badGateway).
+- [x] test 16건 추가 (parametrized cases).
+- [x] 48 PASS.
+- [x] Commit: `feat(spec-02-02): add 8 standard error factories`
 
 ---
 

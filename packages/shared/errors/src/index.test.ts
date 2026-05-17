@@ -2,15 +2,23 @@ import { describe, expect, it } from "vitest";
 import {
   AppError,
   type AppErrorResponse,
+  badGatewayError,
+  conflictError,
   errorCause,
   errorMessage,
+  forbiddenError,
   fromJSON,
+  internalError,
   isAppError,
   isAppErrorResponse,
   isCode,
   isError,
+  notFoundError,
+  rateLimitError,
   STANDARD_ERROR_REGISTRY,
   type StandardErrorCode,
+  unauthenticatedError,
+  validationError,
 } from "./index.js";
 
 describe("AppError", () => {
@@ -221,6 +229,47 @@ describe("errorCause", () => {
     expect(errorCause("string")).toBeUndefined();
     expect(errorCause(null)).toBeUndefined();
   });
+});
+
+describe("standard factories", () => {
+  const cases = [
+    { factory: validationError, code: "VALIDATION", statusCode: 400, supportsDetails: true },
+    {
+      factory: unauthenticatedError,
+      code: "UNAUTHENTICATED",
+      statusCode: 401,
+      supportsDetails: true,
+    },
+    { factory: forbiddenError, code: "FORBIDDEN", statusCode: 403, supportsDetails: true },
+    { factory: notFoundError, code: "NOT_FOUND", statusCode: 404, supportsDetails: true },
+    { factory: conflictError, code: "CONFLICT", statusCode: 409, supportsDetails: true },
+    { factory: rateLimitError, code: "RATE_LIMIT", statusCode: 429, supportsDetails: true },
+    { factory: internalError, code: "INTERNAL", statusCode: 500, supportsDetails: false },
+    { factory: badGatewayError, code: "BAD_GATEWAY", statusCode: 502, supportsDetails: false },
+  ] as const;
+
+  for (const { factory, code, statusCode, supportsDetails } of cases) {
+    it(`${code}: sets code/statusCode from REGISTRY`, () => {
+      const e = factory("msg");
+      expect(e).toBeInstanceOf(AppError);
+      expect(e.code).toBe(code);
+      expect(e.statusCode).toBe(statusCode);
+      expect(e.message).toBe("msg");
+    });
+
+    if (supportsDetails) {
+      it(`${code}: preserves details`, () => {
+        const e = factory("msg", { foo: "bar" });
+        expect(e.details).toEqual({ foo: "bar" });
+      });
+    } else {
+      it(`${code}: preserves cause`, () => {
+        const cause = new Error("root");
+        const e = factory("msg", cause);
+        expect(e.cause).toBe(cause);
+      });
+    }
+  }
 });
 
 describe("fromJSON", () => {

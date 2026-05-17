@@ -162,6 +162,75 @@ export const isAppErrorResponse = (json: unknown): json is AppErrorResponse => {
 };
 
 /**
+ * 표준 코드별 factory — 모두 STANDARD_ERROR_REGISTRY lookup.
+ * 사용자 도메인 코드는 `new AppError({ code: "ORDER_FROZEN", ... })`로 직접 생성.
+ */
+
+export const validationError = (message: string, details?: unknown): AppError =>
+  new AppError({
+    code: "VALIDATION",
+    message,
+    statusCode: STANDARD_ERROR_REGISTRY.VALIDATION.statusCode,
+    details,
+  });
+
+export const unauthenticatedError = (message: string, details?: unknown): AppError =>
+  new AppError({
+    code: "UNAUTHENTICATED",
+    message,
+    statusCode: STANDARD_ERROR_REGISTRY.UNAUTHENTICATED.statusCode,
+    details,
+  });
+
+export const forbiddenError = (message: string, details?: unknown): AppError =>
+  new AppError({
+    code: "FORBIDDEN",
+    message,
+    statusCode: STANDARD_ERROR_REGISTRY.FORBIDDEN.statusCode,
+    details,
+  });
+
+export const notFoundError = (message: string, details?: unknown): AppError =>
+  new AppError({
+    code: "NOT_FOUND",
+    message,
+    statusCode: STANDARD_ERROR_REGISTRY.NOT_FOUND.statusCode,
+    details,
+  });
+
+export const conflictError = (message: string, details?: unknown): AppError =>
+  new AppError({
+    code: "CONFLICT",
+    message,
+    statusCode: STANDARD_ERROR_REGISTRY.CONFLICT.statusCode,
+    details,
+  });
+
+export const rateLimitError = (message: string, details?: unknown): AppError =>
+  new AppError({
+    code: "RATE_LIMIT",
+    message,
+    statusCode: STANDARD_ERROR_REGISTRY.RATE_LIMIT.statusCode,
+    details,
+  });
+
+export const internalError = (message: string, cause?: unknown): AppError =>
+  new AppError({
+    code: "INTERNAL",
+    message,
+    statusCode: STANDARD_ERROR_REGISTRY.INTERNAL.statusCode,
+    cause,
+  });
+
+export const badGatewayError = (message: string, cause?: unknown): AppError =>
+  new AppError({
+    code: "BAD_GATEWAY",
+    message,
+    statusCode: STANDARD_ERROR_REGISTRY.BAD_GATEWAY.statusCode,
+    cause,
+  });
+
+/**
  * FE에서 응답 body를 받아 AppError class로 복원.
  * 무효 shape면 fallback `internalError` 생성 (이 시점에는 wrap 없으므로 직접 — T7에서 refactor).
  */
