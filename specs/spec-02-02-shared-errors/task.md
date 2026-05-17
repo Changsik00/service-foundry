@@ -83,13 +83,11 @@
 
 ## Task 8: `Result<T, AppError>` round-trip 테스트
 
-- [ ] `describe("Result with AppError")` (4 test):
-  - `ok(user) | err(notFoundError(...))` + isOk/isErr narrow
-  - `map(ok(user), toDto)` chain
-  - `flatMap(err(...), nextFn)` short-circuit
-  - `try { ... } catch (e) { return err(wrap(e)); }` 패턴
-- [ ] test → Pass.
-- [ ] Commit: `test(spec-02-02): verify Result<T, AppError> round-trip with @repo/utils`
+- [x] `describe("Result<T, AppError> round-trip with @repo/utils")` 4 test (isOk narrow / err typed / map chain / flatMap short-circuit + wrap pattern).
+- [x] `@repo/utils`에서 `ok/err/isOk/map/flatMap/Result` import.
+- [x] 56 PASS.
+- [x] `pnpm exec depcruise ...` → ✔ no dependency violations found (13 modules, 10 deps).
+- [x] Commit: `test(spec-02-02): verify Result<T, AppError> round-trip with @repo/utils`
 
 ---
 

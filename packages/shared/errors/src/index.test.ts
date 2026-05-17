@@ -1,3 +1,4 @@
+import { err, flatMap, isOk, map, ok, type Result } from "@repo/utils";
 import { describe, expect, it } from "vitest";
 import {
   AppError,
@@ -338,5 +339,64 @@ describe("fromJSON", () => {
   it("falls back to internal on null/undefined", () => {
     expect(fromJSON(null).code).toBe("INTERNAL");
     expect(fromJSON(undefined).code).toBe("INTERNAL");
+  });
+});
+
+describe("Result<T, AppError> round-trip with @repo/utils", () => {
+  type User = { id: string; email: string };
+
+  const findUser = (id: string): Result<User, AppError> =>
+    id === "u1"
+      ? ok({ id: "u1", email: "u1@example.com" })
+      : err(notFoundError(`user ${id} not found`));
+
+  it("isOk narrows ok branch to access value", () => {
+    const r = findUser("u1");
+    expect(isOk(r)).toBe(true);
+    if (isOk(r)) {
+      expect(r.value.email).toBe("u1@example.com");
+    }
+  });
+
+  it("err branch carries the typed AppError", () => {
+    const r = findUser("missing");
+    if (!r.ok) {
+      expect(r.error.code).toBe("NOT_FOUND");
+      expect(r.error.statusCode).toBe(404);
+    } else {
+      throw new Error("expected err branch");
+    }
+  });
+
+  it("map chains successful transformations", () => {
+    const r = findUser("u1");
+    const mapped = map(r, (u) => u.email.toUpperCase());
+    expect(mapped).toEqual({ ok: true, value: "U1@EXAMPLE.COM" });
+  });
+
+  it("flatMap short-circuits on err and wraps unknown via wrap()", () => {
+    const r = findUser("missing");
+    let called = false;
+    const next = flatMap(r, (u: User) => {
+      called = true;
+      return ok(u.email);
+    });
+    expect(called).toBe(false);
+    expect(next).toEqual(r);
+
+    // wrap pattern: try/catch unknown -> err(wrap(e))
+    const dangerous = (): Result<string, AppError> => {
+      try {
+        throw new Error("boom");
+      } catch (e) {
+        return err(wrap(e));
+      }
+    };
+    const w = dangerous();
+    expect(w.ok).toBe(false);
+    if (!w.ok) {
+      expect(w.error.code).toBe("INTERNAL");
+      expect(w.error.message).toBe("boom");
+    }
   });
 });
