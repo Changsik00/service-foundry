@@ -32,14 +32,14 @@
 
 ## Task 3: 루트 파일 ADR 정합성 점검 + Acceptance 1/2/3/5 실측
 
-- [ ] **점검**: `package.json` / `pnpm-workspace.yaml` / `turbo.json` / `lefthook.yml` / `.editorconfig` / `.nvmrc` / `.changeset/config.json` / `biome.json` / `README.md`를 ADR-0001/0002/0003/0004와 1:1 대조. 결과 표를 walkthrough.md `🔍 발견 사항`에 기록.
-- [ ] 불일치 발견 시 *최소 변경*. 본 task 안에서 별도 sub-commit으로 분리 (예: `fix(spec-01-01): align <file> with ADR-XXXX`). 변경 없으면 skip.
-- [ ] **Acceptance 1** — `pnpm install` 실행 → 출력 캡처 → `engines warning` 외 0 warning 확인. 해석을 walkthrough에 명시.
-- [ ] **Acceptance 2** — `pnpm lint` → 그린 + 출력 캡처.
-- [ ] **Acceptance 3** — `pnpm typecheck` → 그린 + 출력 캡처.
-- [ ] **Acceptance 5** — `pnpm exec turbo run lint --force` 후 `pnpm lint` → 두 번째 출력에 `>>> FULL TURBO` + `cache hit, replaying logs` 확인.
-- [ ] walkthrough.md `🧪 검증 결과`에 acceptance 1/2/3/5 로그 누적.
-- [ ] Commit: `docs(spec-01-01): record acceptance 1/2/3/5 evidence`
+- [x] **점검**: 9개 루트 파일 ADR 1:1 대조 → **변경 없음** (walkthrough.md §발견 사항 표).
+- [x] 불일치 발견 없음 — sub-commit skip.
+- [x] **Acceptance 1** — `pnpm install` → `engines warning` 1건 외 0 warning, exit 0. 해석 walkthrough에 명시.
+- [x] **Acceptance 2** — `pnpm lint` → 1 task PASS, FULL TURBO.
+- [x] **Acceptance 3** — `pnpm typecheck` → 1 task PASS, FULL TURBO.
+- [x] **Acceptance 5** — `--force` 후 일반 lint → 2회째 `>>> FULL TURBO` + `1 cached, 1 total` (303ms → 16ms).
+- [x] walkthrough.md `🧪 검증 결과`에 acceptance 1/2/3/5 로그 누적.
+- [x] Commit: `docs(spec-01-01): record acceptance 1/2/3/5 evidence`
 
 ---
 
