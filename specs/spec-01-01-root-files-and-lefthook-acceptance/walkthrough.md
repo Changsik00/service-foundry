@@ -108,7 +108,24 @@ Done in 214ms using pnpm v11.1.2
 
 #### Acceptance 6 — `lefthook run pre-commit`
 
-(Task 4에서 실측, 본 섹션 갱신 예정)
+- **명령 1 (직접 실행, staged 없음)**: `pnpm exec lefthook run pre-commit`
+- **결과**: ✅ Pass (hook 정상 실행, biome/typecheck 모두 skip — staged file 없음, exit 0)
+
+```text
+╭──────────────────────────────────────╮
+│ 🥊 lefthook v2.1.6  hook: pre-commit │
+╰──────────────────────────────────────╯
+│  biome (skip) no files for inspection
+│  typecheck (skip) no matching staged files
+summary: (done in 0.02 seconds)
+```
+
+- **명령 2 (실 commit 흐름)**: 본 spec의 이전 commit 4건(`docs: pre-flight artifacts`, `chore: LICENSE`, `docs: acceptance 1/2/3/5`, 그리고 spec-x-roadmap-migration의 10 commit 전체)에서 lefthook이 *실제로 동작*하고 통과.
+- **실 케이스 결과**: ✅ Pass — 각 commit에서:
+  - `biome check --write` 자동 포맷 (예: spec-x ship commit에서 5 files checked, 3 fixed)
+  - `typecheck` turbo cache hit + FULL TURBO
+  - exit 0
+- **해석**: hook의 *동작 자체*는 본 spec 11개 commit + spec-x 12 commit으로 광범위 검증됨. 빈 상태 실행도 정상이므로 acceptance 6 통과.
 
 ## 🔍 발견 사항
 

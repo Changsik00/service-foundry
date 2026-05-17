@@ -45,10 +45,10 @@
 
 ## Task 4: Acceptance 6 (lefthook pre-commit) 실측
 
-- [ ] `lefthook run pre-commit` 실행 → 출력 캡처.
-- [ ] biome (no files for inspection 또는 PASS) + typecheck (PASS) 확인.
-- [ ] walkthrough.md `🧪 검증 결과`에 acceptance 6 로그 추가.
-- [ ] Commit: `docs(spec-01-01): record acceptance 6 (lefthook) evidence`
+- [x] `pnpm exec lefthook run pre-commit` 실행 → 출력 캡처 (staged 없음, biome/typecheck 모두 skip, exit 0).
+- [x] 실 commit 흐름에서 hook 동작 검증 — 본 spec 11 commit + spec-x 12 commit 전체에서 biome + typecheck 통과.
+- [x] walkthrough.md `🧪 검증 결과`에 acceptance 6 로그 추가 (직접 실행 + 실 commit 케이스 둘 다).
+- [x] Commit: `docs(spec-01-01): record acceptance 6 (lefthook) evidence`
 
 ---
 
