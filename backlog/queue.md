@@ -31,6 +31,13 @@
 - [ ] lat.md Phase 2 도입 평가 (지식 그래프 도구)
 - [ ] ARCHITECTURE.md 본체 재작성 (Phase 3 직전, ADR-0005 결정 후)
 
+### 🐛 spec-02-01에서 발견된 이슈/주의 사항 (2026-05-17)
+
+- [ ] **lefthook typecheck quirk** ⚠️ — `pnpm turbo run typecheck` exit 2 인데도 lefthook이 commit 진행시킴 (spec-02-01 T2). 1회 발생. **2회째 재발 시 RCA-001 작성** + harness-kit upstream 개선 후보. 임시 대응: ship 직전 `pnpm typecheck` 수동 재확인.
+- [ ] **shared/* DOM lib 패턴 표준화** — `packages/shared/utils/tsconfig.json`에 `lib: ["ES2023", "DOM"]` 추가로 `setTimeout` 타입 해결. 후속 shared/* 패키지가 timer/Fetch/AbortController 등 환경 무관 web API 사용 시 동일 패턴 필요. *`@repo/typescript-config`에 `env-agnostic` 변형 추가* 평가 (Phase 2 후반 또는 별 spec).
+- 📚 **Biome auto-modernize 적용**: `Object.prototype.hasOwnProperty.call` → `Object.hasOwn` (ES2022 표준). 학습 사항 — 액션 불필요.
+- 📚 **vitest "no tests in file" 룰**: 빈 test 파일 = exit 1. cleanup-only commit 분리 시 *test 파일을 통째로 두지 않거나 placeholder describe 유지*. 학습 사항 — 액션 불필요.
+
 ## 📋 대기 Phase
 
 > 다음에 진행할 phase 를 자유롭게 메모합니다 (사람이 직접 편집).
