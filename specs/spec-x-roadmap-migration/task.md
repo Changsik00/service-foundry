@@ -37,13 +37,13 @@
 
 ## Task 3: backlog/phase-02.md 작성 (shared primitives)
 
-- [ ] ROADMAP §2 Phase 2 본문 매핑.
-- [ ] SPEC 요점(spec-02-01 ~ spec-02-05) 작성.
-- [ ] 성공 기준: FE/BE 양측 import 가능 검증.
-- [ ] 의존성: phase-01.
-- [ ] 연관 ADR: 0003 / 0006.
-- [ ] §3 "lat.md Phase 2 평가" 본문 노트 포함.
-- [ ] Commit: `docs(spec-x-roadmap-migration): add backlog/phase-02.md for shared primitives`
+- [x] ROADMAP §2 Phase 2 본문 매핑.
+- [x] SPEC 요점(spec-02-01 ~ spec-02-05) 작성.
+- [x] 성공 기준: FE/BE 양측 import 가능 검증.
+- [x] 의존성: phase-01.
+- [x] 연관 ADR: 0003 / 0006.
+- [x] §3 "lat.md Phase 2 평가" 본문 노트 포함.
+- [x] Commit: `docs(spec-x-roadmap-migration): add backlog/phase-02.md for shared primitives`
 
 ---
 
