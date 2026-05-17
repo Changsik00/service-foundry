@@ -95,6 +95,29 @@ export interface AppErrorResponse {
 }
 
 /**
+ * AppError 인스턴스 가드.
+ */
+export const isAppError = (e: unknown): e is AppError => e instanceof AppError;
+
+/**
+ * 특정 code의 AppError 인스턴스 가드 (code별 narrow).
+ *
+ * ```ts
+ * if (isCode(e, "NOT_FOUND")) { ... }  // e: AppError & { code: "NOT_FOUND" }
+ * ```
+ */
+export const isCode = <C extends string>(e: unknown, code: C): e is AppError & { code: C } =>
+  isAppError(e) && e.code === code;
+
+/**
+ * Cross-realm 안전 `Error` 가드. iframe/worker 등 다른 realm에서 만들어진 Error에도 동작.
+ *
+ * `instanceof Error`만으로는 cross-realm에서 false negative — `Object.prototype.toString`으로 보강.
+ */
+export const isError = (e: unknown): e is Error =>
+  e instanceof Error || Object.prototype.toString.call(e) === "[object Error]";
+
+/**
  * JSON shape이 AppErrorResponse 형태인지 duck typing 검사.
  * `fromJSON`의 가드로 사용.
  */

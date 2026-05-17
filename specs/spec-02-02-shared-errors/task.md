@@ -46,18 +46,10 @@
 
 ## Task 4: 타입 가드 3종 — `isAppError` + `isCode<C>` + `isError`
 
-### 4-1. TDD red
-- [ ] `describe("isAppError")` (2 test).
-- [ ] `describe("isCode")` (3 test: match / mismatch / non-AppError).
-- [ ] `describe("isError")` (3 test: Error instance / cross-realm `[object Error]` mock / non-Error).
-- [ ] test → Fail.
-
-### 4-2. TDD green
-- [ ] `isAppError(e): e is AppError`.
-- [ ] `isCode<C extends string>(e, code: C): e is AppError & { code: C }`.
-- [ ] `isError(e: unknown): e is Error` — `e instanceof Error || Object.prototype.toString.call(e) === "[object Error]"`.
-- [ ] test → Pass.
-- [ ] Commit: `feat(spec-02-02): add type guards (isAppError, isCode, isError)`
+- [x] `isAppError` / `isCode<C>` / `isError` (cross-realm 안전) 구현.
+- [x] test 9건 추가 (isAppError 2 + isCode 3 + isError 4).
+- [x] 24 PASS, typecheck PASS.
+- [x] Commit: `feat(spec-02-02): add type guards (isAppError, isCode, isError)`
 
 ---
 

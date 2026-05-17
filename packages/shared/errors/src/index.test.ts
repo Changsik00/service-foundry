@@ -3,7 +3,10 @@ import {
   AppError,
   type AppErrorResponse,
   fromJSON,
+  isAppError,
   isAppErrorResponse,
+  isCode,
+  isError,
   STANDARD_ERROR_REGISTRY,
   type StandardErrorCode,
 } from "./index.js";
@@ -119,6 +122,58 @@ describe("isAppErrorResponse", () => {
     expect(isAppErrorResponse(undefined)).toBe(false);
     expect(isAppErrorResponse("string")).toBe(false);
     expect(isAppErrorResponse(42)).toBe(false);
+  });
+});
+
+describe("isAppError", () => {
+  it("returns true for AppError", () => {
+    expect(isAppError(new AppError({ code: "X", message: "x", statusCode: 500 }))).toBe(true);
+  });
+
+  it("returns false for plain Error / non-Error", () => {
+    expect(isAppError(new Error("plain"))).toBe(false);
+    expect(isAppError("string")).toBe(false);
+    expect(isAppError(null)).toBe(false);
+  });
+});
+
+describe("isCode", () => {
+  it("matches when code equals", () => {
+    const e = new AppError({ code: "NOT_FOUND", message: "x", statusCode: 404 });
+    expect(isCode(e, "NOT_FOUND")).toBe(true);
+  });
+
+  it("rejects when code differs", () => {
+    const e = new AppError({ code: "NOT_FOUND", message: "x", statusCode: 404 });
+    expect(isCode(e, "VALIDATION")).toBe(false);
+  });
+
+  it("rejects non-AppError", () => {
+    expect(isCode(new Error("x"), "NOT_FOUND")).toBe(false);
+    expect(isCode("string", "NOT_FOUND")).toBe(false);
+  });
+});
+
+describe("isError", () => {
+  it("returns true for Error instance", () => {
+    expect(isError(new Error("x"))).toBe(true);
+  });
+
+  it("returns true for AppError (extends Error)", () => {
+    expect(isError(new AppError({ code: "X", message: "x", statusCode: 500 }))).toBe(true);
+  });
+
+  it("returns true for cross-realm Error-like object", () => {
+    const fakeCrossRealm = Object.create({}) as object;
+    Object.defineProperty(fakeCrossRealm, Symbol.toStringTag, { value: "Error" });
+    expect(isError(fakeCrossRealm)).toBe(true);
+  });
+
+  it("returns false for non-Error", () => {
+    expect(isError("string")).toBe(false);
+    expect(isError({ message: "fake" })).toBe(false);
+    expect(isError(null)).toBe(false);
+    expect(isError(undefined)).toBe(false);
   });
 });
 
