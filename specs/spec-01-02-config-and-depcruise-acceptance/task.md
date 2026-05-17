@@ -49,15 +49,15 @@
 
 > walkthrough.md / pr_description.md 작성 후 push + PR.
 
-- [ ] `pnpm lint` + `pnpm typecheck` + `pnpm test` 최종 그린 재확인.
-- [ ] `bash .harness-kit/bin/sdd test passed` — lastTestPass 갱신.
-- [ ] **walkthrough.md 최종 정리**: 결정 기록 + 사용자 협의 + acceptance 4/7 로그 + 발견 사항 + **phase-01 acceptance 7건 전수 통과 선언**.
-- [ ] **pr_description.md 작성** (템플릿 준수).
-- [ ] `bash .harness-kit/bin/sdd ship --check` 통과.
-- [ ] `bash .harness-kit/bin/sdd ship` — Ship commit 자동 생성: `docs(spec-01-02): ship walkthrough and pr description`.
-- [ ] **Push**: `git push -u origin spec-01-02-config-and-depcruise-acceptance`.
-- [ ] **PR 생성**: `gh pr create`.
-- [ ] **사용자 알림**: push 완료 + PR URL 보고.
+- [x] `pnpm lint` + `pnpm typecheck` + `pnpm test` 최종 그린 재확인.
+- [x] `bash .harness-kit/bin/sdd test passed` — lastTestPass=2026-05-17T13:44:25Z.
+- [x] **walkthrough.md 최종 정리** (점검 표 + acceptance 4/7 + 발견 사항 + Phase 1 전수 통과 선언).
+- [x] **pr_description.md 작성**.
+- [x] `bash .harness-kit/bin/sdd ship --check` 통과.
+- [x] **Ship Commit**: `docs(spec-01-02): ship walkthrough and pr description` (sdd ship 자동).
+- [x] **Push**: `git push -u origin spec-01-02-config-and-depcruise-acceptance`.
+- [x] **PR 생성**: `gh pr create`.
+- [x] **사용자 알림**: push 완료 + PR URL 보고.
 
 ---
 
@@ -67,5 +67,5 @@
 |---|---|
 | **총 Task 수** | 4 (T1 브랜치 + T2 점검+A4 + T3 A7 + T4 ship) |
 | **예상 commit 수** | 3 (T1은 brach 생성만) |
-| **현재 단계** | Planning |
+| **현재 단계** | Ship (push + PR 직전) |
 | **마지막 업데이트** | 2026-05-17 |
