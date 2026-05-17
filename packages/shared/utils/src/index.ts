@@ -10,3 +10,27 @@ export const sleep = (ms: number): Promise<void> =>
   new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
+
+export const pick = <T extends object, K extends keyof T>(
+  source: T,
+  keys: readonly K[],
+): Pick<T, K> => {
+  const result = {} as Pick<T, K>;
+  for (const key of keys) {
+    if (Object.hasOwn(source, key)) {
+      result[key] = source[key];
+    }
+  }
+  return result;
+};
+
+export const omit = <T extends object, K extends keyof T>(
+  source: T,
+  keys: readonly K[],
+): Omit<T, K> => {
+  const result = { ...source } as T;
+  for (const key of keys) {
+    delete result[key];
+  }
+  return result as Omit<T, K>;
+};

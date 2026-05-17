@@ -40,15 +40,15 @@
 ## Task 3: `pick` + `omit` 구현
 
 ### 3-1. TDD red
-- [ ] `describe("pick")` 추가: 정상(키 부분집합) + edge(빈 keys / 존재 안 하는 키).
-- [ ] `describe("omit")` 추가: 정상(키 제외) + edge(빈 keys / 모든 키 제외).
-- [ ] test → Fail 확인.
+- [x] `describe("pick")` 추가: 정상(키 부분집합) + edge(빈 keys / 존재 안 하는 키).
+- [x] `describe("omit")` 추가: 정상(키 제외) + edge(빈 keys / 모든 키 제외).
+- [x] test → Fail 확인 (6 failed | 2 passed).
 
 ### 3-2. TDD green
-- [ ] `pick<T, K extends keyof T>(obj: T, keys: readonly K[]): Pick<T, K>` 구현.
-- [ ] `omit<T, K extends keyof T>(obj: T, keys: readonly K[]): Omit<T, K>` 구현.
-- [ ] test → Pass 확인.
-- [ ] Commit: `feat(spec-02-01): add pick and omit utilities to @repo/utils`
+- [x] `pick<T extends object, K extends keyof T>(source: T, keys: readonly K[]): Pick<T, K>` 구현 (hasOwnProperty 가드).
+- [x] `omit<T extends object, K extends keyof T>(source: T, keys: readonly K[]): Omit<T, K>` 구현 (spread + delete).
+- [x] test → Pass 확인 (8/8).
+- [x] Commit: `feat(spec-02-01): add pick and omit utilities to @repo/utils`
 
 ---
 
