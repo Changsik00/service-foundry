@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-01** — 모노레포 골격 (Monorepo Skeleton) — 2 spec — 다음: (spec 없음)
+(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -47,6 +47,7 @@
 <!-- sdd:done:start -->
 없음
 - [x] spec-x-roadmap-migration (완료)
+- **phase-01** — 모노레포 골격 (Monorepo Skeleton) — completed 2026-05-17
 <!-- sdd:done:end -->
 
 ---

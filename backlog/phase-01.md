@@ -128,11 +128,55 @@ pnpm exec depcruise --config packages/config/depcruise-config/.dependency-cruise
 
 ## 🏁 Phase Done 조건
 
-- [ ] 모든 SPEC(spec-01-01 + spec-01-02)이 main에 merge
-- [ ] 성공 기준 7개 모두 충족 (정량 측정 결과 본 문서 하단 "검증 결과"에 첨부)
-- [ ] 통합 테스트 3개 시나리오 PASS
-- [ ] 사용자 최종 승인
+- [x] 모든 SPEC(spec-01-01 + spec-01-02)이 main에 merge
+- [x] 성공 기준 7개 모두 충족 (정량 측정 결과 본 문서 하단 "검증 결과"에 첨부)
+- [x] 통합 테스트 3개 시나리오 PASS
+- [x] 사용자 최종 승인 (2026-05-17, `/hk-phase-ship` 응답 "ㅛ")
 
-## 📊 검증 결과 (phase 완료 시 작성)
+## 📊 검증 결과 (phase 완료 — 2026-05-17)
 
-<!-- 통합 테스트 로그, 성공 기준 측정값, 회귀 점검 결과 등을 여기 첨부 -->
+### 성공 기준 7개 정량 측정
+
+| # | 기준 | 결과 | 측정 |
+|:---:|---|:---:|---|
+| 1 | `pnpm install` 무경고 (engines 외) | ✅ | engines warning 1건 외 0 warning, exit 0, "Already up to date" |
+| 2 | `turbo run lint` 그린 | ✅ | 1 task PASS, FULL TURBO cache hit |
+| 3 | `turbo run typecheck` 그린 | ✅ | 1 task PASS, FULL TURBO cache hit |
+| 4 | `turbo run test` 그린 | ✅ | 1 task PASS (`@repo/utils:test` 1 test), FULL TURBO cache hit |
+| 5 | 두 번째 `turbo run lint` 캐시 100% hit | ✅ | 1회 force(326ms, 0 cached) → 2회(16ms, 1 cached, FULL TURBO) — 19x speedup |
+| 6 | `lefthook run pre-commit` 통과 | ✅ | hook 정상 실행 (staged 없어 biome/typecheck skip), exit 0. 실 commit 흐름(spec-x + spec-01-01 + spec-01-02 전체)에서도 그린 |
+| 7 | dependency-cruiser violation 0건 | ✅ | ✔ no dependency violations found (10 modules, 6 dependencies cruised, 0 errors, 0 warnings) |
+
+→ **7/7 PASS**
+
+### 통합 테스트 시나리오 3개
+
+| # | 시나리오 | 결과 | 증거 |
+|:---:|---|:---:|---|
+| 1 | turbo cache 적중 (`turbo run lint` 2회) | ✅ | 위 #5 (clean state 재현 확인) |
+| 2 | lefthook pre-commit gate | ✅ | 위 #6 (직접 실행 + 실 commit 흐름) |
+| 3 | dependency-cruiser 시범 실행 (`--config base.cjs packages/`) | ✅ | 위 #7 + spec-01-02에서 `no-orphans.pathNot` 1줄 fix로 warning 0건 달성 |
+
+→ **3/3 PASS**
+
+### 머지된 Spec
+
+- spec-01-01-root-files-and-lefthook-acceptance — PR #2 (acceptance 1/2/3/5/6 박음 + LICENSE 추가)
+- spec-01-02-config-and-depcruise-acceptance — PR #3 (acceptance 4/7 박음 + `depcruise-config/base.cjs` 1줄 fix)
+
+### Phase 1 결과물 (main 기준)
+
+- 루트 파일 10종: package.json / pnpm-workspace.yaml / turbo.json / .gitignore / .editorconfig / .nvmrc / lefthook.yml / .changeset/config.json / biome.json / README.md / **LICENSE 신규**
+- `packages/config/*` 6종 (biome / typescript / vitest / tsup / knip / depcruise) — preset 본문 + package.json exports
+- 스텁 `packages/shared/utils` — Phase 2의 첫 패키지로 그대로 승계 예정
+
+### 회귀 점검
+
+- 본 ship 절차 직전 `pnpm install + lint + typecheck + test + lefthook + depcruise` 모두 재실행 → 7건 모두 PASS 재확인 (`sdd test passed` 시점 2026-05-17T13:44:25Z).
+
+### Phase 1 회고 노트
+
+- **변경 최소화 원칙 성공**: 두 spec 모두 *변경 없음 또는 1줄 fix* 수준. spec-01-02의 `no-orphans.pathNot` 보완이 유일한 코드 변경. 기존 골격(d3894b4 / 2e3469c)이 ADR-0001~0004를 충실히 반영.
+- **bundle 결정 검증**: 1차 분할(8 spec) → 2차 분할(3 spec) → 3차 bundle(2 spec) 진화. 최종 2 spec이 acceptance 7건을 깔끔히 커버. 토큰/리뷰 비용 vs 의미 단위 trade-off의 좋은 본보기.
+- **`engines.node` warning**: ADR-0002 §3 잠금 그대로 유지. Phase 2 진입 시 *머신 정렬 vs ceiling 완화* 결정 필요 (Icebox 항목).
+- **이월 항목**: depcruise turbo task 정의 / lefthook depcruise wire-up / `packages/config/*` lint script — 모두 Phase 2~6 진입 시 자연스럽게 처리.
