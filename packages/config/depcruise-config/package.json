@@ -1,0 +1,16 @@
+{
+  "name": "@repo/depcruise-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./base": "./base.cjs",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "base.cjs"
+  ],
+  "peerDependencies": {
+    "dependency-cruiser": "catalog:"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "name": "service-foundry",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Operable Node/TS monorepo boilerplate — spin up a new service in 30 minutes.",
+  "license": "MIT",
+  "packageManager": "pnpm@11.1.2",
+  "engines": {
+    "node": ">=22.0.0 <23"
+  },
+  "scripts": {
+    "lint": "turbo run lint",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "build": "turbo run build",
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "changeset publish",
+    "prepare": "lefthook install"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@changesets/cli": "catalog:",
+    "@repo/biome-config": "workspace:*",
+    "@repo/depcruise-config": "workspace:*",
+    "@repo/knip-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "dependency-cruiser": "catalog:",
+    "knip": "catalog:",
+    "lefthook": "catalog:",
+    "tsup": "catalog:",
+    "tsx": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

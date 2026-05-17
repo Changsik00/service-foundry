@@ -1,0 +1,16 @@
+{
+  "name": "@repo/tsup-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./node-lib": "./src/node-lib.ts",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src"
+  ],
+  "peerDependencies": {
+    "tsup": "catalog:"
+  }
+}

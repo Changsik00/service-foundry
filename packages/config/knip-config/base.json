@@ -1,0 +1,32 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": ["packages/config/**/*.{ts,json}", "tooling/scripts/**/*.ts"],
+      "project": ["**/*.{ts,tsx}"],
+      "ignoreDependencies": []
+    },
+    "packages/config/*": {
+      "entry": ["**/*.{ts,json}"],
+      "project": ["**/*.{ts,json}"]
+    },
+    "packages/shared/*": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"]
+    },
+    "packages/backend/*": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"]
+    },
+    "packages/frontend/*": {
+      "entry": ["src/index.ts", "src/index.tsx"],
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+    "apps/*": {
+      "entry": ["src/main.ts", "src/main.tsx", "src/server.ts"],
+      "project": ["src/**/*.{ts,tsx}"]
+    }
+  },
+  "ignore": ["**/dist/**", "**/.turbo/**", "**/.next/**", "**/coverage/**"],
+  "ignoreBinaries": ["lefthook"]
+}
