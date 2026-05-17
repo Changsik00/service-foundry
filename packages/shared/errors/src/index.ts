@@ -231,8 +231,34 @@ export const badGatewayError = (message: string, cause?: unknown): AppError =>
   });
 
 /**
+ * `unknown` 에러 (try/catch에서 catch한 값)를 AppError로 변환.
+ *
+ * - 이미 AppError면 그대로 반환 (pass-through).
+ * - 표준 Error면 message 보존 + cause로 원본 보관.
+ * - string/object는 message 추출 후 wrap.
+ *
+ * ```ts
+ * try { ... } catch (e) { return err(wrap(e, "INTERNAL", "DB query failed")); }
+ * ```
+ */
+export const wrap = (
+  e: unknown,
+  code: StandardErrorCode = "INTERNAL",
+  message?: string,
+): AppError => {
+  if (isAppError(e)) return e;
+  const registry = STANDARD_ERROR_REGISTRY[code];
+  return new AppError({
+    code,
+    message: message ?? errorMessage(e),
+    statusCode: registry.statusCode,
+    cause: e,
+  });
+};
+
+/**
  * FE에서 응답 body를 받아 AppError class로 복원.
- * 무효 shape면 fallback `internalError` 생성 (이 시점에는 wrap 없으므로 직접 — T7에서 refactor).
+ * 무효 shape면 `wrap`으로 fallback (원본 보존).
  */
 export const fromJSON = (json: unknown): AppError => {
   if (isAppErrorResponse(json)) {
@@ -243,10 +269,5 @@ export const fromJSON = (json: unknown): AppError => {
       details: json.details,
     });
   }
-  return new AppError({
-    code: "INTERNAL",
-    message: "Invalid error response shape",
-    statusCode: STANDARD_ERROR_REGISTRY.INTERNAL.statusCode,
-    cause: json,
-  });
+  return wrap(json, "INTERNAL", "Invalid error response shape");
 };

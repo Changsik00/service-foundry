@@ -73,15 +73,11 @@
 
 ## Task 7: `wrap(e, code?, message?)` helper + fromJSON refactor
 
-### 7-1. TDD red
-- [ ] `describe("wrap")` (4 test: AppError pass-through / Error preserve / string / object).
-- [ ] test → Fail.
-
-### 7-2. TDD green
-- [ ] `wrap(e: unknown, code?: StandardErrorCode, message?: string): AppError` 구현 — `isAppError`/`isError`/`errorMessage` 활용.
-- [ ] **`fromJSON` 리팩터**: 무효 shape fallback을 임시 직접 호출에서 `wrap(json, "INTERNAL", "Invalid error response shape")`로 정리.
-- [ ] test → Pass (기존 fromJSON test 포함).
-- [ ] Commit: `feat(spec-02-02): add wrap helper and refactor fromJSON fallback`
+- [x] `wrap(e, code?, message?)` 구현 — AppError pass-through / `errorMessage` 활용.
+- [x] `fromJSON` 무효 shape fallback을 `wrap(json, "INTERNAL", ...)`로 리팩터.
+- [x] test 4건 추가 (wrap pass-through / Error preserve / string / object).
+- [x] 52 PASS (기존 fromJSON test cause 보존 확인 포함).
+- [x] Commit: `feat(spec-02-02): add wrap helper and refactor fromJSON fallback`
 
 ---
 

@@ -19,6 +19,7 @@ import {
   type StandardErrorCode,
   unauthenticatedError,
   validationError,
+  wrap,
 } from "./index.js";
 
 describe("AppError", () => {
@@ -270,6 +271,38 @@ describe("standard factories", () => {
       });
     }
   }
+});
+
+describe("wrap", () => {
+  it("returns the same AppError without rewrapping", () => {
+    const original = notFoundError("missing");
+    expect(wrap(original)).toBe(original);
+  });
+
+  it("wraps a plain Error preserving message and cause", () => {
+    const root = new Error("DB down");
+    const wrapped = wrap(root);
+    expect(wrapped).toBeInstanceOf(AppError);
+    expect(wrapped.code).toBe("INTERNAL");
+    expect(wrapped.message).toBe("DB down");
+    expect(wrapped.cause).toBe(root);
+    expect(wrapped.statusCode).toBe(500);
+  });
+
+  it("wraps a string", () => {
+    const wrapped = wrap("naked string");
+    expect(wrapped.message).toBe("naked string");
+    expect(wrapped.cause).toBe("naked string");
+  });
+
+  it("wraps an arbitrary object with JSON.stringify message", () => {
+    const obj = { detail: "weird" };
+    const wrapped = wrap(obj, "BAD_GATEWAY", "Upstream error");
+    expect(wrapped.code).toBe("BAD_GATEWAY");
+    expect(wrapped.statusCode).toBe(502);
+    expect(wrapped.message).toBe("Upstream error");
+    expect(wrapped.cause).toBe(obj);
+  });
 });
 
 describe("fromJSON", () => {
