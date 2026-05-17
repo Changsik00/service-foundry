@@ -71,10 +71,10 @@
 
 ## Task 6: backlog/phase-05.md 작성 (운영 / 도구)
 
-- [ ] ROADMAP §2 Phase 5 + §3 차별화 포인트의 "예정(Phase 5)" 항목(service manifest / startup report / typed config graph) 흡수.
-- [ ] SPEC 요점(tooling/docker / generators / scripts).
-- [ ] 의존성: phase-04 일부.
-- [ ] Commit: `docs(spec-x-roadmap-migration): add backlog/phase-05.md for ops and tooling`
+- [x] ROADMAP §2 Phase 5 + §3 차별화 포인트의 "예정(Phase 5)" 항목(service manifest / startup report / typed config graph) 흡수.
+- [x] SPEC 요점(tooling/docker / generators / scripts).
+- [x] 의존성: phase-04 일부.
+- [x] Commit: `docs(spec-x-roadmap-migration): add backlog/phase-05.md for ops and tooling`
 
 ---
 
