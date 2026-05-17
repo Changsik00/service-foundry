@@ -25,6 +25,7 @@ module.exports = {
           "\\.d\\.ts$",
           "(^|/)tsconfig\\.json$",
           "(^|/)(?:babel|webpack|vitest|tsup)\\.config\\.(?:js|cjs|mjs|ts)$",
+          "^packages/config/.+\\.(?:cjs|mjs|cts|mts|js|ts)$",
         ],
       },
       to: {},
