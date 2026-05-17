@@ -2,7 +2,7 @@
 
 * 상태: **보류** — 결정은 백엔드 구현 단계로 연기
 * 날짜: 2026-05-17
-* 결정 기한: 첫 `packages/backend/*` 패키지 스캐폴딩 이전 (ROADMAP의 Phase 3)
+* 결정 기한: 첫 `packages/backend/*` 패키지 스캐폴딩 이전 (`backlog/phase-03.md`)
 * 담당: Platform / Backend
 * 스코프: HTTP 프레임워크, ORM/쿼리 계층, 그리고 그 조합에서 따라 나오는 아키텍처 패턴
 * 대상 독자: 이 문서는 미래의 사람**과** AI 에이전트가 결정 시점에 빠르고 방어 가능하게 의사결정할 수 있도록 작성된다.
@@ -40,7 +40,7 @@
 | 상태 | 보류 |
 | 유력 후보 | **NestJS + Drizzle + PostgreSQL + 얇은 계층 아키텍처 + 통합 테스트 우선 + Zod** |
 | 유력 후보에 대한 확신도 | 중간 |
-| 최종 결정 트리거 | 첫 `packages/backend/*` 패키지 스캐폴딩 직전 (ROADMAP Phase 3) |
+| 최종 결정 트리거 | 첫 `packages/backend/*` 패키지 스캐폴딩 직전 (`backlog/phase-03.md`) |
 | 결정 전 필요한 입력 | 유력 조합에 대한 1~2일 spike (§8 참조) |
 
 ---

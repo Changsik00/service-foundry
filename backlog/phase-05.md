@@ -19,7 +19,7 @@
 
 Phase 4가 끝나면 apps/api + apps/web-*가 부트되지만, 외부 의존(Postgres / Redis / 관찰 도구) 부트는 수동. 또한 신규 패키지/앱 생성 시 보일러플레이트 코드를 매번 복붙하는 비용이 있다. 본 phase는 이 두 영역을 자동화한다.
 
-또한 ROADMAP §3 차별화 포인트 중 일부(service manifest, startup report, typed config graph)가 본 phase에 속한다.
+또한 service-foundry의 *운영 친화* 차별화 포인트 중 일부(service manifest, startup report, typed config graph)가 본 phase에 속한다.
 
 ### 목표 (Goal)
 
@@ -57,7 +57,7 @@ Phase 4가 끝나면 apps/api + apps/web-*가 부트되지만, 외부 의존(Pos
 ### spec-05-03 — tooling-script-service-manifest
 
 - **요점**: 각 app의 `service.yaml` (port / expose / depends) 작성 + manifest validator.
-- **방향성**: ROADMAP §3 차별화 포인트 "service manifest"의 본격화. 자체 구현. apps/* 새로 추가 시 validator가 누락 검출.
+- **방향성**: service-foundry의 차별화 포인트 "service manifest"의 본격화. 자체 구현. apps/* 새로 추가 시 validator가 누락 검출.
 - **연관 모듈**: `tooling/scripts/manifest/`
 
 ### spec-05-04 — tooling-script-startup-report

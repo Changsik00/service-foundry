@@ -100,17 +100,18 @@
 
 ---
 
-## Task 9: 외부 참조 7개 위치 갱신
+## Task 9: 외부 참조 갱신 (plan 7건 + phase 본문 3건 보너스)
 
-- [ ] `README.md` line 13 — ROADMAP.md → backlog/queue.md.
-- [ ] `ARCHITECTURE.md` line 14 — ROADMAP.md → backlog/queue.md.
-- [ ] `ARCHITECTURE.md` line 174 — "ROADMAP §4.2" → "backlog/queue.md Icebox".
-- [ ] `docs/adr/0007-polyglot-strategy.md` line 16 — ROADMAP Phase 1–6 → backlog/phase-01~06.md.
-- [ ] `docs/adr/0007-polyglot-strategy.md` line 184 — ROADMAP.md → backlog/queue.md.
-- [ ] `docs/adr/0005-backend-framework-and-orm-strategy.md` line 5 — ROADMAP Phase 3 → backlog/phase-03.md.
-- [ ] `docs/adr/0005-backend-framework-and-orm-strategy.md` line 43 — ROADMAP Phase 3 → backlog/phase-03.md.
-- [ ] 검증: `grep -rn "ROADMAP" --include="*.md" . | grep -v node_modules | grep -v .git | grep -v specs/spec-x-roadmap-migration` 출력 0건 확인.
-- [ ] Commit: `docs(spec-x-roadmap-migration): retarget ROADMAP references to backlog/`
+- [x] `README.md` line 13 — ROADMAP.md → backlog/queue.md.
+- [x] `ARCHITECTURE.md` line 14 — ROADMAP.md → backlog/queue.md + phase-01~06.md 포인터 추가.
+- [x] `ARCHITECTURE.md` line 174 — "ROADMAP §4.2" → "`backlog/queue.md` Icebox 참조".
+- [x] `docs/adr/0007-polyglot-strategy.md` line 16 — ROADMAP Phase 1–6 → backlog/phase-01~06.md.
+- [x] `docs/adr/0007-polyglot-strategy.md` line 184 — ROADMAP.md → backlog/queue.md.
+- [x] `docs/adr/0005-backend-framework-and-orm-strategy.md` line 5 — ROADMAP Phase 3 → backlog/phase-03.md.
+- [x] `docs/adr/0005-backend-framework-and-orm-strategy.md` line 43 — ROADMAP Phase 3 → backlog/phase-03.md.
+- [x] **보너스 정리** (plan 외): phase-01.md / phase-05.md 본문 3 위치의 "ROADMAP §X" 출처 주석을 ROADMAP 키워드 제거하여 dead reference 방지.
+- [x] 검증: `grep -rn "ROADMAP" --include="*.md" .` 결과 `ROADMAP.md` 자체 1건 + 의도된 spec-x 슬러그만 잔존.
+- [x] Commit: `docs(spec-x-roadmap-migration): retarget ROADMAP references to backlog/`
 
 ---
 

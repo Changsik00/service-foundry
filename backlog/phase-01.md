@@ -37,7 +37,7 @@
 6. `lefthook run pre-commit` 통과.
 7. dependency-cruiser 룰 시범 실행 (스텁 패키지만 있어 violation 없음 확인).
 
-> **Note (ROADMAP §2 Phase 1 그대로 이관)**: `turbo run build` acceptance는 Phase 3에서 첫 compiled 패키지(`packages/backend/*` + `@repo/tsup-config`)가 등장할 때 검증. Phase 1의 stub는 JIT(`packages/shared/*`)이라 build 파이프라인은 정의만 해두고 실제 실행은 보류.
+> **Note**: `turbo run build` acceptance는 Phase 3에서 첫 compiled 패키지(`packages/backend/*` + `@repo/tsup-config`)가 등장할 때 검증. Phase 1의 stub는 JIT(`packages/shared/*`)이라 build 파이프라인은 정의만 해두고 실제 실행은 보류.
 
 ## 🧩 작업 단위 (SPECs)
 

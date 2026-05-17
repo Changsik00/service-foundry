@@ -10,7 +10,7 @@
 
 ## Status
 
-**Phase 1 진행 중** — 모노레포 골격 작성 중. 자세한 상태는 [`ROADMAP.md`](./ROADMAP.md) 참조.
+**Phase 1 진행 중** — 모노레포 골격 작성 중. 자세한 상태는 [`backlog/queue.md`](./backlog/queue.md) 참조.
 
 | Phase | 목표 | 상태 |
 |---|---|---|
