@@ -1,75 +1,75 @@
-# ADR-005: Backend Framework & ORM Strategy (Deferred)
+# ADR-005: 백엔드 프레임워크 & ORM 전략 (보류)
 
-* Status: **Deferred** — decision postponed until backend implementation phase
-* Date: 2026-05-17
-* Decision deadline: Before scaffolding the first `packages/backend/*` package (Phase 3)
-* Owners: Platform / Backend
-* Scope: HTTP framework, ORM/query layer, and the architectural patterns that follow from the combination
-* Audience: This document is written to be consumed by future humans **and** AI agents who need to make this decision quickly and defensibly when the time comes.
-
----
-
-# 1. Context
-
-This is the single most consequential undecided choice in the boilerplate. Backend framework selection cascades into many other ADRs:
-
-| Downstream concern | Depends on framework |
-|---|---|
-| Validation library wrapper | `nestjs-zod` vs `fastify-type-provider-zod` vs `@hono/zod-openapi` |
-| Auth implementation | `@nestjs/passport` vs `better-auth` vs custom |
-| Logger adapter | `nestjs-pino` vs `@fastify/pino` (built-in) vs `hono/logger` |
-| OpenAPI pipeline | `@nestjs/swagger` vs `fastify-swagger` vs `@hono/zod-openapi` |
-| Dependency injection | Framework DI vs explicit wiring |
-| Test patterns and CI speed | `Test.createTestingModule` vs `fastify.inject` vs Hono Request |
-| MSA evolution | `@nestjs/microservices` vs custom transport |
-| Error handling | `ExceptionFilter` vs `setErrorHandler` vs `onError` |
-| Config injection | `ConfigModule.forRoot()` vs Fastify plugin vs context binding |
-
-Because this decision touches 5–10 follow-on ADRs, we **defer it explicitly** rather than lock prematurely. This ADR captures all currently-known evidence so the eventual decision can be executed quickly when the time comes.
-
-Multiple analyses (project owner, Claude, external AI assistants) have converged on a few combinations but disagree on which axis dominates. The disagreement is recorded here transparently.
+* 상태: **보류** — 결정은 백엔드 구현 단계로 연기
+* 날짜: 2026-05-17
+* 결정 기한: 첫 `packages/backend/*` 패키지 스캐폴딩 이전 (ROADMAP의 Phase 3)
+* 담당: Platform / Backend
+* 스코프: HTTP 프레임워크, ORM/쿼리 계층, 그리고 그 조합에서 따라 나오는 아키텍처 패턴
+* 대상 독자: 이 문서는 미래의 사람**과** AI 에이전트가 결정 시점에 빠르고 방어 가능하게 의사결정할 수 있도록 작성된다.
 
 ---
 
-# 2. Decision
+# 1. 배경
 
-**DEFERRED.**
+이것은 보일러플레이트에서 가장 파급력이 큰 미결정 선택이다. 백엔드 프레임워크 선택은 여러 다른 ADR로 연쇄된다:
 
-| Field | Value |
+| 영향받는 후속 영역 | 프레임워크 의존성 |
 |---|---|
-| Status | Deferred |
-| Leading candidate | **NestJS + Drizzle + PostgreSQL + thin layered architecture + integration-first testing + Zod** |
-| Confidence in leading candidate | Medium |
-| Trigger for final decision | Before first `packages/backend/*` package scaffolding (Phase 3 in ROADMAP) |
-| Required input before deciding | 1–2 day spike on the leading combination (see §8) |
+| 검증 라이브러리 래퍼 | `nestjs-zod` vs `fastify-type-provider-zod` vs `@hono/zod-openapi` |
+| 인증 구현 | `@nestjs/passport` vs `better-auth` vs 커스텀 |
+| 로거 어댑터 | `nestjs-pino` vs `@fastify/pino` (built-in) vs `hono/logger` |
+| OpenAPI 파이프라인 | `@nestjs/swagger` vs `fastify-swagger` vs `@hono/zod-openapi` |
+| DI (의존성 주입) | 프레임워크 DI vs 명시적 wiring |
+| 테스트 패턴과 CI 속도 | `Test.createTestingModule` vs `fastify.inject` vs Hono Request |
+| MSA 진화 | `@nestjs/microservices` vs 커스텀 transport |
+| 에러 처리 | `ExceptionFilter` vs `setErrorHandler` vs `onError` |
+| 설정 주입 | `ConfigModule.forRoot()` vs Fastify 플러그인 vs context 바인딩 |
+
+이 결정이 5~10개의 후속 ADR을 건드리기 때문에, 성급하게 잠그기보다 **명시적으로 보류**한다. 이 ADR은 결정 시점에 빠르게 실행할 수 있도록 현재까지 알려진 모든 증거를 정리한다.
+
+여러 분석(프로젝트 owner, Claude, 외부 AI 어시스턴트)이 몇 가지 조합으로 수렴했지만 어떤 축이 지배적인지에 대해서는 의견이 갈린다. 그 의견 차이는 여기에 투명하게 기록한다.
 
 ---
 
-# 3. Pre-bound decisions (locked regardless of outcome)
+# 2. 결정
 
-These hold across every candidate combo:
+**보류.**
 
-| Pre-bound decision | Source |
+| 항목 | 값 |
 |---|---|
-| Database engine: **PostgreSQL** | This ADR (locked) |
-| Validation: **Zod** | Locked stack memory |
-| Test framework: **Vitest** | ADR-002 |
-| Logger core: **pino** | Locked stack memory |
-| Module system: ESM only, NodeNext | ADR-002 / ADR-004 |
+| 상태 | 보류 |
+| 유력 후보 | **NestJS + Drizzle + PostgreSQL + 얇은 계층 아키텍처 + 통합 테스트 우선 + Zod** |
+| 유력 후보에 대한 확신도 | 중간 |
+| 최종 결정 트리거 | 첫 `packages/backend/*` 패키지 스캐폴딩 직전 (ROADMAP Phase 3) |
+| 결정 전 필요한 입력 | 유력 조합에 대한 1~2일 spike (§8 참조) |
+
+---
+
+# 3. 미리 잠긴 결정 (결과와 무관하게 고정)
+
+다음은 모든 후보 조합에서 그대로 유지된다:
+
+| 미리 잠긴 결정 | 출처 |
+|---|---|
+| DB 엔진: **PostgreSQL** | 이 ADR (잠금) |
+| 검증: **Zod** | Locked stack memory |
+| 테스트 프레임워크: **Vitest** | ADR-002 |
+| 로거 코어: **pino** | Locked stack memory |
+| 모듈 시스템: ESM only, NodeNext | ADR-002 / ADR-004 |
 | TypeScript: strict | ADR-004 |
-| Backend package compilation: **tsup** | ADR-004 |
-| Auth folder split: 3 packages (`shared/auth-contracts`, `backend/auth`, `frontend/auth`) | ADR-003 |
-| Observability: OpenTelemetry | Locked stack memory |
-| Cache/queue: Redis (ioredis) + BullMQ | Locked stack memory |
-| Edge runtime example: Hono in `apps/edge-api` | Locked stack memory |
+| 백엔드 패키지 컴파일: **tsup** | ADR-004 |
+| 인증 폴더 분리: 3 패키지 (`shared/auth-contracts`, `backend/auth`, `frontend/auth`) | ADR-003 |
+| 관측성: OpenTelemetry | Locked stack memory |
+| 캐시/큐: Redis (ioredis) + BullMQ | Locked stack memory |
+| Edge runtime 예시: `apps/edge-api`의 Hono | Locked stack memory |
 
-The decision below selects only: HTTP framework, ORM, and the conventional architecture pattern.
+아래 결정은 오직 다음만 선택한다: HTTP 프레임워크, ORM, 그리고 따라 나오는 컨벤션 아키텍처 패턴.
 
 ---
 
-# 4. Full comparison matrix
+# 4. 전체 비교 매트릭스
 
-10 candidate combinations. Source: project owner's research aggregating multiple AI assistant analyses (2026-05-17).
+10개의 후보 조합. 출처: 프로젝트 owner의 리서치로, 여러 AI 어시스턴트 분석을 통합 (2026-05-17).
 
 | 조합 | 장점 | 단점 | AI 시대 관점 | 테스트 관점 | 현재 시장/트렌드 | 추천 상황 |
 |---|---|---|---|---|---|---|
@@ -84,7 +84,7 @@ The decision below selects only: HTTP framework, ORM, and the conventional archi
 | **Fastify + Raw SQL** | 성능/제어 최상, PostgreSQL 100% 활용 가능 | 유지보수 난이도 상승, convention 필요 | AI가 SQL은 잘 짜지만 drift 위험 존재 | integration test 필수 | infra-heavy 팀 일부 사용 | analytics/high-performance |
 | **NestJS + Raw SQL** | 조직화 + SQL control | abstraction 혼합 시 복잡성 증가 | AI가 layer 혼합 실수 가능 | 테스트 boundary 명확하면 강함 | 일부 enterprise | complex enterprise backend |
 
-## 4.1 Axis summary
+## 4.1 축 요약
 
 | 방향 | 특징 |
 |---|---|
@@ -101,7 +101,7 @@ The decision below selects only: HTTP framework, ORM, and the conventional archi
 | 장기 runtime visibility | `Drizzle` |
 | boilerplate 최소화 | `Hono/Fastify` |
 
-## 4.2 Industry snapshot (2026-05)
+## 4.2 산업 현황 스냅샷 (2026-05)
 
 | 카테고리 | 현재 분위기 |
 |---|---|
@@ -115,37 +115,37 @@ The decision below selects only: HTTP framework, ORM, and the conventional archi
 
 ---
 
-# 5. Project owner preference profile
+# 5. 프로젝트 owner 선호 프로필
 
-Recorded so a future decision-maker (human or AI) can re-derive the recommendation with the same inputs.
+미래의 의사결정자(사람 또는 AI)가 동일한 입력으로 추천을 재유도할 수 있도록 기록한다.
 
-## 5.1 What the owner consistently values
+## 5.1 owner가 일관되게 중시하는 가치
 
-* **장기 유지보수 가능한 구조** — design for years, not weeks
-* **AI 시대의 안정성** — code that survives multiple AI editing sessions without drift
-* **테스트 가능성** — boundaries that allow real tests
-* **명확한 경계** — strong layer/module boundaries
-* **운영 예측 가능성** — at runtime, behavior is predictable
+* **장기 유지보수 가능한 구조** — 주 단위가 아닌 연 단위로 설계
+* **AI 시대의 안정성** — 여러 차례의 AI 편집 세션을 거쳐도 drift 없이 살아남는 코드
+* **테스트 가능성** — 실제 테스트가 가능한 경계
+* **명확한 경계** — 강한 계층/모듈 경계
+* **운영 예측 가능성** — 런타임에 동작이 예측 가능함
 
-## 5.2 Five observed preferences
+## 5.2 관찰된 다섯 가지 선호
 
-1. **자유도보다 통제된 생산성 선호** — prefers "fast inside a defined direction" over "fully free structure". Platform/team-oriented thinking.
-2. **테스트를 품질 핵심으로 봄** — values DI, service boundaries, layer separation, mocking, integration structure. Will accept enterprise-architecture costs for testing benefits.
-3. **과한 abstraction은 싫어함** — values explicitness, SQL visibility, PostgreSQL native features, runtime predictability. Wants testable structure without abstraction inflation.
-4. **PostgreSQL을 플랫폼으로 봄** — not "a place to put rows". Values SQL ownership, query visibility, migration control, infra independence. Strong alignment with Drizzle.
-5. **AI 시대 관점이 강함** — recurring concern: how does the architecture hold up when AI makes mistakes? Treats convention / boundaries / explicitness as AI safety mechanisms.
+1. **자유도보다 통제된 생산성 선호** — "정해진 방향 안에서 빠른 것"을 "완전히 자유로운 구조"보다 선호. 플랫폼/팀 지향적 사고.
+2. **테스트를 품질 핵심으로 봄** — DI, 서비스 경계, 계층 분리, mocking, integration 구조를 중시. 테스트 이점을 위해서라면 엔터프라이즈 아키텍처 비용을 감수.
+3. **과한 abstraction은 싫어함** — 명시성, SQL visibility, PostgreSQL 네이티브 기능, runtime 예측성을 중시. abstraction inflation 없이 테스트 가능한 구조를 원함.
+4. **PostgreSQL을 플랫폼으로 봄** — "행을 담는 곳"이 아님. SQL 소유권, 쿼리 가시성, 마이그레이션 제어, 인프라 독립성을 중시. Drizzle과 강하게 align.
+5. **AI 시대 관점이 강함** — 반복되는 우려: AI가 실수했을 때 아키텍처가 어떻게 버티는가? 컨벤션 / 경계 / 명시성을 AI 안전 장치로 취급.
 
-## 5.3 What this profile implies
+## 5.3 이 프로필이 시사하는 것
 
-The owner is not "최신 유행" optimized. They are **"modernized enterprise architecture"** oriented:
-* Reduce: heavy OOP, excessive abstraction, hidden ORM magic
-* Strengthen: testing, structure, observability, explicitness
+owner는 "최신 유행" 최적화가 아니다. **"현대화된 엔터프라이즈 아키텍처"** 지향이다:
+* 줄일 것: 무거운 OOP, 과도한 abstraction, 숨은 ORM 마법
+* 강화할 것: 테스트, 구조, 관측성, 명시성
 
 ---
 
-# 6. Leading recommendation rationale
+# 6. 유력 후보 추천 근거
 
-**Recommended combination:**
+**추천 조합:**
 
 ```
 NestJS
@@ -156,204 +156,204 @@ NestJS
 + Zod
 ```
 
-## 6.1 What NestJS solves
+## 6.1 NestJS가 해결하는 것
 
-| Need | How NestJS addresses it |
+| 필요 | NestJS가 다루는 방식 |
 |---|---|
-| Convention | AI doesn't have to invent file layout, naming, dependency direction |
-| Test structure | Modules / providers / DI / isolation patterns are canonical |
-| Organization | Onboarding, consistency, scalability for platform thinking |
+| 컨벤션 | AI가 파일 레이아웃, 네이밍, 의존 방향을 발명할 필요가 없음 |
+| 테스트 구조 | 모듈 / provider / DI / 격리 패턴이 정형화되어 있음 |
+| 조직화 | 플랫폼 사고에 맞는 온보딩, 일관성, 확장성 |
 
-## 6.2 What Drizzle solves
+## 6.2 Drizzle이 해결하는 것
 
-| Need | How Drizzle addresses it |
+| 필요 | Drizzle이 다루는 방식 |
 |---|---|
-| SQL ownership | ORM doesn't hide the database |
-| Runtime predictability | Generated SQL is visible, traceable, tunable |
-| PostgreSQL exploitation | JSONB, CTE, indexing, query optimization stay first-class |
-| Zod synergy | `drizzle-zod` generates contracts from DB schema → single source of truth |
+| SQL 소유권 | ORM이 DB를 숨기지 않음 |
+| 런타임 예측성 | 생성되는 SQL이 보이고, 추적 가능하며, 튜닝 가능 |
+| PostgreSQL 활용 | JSONB, CTE, 인덱싱, 쿼리 최적화가 일급 시민으로 유지 |
+| Zod 시너지 | `drizzle-zod`가 DB 스키마로부터 계약을 생성 → 단일 진실 공급원 |
 
-## 6.3 Critical constraint — keep layers THIN
+## 6.3 결정적 제약 — 계층을 얇게(THIN) 유지하라
 
-| Acceptable layering | Forbidden layering (AI-explosion risk) |
+| 허용되는 계층화 | 금지되는 계층화 (AI-explosion 위험) |
 |---|---|
-| Controller → Service → Repository (optional) → DB | Controller → Service → UseCase → Repository → Adapter → Mapper → Factory → Entity → DTO |
+| 컨트롤러 → 서비스 → 리포지토리(선택) → DB | 컨트롤러 → 서비스 → UseCase → 리포지토리 → Adapter → Mapper → Factory → Entity → DTO |
 
-The owner values *boundaries*, not *layers themselves*. Adding layers is allowed only when a boundary becomes load-bearing.
+owner가 중시하는 것은 *경계*이지 *계층 그 자체*가 아니다. 경계가 부하를 지게 될 때에 한해서만 계층을 추가한다.
 
-## 6.4 Testing strategy
+## 6.4 테스트 전략
 
-**integration-first + critical-domain unit tests**
+**통합 테스트 우선 + 핵심 도메인 유닛 테스트**
 
-Rationale: in AI-assisted dev, mock-heavy tests catch fewer real bugs than integration tests against testcontainers Postgres. Reserve unit tests for pure-logic domain rules.
+근거: AI 보조 개발에서는 mock 위주 테스트가 testcontainers Postgres 기반 통합 테스트보다 실제 버그를 덜 잡는다. 유닛 테스트는 순수 로직 도메인 규칙에 한정한다.
 
-## 6.5 Realistic positioning
+## 6.5 현실적 포지셔닝
 
-| Aspect | Verdict |
+| 측면 | 판정 |
 |---|---|
-| AI safety | High |
-| Long-term maintainability | Strong |
-| Onboarding | Good |
-| Test discipline | Achievable |
-| PostgreSQL control | Preserved |
-| Risk: initial boilerplate | Present |
-| Risk: Nest abstraction | Still present in moderation |
-| Risk: layer inflation | Mitigated only by discipline |
-| Risk: CRUD DX | Not as fast as Prisma |
+| AI 안전성 | 높음 |
+| 장기 유지보수성 | 강함 |
+| 온보딩 | 양호 |
+| 테스트 규율 | 달성 가능 |
+| PostgreSQL 제어 | 보존됨 |
+| 위험: 초기 boilerplate | 존재 |
+| 위험: Nest abstraction | 중간 수준으로 여전히 존재 |
+| 위험: 계층 inflation | 규율로만 완화 가능 |
+| 위험: CRUD DX | Prisma만큼 빠르지는 않음 |
 
 ---
 
-# 7. Active critique — what could still kill this recommendation
+# 7. 능동적 비판 — 이 추천을 무너뜨릴 수 있는 요인
 
-Adversarial section. The recommendation survives only if these critiques can be answered at decision time.
+적대적 섹션. 이 추천은 결정 시점에 아래 비판들에 답할 수 있어야만 살아남는다.
 
-## C1. NestJS + Drizzle is community-only integration
+## C1. NestJS + Drizzle은 커뮤니티 전용 통합
 
-There is **no first-party `@nestjs/drizzle` module**. Real-world patterns:
+**공식 `@nestjs/drizzle` 모듈이 없다.** 실제 패턴:
 
-* `@knaadh/nestjs-drizzle-postgres` — community wrapper, low star count
-* DIY `DrizzleModule` with custom provider (most common; ~20–40 lines per pattern)
-* Connection string forwarded from `@nestjs/config` or our `@repo/backend/settings`
+* `@knaadh/nestjs-drizzle-postgres` — 커뮤니티 래퍼, 스타 수 낮음
+* 커스텀 provider를 사용한 DIY `DrizzleModule` (가장 흔함; 패턴당 ~20~40줄)
+* `@nestjs/config` 또는 우리의 `@repo/backend/settings`에서 connection string 전달
 
-**Implication:** the boilerplate owns the `DrizzleModule` source — acceptable but adds maintenance.
+**시사점:** 보일러플레이트가 `DrizzleModule` 소스를 직접 소유 — 허용 가능하지만 유지보수 부담 추가.
 
-**Mitigation:** Include a reference `@repo/backend/database-drizzle` implementing the canonical pattern. Treat as part of the boilerplate's value-add.
+**완화책:** 캐노니컬 패턴을 구현하는 참조용 `@repo/backend/database-drizzle`을 포함. 보일러플레이트의 부가가치로 취급.
 
-## C2. NestJS + Vitest has known setup friction (locked Vitest by ADR-002)
+## C2. NestJS + Vitest는 알려진 셋업 마찰이 있음 (ADR-002로 Vitest 잠금)
 
-NestJS defaults to Jest. Our locked stack is Vitest. Working combinations require:
+NestJS는 기본적으로 Jest를 쓴다. 우리의 locked stack은 Vitest다. 동작하는 조합은 다음을 요구한다:
 
-* `unplugin-swc` for decorator metadata transform
-* Specific `vite.config.ts` settings (e.g. `isolate: false`)
-* `reflect-metadata` import order discipline
-* Mock resolution edge cases with `vmThreads`
+* 데코레이터 메타데이터 변환을 위한 `unplugin-swc`
+* 특정 `vite.config.ts` 설정 (예: `isolate: false`)
+* `reflect-metadata` import 순서 규율
+* `vmThreads`에서의 mock resolution 엣지 케이스
 
-**Implication:** Not fatal. `@repo/vitest-config` will need a NestJS-specific preset. Test boot time will be slower than Fastify equivalent (~5–10× per file).
+**시사점:** 치명적이지 않다. `@repo/vitest-config`에 NestJS 전용 preset이 필요하다. 테스트 부팅 시간은 Fastify 대비 느림 (파일당 ~5~10배).
 
-**Mitigation:** Reuse `INestApplication` across tests within a file. Define golden Vitest preset in `@repo/vitest-config/node-nestjs`.
+**완화책:** 파일 내에서 테스트들 사이에 `INestApplication`을 재사용. `@repo/vitest-config/node-nestjs`에 golden Vitest preset 정의.
 
-## C3. "Modern trend" framing in the matrix is editorial
+## C3. 매트릭스의 "modern trend" 표현은 편집자적 해석
 
-Quantitative reality (2026-05):
+정량적 현실 (2026-05):
 
-* NestJS: ~70k GitHub stars, massive npm download share, dominant in large-company adoption
-* Fastify: ~33k stars, steady growth
-* Hono: ~22k stars, rising fastest
+* NestJS: ~70k GitHub stars, npm 다운로드 점유율 거대, 대기업 채택 지배적
+* Fastify: ~33k stars, 꾸준한 성장
+* Hono: ~22k stars, 가장 빠른 상승
 
-Trend ≠ dominance. NestJS is **production-mainstream**. Fastify+Drizzle is **modern-mainstream** with smaller installed base. Hono is **edge-mainstream**.
+트렌드 ≠ 지배력. NestJS는 **production-mainstream**. Fastify+Drizzle은 더 작은 설치 기반을 가진 **modern-mainstream**. Hono는 **edge-mainstream**.
 
-**Implication:** None blocking — both NestJS and Fastify are safe. Listed to keep framing honest.
+**시사점:** 차단 요인 없음 — NestJS와 Fastify 모두 안전한 선택. 프레이밍의 정직성을 위해 명시.
 
-## C4. "Thin layered architecture" is currently under-defined
+## C4. "얇은 계층 아키텍처"는 현재 정의가 부족함
 
-The recommendation says "Controller → Service → Repository(optional) → DB". Open questions:
+추천은 "컨트롤러 → 서비스 → 리포지토리(선택) → DB"라고 말한다. 열린 질문들:
 
-* Where do domain models live? In `service/` as plain classes? Separate `domain/` folder?
-* Where does cross-cutting validation happen? Pipe? Interceptor? Service?
-* Where do business invariants live? Service? Domain object?
-* What goes in `Repository(optional)`? Pure Drizzle queries? Domain-typed methods?
+* 도메인 모델은 어디에 사는가? `service/` 안의 plain class? 별도 `domain/` 폴더?
+* 횡단 검증은 어디서 일어나는가? Pipe? Interceptor? 서비스?
+* 비즈니스 불변식은 어디에 사는가? 서비스? 도메인 객체?
+* `Repository(선택)`에는 무엇이 들어가는가? 순수 Drizzle 쿼리? 도메인 타입 메서드?
 
-**Implication:** Without concrete answers, AI agents will pick different answers each session — defeating the "convention" benefit that motivated NestJS.
+**시사점:** 구체적 답이 없으면 AI 에이전트가 세션마다 다른 답을 고를 것 — NestJS를 선택한 동기인 "컨벤션" 이점이 무너진다.
 
-**Mitigation:** Pair this ADR's eventual decision with **a separate `docs/conventions/backend-module-layout.md`** written immediately after the framework is chosen. That doc is a blocker for Phase 3 acceptance.
+**완화책:** 이 ADR의 최종 결정과 짝지어 **별도의 `docs/conventions/backend-module-layout.md`** 를 프레임워크 선택 직후 작성. 이 문서는 Phase 3 수락의 차단 요소다.
 
-## C5. Integration-first testing has real CI cost
+## C5. 통합 테스트 우선은 실제 CI 비용이 있음
 
-| Aspect | Unit-first | Integration-first |
+| 측면 | 유닛 우선 | 통합 우선 |
 |---|---|---|
-| CI wall time | Fast | 3–10× slower |
-| Setup overhead | Low | testcontainers + fixtures |
-| Bug-catching power | Limited | High |
-| Failure isolation | Easy | Often unclear |
-| TDD inner loop speed | Fast | Slow |
+| CI wall time | 빠름 | 3~10배 느림 |
+| 셋업 오버헤드 | 낮음 | testcontainers + 픽스처 |
+| 버그 검출 능력 | 제한적 | 높음 |
+| 실패 격리 | 쉬움 | 종종 불명확 |
+| TDD inner loop 속도 | 빠름 | 느림 |
 
-**Implication:** Sound for AI-first goals but TDD inner loop suffers. Need a tiered policy:
+**시사점:** AI-first 목표에는 합당하나 TDD inner loop가 손해를 본다. 계층화된 정책이 필요하다:
 
-| Trigger | Tests run |
+| 트리거 | 실행되는 테스트 |
 |---|---|
-| File save (watch) | Affected unit tests only |
-| Pre-commit (lefthook) | Affected unit tests + lint |
-| Pre-push (lefthook) | Affected integration tests |
-| CI | Full suite |
+| 파일 저장 (watch) | affected 유닛 테스트만 |
+| Pre-commit (lefthook) | affected 유닛 테스트 + lint |
+| Pre-push (lefthook) | affected 통합 테스트 |
+| CI | 전체 suite |
 
-## C6. Drizzle + Zod synergy is a quiet win not in the matrix
+## C6. Drizzle + Zod 시너지는 매트릭스에 없는 조용한 승리
 
-`drizzle-zod` generates Zod schemas from Drizzle tables. Combined with our locked Zod-first contracts:
+`drizzle-zod`는 Drizzle 테이블로부터 Zod 스키마를 생성한다. 우리의 locked Zod-first 계약과 결합:
 
 ```
 Drizzle schema  →  drizzle-zod  →  @repo/shared/contracts  →  frontend
 ```
 
-Single source of truth from DB to UI. **This is an independent vote for Drizzle** regardless of framework.
+DB에서 UI까지 단일 진실 공급원. **이것은 프레임워크와 무관하게 Drizzle에 대한 독립적인 한 표다.**
 
 ---
 
-# 8. Decision criteria framework (for the final call)
+# 8. 결정 기준 프레임워크 (최종 결정용)
 
-Score each candidate combo against these criteria. Weights reflect this project's stated priorities. Highest weighted total wins.
+각 후보 조합을 다음 기준에 대해 점수화한다. 가중치는 이 프로젝트가 명시한 우선순위를 반영한다. 가중 총점이 가장 높은 것이 승리한다.
 
-| Criterion | Weight (1–5) | What to measure |
+| 기준 | 가중치 (1~5) | 측정 대상 |
 |---|---|---|
-| AI-friendly explicit wiring | 4 | Can an AI agent regenerate a typical module without metadata errors? |
-| Convention enforcement | 4 | Does the framework prevent structural drift across sessions? |
-| Test feedback speed (TDD loop) | 4 | Time for `vitest watch` round trip on changed file |
-| PostgreSQL / SQL ownership | 4 | Can we see and edit the SQL? Tune indexes? Use JSONB? |
-| Onboarding cost | 3 | Time for new dev / AI agent to make a useful PR |
-| Long-term maintainability | 5 | Healthy choice in 3 years? |
-| Operational predictability | 5 | At runtime, can we predict performance / queries / errors? |
-| Community / training data depth | 3 | AI writes more consistent code for popular stacks |
-| Vendor neutrality | 3 | Can we swap ORM / framework later without rewriting business logic? |
-| CRUD development speed | 2 | Time to add a new endpoint with full CRUD |
-| Edge / serverless portability | 1 | Can it run on Cloudflare / Vercel Edge? (covered by `apps/edge-api`) |
+| AI 친화적 명시적 wiring | 4 | AI 에이전트가 메타데이터 오류 없이 일반적인 모듈을 재생성할 수 있는가? |
+| 컨벤션 강제 | 4 | 프레임워크가 세션 간 구조적 drift를 막는가? |
+| 테스트 피드백 속도 (TDD loop) | 4 | 변경된 파일에 대한 `vitest watch` 왕복 시간 |
+| PostgreSQL / SQL 소유권 | 4 | SQL을 보고 수정할 수 있는가? 인덱스 튜닝? JSONB 사용? |
+| 온보딩 비용 | 3 | 새 개발자 / AI 에이전트가 유용한 PR을 만들기까지의 시간 |
+| 장기 유지보수성 | 5 | 3년 뒤에도 건강한 선택인가? |
+| 운영 예측 가능성 | 5 | 런타임에 성능 / 쿼리 / 에러를 예측할 수 있는가? |
+| 커뮤니티 / 학습 데이터 깊이 | 3 | 인기 스택일수록 AI가 더 일관된 코드를 작성 |
+| 벤더 중립성 | 3 | 비즈니스 로직을 다시 쓰지 않고 나중에 ORM / 프레임워크를 교체할 수 있는가? |
+| CRUD 개발 속도 | 2 | 새 엔드포인트에 full CRUD를 추가하는 시간 |
+| Edge / serverless 이식성 | 1 | Cloudflare / Vercel Edge에서 실행 가능한가? (`apps/edge-api`로 커버됨) |
 
 ---
 
-# 9. Spike plan (1–2 days before commit)
+# 9. Spike 계획 (확정 전 1~2일)
 
-Prototype the leading combination with these acceptance criteria:
+다음 수락 기준으로 유력 조합을 프로토타입한다:
 
-| Step | Output | Time |
+| 단계 | 산출물 | 시간 |
 |---|---|---|
-| Create `apps/api-spike` with NestJS on Fastify adapter, ESM, Vitest | App boots, returns hello | 2h |
-| Add `packages/backend/database-drizzle-spike` with one `users` table, Drizzle migrate, drizzle-zod schema | Migration runs, schema importable | 3h |
-| Implement POST `/auth/login` with @nestjs/passport (JWT) + Drizzle query | curl login returns JWT | 4h |
-| Vitest: unit test for service, integration test with testcontainers postgres | Both green | 3h |
-| Measure: cold start, watch round-trip, test wall time, build time | Numbers recorded in spike report | 2h |
-| Write spike report → append to §11 below | Pass / fail decision | 1h |
+| `apps/api-spike`를 Fastify adapter 위의 NestJS, ESM, Vitest로 생성 | 앱이 부팅되고 hello 반환 | 2h |
+| `users` 테이블 하나, Drizzle migrate, drizzle-zod 스키마를 가진 `packages/backend/database-drizzle-spike` 추가 | 마이그레이션 실행, 스키마 import 가능 | 3h |
+| @nestjs/passport (JWT) + Drizzle 쿼리로 POST `/auth/login` 구현 | curl 로그인이 JWT 반환 | 4h |
+| Vitest: 서비스에 대한 유닛 테스트, testcontainers postgres와의 통합 테스트 | 둘 다 green | 3h |
+| 측정: cold start, watch 왕복, 테스트 wall time, 빌드 시간 | spike 리포트에 수치 기록 | 2h |
+| spike 리포트 작성 → 아래 §11에 추가 | Pass / fail 결정 | 1h |
 
-## 9.1 Gate criteria
+## 9.1 게이트 기준
 
-| Metric | Pass threshold |
+| 지표 | 통과 임계값 |
 |---|---|
-| Watch round-trip (changed service file) | ≤ 3s |
+| Watch 왕복 (변경된 서비스 파일) | ≤ 3s |
 | Cold app boot | ≤ 2s |
-| 50-test integration suite in CI | ≤ 30s |
-| `drizzle-zod` schema sharing with `@repo/shared/contracts` | Works without manual casts |
-| `reflect-metadata` order pitfalls | None observed |
+| CI에서 50개 통합 테스트 suite | ≤ 30s |
+| `drizzle-zod` 스키마를 `@repo/shared/contracts`와 공유 | 수동 cast 없이 동작 |
+| `reflect-metadata` 순서 함정 | 관찰되지 않음 |
 
-If any gate fails, fall back to **Fastify + Drizzle + better-auth** (second-best per the matrix).
+게이트 중 하나라도 실패하면 **Fastify + Drizzle + better-auth** (매트릭스 기준 차선)로 폴백한다.
 
 ---
 
-# 10. Architectural implications of each candidate
+# 10. 각 후보의 아키텍처적 시사점
 
-What each combo locks in for follow-on ADRs:
+각 조합이 후속 ADR에 무엇을 잠그는지:
 
-| Combo | Auth | Validation | Logger | OpenAPI | Errors |
+| 조합 | 인증 | 검증 | 로거 | OpenAPI | 에러 |
 |---|---|---|---|---|---|
 | NestJS + Drizzle | `@nestjs/passport` + `@nestjs/jwt` | `nestjs-zod` + `ValidationPipe` | `nestjs-pino` | `@nestjs/swagger` + `nestjs-zod` | `ExceptionFilter` |
-| NestJS + Prisma | same as above | same | same | same | same |
-| Fastify + Drizzle | `better-auth` or `@fastify/jwt` | `fastify-type-provider-zod` | `@fastify/pino` (built-in) | `@fastify/swagger` + `zod-to-openapi` | `setErrorHandler` |
-| Fastify + Prisma | same | same | same | same | same |
+| NestJS + Prisma | 위와 동일 | 동일 | 동일 | 동일 | 동일 |
+| Fastify + Drizzle | `better-auth` 또는 `@fastify/jwt` | `fastify-type-provider-zod` | `@fastify/pino` (built-in) | `@fastify/swagger` + `zod-to-openapi` | `setErrorHandler` |
+| Fastify + Prisma | 동일 | 동일 | 동일 | 동일 | 동일 |
 | Hono + Drizzle | `better-auth` | `@hono/zod-validator` + `@hono/zod-openapi` | `hono/logger` | `@hono/zod-openapi` (best in class) | `onError` |
 
-**Sequencing implication:** until ADR-005 is decided, follow-on ADRs (auth / validation / logger / openapi / errors) cannot be authored without forking. Those ADRs are written **after** ADR-005 is decided.
+**순서적 시사점:** ADR-005가 결정되기 전까지 후속 ADR(인증 / 검증 / 로거 / openapi / 에러)은 분기 없이는 작성할 수 없다. 그 ADR들은 ADR-005가 결정된 **이후에** 작성된다.
 
 ---
 
-# 11. Spike results
+# 11. Spike 결과
 
-_To be filled when the spike (§9) is executed._
+_Spike (§9) 실행 시점에 채워질 예정._
 
 ```
 Date:
@@ -369,35 +369,35 @@ Fallback chosen if NO-GO:
 
 ---
 
-# 12. Re-evaluation triggers (after final decision)
+# 12. 재검토 기준 (최종 결정 이후)
 
-Reopen this ADR if:
+다음 경우 이 ADR을 다시 연다:
 
-* AI-assisted dev workflow shows >2× higher error rate on the chosen framework over 1 month
-* Vitest + chosen framework requires hacks not documented upstream
-* Drizzle releases first-party NestJS module that supersedes our DIY pattern (impacts maintenance burden)
-* We need to add a second backend service (`apps/api-2`) and the chosen stack scales badly
-* A new framework / runtime reaches production parity (likely candidates: Bun + ElysiaJS, Encore)
+* AI 보조 개발 워크플로가 선택된 프레임워크에서 1개월간 2배 이상 높은 에러율을 보임
+* Vitest + 선택된 프레임워크가 upstream에 문서화되지 않은 hack을 요구함
+* Drizzle이 우리의 DIY 패턴을 대체하는 공식 NestJS 모듈을 릴리즈 (유지보수 부담에 영향)
+* 두 번째 백엔드 서비스(`apps/api-2`)를 추가해야 하는데 선택된 스택의 확장이 나쁨
+* 새 프레임워크 / 런타임이 프로덕션 패리티에 도달 (유력 후보: Bun + ElysiaJS, Encore)
 
 ---
 
-# 13. Open questions to resolve at decision time
+# 13. 결정 시점에 풀어야 할 열린 질문
 
-| Question | Why it matters |
+| 질문 | 왜 중요한가 |
 |---|---|
-| Express adapter vs Fastify adapter under NestJS | Affects perf and middleware ecosystem |
-| `apps/api` single deployment vs already-split modules | Pre-MSA prep |
-| Drizzle migrations: Drizzle Kit vs custom script | Migration UX |
-| Where does `@repo/backend/database-drizzle` end and `apps/api` schema begin? | Schema ownership boundary |
-| Integration test orchestration: testcontainers vs docker-compose snapshot | CI complexity vs reproducibility |
+| NestJS 하에서 Express adapter vs Fastify adapter | 성능과 미들웨어 ecosystem에 영향 |
+| `apps/api` 단일 배포 vs 이미 분리된 모듈 | Pre-MSA 준비 |
+| Drizzle 마이그레이션: Drizzle Kit vs 커스텀 스크립트 | 마이그레이션 UX |
+| `@repo/backend/database-drizzle`은 어디서 끝나고 `apps/api` 스키마는 어디서 시작하는가? | 스키마 소유권 경계 |
+| 통합 테스트 오케스트레이션: testcontainers vs docker-compose 스냅샷 | CI 복잡도 vs 재현성 |
 
 ---
 
-# 14. Related
+# 14. 관련 문서
 
-* [ADR-001](./0001-linting-formatting-strategy.md) — AI-first philosophy
-* [ADR-002](./0002-monorepo-foundations.md) — Locks Node 22, pnpm, Vitest, lefthook
-* [ADR-003](./0003-package-layout-and-naming.md) — Locks 3-package auth split
-* [ADR-004](./0004-typescript-and-compilation-strategy.md) — Locks compiled backend (tsup)
-* `docs/turborepo-rules.md` — Build/test pipeline patterns
-* Future: `docs/conventions/backend-module-layout.md` — Required after framework is chosen (mitigates C4)
+* [ADR-001](./0001-linting-formatting-strategy.md) — AI-first 철학
+* [ADR-002](./0002-monorepo-foundations.md) — Node 22, pnpm, Vitest, lefthook 잠금
+* [ADR-003](./0003-package-layout-and-naming.md) — 3-패키지 인증 분리 잠금
+* [ADR-004](./0004-typescript-and-compilation-strategy.md) — 컴파일 백엔드 (tsup) 잠금
+* `docs/turborepo-rules.md` — 빌드/테스트 파이프라인 패턴
+* 향후: `docs/conventions/backend-module-layout.md` — 프레임워크 선택 후 필수 (C4 완화)

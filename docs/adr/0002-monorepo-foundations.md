@@ -1,26 +1,26 @@
-# ADR-002: Monorepo Foundations
+# ADR-002: 모노레포 기반 (Monorepo Foundations)
 
-* Status: Accepted
-* Date: 2026-05-17
-* Scope: Repository toolchain baseline (package manager, orchestrator, runtime, hooks, versioning)
-
----
-
-# Context
-
-Building an AI-first Node/TS monorepo (see ADR-001). Before any package or app is written, the foundation layer must be locked. These tools gate every other decision.
-
-Constraints:
-
-* Single repository housing apps + libraries
-* Future MSA evolution path planned (separate ADR)
-* CI performance is first-class
-* Reproducible installs across dev/CI
-* "Latest trend within stability" — modern but not bleeding edge
+* 상태: 채택됨
+* 날짜: 2026-05-17
+* 스코프: 저장소 툴체인 베이스라인 (패키지 매니저, 오케스트레이터, 런타임, hook, 버전 관리)
 
 ---
 
-# Decision
+# 배경
+
+AI-first Node/TS 모노레포를 구축한다 (ADR-001 참고). 어떤 패키지나 앱을 작성하기 전에 기반 레이어가 먼저 잠겨야 한다. 이 도구들은 이후 모든 결정의 게이트가 된다.
+
+제약:
+
+* apps + 라이브러리를 한 저장소에 담는다
+* 향후 MSA 진화 경로가 계획되어 있다 (별도 ADR)
+* CI 성능이 1급 시민이다
+* dev/CI 간 재현 가능한 설치
+* "안정성 안에서의 최신 트렌드" — 모던하되 첨단은 아니다
+
+---
+
+# 결정
 
 ```txt
 Package manager:  pnpm 11.1.2 (catalogs enabled)
@@ -31,17 +31,17 @@ Commit hooks:     lefthook
 Versioning:       changesets
 ```
 
-Pinned via root `package.json` (`packageManager`, `engines.node`) and root devDependencies.
+루트 `package.json` (`packageManager`, `engines.node`)과 루트 devDependencies로 고정한다.
 
 ---
 
-# Detailed Decisions
+# 세부 결정
 
-## 1. Package manager — pnpm 11 with catalogs
+## 1. 패키지 매니저 — pnpm 11 + catalogs
 
-### Decision
+### 결정
 
-Use pnpm `^11.0.0` (pinned to 11.1.2 via `packageManager` field). Use the `catalog:` protocol in `pnpm-workspace.yaml` to centralize shared dependency versions.
+pnpm `^11.0.0` 사용 (`packageManager` 필드로 11.1.2에 고정). `pnpm-workspace.yaml`의 `catalog:` 프로토콜로 공유 의존성 버전을 중앙화한다.
 
 ```yaml
 packageManager: pnpm@11.1.2
@@ -67,63 +67,63 @@ catalog:
   "@changesets/cli": ^2.31.0
 ```
 
-Packages reference shared versions with `"zod": "catalog:"`. The catalog above shows current pins (as of repo bootstrap, 2026-05-17); update via Renovate/Dependabot and bump the version here in lockstep with the actual `pnpm-workspace.yaml`.
+패키지는 `"zod": "catalog:"`로 공유 버전을 참조한다. 위 카탈로그는 현재 핀이다 (저장소 부트스트랩 시점, 2026-05-17). Renovate/Dependabot으로 업데이트하고 실제 `pnpm-workspace.yaml`과 lockstep으로 여기 버전을 올린다.
 
-> **Convention**: code is written against the *installed* version's API. ADR examples document intent at the time of writing — when a major version bumps and an API shifts, update the code first, then refresh examples here. See ARCHITECTURE.md §0.
+> **컨벤션**: 코드는 *설치된* 버전의 API에 맞춰 작성한다. ADR 예제는 작성 시점의 의도를 문서화한다 — major 버전이 올라가고 API가 바뀌면 코드를 먼저 고친 다음, 여기 예제를 갱신한다. ARCHITECTURE.md §0 참고.
 
-### Why
+### 이유
 
-* Single source of truth — no syncpack required
-* Identical resolution across packages → CI cache stability
-* Renovate/Dependabot updates one line, not N
-* pnpm 11 GA April 2026; performance gains over v10
+* 단일 진실 출처 — syncpack 불필요
+* 패키지 간 동일 resolution → CI 캐시 안정성
+* Renovate/Dependabot이 N줄이 아닌 1줄만 업데이트
+* pnpm 11 GA가 2026년 4월; v10 대비 성능 향상
 
-## 2. Workspace orchestrator — Turborepo 2.x
+## 2. 워크스페이스 오케스트레이터 — Turborepo 2.x
 
-### Decision
+### 결정
 
-All cross-package tasks (`build`, `lint`, `test`, `typecheck`) flow through `turbo run`. Adopted patterns documented in `docs/turborepo-rules.md`.
+모든 크로스 패키지 task (`build`, `lint`, `test`, `typecheck`)는 `turbo run`을 거친다. 채택한 패턴은 `docs/turborepo-rules.md`에 문서화한다.
 
-### Why
+### 이유
 
-* Native pnpm workspace support
-* Task graph, caching, affected detection
-* JSON-only config — no vendor lock-in
+* 네이티브 pnpm 워크스페이스 지원
+* Task graph, 캐싱, affected 감지
+* JSON-only 설정 — 벤더 락인 없음
 
-## 3. Runtime — Node 22 LTS
+## 3. 런타임 — Node 22 LTS
 
-### Decision
+### 결정
 
-Node 22 LTS. Pinned in root `package.json`:
+Node 22 LTS. 루트 `package.json`에 고정:
 
 ```json
 { "engines": { "node": ">=22.0.0 <23" } }
 ```
 
-### Why
+### 이유
 
-* LTS until 2027-04
-* Native ESM, native `--watch`, native `fetch`
-* Turborepo 2.x hashes `engines.node` into the global cache key
-* Not Node 24 — stability over latest
+* 2027-04까지 LTS
+* 네이티브 ESM, 네이티브 `--watch`, 네이티브 `fetch`
+* Turborepo 2.x가 `engines.node`를 글로벌 캐시 키에 해시로 포함
+* Node 24는 아님 — 최신보다 안정성
 
-## 4. Module system — ESM only (NodeNext)
+## 4. 모듈 시스템 — ESM only (NodeNext)
 
-### Decision
+### 결정
 
-Every package: `"type": "module"`. tsconfig: `"module": "NodeNext"`, `"moduleResolution": "NodeNext"`.
+모든 패키지: `"type": "module"`. tsconfig: `"module": "NodeNext"`, `"moduleResolution": "NodeNext"`.
 
-### Why
+### 이유
 
-* Long-term direction of Node
-* NodeNext matches runtime resolution semantics
-* No dual CJS/ESM publishing burden for internal packages
+* Node의 장기 방향
+* NodeNext가 런타임 resolution 시맨틱과 일치
+* 내부 패키지에 듀얼 CJS/ESM 발행 부담 없음
 
-## 5. Commit hooks — lefthook
+## 5. Commit hook — lefthook
 
-### Decision
+### 결정
 
-`lefthook` over `husky + lint-staged`.
+`husky + lint-staged` 대신 `lefthook`.
 
 ```yaml
 pre-commit:
@@ -137,19 +137,19 @@ pre-commit:
       run: pnpm turbo run typecheck --output-logs=errors-only
 ```
 
-> Biome 2.x renamed `--apply` to `--write`. `typecheck` flows through Turborepo so it benefits from per-package cache rather than re-checking the whole tree on every commit.
+> Biome 2.x는 `--apply`를 `--write`로 이름을 바꿨다. `typecheck`는 Turborepo를 거치므로 commit 때마다 전체 트리를 재검사하지 않고 패키지별 캐시 혜택을 받는다.
 
-### Why
+### 이유
 
-* Single binary (Go), no npm dep chain
-* Native parallel hook execution
-* Cleaner config than two tools
+* 단일 바이너리 (Go), npm 의존성 체인 없음
+* 네이티브 병렬 hook 실행
+* 두 도구보다 깔끔한 설정
 
-## 5b. TS script runner — tsx
+## 5b. TS 스크립트 러너 — tsx
 
-### Decision
+### 결정
 
-`tsx` ships as a root devDependency (and a catalog entry). Any non-trivial repo script under `tooling/scripts/*` is authored in TypeScript and executed via:
+`tsx`는 루트 devDependency (그리고 카탈로그 항목)로 들어간다. `tooling/scripts/*` 아래 비자명한 저장소 스크립트는 모두 TypeScript로 작성하고 다음으로 실행한다:
 
 ```bash
 pnpm tsx ./tooling/scripts/foo.ts
@@ -157,71 +157,71 @@ pnpm tsx ./tooling/scripts/foo.ts
 node --import tsx ./tooling/scripts/foo.ts
 ```
 
-Bash is reserved for thin lifecycle glue (lefthook hook bodies, CI orchestration). See ARCHITECTURE.md §0.
+Bash는 얇은 라이프사이클 글루용으로만 쓴다 (lefthook hook 본문, CI 오케스트레이션). ARCHITECTURE.md §0 참고.
 
-### Why
+### 이유
 
-* No separate "scripts toolchain" needed — same TS strict settings as production code
-* `tsx` is the smallest viable Node TS loader in the current ecosystem (ts-node has been superseded for our use cases)
-* Aligns with TS-first principle in ARCHITECTURE §0
-
----
-
-## 6. Versioning — changesets
-
-### Decision
-
-`@changesets/cli` for internal package versioning and changelog generation. PR-time intent capture via `.changeset/*.md`.
-
-### Why
-
-* De facto standard for pnpm/turborepo monorepos
-* Independent versioning per package
-* Works for private and public publishing
+* 별도 "스크립트 툴체인"이 필요 없다 — production 코드와 동일한 TS strict 설정
+* `tsx`는 현재 생태계에서 가장 작은 실용적인 Node TS 로더다 (ts-node는 우리 유스케이스에서 대체됨)
+* ARCHITECTURE §0의 TS-first 원칙과 일치
 
 ---
 
-# Consequences
+## 6. 버전 관리 — changesets
 
-## Positive
+### 결정
 
-* Reproducible installs
-* Fast CI (turborepo + pnpm caches)
-* Modern but stable foundation
-* Each tool replaceable independently
+내부 패키지 버전 관리와 changelog 생성은 `@changesets/cli`. `.changeset/*.md`로 PR 시점에 의도를 캡처한다.
 
-## Negative
+### 이유
 
-* pnpm catalogs are recent — some niche tools may lag
-* lefthook is less ubiquitous than husky — small onboarding friction
-* Node 22 means no Node 23/24-only APIs
+* pnpm/turborepo 모노레포의 사실상 표준
+* 패키지별 독립 버전 관리
+* private/public 발행 양쪽 모두 지원
 
 ---
 
-# Alternatives Considered
+# 결과
+
+## 장점
+
+* 재현 가능한 설치
+* 빠른 CI (turborepo + pnpm 캐시)
+* 모던하되 안정적인 기반
+* 각 도구를 독립적으로 교체 가능
+
+## 단점
+
+* pnpm catalogs는 최근 기능 — 일부 niche 도구가 따라오지 못할 수 있음
+* lefthook은 husky보다 덜 보편적 — 작은 온보딩 마찰
+* Node 22라서 Node 23/24 전용 API는 못 씀
+
+---
+
+# 검토한 대안
 
 | Alternative | Rejected because |
 |---|---|
-| npm / yarn workspaces | pnpm faster, stricter, has catalogs |
-| nx | Heavier, more opinionated, vendor coupling |
-| Bun runtime | Too early for production backend |
-| Node 24 (current) | Not LTS until late 2026 |
-| husky + lint-staged | Two tools, two configs; lefthook simpler |
-| nx release / lerna | changesets is the modern focused tool |
+| npm / yarn workspaces | pnpm이 더 빠르고, 더 엄격하며, catalogs를 가짐 |
+| nx | 더 무겁고, 더 의견이 강하며, 벤더 결합도 |
+| Bun runtime | 프로덕션 백엔드에 쓰기엔 너무 이름 |
+| Node 24 (current) | 2026년 말까지 LTS 아님 |
+| husky + lint-staged | 두 도구, 두 설정; lefthook이 더 단순함 |
+| nx release / lerna | changesets가 더 모던하고 집중된 도구 |
 
 ---
 
-# Future Re-evaluation Criteria
+# 재검토 기준
 
-* Bun reaches stable production parity → reconsider runtime
-* pnpm v12 substantive changes → upgrade plan
-* Turborepo replaced by something materially better
+* Bun이 안정적인 프로덕션 동등성에 도달 → 런타임 재고
+* pnpm v12에 실질적 변화 → 업그레이드 계획
+* Turborepo가 실질적으로 더 나은 무언가로 대체됨
 
 ---
 
-# Related
+# 관련 문서
 
 * [ADR-001](./0001-linting-formatting-strategy.md) — Linting / formatting
 * [ADR-003](./0003-package-layout-and-naming.md) — Package layout & naming
 * [ADR-004](./0004-typescript-and-compilation-strategy.md) — TS & compilation
-* `docs/turborepo-rules.md` — source of derived rules
+* `docs/turborepo-rules.md` — 파생 규칙의 원천
