@@ -22,36 +22,29 @@
 
 ---
 
-## Task 2: `identity` 제거
+## Task 2: `identity` → `sleep` 교체 (cleanup + 첫 함수)
 
-- [ ] `packages/shared/utils/src/index.ts`에서 `identity` 함수 제거.
-- [ ] `packages/shared/utils/src/index.test.ts`에서 `identity` describe 블록 제거.
-- [ ] `pnpm --filter @repo/utils test` → 0 test (또는 무중단 실행) 확인.
-- [ ] Commit: `refactor(spec-02-01): remove identity placeholder from @repo/utils`
+> **결정 변경**: T2 단독 cleanup commit은 vitest "no tests in file" 룰로 실패. T2+T3 합쳐 `identity` 제거와 `sleep` 추가를 한 commit으로 처리.
+
+### 2-1. TDD red
+- [x] `index.test.ts`에서 `identity` describe 제거 + `describe("sleep")` 추가 (정상 + 0ms edge).
+- [x] test → Fail 확인 (2 tests failed, `sleep is not defined`).
+
+### 2-2. TDD green
+- [x] `index.ts`에서 `identity` 제거 + `sleep` 구현 + 문서 주석.
+- [x] test → Pass 확인 (2 tests passed, 24ms).
+- [x] Commit: `feat(spec-02-01): replace identity placeholder with sleep utility`
 
 ---
 
-## Task 3: `sleep(ms)` 구현
+## Task 3: `pick` + `omit` 구현
 
 ### 3-1. TDD red
-- [ ] `index.test.ts`에 `describe("sleep")` 추가: 정상 케이스(`await sleep(10)` 후 시간 경과 확인) + edge(0ms).
-- [ ] `pnpm --filter @repo/utils test` → Fail 확인 (`sleep is not defined` 또는 import error).
-
-### 3-2. TDD green
-- [ ] `index.ts`에 `export const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));` 추가.
-- [ ] `pnpm --filter @repo/utils test` → Pass 확인.
-- [ ] Commit: `feat(spec-02-01): add sleep utility to @repo/utils`
-
----
-
-## Task 4: `pick` + `omit` 구현
-
-### 4-1. TDD red
 - [ ] `describe("pick")` 추가: 정상(키 부분집합) + edge(빈 keys / 존재 안 하는 키).
 - [ ] `describe("omit")` 추가: 정상(키 제외) + edge(빈 keys / 모든 키 제외).
 - [ ] test → Fail 확인.
 
-### 4-2. TDD green
+### 3-2. TDD green
 - [ ] `pick<T, K extends keyof T>(obj: T, keys: readonly K[]): Pick<T, K>` 구현.
 - [ ] `omit<T, K extends keyof T>(obj: T, keys: readonly K[]): Omit<T, K>` 구현.
 - [ ] test → Pass 확인.
@@ -59,9 +52,9 @@
 
 ---
 
-## Task 5: `Result<T, E>` + 6 helpers 구현
+## Task 4: `Result<T, E>` + 6 helpers 구현
 
-### 5-1. TDD red
+### 4-1. TDD red
 - [ ] `describe("Result")` 추가:
   - `ok(42)` → `{ ok: true, value: 42 }`
   - `err(new Error("x"))` → `{ ok: false, error: Error("x") }`
@@ -72,14 +65,14 @@
   - `flatMap(err(e), fn)` → `err(e)` (fn 호출 안 됨)
 - [ ] test → Fail 확인.
 
-### 5-2. TDD green
+### 4-2. TDD green
 - [ ] `Result<T, E = Error>` type + `ok` / `err` / `isOk` / `isErr` / `map` / `flatMap` 구현.
 - [ ] test → Pass 확인.
 - [ ] Commit: `feat(spec-02-01): add Result type and helpers to @repo/utils`
 
 ---
 
-## Task 6: ADR-0008 작성 + depcruise 검증
+## Task 5: ADR-0008 작성 + depcruise 검증
 
 - [ ] `docs/adr/0008-result-type.md` 작성:
   - 메타: status=채택됨, date=2026-05-17, type=convention
@@ -93,7 +86,7 @@
 
 ---
 
-## Task 7: Ship (필수)
+## Task 6: Ship (필수)
 
 > walkthrough.md / pr_description.md 작성 후 push + PR.
 
@@ -113,7 +106,7 @@
 
 | 항목 | 값 |
 |---|---|
-| **총 Task 수** | 7 (T1 브랜치 + T2 cleanup + T3~T5 함수 3건 + T6 ADR + T7 ship) |
-| **예상 commit 수** | 6 (T1은 브랜치 생성만) |
+| **총 Task 수** | 6 (T1 브랜치 + T2 cleanup+sleep + T3 pick+omit + T4 Result + T5 ADR + T6 ship) — *T2/T3 합침* |
+| **예상 commit 수** | 5 (T1은 브랜치 생성만) |
 | **현재 단계** | Planning |
 | **마지막 업데이트** | 2026-05-17 |
