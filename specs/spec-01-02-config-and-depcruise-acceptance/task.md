@@ -24,18 +24,12 @@
 
 ## Task 2: 6 config 패키지 전수 점검 + Acceptance 4 실측
 
-- [ ] **점검**: 6 config 패키지 본문 + `package.json`을 ADR-0001/0004와 1:1 대조. 결과 표 walkthrough.md `🔍 발견 사항`에 기록.
-  - `biome-config/base.json` + `package.json`
-  - `typescript-config/{base,library,node-app,react-app}.json` + `package.json`
-  - `vitest-config/src/{node,react}.ts` + `package.json` + `tsconfig.json`
-  - `tsup-config/src/node-lib.ts` + `package.json` + `tsconfig.json`
-  - `knip-config/base.json` + `package.json`
-  - `depcruise-config/base.cjs` + `package.json`
-- [ ] 명백 불일치 발견 시 *본 task 안 sub-commit*으로 fix (예: `fix(spec-01-02): align <file> with ADR-XXXX`). 변경 없으면 skip.
-- [ ] **Acceptance 4** — `pnpm test` → 그린 + 출력 캡처.
-- [ ] preset round-trip 확인: `@repo/utils/vitest.config.ts`가 `@repo/vitest-config/node` import → 동작.
-- [ ] walkthrough.md `🧪 검증 결과`에 acceptance 4 로그 + 점검 표 누적.
-- [ ] Commit: `docs(spec-01-02): record config inspection + acceptance 4 evidence`
+- [x] **점검**: 6 config 패키지 본문 + `package.json` 전수 ADR 1:1 대조 → **변경 없음**. 결과 표 walkthrough.md에 기록.
+- [x] 명백 불일치 없음 — sub-commit skip.
+- [x] **Acceptance 4** — `pnpm test` → 1 task PASS, FULL TURBO cache hit (29ms).
+- [x] preset round-trip 확인: `@repo/utils/vitest.config.ts` → `@repo/vitest-config/node` import → 실제 동작.
+- [x] walkthrough.md `🧪 검증 결과`에 acceptance 4 로그 + 점검 표 누적.
+- [x] Commit: `docs(spec-01-02): record config inspection + acceptance 4 evidence`
 
 ---
 
