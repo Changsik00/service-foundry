@@ -13,7 +13,7 @@
 
 제약:
 
-* 현재 스코프는 Node/TS 전용 (ROADMAP의 Phase 1–6)
+* 현재 스코프는 Node/TS 전용 (`backlog/phase-01.md` ~ `backlog/phase-06.md`)
 * Python 서비스는 *예상되나 아직 명세되지 않음* (6–12개월 시계)
 * TS 생태계는 HTTP 서비스, 타입 공유 contract, AI/에이전트 툴링, 개발자 경험 측면에서 현재 가장 강한 선택지다
 * Python은 RAG, vector DB 클라이언트, 모델 inference, ML notebook 영역에서 여전히 지배적이다
@@ -181,4 +181,4 @@ lint-all:
 * [ADR-001](./0001-linting-formatting-strategy.md) — Lint/format (Node 측, Biome)
 * [ADR-002](./0002-monorepo-foundations.md) — Node/pnpm/Turborepo 고정 (Node 측 전용)
 * [ADR-003](./0003-package-layout-and-naming.md) — `apps/*`와 `packages/*/*`는 Node 전용 glob
-* [ROADMAP.md](../../ROADMAP.md) — Python 작업은 아직 어떤 Phase에도 없음; 본 ADR이 유일한 참조
+* [backlog/queue.md](../../backlog/queue.md) — Python 작업은 아직 어떤 Phase에도 없음; 본 ADR이 유일한 참조

@@ -11,7 +11,8 @@
 > * [`docs/adr/0005-backend-framework-and-orm-strategy.md`](./docs/adr/0005-backend-framework-and-orm-strategy.md) — Backend framework + ORM (보류)
 > * [`docs/adr/0006-auth-strategy.md`](./docs/adr/0006-auth-strategy.md) — Auth (보류)
 > * [`docs/turborepo-rules.md`](./docs/turborepo-rules.md) — Turborepo 룰 요약 (영문)
-> * [`ROADMAP.md`](./ROADMAP.md) — Phase, 비전, open question
+> * [`backlog/queue.md`](./backlog/queue.md) — Phase 대시보드, Icebox (open questions)
+> * [`backlog/phase-01.md`](./backlog/phase-01.md) ~ [`backlog/phase-06.md`](./backlog/phase-06.md) — phase별 SPEC 작업 지도
 >
 > 아래 섹션은 **개념적인** 패키지 모양과 의존성 룰을 기술한다. §3~§6의 폴더 이름·패키지 이름·도구 선택은 ADR보다 먼저 작성된 것이라 Phase 3(ADR-005/006 결정 후)에 **전면 재작성**될 예정. 그때 이 배너를 제거한다.
 
@@ -171,7 +172,7 @@ service-foundry/
 | `api`      | framework 보류 (ADR-005), backend package 통합 reference       |
 | `web-next` | App Router + tanstack-query + sdk + auth + ui                |
 | `web-vite` | Vite + tanstack-router + tanstack-query + sdk + auth + ui    |
-| `admin`    | web-vite와 같은 스택, 별도 레이아웃 (분리 여부는 ROADMAP §4.2)    |
+| `admin`    | web-vite와 같은 스택, 별도 레이아웃 (분리 여부는 `backlog/queue.md` Icebox 참조)    |
 | `worker`   | BullMQ 워커 + observability + database                       |
 | (신규) `edge-api` | Hono 기반 edge / serverless 예제                         |
 
