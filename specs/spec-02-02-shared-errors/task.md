@@ -93,17 +93,10 @@
 
 ## Task 9: ADR-0009 + depcruise 검증
 
-- [ ] `./docs/adr/0009-app-error-design.md` 작성:
-  - frontmatter `type: convention`, status: accepted
-  - Context: ADR-0008 Result 후속 + 벤치마킹 결과 + BE/FE round-trip + TS unknown narrowing
-  - Decision: 7 결정 (class extends Error / flat code / cause 제외 toJSON / 코드 네이밍 / 다중 에러 컨벤션 / RFC 7807 미채택 / 라이브러리 specific 가드는 Phase 4 SDK)
-  - Consequences (긍정/부정)
-  - Alternatives: `@hapi/boom` / `http-errors` / `neverthrow` / NestJS HttpException / RFC 7807 / Stripe-style / `@total-typescript/error` — 각 비채택 이유
-  - Status: accepted (2026-05-18, spec-02-02 머지)
-  - Related: ADR-0008, spec-02-02, 후속 phase-03/04
-- [ ] `pnpm exec depcruise --config packages/config/depcruise-config/base.cjs packages/` → violation 0건.
-- [ ] `wc -l ./packages/shared/errors/src/index.ts` (예상 180~280줄).
-- [ ] Commit: `docs(spec-02-02): add ADR-0009 app-error-design convention`
+- [x] `./docs/adr/0009-app-error-design.md` 작성 (7 결정 + Consequences + 9 Alternatives 분석).
+- [x] depcruise → ✔ no dependency violations found (13 modules, 10 deps).
+- [x] index.ts 273줄 (예상 범위).
+- [x] Commit: `docs(spec-02-02): add ADR-0009 app-error-design convention`
 
 ---
 
