@@ -66,4 +66,65 @@ export class AppError extends Error {
       ).captureStackTrace(this, AppError);
     }
   }
+
+  /**
+   * BE → wire 직렬화. `cause`는 의도적으로 제외 (보안 / 노이즈 회피).
+   * 역변환은 `fromJSON`.
+   */
+  public toJSON(): AppErrorResponse {
+    const response: AppErrorResponse = {
+      code: this.code,
+      message: this.message,
+      statusCode: this.statusCode,
+    };
+    if (this.details !== undefined) {
+      response.details = this.details;
+    }
+    return response;
+  }
 }
+
+/**
+ * `AppError.toJSON()`의 출력 shape — BE→FE wire format.
+ */
+export interface AppErrorResponse {
+  code: string;
+  message: string;
+  statusCode: number;
+  details?: unknown;
+}
+
+/**
+ * JSON shape이 AppErrorResponse 형태인지 duck typing 검사.
+ * `fromJSON`의 가드로 사용.
+ */
+export const isAppErrorResponse = (json: unknown): json is AppErrorResponse => {
+  if (json === null || typeof json !== "object") return false;
+  const obj = json as Record<string, unknown>;
+  return (
+    typeof obj["code"] === "string" &&
+    typeof obj["message"] === "string" &&
+    typeof obj["statusCode"] === "number"
+  );
+};
+
+/**
+ * FE에서 응답 body를 받아 AppError class로 복원.
+ * 무효 shape면 fallback `internalError` 생성 (이 시점에는 wrap 없으므로 직접 — T7에서 refactor).
+ */
+export const fromJSON = (json: unknown): AppError => {
+  if (isAppErrorResponse(json)) {
+    return new AppError({
+      code: json.code,
+      message: json.message,
+      statusCode: json.statusCode,
+      details: json.details,
+    });
+  }
+  return new AppError({
+    code: "INTERNAL",
+    message: "Invalid error response shape",
+    statusCode: STANDARD_ERROR_REGISTRY.INTERNAL.statusCode,
+    cause: json,
+  });
+};

@@ -35,19 +35,12 @@
 
 ## Task 3: BE/FE round-trip — `toJSON` + `fromJSON` + `isAppErrorResponse`
 
-### 3-1. TDD red
-- [ ] `describe("toJSON")` (3 test: cause 제외 / 모든 필드 / 빈 details).
-- [ ] `describe("fromJSON")` (4 test: 유효 shape → AppError / details 보존 / 무효 shape → fallback internal / null/undefined → fallback).
-- [ ] `describe("isAppErrorResponse")` (3 test: 유효 shape / 누락 필드 / non-object).
-- [ ] test → Fail.
-
-### 3-2. TDD green
-- [ ] `toJSON()` 메서드.
-- [ ] `AppErrorResponse` type (`ReturnType<AppError["toJSON"]>`).
-- [ ] `isAppErrorResponse(json): json is AppErrorResponse` (duck typing: code string / message string / statusCode number).
-- [ ] `fromJSON(json: unknown): AppError` — 유효 shape면 new AppError, 무효면 fallback (이 시점에 wrap이 없으므로 `internalError` 직접 호출 또는 임시 inline 구현; T7 wrap 추가 후 refactor).
-- [ ] test → Pass.
-- [ ] Commit: `feat(spec-02-02): add toJSON/fromJSON round-trip and isAppErrorResponse guard`
+- [x] `toJSON()` 메서드 + `AppErrorResponse` type 추가.
+- [x] `isAppErrorResponse(json): json is AppErrorResponse` duck typing 가드.
+- [x] `fromJSON(json: unknown): AppError` — 유효/무효 분기 (무효 시 fallback internal + cause에 원본 보존).
+- [x] test 10건 추가 (toJSON 3 + isAppErrorResponse 3 + fromJSON 4).
+- [x] 총 15 PASS, typecheck PASS.
+- [x] Commit: `feat(spec-02-02): add toJSON/fromJSON round-trip and isAppErrorResponse guard`
 
 ---
 
