@@ -46,6 +46,7 @@
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
+| `spec-01-01` | root-files-and-lefthook-acceptance | P? | Merged | `specs/spec-01-01-root-files-and-lefthook-acceptance/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`

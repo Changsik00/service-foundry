@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-01** — 모노레포 골격 (Monorepo Skeleton) — 0 spec — 다음: (spec 없음)
+- **phase-01** — 모노레포 골격 (Monorepo Skeleton) — 1 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
