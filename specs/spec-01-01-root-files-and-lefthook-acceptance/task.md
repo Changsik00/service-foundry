@@ -24,9 +24,9 @@
 
 ## Task 2: LICENSE (MIT) 추가
 
-- [ ] `LICENSE` 파일 작성 — 표준 SPDX MIT 본문 (`Copyright (c) 2026 dennis`).
-- [ ] `package.json`의 `"license": "MIT"`와 일치 확인.
-- [ ] Commit: `chore(spec-01-01): add MIT LICENSE file`
+- [x] `LICENSE` 파일 작성 — 표준 SPDX MIT 본문 (`Copyright (c) 2026 dennis`).
+- [x] `package.json`의 `"license": "MIT"`와 일치 확인.
+- [x] Commit: `chore(spec-01-01): add MIT LICENSE file`
 
 ---
 
