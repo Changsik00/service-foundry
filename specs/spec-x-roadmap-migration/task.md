@@ -117,10 +117,10 @@
 
 ## Task 10: ROADMAP.md 삭제
 
-- [ ] `git rm ROADMAP.md`.
-- [ ] 검증: `ls ROADMAP.md` → `No such file or directory`.
-- [ ] 검증: 외부 참조 0건 (Task 9 grep 재실행).
-- [ ] Commit: `docs(spec-x-roadmap-migration): remove ROADMAP.md`
+- [x] `git rm ROADMAP.md`.
+- [x] 검증: `ls ROADMAP.md` → `No such file or directory`.
+- [x] 검증: 외부 참조 0건 (spec-x 슬러그 제외).
+- [x] Commit: `docs(spec-x-roadmap-migration): remove ROADMAP.md`
 
 ---
 
