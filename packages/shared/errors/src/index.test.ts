@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   AppError,
   type AppErrorResponse,
+  errorCause,
+  errorMessage,
   fromJSON,
   isAppError,
   isAppErrorResponse,
@@ -174,6 +176,50 @@ describe("isError", () => {
     expect(isError({ message: "fake" })).toBe(false);
     expect(isError(null)).toBe(false);
     expect(isError(undefined)).toBe(false);
+  });
+});
+
+describe("errorMessage", () => {
+  it("extracts message from AppError", () => {
+    const e = new AppError({ code: "X", message: "app msg", statusCode: 500 });
+    expect(errorMessage(e)).toBe("app msg");
+  });
+
+  it("extracts message from plain Error", () => {
+    expect(errorMessage(new Error("plain"))).toBe("plain");
+  });
+
+  it("returns string as-is", () => {
+    expect(errorMessage("oops")).toBe("oops");
+  });
+
+  it("JSON.stringify for plain objects", () => {
+    expect(errorMessage({ foo: "bar" })).toBe('{"foo":"bar"}');
+  });
+
+  it("handles null and undefined explicitly", () => {
+    expect(errorMessage(null)).toBe("null");
+    expect(errorMessage(undefined)).toBe("undefined");
+  });
+});
+
+describe("errorCause", () => {
+  it("returns AppError.cause", () => {
+    const cause = new Error("root");
+    const e = new AppError({ code: "X", message: "x", statusCode: 500, cause });
+    expect(errorCause(e)).toBe(cause);
+  });
+
+  it("returns Error.cause (ES2022)", () => {
+    const root = new Error("root");
+    const wrapped = new Error("wrapped", { cause: root });
+    expect(errorCause(wrapped)).toBe(root);
+  });
+
+  it("returns undefined when no cause", () => {
+    expect(errorCause(new Error("no cause"))).toBeUndefined();
+    expect(errorCause("string")).toBeUndefined();
+    expect(errorCause(null)).toBeUndefined();
   });
 });
 

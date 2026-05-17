@@ -118,6 +118,36 @@ export const isError = (e: unknown): e is Error =>
   e instanceof Error || Object.prototype.toString.call(e) === "[object Error]";
 
 /**
+ * 어떤 unknown에서든 사람이 읽을 message를 안전하게 추출.
+ *
+ * 우선순위: AppError.message → Error.message → string → JSON.stringify → String(e).
+ * `try { ... } catch (e) { logger.error(errorMessage(e)) }` 패턴에서 자주 사용.
+ */
+export const errorMessage = (e: unknown): string => {
+  if (isAppError(e)) return e.message;
+  if (isError(e)) return e.message;
+  if (typeof e === "string") return e;
+  if (e === null) return "null";
+  if (e === undefined) return "undefined";
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return String(e);
+  }
+};
+
+/**
+ * ES2022 `Error.cause` 또는 `AppError.cause` 안전 추출. cause가 없으면 `undefined`.
+ */
+export const errorCause = (e: unknown): unknown => {
+  if (isAppError(e)) return e.cause;
+  if (isError(e) && "cause" in e) {
+    return (e as Error & { cause?: unknown }).cause;
+  }
+  return undefined;
+};
+
+/**
  * JSON shape이 AppErrorResponse 형태인지 duck typing 검사.
  * `fromJSON`의 가드로 사용.
  */

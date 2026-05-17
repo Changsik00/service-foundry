@@ -55,16 +55,10 @@
 
 ## Task 5: `errorMessage` + `errorCause` helpers
 
-### 5-1. TDD red
-- [ ] `describe("errorMessage")` (5 test: AppError / Error / string / object → JSON.stringify / null+undefined → fallback string).
-- [ ] `describe("errorCause")` (3 test: AppError.cause / Error.cause (ES2022) / no cause).
-- [ ] test → Fail.
-
-### 5-2. TDD green
-- [ ] `errorMessage(e: unknown): string` — AppError/Error는 `.message`, string은 그대로, 그 외는 `JSON.stringify` (실패 시 `String(e)`).
-- [ ] `errorCause(e: unknown): unknown` — AppError.cause 우선 → Error.cause (in 가드).
-- [ ] test → Pass.
-- [ ] Commit: `feat(spec-02-02): add errorMessage and errorCause narrowing helpers`
+- [x] `errorMessage` / `errorCause` 구현.
+- [x] test 8건 추가 (errorMessage 5 + errorCause 3).
+- [x] 32 PASS.
+- [x] Commit: `feat(spec-02-02): add errorMessage and errorCause narrowing helpers`
 
 ---
 
