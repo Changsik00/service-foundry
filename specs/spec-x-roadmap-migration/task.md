@@ -80,10 +80,10 @@
 
 ## Task 7: backlog/phase-06.md 작성 (CI / CD)
 
-- [ ] ROADMAP §2 Phase 6 본문 매핑.
-- [ ] SPEC 요점(GitHub Actions / changesets release / docker publish / k8s 예제).
-- [ ] 의존성: phase-04 + phase-05.
-- [ ] Commit: `docs(spec-x-roadmap-migration): add backlog/phase-06.md for ci-cd`
+- [x] ROADMAP §2 Phase 6 본문 매핑.
+- [x] SPEC 요점(GitHub Actions / changesets release / docker publish / k8s 예제).
+- [x] 의존성: phase-04 + phase-05.
+- [x] Commit: `docs(spec-x-roadmap-migration): add backlog/phase-06.md for ci-cd`
 
 ---
 
