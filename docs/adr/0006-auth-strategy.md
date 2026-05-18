@@ -1,11 +1,148 @@
-# ADR-006: Auth Strategy (Deferred)
+# ADR-006: Auth Strategy — Auth Platform 자체 구축 (Consistent Wrapped SDK)
 
-* 상태: **보류** — ADR-005(백엔드 프레임워크)와 결합됨. Phase 3 스파이크에서 함께 실행됨.
-* 날짜: 2026-05-17
-* 결정 데드라인: ADR-005와 동일 (첫 `packages/backend/*` 스캐폴딩 전)
+* 상태: **Accepted** (2026-05-18, spec-x-auth-foundation-prep)
+* 결정일: 2026-05-18 (보류 → Accepted)
+* 보류 본문 작성일: 2026-05-17
 * Owners: Platform / Backend / Frontend
 * 스코프: 신원, 인증, 세션 관리, 권한(RBAC), 계정 라이프사이클
-* Audience: ADR-005가 확정될 때 이 결정을 빠르게 실행해야 하는 미래의 사람**과** AI 에이전트
+* Audience: 미래의 사람**과** AI 에이전트가 결정 본문을 참조해 auth 패키지를 *동일 컨벤션*으로 박을 수 있도록
+
+> **결정 요약** (자세한 본문은 §A):
+> "한 앱 한 Provider" + **Consistent Wrapped SDK 컨벤션** (runtime 추상화 ❌, 패키지 일관성 ✅).
+> Auth Engine은 외부 라이브러리 (jose / argon2 / @simplewebauthn / firebase-admin / supabase-js), Auth Platform은 자체 구축.
+> 세부 결정은 cross-ref ADR로 분할: ADR-0012 (error normalize) / ADR-0013 (session lifecycle) / ADR-0014 (security baseline).
+> 전체 design은 `docs/notes/auth-foundation-architecture.md` 참조.
+
+---
+
+# ⚡ Decision (Accepted) — §A
+
+## A.1 결정 본문
+
+### Decision 1: "한 앱 한 Provider" — runtime 추상화 ❌
+
+- 단일 `AuthProvider` interface로 firebase/supabase/jwt를 *runtime 추상화*하지 않음.
+- 이유: Lowest Common Denominator 함정 — Firebase custom claims / App Check / multi-tenant, Supabase RLS / magic link / OTP 같은 *Provider 강점*이 죽음.
+- 대신: 각 앱은 *한 Provider만* 사용 + 패키지 컨벤션으로 *일관된 모양* 제공.
+
+### Decision 2: "Consistent Wrapped SDK" 컨벤션 — Core Surface
+
+- 모든 `@repo/auth-{provider}` 패키지가 동일 모양의 *최소 인터페이스*(Core Surface) 노출:
+  ```ts
+  export interface AuthSDK {
+    signUp(input: SignUpInput): Promise<AuthResult>
+    signIn(input: SignInInput): Promise<AuthResult>
+    signOut(): Promise<void>
+    getCurrentUser(): Promise<AuthUser | null>
+    refresh(): Promise<Session>
+    resetPassword(email: string): Promise<void>
+    updatePassword(input: UpdatePasswordInput): Promise<void>
+    onAuthStateChange(cb: (user: AuthUser | null) => void): Unsubscribe
+  }
+  ```
+- *Core Surface 외*는 자유 — `auth.firebase.setCustomClaims` / `auth.supabase.rls` 같은 Provider 강점 자유 노출.
+- 효과: Client 코드(`auth-react` Provider / `auth-nestjs` Guards)는 *어떤 SDK 든 동일 패턴*. SDK만 바꾸면 나머지 코드 그대로.
+
+### Decision 3: `AuthResult` union — *처음부터* 인터페이스에 자리
+
+```ts
+export type AuthResult =
+  | { kind: 'session', session: Session }
+  | { kind: 'mfa_required', challengeId: string, methods: MfaMethod[] }
+  | { kind: 'email_verification_required', userId: string }
+```
+
+- `mfa_required` / `email_verification_required` 분기를 *phase-05 (Auth Core)부터* 박음 — 구현은 phase-07 (Auth Extension)이지만 *type breaking change 회피*.
+
+### Decision 4: Identity vs Session 분리 / Authentication vs Authorization 분리
+
+- **Identity** (사용자 자체): `AuthUser { id, email, provider, providerUserId, emailVerified, mfaEnabled }`
+- **Session** (현재 로그인 상태): `Session { id, userId, accessToken, refreshTokenId, device, ip, userAgent, expiresAt }`
+- **Authentication** (너 누구냐): `user.id / email / provider`
+- **Authorization** (무엇을 할 수 있냐): `roles / permissions` — RBAC 시작, ABAC는 *나중* (CASL / Oso 고려)
+
+### Decision 5: Auth Engine vs Auth Platform 분리
+
+- **Auth Engine** (외부 라이브러리 사용 — 직접 구현 ❌):
+  - JWT 알고리즘 (jose)
+  - OAuth / OIDC protocol
+  - Password crypto (argon2)
+  - WebAuthn protocol (@simplewebauthn)
+  - Provider SDK (firebase-admin / supabase-js)
+- **Auth Platform** (자체 구축 — 직접 구현 ✅):
+  - 패키지 일관성 (Core Surface)
+  - Session lifecycle (rotation + reuse detection)
+  - Error normalize (cross-ref ADR-0012)
+  - RBAC
+  - Contracts (`@repo/auth-contracts`)
+  - FE/BE integration (auth-nestjs / auth-react)
+  - Audit & Events
+  - Security policy (cross-ref ADR-0014)
+  - Observability
+
+## A.2 패키지 구조
+
+```
+packages/
+  shared/auth-contracts/      (phase-02 박힘, phase-05 확장)
+  backend/auth-session/       (phase-05, ADR-0013)
+  backend/auth-jwt/           (phase-05, ADR-0013)
+  backend/auth-security/      (phase-05, ADR-0014)
+  backend/auth-nestjs/        (phase-06)
+  backend/auth-oauth/         (phase-07)
+  backend/auth-mfa/           (phase-07)
+  backend/auth-passkey/       (phase-07)
+  backend/auth-audit/         (phase-06, 결정 따라 auth-session 흡수 가능)
+  frontend/auth-react/        (phase-06)
+  auth-firebase/              (phase-08)
+  auth-supabase/              (phase-08)
+  auth-testing/               (phase-08)
+```
+
+*`auth-errors` 별 패키지 ❌* — AuthErrorCode는 `@repo/errors`에 흡수 (ADR-0012).
+
+## A.3 Cross-ref ADR
+
+본 ADR은 *전략*만 박음. 세부 결정은 별 ADR로 분할:
+
+| 영역 | ADR |
+|---|---|
+| Error normalize | [ADR-0012](./0012-auth-error-normalize.md) |
+| Session lifecycle (JWT + Refresh rotation + Reuse detection) | [ADR-0013](./0013-session-lifecycle.md) |
+| Security baseline (CSRF / Rate limit / PKCE / argon2 / Step-up) | [ADR-0014](./0014-auth-security-baseline.md) |
+
+## A.4 Alternatives — 비채택 이유
+
+| 대안 | 비채택 이유 |
+|---|---|
+| **LCD 추상화** (1차 자문안) | "Provider 교체 가능" 환상. 현실은 *한 앱 한 Provider*이며 LCD는 *각 Provider의 강점*(Firebase custom claims, Supabase RLS)을 죽임. |
+| **Better-auth** | 빠른 시작 우위. 그러나 *boilerplate 학습 가치* = "각 결정의 근거를 박는 것"이라 라이브러리 채택은 *학습 자산* 축소. cross-ref phase-09 admin tool / phase-10 observability와 *통합 부담*. |
+| **Auth.js (NextAuth)** | Next.js 환경 강결합. 본 boilerplate는 *Next + Vite 둘 다* 지원이라 부적합. |
+| **Lucia (deprecated)** | 2024년 sunset 선언. 향후 maintenance 부담. |
+| **자체 OAuth/OIDC 구현** | 보안 위험 + spec 부담 큼. *Auth Engine은 외부 라이브러리* 원칙(Decision 5) 위반. |
+
+## A.5 Consequences
+
+### 긍정
+- **컨벤션 일관**: SDK 교체 시 client 코드 변경 *최소*.
+- **Provider 강점 살림**: Firebase custom claims / Supabase RLS 자유 노출.
+- **학습 자산**: 각 결정이 ADR로 박혀 *진입 reader*가 *결정 근거* 빠르게 파악.
+- **확장 친화**: 새 Provider 추가 시 *Core Surface 구현*만 — 기존 client 코드 영향 0.
+- **MFA/Passkey 자리 잡기**: AuthResult union으로 *처음부터* 분기 박힘 — 후속 phase 추가 시 type breaking 없음.
+
+### 부정 / Trade-off
+- **자체 구축 비용**: better-auth 같은 라이브러리 채택 대비 *spec 부담 큼* (phase-05~08).
+- **Provider 강점 노출이 *의존성 강결합*** — `auth.firebase.setCustomClaims` 호출하는 코드는 Firebase 종속. 그러나 이게 *의도된 trade-off* (한 앱 한 Provider).
+- **9 패키지 운영**: scaffold + 빌드 설정 중복 (JIT라 빌드는 0 비용이나 *문서/리뷰* 비용 존재).
+
+---
+
+# ⚠️ 아래 §1~§7은 *보류 분석 자료* — 향후 참조용
+
+> 본 ADR이 *Accepted* 상태가 된 후에도, 아래 분석 자료(ADR-0005 gating / library benchmarking 등)는 *결정의 근거*로 보존됩니다.
+> 결정 후 *다시 분석 필요 없을 시 §1~§7 skip*. 결정 변경 시 재참조.
+
+---
 
 ---
 

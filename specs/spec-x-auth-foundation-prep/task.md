@@ -48,18 +48,14 @@
 
 ## Task 4: ADR-0006 본문 작성 (Auth Platform 전략)
 
-- [ ] `docs/adr/0006-auth-strategy.md` 본문 *전면 갱신*:
-  - 상태: 보류 → **Accepted (2026-05-18)**
-  - 5 Decision:
-    1. "한 앱 한 Provider" — runtime 추상화 ❌
-    2. "Consistent Wrapped SDK" 컨벤션 — Core Surface + Provider별 강점
-    3. AuthResult union (session / mfa_required / email_verification_required) — 처음부터
-    4. Identity vs Session 분리 + Authentication vs Authorization 분리
-    5. "Auth Engine 외부 라이브러리, Auth Platform 자체 구축" 원칙
-  - Core Surface interface 예시 (AuthSDK + AuthResult)
-  - Alternatives 4건: LCD 추상화 (1차안) / Better-auth / Auth.js / Lucia
-  - Related: ADR-0005 / 0012 / 0013 / 0014 + design note
-- [ ] Commit: `docs(spec-x-auth-foundation-prep): accept ADR-0006 — Auth Platform strategy (Consistent Wrapped SDK)`
+- [x] `docs/adr/0006-auth-strategy.md` 본문 갱신 (Decision 섹션 추가 + 보류 본문 보존):
+  - [x] 상태: 보류 → **Accepted (2026-05-18)**
+  - [x] 5 Decision 박음 (한 앱 한 Provider / Consistent Wrapped SDK / AuthResult union / Identity-Session 분리 / Engine-Platform 분리)
+  - [x] Core Surface AuthSDK + AuthResult interface 예시
+  - [x] Alternatives 5건 (LCD / Better-auth / Auth.js / Lucia / 자체 OAuth)
+  - [x] 패키지 구조 + Cross-ref ADR (0012/13/14) 표
+  - [x] Related: ADR-0005 / 0012 / 0013 / 0014 + design note
+- [x] Commit: `docs(spec-x-auth-foundation-prep): accept ADR-0006 — Auth Platform strategy (Consistent Wrapped SDK)`
 
 ---
 
