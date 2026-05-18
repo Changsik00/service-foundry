@@ -11,7 +11,7 @@ catalog:
   # runtime
   zod: ^4.4.3
   pino: ^10.3.1
-  "@env-kit/node-settings": ^1.0.2
+  "@env-kit/node-settings": ^1.1.0
 
   # backend framework (phase-03+)
   "@nestjs/common": ^11.1.21

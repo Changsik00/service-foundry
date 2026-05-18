@@ -39,16 +39,19 @@
 
 ---
 
-## Task 3: `defineSettings` helper + 첫 test
+## Task 3: `defineSettings` re-export + 첫 test
 
-- [ ] `src/index.test.ts`: `describe("defineSettings")` 3 test:
-  - 성공: valid env → typed config 반환
-  - 실패: invalid env → AppError throw (code: "VALIDATION", details.errors)
-  - source override: `defineSettings(schema, customEnv)` 동작
-- [ ] test → Fail.
-- [ ] `src/index.ts`: `defineSettings<T>(schema, source?): T` 구현. `@repo/errors` validationError 사용.
-- [ ] test → Pass.
-- [ ] Commit: `feat(spec-03-01): add defineSettings helper with @repo/errors integration`
+> **plan 정정 (T2 정찰 결과)**: 라이브러리가 이미 `defineSettings({envSchema, envKey, defaults, perEnv, build})` factory를 제공 → 자체 wrap 불필요. *re-export*만 + 사용 패턴 검증.
+
+- [x] catalog `@env-kit/node-settings: ^1.1.0` 업그레이드 (T2의 ^1.0.2에서 zod 3 호환성 이슈 발견 → 본 spec에 *블로커*. 별도 spec-x 외 작업으로 라이브러리 zod 4 migration 완료: PR #6 머지 + v1.1.0 publish).
+- [x] `src/index.test.ts`: `describe("defineSettings (re-export)")` 3 test:
+  - 함수 노출 검증
+  - valid env로 loader 생성 + build callback 결과 검증 (perEnv override 동작)
+  - invalid env 거부
+- [x] test → Fail (라이브러리 미설치 / API 불일치).
+- [x] `src/index.ts`: `@env-kit/node-settings`에서 `defineSettings` / `introspectEnvSchema` / `DEFAULT_*` / `NodeSettingsError` / `presets` 등 re-export.
+- [x] test → Pass (3/3).
+- [x] Commit: `feat(spec-03-01): re-export @env-kit/node-settings (v1.1.0 with zod 4) + first tests`
 
 ---
 
