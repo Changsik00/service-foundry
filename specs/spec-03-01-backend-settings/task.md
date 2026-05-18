@@ -67,13 +67,11 @@
 
 ## Task 5: `BackendSettingsModule` NestJS adapter + test
 
-- [ ] `src/index.test.ts`: `describe("BackendSettingsModule")` 2 test:
-  - `forRoot(schema)` 호출 시 DynamicModule 객체 구조 (module / providers / exports / global)
-  - BACKEND_SETTINGS provider value가 *defineSettings 결과*와 일치
-- [ ] test → Fail.
-- [ ] `src/index.ts`: `BACKEND_SETTINGS` symbol + `BackendSettingsModule.forRoot<T>(schema)` 구현.
-- [ ] test → Pass.
-- [ ] Commit: `feat(spec-03-01): add BackendSettingsModule NestJS adapter`
+- [x] `src/index.test.ts`: `describe("BackendSettingsModule")` 2 test (DynamicModule 구조 / provider value 일치).
+- [x] test → Fail.
+- [x] `src/index.ts`: `BACKEND_SETTINGS` symbol + `BackendSettingsModule.forRoot(loader, env?)` 구현. `loader(env)` 호출 결과를 frozen provider value로 박음. `env` 기본 `process.env`. NestJS 직접 import 안 함 (DynamicModule 객체 리터럴) — peer dep 비대 회피 + 호출자가 NestJS dep 책임.
+- [x] test → Pass (7/7).
+- [x] Commit: `feat(spec-03-01): add BackendSettingsModule NestJS adapter`
 
 ---
 

@@ -32,6 +32,7 @@
     "@nestjs/core": "catalog:",
     "@nestjs/testing": "catalog:",
     "@repo/biome-config": "workspace:*",
+    "@types/node": "catalog:",
     "@repo/typescript-config": "workspace:*",
     "@repo/vitest-config": "workspace:*",
     "typescript": "catalog:",
