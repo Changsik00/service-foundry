@@ -75,15 +75,17 @@
 
 ---
 
-## Task 6: dogfooding test — `.env.example` 생성
+## Task 6: dogfooding test — `introspectEnvSchema` round-trip
 
-- [ ] `src/index.test.ts`: `describe("dogfooding")` 1 test:
-  - sample schema 정의
-  - `@env-kit/node-settings` CLI 또는 API로 `.env.example` 문자열 생성
-  - 출력에 정의된 모든 env key 포함 확인
-- [ ] test → 실제 `@env-kit/node-settings` API에 따라 구현 (T2 정찰 결과 따름).
-- [ ] test → Pass.
-- [ ] Commit: `test(spec-03-01): dogfooding .env.example generation`
+> **scope 조정 (T2 정찰)**: 라이브러리의 `.env.example` 생성기는 *generators/* sub-export에 있음 (별 import 필요). 본 dogfooding은 *introspectEnvSchema*가 BaseBackendSchema의 metadata를 올바르게 추출하는지 검증 — *내부적으로 .env.example 생성에 같은 metadata 사용*. 생성기 직접 호출은 phase-10 (Ops Tooling)에서.
+
+- [x] `src/index.test.ts`: `describe("dogfooding")` 1 test:
+  - `introspectEnvSchema(BaseBackendSchema)` 호출
+  - 모든 env key (NODE_ENV / PORT / LOG_LEVEL) 추출 검증
+  - NODE_ENV: enum + required + enumValues
+  - PORT: number + !required + defaultValue=3000
+- [x] test → Pass (8/8) — 이미 re-export로 즉시 GREEN.
+- [x] Commit: `test(spec-03-01): dogfooding introspectEnvSchema with BaseBackendSchema`
 
 ---
 

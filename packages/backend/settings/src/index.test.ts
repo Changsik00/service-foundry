@@ -5,6 +5,7 @@ import {
   BackendSettingsModule,
   BaseBackendSchema,
   defineSettings,
+  introspectEnvSchema,
 } from "./index.js";
 
 describe("defineSettings (re-export)", () => {
@@ -90,5 +91,23 @@ describe("BackendSettingsModule", () => {
     );
     expect(provider).toBeDefined();
     expect(provider?.useValue.region).toBe("us-west-2");
+  });
+});
+
+describe("dogfooding (introspectEnvSchema + BaseBackendSchema)", () => {
+  it("BaseBackendSchema에서 모든 env 키의 metadata를 추출한다", () => {
+    const fields = introspectEnvSchema(BaseBackendSchema);
+    const keys = fields.map((f) => f.key).sort();
+    expect(keys).toEqual(["LOG_LEVEL", "NODE_ENV", "PORT"]);
+
+    const nodeEnv = fields.find((f) => f.key === "NODE_ENV");
+    expect(nodeEnv?.type).toBe("enum");
+    expect(nodeEnv?.required).toBe(true);
+    expect(nodeEnv?.enumValues).toContain("production");
+
+    const port = fields.find((f) => f.key === "PORT");
+    expect(port?.type).toBe("number");
+    expect(port?.required).toBe(false);
+    expect(port?.defaultValue).toBe(3000);
   });
 });
