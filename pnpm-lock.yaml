@@ -39,6 +39,9 @@ catalogs:
     vitest:
       specifier: ^4.1.6
       version: 4.1.6
+    zod:
+      specifier: ^4.4.3
+      version: 4.4.3
 
 importers:
 
@@ -149,6 +152,37 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../config/typescript-config
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../../config/vitest-config
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.6(@types/node@22.19.19)(vite@8.0.13(@types/node@22.19.19)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.22.1)(yaml@2.9.0))
+
+  packages/shared/validation:
+    dependencies:
+      '@repo/errors':
+        specifier: workspace:*
+        version: link:../errors
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.4.15
+      '@repo/biome-config':
+        specifier: workspace:*
+        version: link:../../config/biome-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../config/typescript-config
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@repo/vitest-config':
         specifier: workspace:*
         version: link:../../config/vitest-config
