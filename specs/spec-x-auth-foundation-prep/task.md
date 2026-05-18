@@ -92,20 +92,17 @@
 
 ## Task 7: ADR-0014 신규 — Security Baseline
 
-- [ ] `docs/adr/0014-auth-security-baseline.md` 신규:
-  - frontmatter: type: convention, status: accepted
-  - Context: 2차안 §보안 기본기 / RFC 9700 (PKCE)
-  - Decision 7건:
-    1. CSRF: SameSite=Lax cookie + Origin/Referer 검증
-    2. Rate Limiting: IP+account+progressive backoff (`auth-security` 패키지)
-    3. Account Lockout: N회 실패 시 lockout, 응답 동일 (enumeration 방지)
-    4. OAuth: PKCE 강제 + State (cookie-bound) + Nonce (OIDC)
-    5. Password Hash: argon2
-    6. Cookie: httpOnly + Secure + SameSite=Lax + Path=/ (localStorage JWT 금지)
-    7. Step-up Auth: 비밀번호/이메일 변경 / 결제 변경 시 재인증
-  - Alternatives: bcrypt / scrypt / Implicit OAuth / SameSite=None / Frontend-only OAuth
-  - Related: ADR-0006 / 0013
-- [ ] Commit: `docs(spec-x-auth-foundation-prep): add ADR-0014 — auth security baseline`
+- [x] `docs/adr/0014-auth-security-baseline.md` 신규 (7 Decision):
+  - [x] D1: CSRF (SameSite=Lax + Origin/Referer 검증)
+  - [x] D2: Rate Limiting (IP+account+progressive backoff)
+  - [x] D3: Account Lockout (응답 동일 — enumeration 방지)
+  - [x] D4: OAuth PKCE 강제 + State (cookie-bound) + Nonce (OIDC) + redirect_uri allowlist
+  - [x] D5: Password Hash = argon2id
+  - [x] D6: Cookie (httpOnly + Secure + SameSite=Lax + Path=/) — localStorage 금지
+  - [x] D7: Step-up Auth (민감 작업 시 재인증)
+  - [x] Alternatives 8건 비채택
+  - [x] Related: ADR-0006 / 0012 / 0013 + RFC 9700 / OWASP
+- [x] Commit: `docs(spec-x-auth-foundation-prep): add ADR-0014 — auth security baseline`
 
 ---
 
