@@ -29,7 +29,7 @@ Phase 1이 turbo toolchain + config preset을 검증하면 그 위에 *실제 �
 1. `packages/shared/utils`, `errors`, `validation`, `contracts`, `auth-contracts` 5개 패키지가 catalog 통해 `@repo/<name>`으로 import 가능.
 2. 각 패키지는 단위 테스트 ≥ 1개로 동작 확인.
 3. dependency-cruiser 룰 검증: `packages/shared/*`는 Node-only API(예: `node:fs`)를 import하지 않음.
-4. `packages/shared/auth-contracts`는 ADR-0006의 Session / User / JwtPayload / Role enum zod schema를 export.
+4. `packages/shared/auth-contracts`는 ADR-0006의 Session / User / JwtPayload / Role enum zod schema를 export (spec-02-04에서 spec-02-05 흡수 후 핵심 4 schema 우선 박음).
 5. 가상의 FE(예: Vite SPA) + BE(예: Fastify)에서 `@repo/shared/contracts` 같은 schema를 import해 round-trip 가능 (수동 검증 충분).
 
 ## 🧩 작업 단위 (SPECs)
@@ -40,6 +40,7 @@ Phase 1이 turbo toolchain + config preset을 검증하면 그 위에 *실제 �
 | `spec-02-01` | shared-utils | P? | Merged | `specs/spec-02-01-shared-utils/` |
 | `spec-02-02` | shared-errors | P? | Merged | `specs/spec-02-02-shared-errors/` |
 | `spec-02-03` | shared-validation | P? | Merged | `specs/spec-02-03-shared-validation/` |
+| `spec-02-04` | shared-contracts | P? | Active | `specs/spec-02-04-shared-contracts/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
@@ -70,36 +71,30 @@ Phase 1이 turbo toolchain + config preset을 검증하면 그 위에 *실제 �
 - **요점**: 도메인별 zod schema + DTO 타입 (BE/FE 공유 진입점).
 - **방향성**: API 스키마의 SoT. 본 spec이 머지되면 frontend/sdk(Phase 4)가 여기서 codegen.
 - **참조**: ADR-0003 §6 (auth-contracts 분리), ARCHITECTURE.md §2.2.
-- **연관 모듈**: `packages/shared/contracts`
-
-### spec-02-05 — shared-auth-contracts
-
-- **요점**: Session / User / JwtPayload zod schema + Role enum (auth 3-package 중 1번째).
-- **방향성**: ADR-0006 §14에서 결정된 3-package split의 *shared* 파트. backend/auth + frontend/auth가 본 패키지를 공통 의존.
-- **참조**: ADR-0006, ARCHITECTURE.md §2.2.
-- **연관 모듈**: `packages/shared/auth-contracts`
+- **연관 모듈**: `packages/shared/contracts` + `packages/shared/auth-contracts` (당초 spec-02-05로 분리 계획했으나 본 spec에 흡수 — 아래 결정 기록 참조)
 
 ## 📌 결정 기록 (Review)
 
 | 이슈 | 선택지 | 결정 | 이유 |
 |---|---|---|---|
 | `lat.md` Phase 2 도입 평가 | 도입 / 보류 / 폐기 | 본 Phase 시작 시점에 평가 | 코드베이스 지식 그래프 도구. Phase 2가 첫 "코드다운 코드"가 들어가는 시점이라 평가에 적합 (`backlog/queue.md` Icebox 항목 참조) |
+| spec-02-05 (shared-auth-contracts) 분리 유지 vs spec-02-04에 흡수 | 별 spec 유지 / spec-02-04에 흡수 | **흡수** (2026-05-18) | ADR-0006(auth strategy) 보류 상태 — auth-contracts schema는 핵심 4개(`Role` / `User` / `Session` / `JwtPayload`)만 우선. 두 spec 모두 *얇은 schema 정의* 위주라 분리 ceremony > 결정 부담. 패키지 분리(ADR-0003 §6)는 유지. |
 
 ## 🧪 통합 테스트 시나리오 (간결)
 
 ### 시나리오 1: BE/FE round-trip
 
-- **Given**: spec-02-04 + spec-02-05 머지됨.
+- **Given**: spec-02-04 머지됨 (`@repo/contracts` + `@repo/auth-contracts` 두 패키지 포함).
 - **When**: 가상 BE에서 zod schema로 응답 생성 → 가상 FE에서 동일 schema로 parse.
 - **Then**: 양측 타입 일치 + 런타임 validation 통과.
-- **연관 SPEC**: spec-02-04, spec-02-05
+- **연관 SPEC**: spec-02-04
 
 ### 시나리오 2: shared/* Node-only import 금지
 
 - **Given**: 모든 spec-02-* 머지됨.
 - **When**: `pnpm exec depcruise --validate packages/shared/`.
 - **Then**: `node:*` 또는 Node-only npm 패키지 import 0건.
-- **연관 SPEC**: spec-02-01 ~ spec-02-05
+- **연관 SPEC**: spec-02-01 ~ spec-02-04
 
 ### 통합 테스트 실행
 
@@ -123,11 +118,11 @@ pnpm exec depcruise --validate packages/shared/
 |---|---|---|
 | zod 메이저 버전 변경 시 schema 호환성 깨짐 | 모든 후속 패키지 영향 | catalog 단일 pin (ADR-0002) + 변경 시 migration spec 별도 |
 | `shared/contracts`가 도메인 비대화 | FE 번들 사이즈 증가 | 도메인별 sub-path export(`@repo/shared/contracts/user`) 활용 (ARCHITECTURE.md §3.3) |
-| ADR-0006 보류 상태에서 auth-contracts schema 동결 | 후속 결정에 따라 schema 변경 | spec-02-05를 ADR-0006 확정 *후* 진행하거나, schema의 핵심 필드만 우선 정의 (이슈: 본 phase 시작 시점에 평가) |
+| ADR-0006 보류 상태에서 auth-contracts schema 동결 | 후속 결정에 따라 schema 변경 | spec-02-04에서 핵심 4 schema(`Role` / `User` / `Session` / `JwtPayload`)만 우선 정의. 확장은 ADR-0006 확정 후 별 spec. |
 
 ## 🏁 Phase Done 조건
 
-- [ ] 모든 SPEC(spec-02-01 ~ spec-02-05)이 main에 merge
+- [ ] 모든 SPEC(spec-02-01 ~ spec-02-04)이 main에 merge
 - [ ] 성공 기준 5개 충족
 - [ ] 통합 테스트 2개 시나리오 PASS
 - [ ] 사용자 최종 승인
