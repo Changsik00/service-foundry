@@ -135,10 +135,10 @@
 - [x] `bash .harness-kit/bin/sdd test passed`.
 - [x] **walkthrough.md 작성** (결정 10건 + 사용자 협의 4건 + RCA-001 검증 + 발견 사항 6건).
 - [x] **pr_description.md 작성**.
-- [ ] **Ship Commit** (수동 — spec-x는 sdd ship 메커니즘 외부).
-- [ ] **Push**: `git push -u origin spec-x-auth-foundation-prep`.
-- [ ] **PR 생성**: `gh pr create`.
-- [ ] **사용자 알림**.
+- [x] **Ship Commit** (`69c0ab9` — walkthrough + pr_description + task.md sync).
+- [x] **Push**: `git push -u origin spec-x-auth-foundation-prep`.
+- [x] **PR 생성**: `gh pr create` → PR #8.
+- [x] **사용자 알림**.
 
 ---
 

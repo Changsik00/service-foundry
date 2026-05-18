@@ -62,6 +62,7 @@
 - [x] spec-x-roadmap-migration (완료)
 - **phase-01** — 모노레포 골격 (Monorepo Skeleton) — completed 2026-05-17
 - **phase-02** — Shared Primitives — completed 2026-05-18
+- [x] spec-x-auth-foundation-prep (완료)
 <!-- sdd:done:end -->
 
 ---
