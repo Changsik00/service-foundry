@@ -1,0 +1,125 @@
+# Task List: spec-02-02
+
+> 모든 task는 한 commit에 대응합니다 (One Task = One Commit).
+> 매 commit 직후 본 파일의 체크박스를 갱신해야 합니다.
+
+## Pre-flight (Plan 작성 단계)
+
+- [x] Spec ID 확정 및 디렉토리 생성 (`./specs/spec-02-02-shared-errors/`)
+- [x] spec.md 작성 (v3 — round-trip + TS narrow 통합)
+- [x] plan.md 작성 (v3)
+- [x] task.md 작성 (이 파일 — 10 task)
+- [x] phase-02.md SPEC 표 자동 갱신 (sdd spec new 시점)
+- [x] 사용자 Plan Accept
+
+---
+
+## Task 1: 브랜치 생성
+
+- [x] `git checkout -b spec-02-02-shared-errors`
+- [x] Commit: 없음
+
+---
+
+## Task 2: 패키지 scaffold + AppError class + STANDARD_ERROR_REGISTRY
+
+- [x] `./packages/shared/errors/` 디렉토리 + 4 scaffold 파일 (package.json / tsconfig.json / biome.json / vitest.config.ts).
+- [x] `package.json`에 `@repo/utils` devDep 추가.
+- [x] `src/index.ts`: REGISTRY 8 entries + AppError class.
+- [x] `src/index.test.ts`: 5 test (AppError 3 + REGISTRY 2).
+- [x] `pnpm install` + lockfile 갱신.
+- [x] `pnpm --filter @repo/errors test` → 5 PASS, typecheck PASS.
+- [x] Commit: `feat(spec-02-02): scaffold @repo/errors with AppError class and STANDARD_ERROR_REGISTRY`
+
+---
+
+## Task 3: BE/FE round-trip — `toJSON` + `fromJSON` + `isAppErrorResponse`
+
+- [x] `toJSON()` 메서드 + `AppErrorResponse` type 추가.
+- [x] `isAppErrorResponse(json): json is AppErrorResponse` duck typing 가드.
+- [x] `fromJSON(json: unknown): AppError` — 유효/무효 분기 (무효 시 fallback internal + cause에 원본 보존).
+- [x] test 10건 추가 (toJSON 3 + isAppErrorResponse 3 + fromJSON 4).
+- [x] 총 15 PASS, typecheck PASS.
+- [x] Commit: `feat(spec-02-02): add toJSON/fromJSON round-trip and isAppErrorResponse guard`
+
+---
+
+## Task 4: 타입 가드 3종 — `isAppError` + `isCode<C>` + `isError`
+
+- [x] `isAppError` / `isCode<C>` / `isError` (cross-realm 안전) 구현.
+- [x] test 9건 추가 (isAppError 2 + isCode 3 + isError 4).
+- [x] 24 PASS, typecheck PASS.
+- [x] Commit: `feat(spec-02-02): add type guards (isAppError, isCode, isError)`
+
+---
+
+## Task 5: `errorMessage` + `errorCause` helpers
+
+- [x] `errorMessage` / `errorCause` 구현.
+- [x] test 8건 추가 (errorMessage 5 + errorCause 3).
+- [x] 32 PASS.
+- [x] Commit: `feat(spec-02-02): add errorMessage and errorCause narrowing helpers`
+
+---
+
+## Task 6: 8 factory 함수
+
+- [x] 8 factory 구현 (validation/unauthenticated/forbidden/notFound/conflict/rateLimit/internal/badGateway).
+- [x] test 16건 추가 (parametrized cases).
+- [x] 48 PASS.
+- [x] Commit: `feat(spec-02-02): add 8 standard error factories`
+
+---
+
+## Task 7: `wrap(e, code?, message?)` helper + fromJSON refactor
+
+- [x] `wrap(e, code?, message?)` 구현 — AppError pass-through / `errorMessage` 활용.
+- [x] `fromJSON` 무효 shape fallback을 `wrap(json, "INTERNAL", ...)`로 리팩터.
+- [x] test 4건 추가 (wrap pass-through / Error preserve / string / object).
+- [x] 52 PASS (기존 fromJSON test cause 보존 확인 포함).
+- [x] Commit: `feat(spec-02-02): add wrap helper and refactor fromJSON fallback`
+
+---
+
+## Task 8: `Result<T, AppError>` round-trip 테스트
+
+- [x] `describe("Result<T, AppError> round-trip with @repo/utils")` 4 test (isOk narrow / err typed / map chain / flatMap short-circuit + wrap pattern).
+- [x] `@repo/utils`에서 `ok/err/isOk/map/flatMap/Result` import.
+- [x] 56 PASS.
+- [x] `pnpm exec depcruise ...` → ✔ no dependency violations found (13 modules, 10 deps).
+- [x] Commit: `test(spec-02-02): verify Result<T, AppError> round-trip with @repo/utils`
+
+---
+
+## Task 9: ADR-0009 + depcruise 검증
+
+- [x] `./docs/adr/0009-app-error-design.md` 작성 (7 결정 + Consequences + 9 Alternatives 분석).
+- [x] depcruise → ✔ no dependency violations found (13 modules, 10 deps).
+- [x] index.ts 273줄 (예상 범위).
+- [x] Commit: `docs(spec-02-02): add ADR-0009 app-error-design convention`
+
+---
+
+## Task 10: Ship (필수)
+
+- [ ] `pnpm lint` + `pnpm typecheck` + `pnpm test` **수동 재확인** (lefthook quirk 대비).
+- [ ] `bash .harness-kit/bin/sdd test passed`.
+- [ ] **walkthrough.md 작성** (결정 기록 + 벤치마킹 요약 + v1→v2→v3 진화 + lefthook quirk 재발 여부 + 발견 사항).
+- [ ] **pr_description.md 작성**.
+- [ ] `sdd ship --check` 통과.
+- [ ] **Ship Commit**: sdd ship 자동.
+- [ ] **Push**: `git push -u origin spec-02-02-shared-errors`.
+- [ ] **PR 생성**: `gh pr create`.
+- [ ] **사용자 알림**.
+
+---
+
+## 진행 요약
+
+| 항목 | 값 |
+|---|---|
+| **총 Task 수** | 10 (T1 브랜치 + T2 scaffold+AppError+REGISTRY + T3 toJSON/fromJSON + T4 가드 3종 + T5 narrow helpers + T6 8 factory + T7 wrap+fromJSON refactor + T8 Result round-trip + T9 ADR + T10 ship) |
+| **예상 commit 수** | 9 (T1 commit 없음) |
+| **예상 test 수** | ~38 (AppError 3 + toJSON/fromJSON/isAppErrorResponse 10 + 가드 8 + errorMessage 5 + errorCause 3 + factory 16 + wrap 4 + Result 4) |
+| **현재 단계** | Planning (v3 — BE/FE round-trip + TS narrow 통합) |
+| **마지막 업데이트** | 2026-05-18 |
