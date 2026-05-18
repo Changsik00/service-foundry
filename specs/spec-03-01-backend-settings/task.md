@@ -91,15 +91,17 @@
 
 ## Task 7: Ship (필수)
 
-- [ ] `pnpm lint` + `pnpm typecheck` + `pnpm test` 그린.
-- [ ] `bash .harness-kit/bin/sdd test passed`.
-- [ ] **walkthrough.md 작성** (결정 + `@env-kit/node-settings` 정찰 결과 + Phase Base Branch 첫 spec 동작 검증 + 발견 사항).
-- [ ] **pr_description.md 작성**.
-- [ ] `sdd ship --check` 통과.
-- [ ] **Ship Commit**: sdd ship 자동.
-- [ ] **Push**: `git push -u origin spec-03-01-backend-settings`.
-- [ ] **PR 생성**: `gh pr create --base phase-03-backend-foundation` (Phase base branch — 첫 ship 시 자동 생성됨).
-- [ ] **사용자 알림**.
+- [x] `pnpm lint` + `pnpm typecheck` + `pnpm test` 그린 (FULL TURBO, 6 패키지).
+- [x] `pnpm exec depcruise` 0 violations (30 modules / 39 deps).
+- [x] `bash .harness-kit/bin/sdd test passed`.
+- [x] **walkthrough.md 작성** (결정 13 + 사용자 협의 4 + Phase Base Branch 검증 + 정찰 + zod 4 migration 요약 + 발견 사항 6).
+- [x] **pr_description.md 작성** (10 Key Review Points).
+- [x] `sdd ship --check` 통과 (walkthrough placeholder warning은 본문 길이 무관).
+- [x] **Ship Commit**: sdd ship 자동 (`e7c3e62`).
+- [x] **Push**: `git push -u origin spec-03-01-backend-settings`.
+- [x] **Phase Base Branch 수동 생성**: `git push origin main:phase-03-backend-foundation` (sdd ship이 자동 생성 안 함 — Icebox 후보).
+- [x] **PR 생성**: `gh pr create --base phase-03-backend-foundation` → PR #9.
+- [x] **사용자 알림**.
 
 ---
 
