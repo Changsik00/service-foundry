@@ -75,22 +75,18 @@
 
 ## Task 6: ADR-0013 신규 — Session Lifecycle
 
-- [ ] `docs/adr/0013-session-lifecycle.md` 신규:
-  - frontmatter: type: convention, status: accepted
-  - Context: 2차안 §Session 전략 / RFC 6819 Reuse Detection
-  - Decision 7건:
-    1. Access Token: JWT EdDSA, 5~15min TTL
-    2. JWT Claims: sub, iat, exp, iss, aud, jti
-    3. Refresh Token: opaque random 32+ bytes, DB hashed, 14~30일
-    4. Rotation: `refreshTokenFamily` chain
-    5. Reuse Detection: invalidate된 refresh 재진입 → 모든 session revoke + alert
-    6. Key Rotation: 90일 + JWKS endpoint (`/.well-known/jwks.json`)
-    7. Session Model: 12 필드 (위 spec.md 참조)
-  - `@repo/auth-session` 별 패키지 결정 (jwt와 책임 분리)
-  - 라이브러리: jose (JWT) / argon2 (password)
-  - Alternatives: HS256 / Access token only (refresh 없음) / Single key (rotation 없음) / Reuse detection 안 함
-  - Related: ADR-0006 / 0014
-- [ ] Commit: `docs(spec-x-auth-foundation-prep): add ADR-0013 — session lifecycle (rotation + reuse detection)`
+- [x] `docs/adr/0013-session-lifecycle.md` 신규 (8 Decision):
+  - [x] D1: Access Token JWT EdDSA, 5~15min TTL
+  - [x] D2: Algorithm = EdDSA (HS256/RS256/ES256 비교 표)
+  - [x] D3: JWT Claims (필수/권장/금지/조건부)
+  - [x] D4: Refresh Token opaque random 32+ bytes, DB hashed, 14~30일
+  - [x] D5: Rotation Chain + Reuse Detection (RFC 6819 필수)
+  - [x] D6: Session Model 13 필드 (geo / revokedReason 포함)
+  - [x] D7: Key Rotation 90일 + JWKS endpoint + jti deny list 옵션
+  - [x] D8: `@repo/auth-session` 별 패키지 결정 (jwt와 책임 분리)
+  - [x] Alternatives 6건 비채택
+  - [x] Related: ADR-0006 / 0014 / 0005 + RFC 6819
+- [x] Commit: `docs(spec-x-auth-foundation-prep): add ADR-0013 — session lifecycle (rotation + reuse detection)`
 
 ---
 
