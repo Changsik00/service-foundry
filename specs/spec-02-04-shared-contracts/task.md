@@ -22,14 +22,14 @@
 
 ## Task 2: `@repo/contracts` scaffold + `UserProfile` + 첫 test
 
-- [ ] `packages/shared/contracts/` 디렉토리 + scaffold (package.json / tsconfig.json (DOM lib) / vitest.config.ts).
-- [ ] `package.json`: deps `@repo/validation: workspace:*` + `zod: catalog:`. exports에 `.` + `./user` sub-path.
-- [ ] `pnpm install` → lockfile 갱신.
-- [ ] `src/user.ts`: `UserProfile` schema (id: Uuid / email: Email / displayName / createdAt).
-- [ ] `src/index.ts`: `export * from "./user.js"`.
-- [ ] `src/user.test.ts`: `describe("UserProfile")` 3 test (valid / invalid email / 짧은 displayName).
-- [ ] test → Pass.
-- [ ] Commit: `feat(spec-02-04): scaffold @repo/contracts with UserProfile schema`
+- [x] `packages/shared/contracts/` 디렉토리 + scaffold (package.json / tsconfig.json (DOM lib) / vitest.config.ts).
+- [x] `package.json`: deps `@repo/validation: workspace:*` + `zod: catalog:`. exports에 `.` + `./user` + `./pagination` sub-path.
+- [x] `pnpm install` → lockfile 갱신.
+- [x] `src/user.ts`: `UserProfile` schema (id: Uuid / email: Email / displayName / createdAt).
+- [x] `src/index.ts`: `export * from "./user.js"`.
+- [x] `src/user.test.ts`: `describe("UserProfile")` 3 test (valid / invalid email / 짧은 displayName).
+- [x] test → Pass (3/3).
+- [x] Commit: `feat(spec-02-04): scaffold @repo/contracts with UserProfile schema`
 
 ---
 
