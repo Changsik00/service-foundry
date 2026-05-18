@@ -108,12 +108,24 @@
 
 ## Task 8: design note — auth-foundation-architecture
 
-- [ ] `docs/notes/auth-foundation-architecture.md` 신규:
-  - 2차안 *전체 본문* 박음 (목표 / 핵심 철학 / 전체 구조 / 패키지 역할 / Auth vs Authorization / Identity vs Session / Provider SDK 설계 원칙 / Core Surface / Validation 전략 / Error Architecture / Session 전략 / JWT 구체 결정 / 보안 기본기 / 핵심 플로우 / MFA/Passkey / 권한 시스템 / Frontend 통합 / Backend 통합 / API 설계 / Cookie 전략 / OAuth 전략 / Auth Event System / Audit Log / Multi App / Observability / Admin Tools / 추천 기술 스택 / Provider 라이브러리 / 구현 순서)
-  - ADR cross-ref 표: 각 결정이 어느 ADR에 박혔는지
-  - phase 매핑 표: 어느 patterns/패키지가 어느 phase에 박힐지
-- [ ] Memory 갱신: `/Users/dennis/.claude/projects/-Users-dennis-Project-ck-service-foundry/memory/project_boilerplate_locked_stack.md` Prisma 제거 (Drizzle 단일)
-- [ ] Commit: `docs(spec-x-auth-foundation-prep): add design note + update memory (Drizzle single)`
+- [x] `docs/notes/auth-foundation-architecture.md` 신규 (2차안 본문 + ADR cross-ref 표 + phase 매핑 표):
+  - [x] 목표 / 핵심 컨셉 / 핵심 철학 / 전체 구조 / 패키지 역할
+  - [x] Authentication vs Authorization / Identity vs Session 분리
+  - [x] Provider 패키지 설계 원칙 (LCD 함정 회피 + Core Surface)
+  - [x] Validation 전략 (Contract-First + FE/BE)
+  - [x] Error Architecture (ADR-0012 cross-ref)
+  - [x] Session 전략 / JWT 구체 결정사항 (ADR-0013 cross-ref)
+  - [x] 보안 기본기 (ADR-0014 cross-ref)
+  - [x] 핵심 플로우 (password reset / email verify / step-up / session fixation)
+  - [x] MFA/Passkey / 권한 시스템 (RBAC + ABAC defer)
+  - [x] Frontend/Backend 통합 / API 설계 / Cookie 전략 / OAuth 전략
+  - [x] Auth Event System / Audit Log / Multi App / Observability / Admin Tools
+  - [x] 추천 기술 스택 + Provider 라이브러리 + 구현 순서 (phase 매핑)
+- [x] Memory 갱신:
+  - [x] `project_boilerplate_locked_stack.md` — Prisma 제거 + Drizzle 단일 명시 + auth foundation 13 패키지 + Auth 영역 참조 가이드
+  - [x] `auth_foundation_architecture.md` 신규 — 결정 요약 + ADR cross-ref + phase 분산
+  - [x] `MEMORY.md` index 갱신
+- [x] Commit: `docs(spec-x-auth-foundation-prep): add design note + update memory (Drizzle single)`
 
 ---
 
