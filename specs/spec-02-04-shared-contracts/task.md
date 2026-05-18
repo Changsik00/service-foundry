@@ -66,17 +66,17 @@
 
 ## Task 5: ADR-0011 + depcruise 검증
 
-- [ ] `docs/adr/0011-contracts-package-layout.md` 작성:
+- [x] `docs/adr/0011-contracts-package-layout.md` 작성:
   - frontmatter `type: convention`, status: accepted
   - Context: ADR-0003 §6 후속, spec-02-05 흡수, ADR-0006 보류 영향
-  - Decision: 5~6개 (두 패키지 분리 유지 / sub-path export 컨벤션 / `paginatedResponse` 패턴 / 핵심 schema 위주 / 호스팅 앱의 자체 schema 패키지 가이드 / spec-02-05 흡수 기록)
-  - Consequences (긍정/부정)
-  - Alternatives: 단일 contracts 통합 / OpenAPI codegen 우선 / valibot / Prisma → zod 변환
+  - Decision: 6개 (분리 유지 / sub-path export / paginatedResponse / 핵심 schema 우선 / 호스팅 앱 자체 확장 가이드 / spec-02-05 흡수 기록)
+  - Consequences (긍정 5 / 부정 4)
+  - Alternatives: 단일 통합 / OpenAPI codegen / valibot / Prisma → zod / 단일 root export / 별도 repo 분리 (6건)
   - Status: accepted (2026-05-18)
   - Related: ADR-0003 / 0006 / 0008 / 0009 / 0010, 후속 Phase 3/4
-- [ ] `pnpm exec depcruise --config packages/config/depcruise-config/base.cjs packages/` → violation 0건.
-- [ ] `wc -l packages/shared/{contracts,auth-contracts}/src/*.ts`.
-- [ ] Commit: `docs(spec-02-04): add ADR-0011 contracts-package-layout`
+- [x] `pnpm exec depcruise --config packages/config/depcruise-config/base.cjs packages/` → violation 0건 (26 modules / 33 deps).
+- [x] LOC: contracts impl 22줄 (user 11 + pagination 9 + index 2) + auth-contracts 27줄 = **49 LOC**.
+- [x] Commit: `docs(spec-02-04): add ADR-0011 contracts-package-layout`
 
 ---
 
