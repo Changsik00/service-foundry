@@ -13,62 +13,36 @@
 
 ## Task 1: 브랜치 생성 + spec/plan/task.md commit
 
-- [ ] `git checkout -b spec-x-auth-foundation-prep`
-- [ ] `git add specs/spec-x-auth-foundation-prep/{spec,plan,task}.md`
-- [ ] Commit: `docs(spec-x-auth-foundation-prep): scaffold spec/plan/task for auth foundation prep`
+- [x] `git checkout -b spec-x-auth-foundation-prep`
+- [x] `git add specs/spec-x-auth-foundation-prep/{spec,plan,task}.md`
+- [x] Commit: `docs(spec-x-auth-foundation-prep): scaffold spec/plan/task for auth foundation prep` (`3801fcd`)
 
 ---
 
 ## Task 2: queue.md + 9 phase.md 재조정
 
-- [ ] `backlog/queue.md`: 본 spec-x를 진행 중 spec-x에 표기.
-- [ ] `backlog/phase-03.md`: 본문 갱신
-  - 블로커 해소 문구 제거 ("ADR-0005 / 0006 결정 전까지 블록 상태" → 삭제)
-  - 상태: Planning (블로커 해소 대기) → **Planning (진입 가능)**
-  - 제목/요점: "Backend Primitives" → **"Backend Foundation"**
-  - 스코프: NestJS + Drizzle + apps/api scaffold + health/config/observability hooks (auth 제외 명시)
-  - 본래 "10 backend 패키지" → phase-05~08로 *분산* 명시
-- [ ] `backlog/phase-04.md`: 본문 갱신
-  - 제목/요점: "Apps" → **"Frontend Foundation"**
-  - 스코프: Vite/Next + apps/web-* scaffold + TanStack Query + ui/sdk 기본 (auth 제외)
-  - 본래 "Apps + login slice"는 phase-09로 이동 명시
-- [ ] `backlog/phase-05.md`: 본문 *신규 작성* (Auth Core + Security)
-  - 2차안 §Phase 1+2 통합
-  - 예정 패키지: `@repo/auth-contracts` 확장 / `@repo/auth-session` / `@repo/auth-jwt` / `@repo/auth-security`
-  - 플로우: password reset / email verification
-  - Related ADR: 0005 / 0006 / 0009 / 0010 / 0012 / 0013 / 0014
-- [ ] `backlog/phase-06.md`: 본문 *신규 작성* (Auth Integration)
-  - 2차안 §Phase 3
-  - 예정 패키지: `@repo/auth-nestjs` / `@repo/auth-react`
-  - Cookie 전략 + Audit & Events
-- [ ] `backlog/phase-07.md`: 본문 *신규 작성* (Auth Extension)
-  - 2차안 §Phase 4
-  - 예정 패키지: `@repo/auth-oauth` / `@repo/auth-mfa` / `@repo/auth-passkey`
-- [ ] `backlog/phase-08.md`: 본문 *신규 작성* (Provider Adapters)
-  - 2차안 §Phase 5
-  - 예정 패키지: `@repo/auth-firebase` / `@repo/auth-supabase` / `@repo/auth-testing`
-  - Core Surface 컨벤션 실증
-- [ ] `backlog/phase-09.md`: 본문 *신규 작성* (Apps + Admin Tools)
-  - vertical slice + apps/admin or auth-admin 패키지
-  - 본래 phase-04 "Apps" 본문 이전 + Admin Tools 추가
-- [ ] `backlog/phase-10.md`: 본문 갱신 (Ops & Tooling)
-  - 본래 phase-05 본문 이전 + auth observability dashboards 추가
-- [ ] `backlog/phase-11.md`: 본문 *신규 작성* (CI/CD)
-  - 본래 phase-06 본문 이전
-- [ ] Commit: `docs(spec-x-auth-foundation-prep): restructure 9 phases (option A — auth foundation 완전판)`
+- [x] `backlog/queue.md`: 본 spec-x를 진행 중 spec-x에 표기 + 대기 phase 9개로 갱신 + Icebox 정리.
+- [x] `backlog/phase-03.md`: Backend Foundation 본문 갱신 (블로커 해소 + auth 제외).
+- [x] `backlog/phase-04.md`: Frontend Foundation 본문 갱신 (auth 제외).
+- [x] `backlog/phase-05.md`: Auth Core + Security 본문 신규 작성.
+- [x] `backlog/phase-06.md`: Auth Integration 본문 신규 작성.
+- [x] `backlog/phase-07.md`: Auth Extension 본문 신규 작성.
+- [x] `backlog/phase-08.md`: Provider Adapters 본문 신규 작성.
+- [x] `backlog/phase-09.md`: Apps + Admin Tools 본문 신규 작성.
+- [x] `backlog/phase-10.md`: Ops & Tooling 본문 신규 작성.
+- [x] `backlog/phase-11.md`: CI/CD 본문 신규 작성.
+- [x] Commit: `docs(spec-x-auth-foundation-prep): restructure 9 phases (option A — auth foundation 완전판)` (`19553fb`)
 
 ---
 
 ## Task 3: ADR-0005 본문 작성 (NestJS + Drizzle 확정)
 
-- [ ] `docs/adr/0005-backend-framework-and-orm-strategy.md` 본문 *전면 갱신*:
-  - 상태: 보류 → **Accepted (2026-05-18)**
-  - Decision: NestJS + Drizzle (단일)
-  - Rationale 6건: framework / ORM / Auth integration / Session storage / 운영 비용 / memory 정정
-  - Alternatives 5건: Fastify+Drizzle / Hono+Drizzle / NestJS+Prisma / NestJS+raw SQL / Bun+Elysia
-  - Memory 충돌 명시 + 정정 가이드 (`project_boilerplate_locked_stack` Prisma 제거)
-  - Related: ADR-0002 (catalog) / ADR-0004 (JIT) / ADR-0006 (auth strategy) / ADR-0013 (session)
-- [ ] Commit: `docs(spec-x-auth-foundation-prep): accept ADR-0005 — NestJS + Drizzle (single ORM)`
+- [x] `docs/adr/0005-backend-framework-and-orm-strategy.md` 상태 + Decision 본문 갱신 (보류 분석은 향후 참조용 보존).
+- [x] Decision: NestJS + Drizzle (단일) + PostgreSQL.
+- [x] Rationale: framework Decorator DI / ORM session storage 강결합 / 두 ORM 운영 비용.
+- [x] Alternatives 5건 비채택 분석.
+- [x] Memory 정정 가이드 명시.
+- [x] Commit: `docs(spec-x-auth-foundation-prep): accept ADR-0005 — NestJS + Drizzle (single ORM)` (`63eccc3`)
 
 ---
 
