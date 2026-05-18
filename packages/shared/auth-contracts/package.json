@@ -1,0 +1,33 @@
+{
+  "name": "@repo/auth-contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "lint": "biome check .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@repo/validation": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/biome-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@repo/vitest-config": "workspace:*",
+    "@biomejs/biome": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

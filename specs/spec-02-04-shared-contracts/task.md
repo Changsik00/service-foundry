@@ -49,18 +49,18 @@
 
 ## Task 4: `@repo/auth-contracts` scaffold + 4 schema + test
 
-- [ ] `packages/shared/auth-contracts/` 디렉토리 + scaffold (동일 패턴).
-- [ ] `package.json`: deps `@repo/validation` + `zod`. exports `.` only.
-- [ ] `pnpm install` → lockfile 갱신.
-- [ ] `src/index.test.ts`: 4 schema × 1~2 test = 4~6 test:
-  - `Role`: 유효값 통과 / 잘못된 값 거부
-  - `User`: valid 통과 / email 위반 거부
-  - `Session`: valid 통과
-  - `JwtPayload`: valid 통과 / 음수 iat 거부 (z.number().int 위반 아님 — int만 검증, 음수도 통과? 확인 필요)
-- [ ] test → Fail.
-- [ ] `src/index.ts`: `Role` / `User` / `Session` / `JwtPayload` schema + type export.
-- [ ] test → Pass.
-- [ ] Commit: `feat(spec-02-04): add @repo/auth-contracts with core 4 schemas (Role/User/Session/JwtPayload)`
+- [x] `packages/shared/auth-contracts/` 디렉토리 + scaffold (동일 패턴).
+- [x] `package.json`: deps `@repo/validation` + `zod`. exports `.` only.
+- [x] `pnpm install` → lockfile 갱신.
+- [x] `src/index.test.ts`: 4 schema test:
+  - `Role`: 유효값 통과 / 잘못된 값 거부 (2건)
+  - `User`: valid 통과 / email 위반 거부 (2건)
+  - `Session`: valid 통과 (1건)
+  - `JwtPayload`: valid 통과 / 비정수 iat 거부 (2건)
+- [x] test → Fail.
+- [x] `src/index.ts`: `Role` / `User` / `Session` / `JwtPayload` schema + type export.
+- [x] test → Pass (7/7).
+- [x] Commit: `feat(spec-02-04): add @repo/auth-contracts with core 4 schemas (Role/User/Session/JwtPayload)`
 
 ---
 
