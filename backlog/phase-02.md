@@ -38,7 +38,7 @@ Phase 1이 turbo toolchain + config preset을 검증하면 그 위에 *실제 �
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
 | `spec-02-01` | shared-utils | P? | Merged | `specs/spec-02-01-shared-utils/` |
-| `spec-02-02` | shared-errors | P? | Active | `specs/spec-02-02-shared-errors/` |
+| `spec-02-02` | shared-errors | P? | Merged | `specs/spec-02-02-shared-errors/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`

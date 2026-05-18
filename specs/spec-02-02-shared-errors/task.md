@@ -102,15 +102,15 @@
 
 ## Task 10: Ship (필수)
 
-- [ ] `pnpm lint` + `pnpm typecheck` + `pnpm test` **수동 재확인** (lefthook quirk 대비).
-- [ ] `bash .harness-kit/bin/sdd test passed`.
-- [ ] **walkthrough.md 작성** (결정 기록 + 벤치마킹 요약 + v1→v2→v3 진화 + lefthook quirk 재발 여부 + 발견 사항).
-- [ ] **pr_description.md 작성**.
-- [ ] `sdd ship --check` 통과.
-- [ ] **Ship Commit**: sdd ship 자동.
-- [ ] **Push**: `git push -u origin spec-02-02-shared-errors`.
-- [ ] **PR 생성**: `gh pr create`.
-- [ ] **사용자 알림**.
+- [x] `pnpm lint` + `pnpm typecheck` + `pnpm test` 수동 재확인 PASS.
+- [x] `sdd test passed` — lastTestPass=2026-05-17T15:12:37Z.
+- [x] **walkthrough.md** 작성 (결정 13건 + scope 진화 v1→v3 + lefthook quirk 재발 + DOM lib 패턴 재발).
+- [x] **pr_description.md** 작성.
+- [x] `sdd ship --check` 통과.
+- [x] **Ship Commit**: sdd ship 자동.
+- [x] **Push**: `git push -u origin spec-02-02-shared-errors`.
+- [x] **PR 생성**: `gh pr create`.
+- [x] **사용자 알림**.
 
 ---
 
