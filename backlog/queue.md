@@ -21,13 +21,13 @@
 > 아이디어·보류 항목 보관소. 실행 불가. 관련 항목이 쌓이면 Phase로, 단발이면 spec-x로 승격.
 > 이 섹션은 sdd가 건드리지 않습니다. 자유롭게 편집하세요.
 
-- [ ] apps/admin 별도 앱 vs apps/web-vite route 결정 (Phase 4)
-- [ ] tailwind를 packages/frontend/ui에만 둘지 각 앱에도 설치할지 (Phase 4)
-- [ ] Drizzle/Prisma 마이그레이션 공통 wrapper(`pnpm db:migrate`) turbo task 통일 여부 (Phase 3 후반)
-- [ ] Integration test orchestration: testcontainers (per-test 격리) vs docker-compose snapshot (전체 환경 미리 부팅) (Phase 5)
-- [ ] Hono apps/edge-api scope: 같은 `/api` 모방 / 다른 엔드포인트 / Cloudflare Workers 전용 데모 (Phase 4)
-- [ ] commit-time hook 명령 set (Biome only / + typecheck / + affected test) (Phase 1~5 중 결정)
-- [ ] 보안 linter (semgrep / socket.dev) 추가 여부 — ADR 후보 (Phase 5 이전)
+- [ ] apps/admin 별도 앱 vs apps/web-vite route 결정 (phase-09)
+- [ ] tailwind를 packages/frontend/ui에만 둘지 각 앱에도 설치할지 (phase-04)
+- ~~Drizzle/Prisma 마이그레이션 공통 wrapper~~ **해소**: ADR-0005 Drizzle 단일 결정 (2026-05-18, spec-x-auth-foundation-prep)
+- [ ] Integration test orchestration: testcontainers (per-test 격리) vs docker-compose snapshot (전체 환경 미리 부팅) (phase-10)
+- [ ] Hono apps/edge-api scope: 같은 `/api` 모방 / 다른 엔드포인트 / Cloudflare Workers 전용 데모 (phase-09)
+- [ ] commit-time hook 명령 set (Biome only / + typecheck / + affected test) (phase-03~10 중 결정)
+- [ ] 보안 linter (semgrep / socket.dev) 추가 여부 — ADR 후보 (phase-10 이전)
 - [ ] lat.md Phase 2 도입 평가 (지식 그래프 도구)
 - [ ] ARCHITECTURE.md 본체 재작성 (Phase 3 직전, ADR-0005 결정 후)
 
@@ -43,11 +43,17 @@
 > 다음에 진행할 phase 를 자유롭게 메모합니다 (사람이 직접 편집).
 > 자동 갱신되지 않습니다 — Icebox 와 동일한 정책.
 
-- **phase-02** — shared primitives (FE/BE 공유 zod schema + utils + errors + validation + auth-contracts)
-- **phase-03** — backend (ADR-0005/0006 결정 후 진입) — settings / logger / http-client / auth / cache / queue / database-prisma / database-drizzle / security / observability
-- **phase-04** — apps (api / worker + frontend/ui / sdk / auth + web-next / web-vite / admin / edge-api) — vertical-slice login acceptance
-- **phase-05** — 운영 / 도구 (docker-compose / generators / service-manifest / startup-report / typed-config-graph)
-- **phase-06** — CI / CD (GitHub Actions + changesets release PR + docker publish + 선택 k8s manifest)
+> **2026-05-18 재조정**: spec-x-auth-foundation-prep에서 auth foundation 2차안 채택 + 옵션 A 9 phase 분할. 본래 phase-03~06(6개) → phase-03~11(9개).
+
+- **phase-03** — Backend Foundation (NestJS + Drizzle + apps/api scaffold + health/config/observability hooks) — auth 제외
+- **phase-04** — Frontend Foundation (Vite/Next + apps/web-* scaffold + TanStack Query + ui/sdk 기본) — auth 제외
+- **phase-05** — Auth Core + Security (auth-contracts 확장 + auth-session + auth-jwt + auth-security + password reset / email verify) — 2차안 §Phase 1+2
+- **phase-06** — Auth Integration (auth-nestjs + auth-react + Cookie + Audit & Events) — 2차안 §Phase 3
+- **phase-07** — Auth Extension (auth-oauth + auth-mfa + auth-passkey) — 2차안 §Phase 4
+- **phase-08** — Provider Adapters (auth-firebase + auth-supabase + auth-testing — Core Surface 컨벤션 실증) — 2차안 §Phase 5
+- **phase-09** — Apps + Admin Tools (vertical-slice login acceptance + apps/admin or auth-admin)
+- **phase-10** — Ops & Tooling (docker-compose / generators / service-manifest + auth observability dashboards)
+- **phase-11** — CI / CD (GitHub Actions + changesets release PR + docker publish + 선택 k8s manifest)
 
 ## ✅ 완료
 
