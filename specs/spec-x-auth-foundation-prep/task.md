@@ -61,16 +61,15 @@
 
 ## Task 5: ADR-0012 신규 — Auth Error Normalize
 
-- [ ] `docs/adr/0012-auth-error-normalize.md` 신규:
-  - frontmatter: type: convention, status: accepted
-  - Context: ADR-0009(flat code) + 2차안의 AuthErrorCode 11개
-  - Decision: `AuthErrorCode`를 `@repo/errors` 도메인 코드로 *흡수* (별 `auth-errors` 패키지 ❌)
-  - 11 코드 명시: INVALID_CREDENTIALS / INVALID_TOKEN / TOKEN_EXPIRED / SESSION_REVOKED / USER_NOT_FOUND / EMAIL_ALREADY_EXISTS / EMAIL_NOT_VERIFIED / MFA_REQUIRED / MFA_INVALID_CODE / INSUFFICIENT_PERMISSION / TOO_MANY_ATTEMPTS / ACCOUNT_LOCKED / PROVIDER_ERROR
-  - Provider normalize helper 위치: `auth-{provider}` 각 패키지 내부
-  - Account enumeration 방지 원칙
-  - Alternatives: 별 `auth-errors` 패키지 / `class AuthError extends AppError` / Per-provider error 그대로
-  - Related: ADR-0009 / 0006 / 0010
-- [ ] Commit: `docs(spec-x-auth-foundation-prep): add ADR-0012 — auth error normalize`
+- [x] `docs/adr/0012-auth-error-normalize.md` 신규 (5 Decision):
+  - [x] Decision 1: `AuthErrorCode`를 `@repo/errors` 도메인 코드로 흡수 (별 패키지 ❌)
+  - [x] Decision 2: AuthErrorCode 13 코드 표 (PROVIDER_ERROR + ACCOUNT_LOCKED 분리 포함)
+  - [x] Decision 3: Provider Normalize Helper 각 `auth-{provider}` 내부 배치
+  - [x] Decision 4: Account Enumeration 방지 원칙
+  - [x] Decision 5: `AuthError extends AppError` 미생성 (ADR-0009 flat code 일관)
+  - [x] Alternatives 4건 비채택
+  - [x] Related: ADR-0009 / 0006 / 0010
+- [x] Commit: `docs(spec-x-auth-foundation-prep): add ADR-0012 — auth error normalize`
 
 ---
 
