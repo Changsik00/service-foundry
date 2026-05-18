@@ -92,15 +92,15 @@
 
 ## Task 7: Ship (필수)
 
-- [ ] `pnpm lint` + `pnpm typecheck` + `pnpm test` 그린 (lefthook race fix 검증 — 정상 차단 동작).
-- [ ] `bash .harness-kit/bin/sdd test passed`.
-- [ ] **walkthrough.md 작성** (결정 + zod v4 API 정찰 결과 + lefthook race 재발 여부 + 발견 사항).
-- [ ] **pr_description.md 작성**.
-- [ ] `sdd ship --check` 통과.
-- [ ] **Ship Commit**: sdd ship 자동.
-- [ ] **Push**: `git push -u origin spec-02-03-shared-validation`.
-- [ ] **PR 생성**: `gh pr create`.
-- [ ] **사용자 알림**.
+- [x] `pnpm lint` + `pnpm typecheck` + `pnpm test` 그린 (lefthook race fix 검증 — 정상 차단 동작).
+- [x] `bash .harness-kit/bin/sdd test passed`.
+- [x] **walkthrough.md 작성** (결정 + zod v4 API 정찰 결과 + lefthook race 재발 여부 + 발견 사항).
+- [x] **pr_description.md 작성**.
+- [x] `sdd ship --check` 통과.
+- [x] **Ship Commit**: sdd ship 자동 (`12cff4d`).
+- [x] **Push**: `git push -u origin spec-02-03-shared-validation`.
+- [x] **PR 생성**: `gh pr create` → PR #6 (머지 완료, `9dd817b`).
+- [x] **사용자 알림**.
 
 ---
 
