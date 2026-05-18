@@ -35,15 +35,15 @@
 
 ## Task 3: `paginatedResponse<T>` helper
 
-- [ ] `src/pagination.test.ts`: `describe("paginatedResponse")` 3 test:
+- [x] `src/pagination.test.ts`: `describe("paginatedResponse")` 3 test:
   - 응답 구조 valid (items + page + perPage + total)
   - item schema 위반 거부
   - 음수 total 거부
-- [ ] test → Fail.
-- [ ] `src/pagination.ts`: `paginatedResponse<T>(itemSchema)` 구현.
-- [ ] `src/index.ts`에 re-export 추가.
-- [ ] test → Pass.
-- [ ] Commit: `feat(spec-02-04): add paginatedResponse helper`
+- [x] test → Fail.
+- [x] `src/pagination.ts`: `paginatedResponse<T>(itemSchema)` 구현.
+- [x] `src/index.ts`에 re-export 추가.
+- [x] test → Pass (6/6).
+- [x] Commit: `feat(spec-02-04): add paginatedResponse helper`
 
 ---
 
