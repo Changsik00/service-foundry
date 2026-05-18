@@ -57,13 +57,11 @@
 
 ## Task 4: `BaseBackendSchema` + test
 
-- [ ] `src/index.test.ts`: `describe("BaseBackendSchema")` 2 test:
-  - 모든 default 적용 (`NODE_ENV: "test"` 만으로 PORT/LOG_LEVEL 기본값)
-  - 잘못된 NODE_ENV 거부
-- [ ] test → Fail.
-- [ ] `src/index.ts`: `BaseBackendSchema` 정의 (NODE_ENV / PORT / LOG_LEVEL).
-- [ ] test → Pass.
-- [ ] Commit: `feat(spec-03-01): add BaseBackendSchema (NODE_ENV / PORT / LOG_LEVEL)`
+- [x] `src/index.test.ts`: `describe("BaseBackendSchema")` 2 test (default 적용 / 잘못된 NODE_ENV 거부).
+- [x] test → Fail.
+- [x] `src/index.ts`: `BaseBackendSchema` (NODE_ENV 4값 / PORT coerce int min/max default 3000 / LOG_LEVEL pino 6단계 default info) + `BaseBackendInput` / `BaseBackendOutput` type export.
+- [x] test → Pass (5/5).
+- [x] Commit: `feat(spec-03-01): add BaseBackendSchema (NODE_ENV / PORT / LOG_LEVEL)`
 
 ---
 

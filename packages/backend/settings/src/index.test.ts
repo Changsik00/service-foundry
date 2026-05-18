@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { defineSettings } from "./index.js";
+import { BaseBackendSchema, defineSettings } from "./index.js";
 
 describe("defineSettings (re-export)", () => {
   it("@env-kit/node-settings의 defineSettings를 그대로 노출한다", () => {
@@ -35,5 +35,22 @@ describe("defineSettings (re-export)", () => {
       build: () => ({}),
     });
     expect(() => loader({ APP_ENV: "invalid" })).toThrow();
+  });
+});
+
+describe("BaseBackendSchema", () => {
+  it("NODE_ENV만 명시해도 PORT / LOG_LEVEL 기본값을 적용한다", () => {
+    const result = BaseBackendSchema.safeParse({ NODE_ENV: "test" });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.NODE_ENV).toBe("test");
+      expect(result.data.PORT).toBe(3000);
+      expect(result.data.LOG_LEVEL).toBe("info");
+    }
+  });
+
+  it("잘못된 NODE_ENV는 거부한다", () => {
+    const result = BaseBackendSchema.safeParse({ NODE_ENV: "invalid" });
+    expect(result.success).toBe(false);
   });
 });
