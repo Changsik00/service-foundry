@@ -82,15 +82,15 @@
 
 ## Task 6: Ship (필수)
 
-- [ ] `pnpm lint` + `pnpm typecheck` + `pnpm test` 그린 (lefthook race fix 재검증).
-- [ ] `bash .harness-kit/bin/sdd test passed`.
-- [ ] **walkthrough.md 작성** (결정 + spec-02-05 흡수 효과 + lefthook race 재발 여부 + 발견 사항).
-- [ ] **pr_description.md 작성**.
-- [ ] `sdd ship --check` 통과.
-- [ ] **Ship Commit**: sdd ship 자동.
-- [ ] **Push**: `git push -u origin spec-02-04-shared-contracts`.
-- [ ] **PR 생성**: `gh pr create`.
-- [ ] **사용자 알림**.
+- [x] `pnpm lint` + `pnpm typecheck` + `pnpm test` 그린 (lefthook race fix 재검증 — 정상 차단).
+- [x] `bash .harness-kit/bin/sdd test passed`.
+- [x] **walkthrough.md 작성** (결정 11건 + spec-02-05 흡수 효과 + lefthook race 재검증 + 발견 사항 5건).
+- [x] **pr_description.md 작성**.
+- [x] `sdd ship --check` 통과.
+- [x] **Ship Commit**: sdd ship 자동 (`5eb7b4e`).
+- [x] **Push**: `git push -u origin spec-02-04-shared-contracts`.
+- [x] **PR 생성**: `gh pr create` → PR #7 (머지 완료, `0848f00`).
+- [x] **사용자 알림**.
 
 ---
 
