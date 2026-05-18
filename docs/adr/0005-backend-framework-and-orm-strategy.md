@@ -1,11 +1,70 @@
-# ADR-005: 백엔드 프레임워크 & ORM 전략 (보류)
+# ADR-005: 백엔드 프레임워크 & ORM 전략
 
-* 상태: **보류** — 결정은 백엔드 구현 단계로 연기
-* 날짜: 2026-05-17
-* 결정 기한: 첫 `packages/backend/*` 패키지 스캐폴딩 이전 (`backlog/phase-03.md`)
+* 상태: **Accepted** (2026-05-18, spec-x-auth-foundation-prep)
+* 결정일: 2026-05-18 (보류 → Accepted)
+* 보류 본문 작성일: 2026-05-17
 * 담당: Platform / Backend
 * 스코프: HTTP 프레임워크, ORM/쿼리 계층, 그리고 그 조합에서 따라 나오는 아키텍처 패턴
-* 대상 독자: 이 문서는 미래의 사람**과** AI 에이전트가 결정 시점에 빠르고 방어 가능하게 의사결정할 수 있도록 작성된다.
+* 대상 독자: 이 문서는 미래의 사람**과** AI 에이전트가 결정 본문을 빠르고 방어 가능하게 참조할 수 있도록 작성된다.
+
+> **결정 요약** (자세한 본문은 §2):
+> **NestJS + Drizzle + PostgreSQL** 단일. Prisma는 *채택 안 함*.
+> 결정 트리거: Auth Foundation 2차안(`docs/notes/auth-foundation-architecture.md`) 채택 + auth-session storage 강결합 + 두 ORM 운영 비용.
+
+---
+
+# ⚡ Decision (Accepted)
+
+## 결정 본문
+
+| 항목 | 결정 |
+|---|---|
+| HTTP Framework | **NestJS** |
+| ORM | **Drizzle 단일** (Prisma 채택 안 함) |
+| Database | **PostgreSQL** |
+| 검증 | Zod (locked) |
+| 인증 라이브러리 | 자체 구축 (ADR-0006 — Provider SDK 컨벤션 + Internal Session) |
+| JWT 라이브러리 | jose (ADR-0013) |
+| 패키지 컴파일 | tsup (ADR-0004) |
+
+## Rationale
+
+**1. Framework = NestJS**:
+- Decorator-based DI가 `@UseGuards(AuthGuard) @Roles(...) @CurrentUser()` 패턴에 *자연 적합* (ADR-0006의 auth-nestjs 패키지 구조).
+- Fastify/Hono는 *함수형*이라 auth 통합에 *추가 wrapper layer* 필요.
+- 학습 곡선은 있으나 *보일러플레이트 가치* 측면에서 *명시적 모듈 경계*가 장점.
+
+**2. ORM = Drizzle 단일** (Prisma 채택 안 함):
+- **Auth session storage 강결합**: ADR-0013의 Session model(rotation chain + reuse detection)이 *SQL 정밀 제어* 필요 — Drizzle의 raw SQL 친화 + relational query API가 우위.
+- **두 ORM 운영 비용**: schema 동기화 / 마이그레이션 워크플로 / 학습 곡선 — 보일러플레이트라도 *유지 비용 vs 학습 가치* 역전.
+- **memory 정정**: `project_boilerplate_locked_stack` ("Prisma+Drizzle 둘 다") → **Drizzle 단일**로 정정. 이유는 위 두 항목.
+- Auth Foundation 2차안(`docs/notes/auth-foundation-architecture.md` §추천 기술 스택)도 Drizzle 명시.
+
+**3. Database = PostgreSQL** (변경 없음):
+- §3 (미리 잠긴 결정)에서 이미 PostgreSQL 잠금. ADR-0013의 Session storage가 PostgreSQL 활용.
+
+## Memory 정정 가이드
+
+이 결정으로 `~/.claude/projects/-Users-dennis-Project-ck-service-foundry/memory/project_boilerplate_locked_stack.md`의 *"Prisma+Drizzle 둘 다"* 항목이 *outdated*. spec-x-auth-foundation-prep Task 8에서 갱신.
+
+## Alternatives — 비채택 이유
+
+| 대안 | 비채택 이유 |
+|---|---|
+| **Fastify + Drizzle** | 성능/유연성 우위 있으나 *auth-nestjs Guards/Decorators 패턴* 적용 시 함수형 plugin 구조라 *추가 wrapper layer* 필요. NestJS의 *명시적 모듈 경계* 가치 우선. |
+| **Hono + Drizzle** | edge/serverless 친화이나 *주력 backend가 Node 환경*이고 *NestJS와 동등한 module 경계*는 부족. apps/edge-api(phase-09)에서 *데모로* 사용 가능 — *주력 framework는 아님*. |
+| **NestJS + Prisma** | Prisma 강점(schema 도구 / 마이그레이션 UX)은 인정. 그러나 *session storage가 raw SQL 의존*하면 Prisma는 *dead weight* + 두 ORM 운영 부담. |
+| **NestJS + raw SQL (knex 등)** | type-safety 손실. Drizzle이 *raw SQL 친화 + type-safe*라 동등 가치 우위. |
+| **Bun + Elysia** | runtime + framework 동시 도입 부담 + 보일러플레이트 검증된 stack(Node + NestJS) 우선. 검토 후순위. |
+
+---
+
+# ⚠️ 아래 §1~§16은 *보류 분석 자료* — 향후 참조용
+
+> 본 ADR이 *Accepted* 상태가 된 후에도, 아래 분석 자료는 *결정의 근거*로 보존됩니다.
+> 결정 후 *다시 분석 필요 없을 시 §1~§16 skip*. 결정 변경 시 재참조.
+
+---
 
 ---
 
