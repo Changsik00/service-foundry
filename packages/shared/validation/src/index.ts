@@ -1,5 +1,6 @@
 import { type AppError, validationError } from "@repo/errors";
-import { type ZodError, z } from "zod";
+import { err, ok, type Result } from "@repo/utils";
+import { type ZodError, type ZodType, z } from "zod";
 
 export const Uuid = z.uuid();
 
@@ -19,4 +20,13 @@ export const fromZodError = (error: ZodError, message = "Validation failed"): Ap
     message: issue.message,
   }));
   return validationError(message, { errors });
+};
+
+export const parse = <T>(
+  schema: ZodType<T>,
+  data: unknown,
+  message?: string,
+): Result<T, AppError> => {
+  const result = schema.safeParse(data);
+  return result.success ? ok(result.data) : err(fromZodError(result.error, message));
 };

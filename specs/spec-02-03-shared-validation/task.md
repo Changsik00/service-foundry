@@ -59,17 +59,18 @@
 
 ## Task 5: `parse<T>` Result wrapper
 
-- [ ] `describe("parse")` 6 test:
+- [x] `describe("parse")` 6 test:
   - 성공 → `ok(data)`
   - 실패 → `err(AppError)` + code=VALIDATION
   - 중첩 schema 실패 → details.errors path 올바름
   - array path 실패 → 동일
   - custom message override
   - zod transform/refine 성공/실패 케이스
-- [ ] test → Fail.
-- [ ] `parse<T>(schema, data, message?): Result<T, AppError>` 구현.
-- [ ] test → Pass.
-- [ ] Commit: `feat(spec-02-03): add parse Result wrapper for zod schemas`
+- [x] test → Fail (6 fail).
+- [x] `parse<T>(schema, data, message?): Result<T, AppError>` 구현.
+- [x] test → Pass (20/20).
+- [x] **추가 결정**: `@repo/utils`를 runtime dep로 격상 (parse가 ok/err를 런타임 사용 — plan의 devDep 분류 정정).
+- [x] Commit: `feat(spec-02-03): add parse Result wrapper for zod schemas`
 
 ---
 

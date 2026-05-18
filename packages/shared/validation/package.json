@@ -20,13 +20,13 @@
   },
   "dependencies": {
     "@repo/errors": "workspace:*",
+    "@repo/utils": "workspace:*",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@repo/biome-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@repo/vitest-config": "workspace:*",
-    "@repo/utils": "workspace:*",
     "@biomejs/biome": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

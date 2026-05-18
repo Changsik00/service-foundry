@@ -167,6 +167,9 @@ importers:
       '@repo/errors':
         specifier: workspace:*
         version: link:../errors
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../utils
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -180,9 +183,6 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../config/typescript-config
-      '@repo/utils':
-        specifier: workspace:*
-        version: link:../utils
       '@repo/vitest-config':
         specifier: workspace:*
         version: link:../../config/vitest-config

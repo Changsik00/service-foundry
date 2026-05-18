@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { Email, fromZodError, Pagination, Uuid } from "./index.js";
+import { Email, fromZodError, Pagination, parse, Uuid } from "./index.js";
 
 describe("Uuid", () => {
   it("valid v4 UUID를 통과시킨다", () => {
@@ -108,5 +108,75 @@ describe("fromZodError", () => {
     // zod 기본 message가 details.errors[].message에 그대로 보존
     expect(details.errors[0]?.message).not.toBe("사용자 검증 실패");
     expect(details.errors[0]?.message.length).toBeGreaterThan(0);
+  });
+});
+
+describe("parse", () => {
+  it("성공 시 ok(data)를 반환한다", () => {
+    const result = parse(Email, "user@example.com");
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).toBe("user@example.com");
+    }
+  });
+
+  it("실패 시 err(AppError) + code=VALIDATION을 반환한다", () => {
+    const result = parse(Email, "not-an-email");
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("VALIDATION");
+      expect(result.error.statusCode).toBe(400);
+    }
+  });
+
+  it("중첩 schema 실패 시 details.errors path가 올바르다", () => {
+    const schema = z.object({ user: z.object({ email: Email }) });
+    const result = parse(schema, { user: { email: "bad" } });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      const details = result.error.details as { errors: Array<{ path: string; message: string }> };
+      expect(details.errors[0]?.path).toBe("user.email");
+    }
+  });
+
+  it("array index path 실패도 동일하게 path가 올바르다", () => {
+    const schema = z.object({
+      items: z.array(z.object({ id: Uuid })),
+    });
+    const result = parse(schema, { items: [{ id: "bad" }] });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      const details = result.error.details as { errors: Array<{ path: string; message: string }> };
+      expect(details.errors[0]?.path).toBe("items.0.id");
+    }
+  });
+
+  it("custom message override가 적용된다", () => {
+    const result = parse(Email, "bad", "도메인 메시지");
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.message).toBe("도메인 메시지");
+    }
+  });
+
+  it("zod transform/refine schema도 처리한다 (성공/실패)", () => {
+    const schema = z
+      .string()
+      .transform((s) => s.trim())
+      .refine((s) => s.length > 0, { message: "empty after trim" });
+
+    const ok = parse(schema, "  hello  ");
+    expect(ok.ok).toBe(true);
+    if (ok.ok) {
+      expect(ok.value).toBe("hello");
+    }
+
+    const ng = parse(schema, "   ");
+    expect(ng.ok).toBe(false);
+    if (!ng.ok) {
+      expect(ng.error.code).toBe("VALIDATION");
+      const details = ng.error.details as { errors: Array<{ path: string; message: string }> };
+      expect(details.errors[0]?.message).toBe("empty after trim");
+    }
   });
 });
