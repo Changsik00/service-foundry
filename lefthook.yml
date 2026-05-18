@@ -1,11 +1,13 @@
 pre-commit:
-  parallel: true
+  parallel: false
+  piped: true
   commands:
     biome:
       glob: "*.{js,jsx,ts,tsx,json,jsonc}"
       run: pnpm exec biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}
       stage_fixed: true
     typecheck:
+      glob: "*.{ts,tsx,cts,mts}"
       run: pnpm turbo run typecheck --output-logs=errors-only
 
 commit-msg:
