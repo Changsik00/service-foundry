@@ -76,17 +76,17 @@
 
 ## Task 6: ADR-0010 + depcruise 검증
 
-- [ ] `docs/adr/0010-validation-zod-result-integration.md` 작성:
+- [x] `docs/adr/0010-validation-zod-result-integration.md` 작성:
   - frontmatter `type: convention`, status: accepted
   - Context: ADR-0008/0009 후속, safeParse↔Result 변환 boilerplate 해소, ADR-0009 details.errors[] 컨벤션 코드 구체화
-  - Decision: 7개 (parse wrapper / fromZodError 컨벤션 / 공통 schema 3 / flat code 유지 / Pagination 기본값 / parseAsync 미제공 / zod-validation-error 미채택 — 우리 fromZodError가 동일 역할)
-  - Consequences (긍정/부정)
-  - Alternatives: zod-validation-error / valibot / yup / superstruct / io-ts — 비채택 이유
-  - Status: accepted (2026-05-18, spec-02-03 머지)
-  - Related: ADR-0008 / 0009, 후속 spec-02-04/05 / Phase 3 backend / Phase 4 frontend
-- [ ] `pnpm exec depcruise --config packages/config/depcruise-config/base.cjs packages/` → violation 0건.
-- [ ] `wc -l packages/shared/validation/src/index.ts` (예상 60~100줄).
-- [ ] Commit: `docs(spec-02-03): add ADR-0010 validation-zod-result-integration`
+  - Decision: 7개 + zod v4 API standalone 채택 명시 + message 보존 결정
+  - Consequences (긍정 5 / 부정 4)
+  - Alternatives: zod-validation-error / valibot / yup / superstruct / io-ts / parse wrapper 없이 zod만 — 비채택 이유
+  - Status: accepted (2026-05-18)
+  - Related: ADR-0002 / 0008 / 0009, 후속 spec-02-04/05 / Phase 3 backend / Phase 4 frontend
+- [x] `pnpm exec depcruise --config packages/config/depcruise-config/base.cjs packages/` → violation 0건 (17 modules / 17 deps).
+- [x] `wc -l packages/shared/validation/src/index.ts` → **32 줄** (추정 60~100보다 적음 — 간결).
+- [x] Commit: `docs(spec-02-03): add ADR-0010 validation-zod-result-integration`
 
 ---
 
