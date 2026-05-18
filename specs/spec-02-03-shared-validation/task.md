@@ -45,15 +45,15 @@
 
 ## Task 4: `fromZodError` 변환
 
-- [ ] `describe("fromZodError")` 4 test:
+- [x] `describe("fromZodError")` 4 test:
   - 단일 issue → details.errors[0].path / message
   - 중첩 path (`user.email`) join
   - array index path (`items.0.name`)
   - custom message override + zod 기본 message 보존
-- [ ] test → Fail.
-- [ ] `fromZodError(error: ZodError, message?: string): AppError` 구현.
-- [ ] test → Pass.
-- [ ] Commit: `feat(spec-02-03): add fromZodError ZodError -> AppError converter`
+- [x] test → Fail (4 fail).
+- [x] `fromZodError(error: ZodError, message?: string): AppError` 구현.
+- [x] test → Pass (14/14).
+- [x] Commit: `feat(spec-02-03): add fromZodError ZodError -> AppError converter`
 
 ---
 
