@@ -9,6 +9,8 @@ status: accepted
 
 ## 📚 Context
 
+> 본 ADR의 *맥락 보강* 노트: [`docs/notes/error-handling-paradigms.md`](../notes/error-handling-paradigms.md) — Exception / Result / Functional Effect / Validation 4 계열 vs 본 디자인의 매핑 + trade-off.
+
 ADR-0008에서 `Result<T, E = Error>`를 박았다. 그러나 `E = Error`만으론 *도메인 컨텍스트(code / statusCode / details)*가 없어 HTTP 응답 / 사용자 메시지 / 로깅 / 클라이언트 분기가 모두 어렵다. 또한 FE는 BE 응답 body를 받아 *AppError class 인스턴스로 복원* 해야 `isAppError` / `isCode` 같은 가드를 일관되게 쓸 수 있다.
 
 벤치마킹 결과(@hapi/boom / http-errors / NestJS HttpException / RFC 7807 / Stripe API / GitHub API / neverthrow / `@total-typescript/error` / zod-validation-error): 산업 표준은 `code + statusCode + 카탈로그 + 사용자 도메인 확장`. 우리는 *프레임워크 무관 데이터 모델*로 박는다.
@@ -68,4 +70,5 @@ Accepted (2026-05-18, spec-02-02 머지 시점). 첫 사용자: `@repo/errors` �
 - spec: `specs/spec-02-02-shared-errors/spec.md`
 - 코드: `packages/shared/errors/src/index.ts` (AppError + 8 factory + 양방향 wire + 3 narrow helper + wrap)
 - 선행 ADR: 0008 (Result type)
+- 디자인 맥락 노트: [`docs/notes/error-handling-paradigms.md`](../notes/error-handling-paradigms.md) — 4 패러다임 매핑
 - 후속 spec: spec-02-03 (zod 변환), Phase 3 backend HTTP middleware (RFC 7807 toProblemDetails 후보), Phase 4 frontend/sdk (axios interceptor)

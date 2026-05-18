@@ -85,6 +85,15 @@ pnpm --filter @repo/errors test
 - **다중 에러 type 격상** — `details.errors[]` 컨벤션 빈번 사용 시 별 type 도입 후보 (spec-02-03).
 - **`packages/config/*`에 lint script 추가** — Icebox 이슈, phase-02 마무리 시 결정.
 
+## 📖 디자인 맥락 — 4 패러다임 매핑
+
+> dennis의 비판 ("Exception / Result / Functional Effect / Validation 중 우리는 어디인가") 후 작성.
+> 본 디자인을 4 계열 frame에 매핑한 design note (matklad 스타일, ADR과 분리):
+>
+> 👉 [`docs/notes/error-handling-paradigms.md`](../../docs/notes/error-handling-paradigms.md)
+
+핵심: **Result 계열을 흐름 제어 SoT + Exception 계열을 데이터 모델 + Validation 계열은 `details.errors[]` hook + Functional Effect 계열 비채택**. 각 계열을 완전 흡수한 디자인 대비 *trade-off cost*를 ADR-0009 결정과 함께 박음.
+
 ## 📅 메타
 
 | 항목 | 값 |
