@@ -12,7 +12,8 @@
 | **시작일** | 미정 |
 | **목표 종료일** | 미정 |
 | **소유자** | dennis |
-| **Base Branch** | 미정 (Phase 진입 시 결정) |
+| **Base Branch** | `phase-03-backend-foundation` |
+| **Base Branch 모드** | Phase Base Branch 모드 — Spec PR이 phase branch로 머지, 모든 Spec 완료 후 phase branch가 main으로 |
 
 ## 🎯 배경 및 목표
 
@@ -40,6 +41,7 @@ NestJS + Drizzle 기반의 *non-auth backend 인프라 패키지 6개* + `apps/a
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
+| `spec-03-01` | backend-settings | P? | Active | `specs/spec-03-01-backend-settings/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`

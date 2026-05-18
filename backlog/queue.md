@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
+- **phase-03** — Backend Foundation — 1 spec — 다음: spec-03-01-backend-settings
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
