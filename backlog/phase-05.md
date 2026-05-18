@@ -1,6 +1,7 @@
-# phase-05: 운영 / 도구 (Ops & Tooling)
+# phase-05: Auth Core + Security
 
-> service-foundry의 *차별화 영역*. 대부분 보일러플레이트가 "앱 생성"까지만 다루는 데 비해 본 phase는 운영 도구(docker-compose, generator, manifest/report)를 흡수한다.
+> Auth Foundation의 *기초 + 보안 baseline*. 2차안 §Phase 1+2 통합. backend 중심.
+> `@repo/auth-contracts` 확장 + auth-session + auth-jwt + auth-security + password reset / email verify flow.
 
 ## 📋 메타
 
@@ -17,21 +18,27 @@
 
 ### 현재 상황
 
-Phase 4가 끝나면 apps/api + apps/web-*가 부트되지만, 외부 의존(Postgres / Redis / 관찰 도구) 부트는 수동. 또한 신규 패키지/앱 생성 시 보일러플레이트 코드를 매번 복붙하는 비용이 있다. 본 phase는 이 두 영역을 자동화한다.
-
-또한 service-foundry의 *운영 친화* 차별화 포인트 중 일부(service manifest, startup report, typed config graph)가 본 phase에 속한다.
+- phase-02에서 `@repo/auth-contracts` *최소 4 schema* (`Role` / `User` / `Session` / `JwtPayload`) 박힘.
+- phase-03 (Backend Foundation) 완료 시 NestJS + Drizzle + apps/api 부트 가능.
+- **ADR-0006 / 0012 / 0013 / 0014** 확정 (spec-x-auth-foundation-prep):
+  - ADR-0006: Auth Platform 전략 (Consistent Wrapped SDK)
+  - ADR-0012: AuthErrorCode를 `@repo/errors` 흡수
+  - ADR-0013: Session lifecycle (JWT EdDSA + Refresh rotation + Reuse detection)
+  - ADR-0014: Security baseline (CSRF / Rate limit / PKCE / argon2 / Step-up)
+- 본 phase는 *backend-only* — auth-react / auth-nestjs Guards는 phase-06.
 
 ### 목표 (Goal)
 
-`tooling/docker/`로 로컬 인프라 한 줄 부트, `tooling/generators/`로 `pnpm new package` / `pnpm new app` 한 줄 생성, `tooling/scripts/`로 service-manifest / startup-report / typed-config-graph 자동화.
+`@repo/auth-contracts` 풍부한 schema + `@repo/auth-session` (rotation/revocation) + `@repo/auth-jwt` (jose 기반 EdDSA) + `@repo/auth-security` (CSRF/rate-limit/argon2) + apps/api에 password reset / email verify endpoint 박힘.
 
 ### 성공 기준 (Success Criteria) — 정량 우선
 
-1. `docker compose -f tooling/docker/compose.yaml up` 한 줄로 postgres + redis + prometheus + grafana + tempo + loki 부트.
-2. `pnpm new package <name>` / `pnpm new app <name>` 실행 시 ADR-0003 layout + `@repo/*` 네이밍에 맞춰 스캐폴딩됨.
-3. apps/api 부트 시 startup report(masked config dump)가 stdout/log에 출력.
-4. apps/* 각각의 `service.yaml` (port / expose / depends)가 작성되고 manifest validator로 검증 가능.
-5. typed config graph 명령(가칭 `pnpm tooling:config-graph`)이 config 의존 그래프를 출력 (dot/mermaid).
+1. `@repo/auth-contracts` 확장 — SignInSchema / SignUpSchema / RefreshSchema / PasswordResetSchema / EmailVerifySchema + MfaChallenge interface 자리 잡기.
+2. `@repo/auth-session` 작성 — Session model + rotation chain + reuse detection 동작.
+3. `@repo/auth-jwt` 작성 — jose EdDSA + JWKS endpoint (`/.well-known/jwks.json`).
+4. `@repo/auth-security` 작성 — CSRF middleware + rate limiter + argon2 password hash.
+5. apps/api에 `/auth/password/reset` + `/auth/email/verify` endpoint 동작 (실 데이터 round-trip).
+6. depcruise 그린.
 
 ## 🧩 작업 단위 (SPECs)
 
@@ -40,106 +47,85 @@ Phase 4가 끝나면 apps/api + apps/web-*가 부트되지만, 외부 의존(Pos
 |---|---|:---:|---|---|
 <!-- sdd:specs:end -->
 
-> 상태 허용값: `Backlog` / `In Progress` / `Merged`
+### spec-05-01 — auth-contracts-extend
 
-### spec-05-01 — tooling-docker
+- **요점**: `@repo/auth-contracts` 확장 — SignIn/SignUp/Refresh/PasswordReset/EmailVerify schema + AuthResult union type.
+- **참조**: ADR-0006 (AuthResult union), design note §Validation 전략.
+- **연관 모듈**: `packages/shared/auth-contracts`
 
-- **요점**: `tooling/docker/compose.yaml` — postgres + redis + prometheus + grafana + tempo + loki.
-- **방향성**: apps/api dev 모드 부트 시 한 번에 띄울 수 있도록 healthcheck 포함. observability 스택은 OTel collector를 통해 tempo/loki에 push.
-- **연관 모듈**: `tooling/docker/`
+### spec-05-02 — auth-session
 
-### spec-05-02 — tooling-generators
+- **요점**: Session model (Drizzle schema) + rotation chain (`refreshTokenFamily`) + reuse detection.
+- **참조**: ADR-0013.
+- **연관 모듈**: `packages/backend/auth-session`
 
-- **요점**: plop 기반 `pnpm new package` / `pnpm new app`.
-- **방향성**: 신규 패키지/앱 생성 시 ADR-0003 layout + `@repo/<category>/<pkg>` 네이밍 자동 적용. tsconfig / vitest / package.json 보일러플레이트 자동 작성.
-- **연관 모듈**: `tooling/generators/`
+### spec-05-03 — auth-jwt
 
-### spec-05-03 — tooling-script-service-manifest
+- **요점**: jose EdDSA + Key rotation (90일) + JWKS endpoint + Claims (sub/iat/exp/iss/aud/jti).
+- **참조**: ADR-0013.
+- **연관 모듈**: `packages/backend/auth-jwt`
 
-- **요점**: 각 app의 `service.yaml` (port / expose / depends) 작성 + manifest validator.
-- **방향성**: service-foundry의 차별화 포인트 "service manifest"의 본격화. 자체 구현. apps/* 새로 추가 시 validator가 누락 검출.
-- **연관 모듈**: `tooling/scripts/manifest/`
+### spec-05-04 — auth-security
 
-### spec-05-04 — tooling-script-startup-report
+- **요점**: CSRF middleware + rate limiter (IP/account/progressive) + account lockout + argon2 password hash.
+- **참조**: ADR-0014.
+- **연관 모듈**: `packages/backend/auth-security`
 
-- **요점**: apps/api 부트 시 masked config dump.
-- **방향성**: backend/settings(Phase 3)가 노출한 config schema를 기반으로 secret을 mask해 출력. dev / staging / prod 환경 차이 명확화.
-- **연관 모듈**: `tooling/scripts/startup-report/` + `packages/backend/settings` 통합
+### spec-05-05 — password-reset-flow
 
-### spec-05-05 — tooling-script-typed-config-graph
+- **요점**: `/auth/password/reset` + `/auth/password/reset/confirm` endpoint. cryptographically random token + single-use + 15분 TTL + 응답 항상 200 (enumeration 방지).
+- **참조**: design note §핵심 플로우.
+- **연관 모듈**: apps/api + auth-session + auth-security
 
-- **요점**: typed config 의존 그래프 시각화.
-- **방향성**: backend/settings의 config schema 트리를 dot/mermaid로 export. AI 에이전트와 사람 모두에게 "어떤 config가 어디서 쓰이는지" 한눈에 보이게.
-- **연관 모듈**: `tooling/scripts/config-graph/`
+### spec-05-06 — email-verify-flow
 
-### spec-05-06 — security-linter-evaluation (조건부)
-
-- **요점**: semgrep / socket.dev 등 보안 linter 추가 여부 평가 + 결정.
-- **방향성**: Icebox 이슈("보안 linter 추가 여부 — ADR 후보") 결정 결과를 spec으로 끊거나 ADR로 작성. Phase 5 이전 결정.
-- **연관 모듈**: 결정 따라 변경
+- **요점**: `/auth/email/verify/request` + `/auth/email/verify/confirm` endpoint. single-use token + 24h TTL.
+- **참조**: design note §핵심 플로우.
+- **연관 모듈**: apps/api + auth-session
 
 ## 📌 결정 기록 (Review)
 
 | 이슈 | 선택지 | 결정 | 이유 |
 |---|---|---|---|
-| 통합 테스트 orchestration | testcontainers / docker-compose snapshot | 미정 (Icebox) | per-test 격리 vs 전체 환경 미리 부팅 trade-off |
-| 보안 linter | semgrep / socket.dev / 없음 | 미정 (Icebox, ADR 후보) | 도입 시 ADR로 박을 가치 있음 |
+| `auth-errors` 별 패키지 vs `@repo/errors` 흡수 | 별 패키지 / 흡수 | **흡수** | ADR-0012 — flat code 일관 |
+| `auth-session` 별 패키지 vs `auth-jwt` 흡수 | 별 패키지 / 흡수 | **별 패키지** | ADR-0013 — rotation/revocation 응집 |
+| MFA 구현 시점 | 본 phase / phase-07 | **phase-07** | 본 phase는 *interface 자리만* (AuthResult union mfa_required) — 구현은 phase-07 |
+| `Result` 라이브러리 | neverthrow / `@repo/utils` Result | `@repo/utils` Result | ADR-0008 — 자체 Result 사용. neverthrow 비채택 |
+| Session storage | Drizzle (PostgreSQL) / Redis | Drizzle | ADR-0013 — Redis는 access token revocation(jti deny list)에만 *후속* 옵션 |
 
 ## 🧪 통합 테스트 시나리오 (간결)
 
-### 시나리오 1: 로컬 인프라 한 줄 부트
+### 시나리오 1: signup → signin → refresh → reuse detection
 
-- **Given**: spec-05-01 머지됨.
-- **When**: `docker compose -f tooling/docker/compose.yaml up -d` 후 30초 대기.
-- **Then**: 모든 서비스 healthy + apps/api 부트가 connect 가능.
-- **연관 SPEC**: spec-05-01
+- **Given**: 전 spec 머지됨 + apps/api 부트.
+- **When**: signup → signin → refresh (rotation) → 이미 invalidate된 refresh token으로 재요청 (reuse simulation).
+- **Then**: 정상 refresh 후 새 access/refresh 발급 + reuse 시도 시 모든 session revoke + alert log.
+- **연관 SPEC**: spec-05-02, spec-05-03
 
-### 시나리오 2: generator round-trip
+### 시나리오 2: password reset 보안
 
-- **Given**: spec-05-02 머지됨.
-- **When**: `pnpm new package shared-foo` → 생성된 디렉토리에서 `pnpm lint typecheck test` 실행.
-- **Then**: 0 error.
-- **연관 SPEC**: spec-05-02
+- **Given**: spec-05-05 머지됨.
+- **When**: 존재하지 않는 email로 /auth/password/reset 호출.
+- **Then**: 응답 200 (enumeration 방지) + token 발급 안 함.
+- **연관 SPEC**: spec-05-05
 
-### 시나리오 3: startup report + manifest
+### 시나리오 3: rate limit
 
-- **Given**: spec-05-03 + spec-05-04 머지됨.
-- **When**: apps/api 부트.
-- **Then**: stdout에 masked config dump + `apps/api/service.yaml` validator 통과.
-- **연관 SPEC**: spec-05-03, spec-05-04
-
-### 통합 테스트 실행
-
-```bash
-docker compose -f tooling/docker/compose.yaml up -d
-pnpm --filter @apps/api dev
-pnpm tooling:manifest:validate
-pnpm tooling:config-graph
-```
+- **Given**: spec-05-04 머지됨.
+- **When**: 동일 IP에서 N회 signin 실패.
+- **Then**: progressive backoff + N+1회째 lockout 응답 (응답 형식은 동일 — enumeration 방지).
+- **연관 SPEC**: spec-05-04
 
 ## 🔗 의존성
 
-- **선행 phase**: phase-04 (apps가 있어야 manifest / startup-report 의미 있음).
-- **외부 시스템**: Docker engine.
-- **연관 ADR**:
-  - `docs/adr/0002-monorepo-foundations.md` (pnpm catalog / lefthook)
-  - locked stack memory (node-settings)
-
-## 📝 위험 요소 및 완화
-
-| 위험 | 영향 | 완화책 |
-|---|---|---|
-| docker-compose 스택의 리소스 부담 | dev 머신 메모리 압박 | observability 서비스(tempo/loki/grafana)는 optional profile로 분리 |
-| generator 템플릿이 ADR 변경에 따라 stale | 신규 패키지가 outdated 구조로 생성 | ADR 변경 시 generator 템플릿 동기화 spec을 ADR PR에 묶음 |
-| service manifest validator의 cross-app 룰 부재 | 잘못된 의존 관계 미검출 | spec-05-03에서 cross-app 의존 ruleset 정의 |
+- **선행 phase**: phase-02 (auth-contracts) + phase-03 (Backend Foundation).
+- **외부 시스템**: PostgreSQL.
+- **연관 ADR**: 0005 / 0006 / 0008 / 0009 / 0010 / 0012 / 0013 / 0014
+- **연관 design note**: `docs/notes/auth-foundation-architecture.md`
 
 ## 🏁 Phase Done 조건
 
-- [ ] 모든 SPEC(spec-05-01 ~ spec-05-05, 조건부 spec-05-06) main에 merge
-- [ ] 성공 기준 5개 충족
+- [ ] 모든 SPEC(spec-05-01 ~ spec-05-06) main에 merge
+- [ ] 성공 기준 6개 충족
 - [ ] 통합 테스트 3개 시나리오 PASS
 - [ ] 사용자 최종 승인
-
-## 📊 검증 결과 (phase 완료 시 작성)
-
-<!-- 통합 테스트 로그, 성공 기준 측정값, 회귀 점검 결과 등을 여기 첨부 -->

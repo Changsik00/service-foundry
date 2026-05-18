@@ -1,6 +1,7 @@
-# phase-04: Apps
+# phase-04: Frontend Foundation
 
-> 실제로 booted되는 *서비스 진입점*. backend/frontend 패키지를 wire up하여 vertical-slice가 동작하는 reference application 셋을 만든다.
+> Frontend 패키지군의 *기반*. Vite/Next + apps/web-* scaffold + TanStack Query + UI 라이브러리 기본.
+> 본 phase는 **auth 제외** — auth 영역은 phase-06 (Auth Integration)에서 통합.
 
 ## 📋 메타
 
@@ -17,19 +18,22 @@
 
 ### 현재 상황
 
-Phase 2 + Phase 3가 끝나면 backend 인프라와 shared schema가 갖춰진다. Phase 4는 *조립*. apps/api(reference backend) + frontend packages(`ui` / `sdk` / `auth`) + 3개 web app(web-next / web-vite / admin) + apps/worker + apps/edge-api(Hono). 본 phase가 끝나면 사용자가 새 서비스를 띄울 때 *어떤 패키지를 어떻게 끼우는지* 보고 따라할 수 있다.
+- phase-03 (Backend Foundation) 완료 시점에 `apps/api`가 `/health` 응답 가능.
+- 본 phase는 *frontend 인프라 기반*: UI 컴포넌트 라이브러리 + SDK(contracts 기반 typed API client) + apps/web-* scaffold.
+- **auth는 phase-06**에서 `auth-react` Provider/hooks + Cookie 전략을 통합. 본 phase는 *auth 없이 frontend 부트 + non-auth API 호출*까지.
+- `@repo/contracts` (phase-02)의 `UserProfile` + `paginatedResponse<T>` 사용 시연.
 
 ### 목표 (Goal)
 
-apps/api가 packages/backend/* 전부를 wire up하고, apps/web-next + apps/web-vite가 packages/frontend/* 전부를 wire up하여, login → protected route → logout의 vertical-slice가 처음부터 끝까지 동작.
+`packages/frontend/*` 2 패키지(ui / sdk) + `apps/web-next` + `apps/web-vite` scaffold. 본 phase 종료 시 *web-next + web-vite가 부트* + `@repo/frontend/sdk`로 `apps/api` `/health` 또는 non-auth endpoint 호출 시연.
 
 ### 성공 기준 (Success Criteria) — 정량 우선
 
-1. apps/api 부트 + `/health` 응답 + login endpoint로 JWT 발급.
-2. apps/web-next + apps/web-vite 모두 동일한 `@repo/frontend/sdk` + `@repo/frontend/auth` 사용해 login 동작.
-3. `docs/features/0001-login.md` vertical-slice가 작동: FE 폼 → API → Postgres → JWT → protected route → logout.
-4. apps/worker 부트 + BullMQ job 처리 가능.
-5. apps/edge-api(Hono) 별도 minimal `/health` 응답 (Cloudflare Workers 부트는 별 시나리오로 검증 — Icebox 결정 후).
+1. `packages/frontend/ui` (shadcn + tailwind 기반) + `packages/frontend/sdk` (contracts 기반 typed client) 작성 + 단위 테스트 PASS.
+2. `apps/web-next` (Next.js App Router) + `apps/web-vite` (Vite + tanstack-router) 모두 부트 + 기본 페이지 렌더링.
+3. 양 앱이 `@repo/frontend/sdk`로 phase-03 `apps/api`의 `/health` 호출 + 결과 표시.
+4. dependency-cruiser 룰: `packages/frontend/*`는 `packages/backend/*` import 0건.
+5. tailwind 위치 결정 (Icebox 이슈 해소) — `frontend/ui` 패키지 또는 앱별 설치.
 
 ## 🧩 작업 단위 (SPECs)
 
@@ -40,126 +44,87 @@ apps/api가 packages/backend/* 전부를 wire up하고, apps/web-next + apps/web
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
 
-### spec-04-01 — apps-api
+### spec-04-01 — frontend-ui
 
-- **요점**: framework 보류 (ADR-0005 결과 따름). backend 패키지 전부 wire up하는 reference.
-- **방향성**: 도메인은 최소(user/session)로 시작. 추가 도메인은 후속 spec.
-- **참조**: ADR-0005, ARCHITECTURE.md §2.5.
-- **연관 모듈**: `apps/api`
-
-### spec-04-02 — apps-worker
-
-- **요점**: BullMQ 워커 + observability + database.
-- **방향성**: api와 동일 settings/logger 사용. 1개 sample job으로 booted 확인.
-- **연관 모듈**: `apps/worker`
-
-### spec-04-03 — frontend-ui
-
-- **요점**: shadcn + tailwind + 공유 React 컴포넌트.
+- **요점**: shadcn + tailwind + 공유 React 컴포넌트 (Button / Input / Card 등 기본).
 - **방향성**: tailwind 위치 결정(Icebox 이슈) 확정 후 진입.
 - **참조**: ARCHITECTURE.md §2.4.
 - **연관 모듈**: `packages/frontend/ui`
 
-### spec-04-04 — frontend-sdk
+### spec-04-02 — frontend-sdk
 
-- **요점**: contracts 기반 typed API client (zod → OpenAPI → codegen).
-- **방향성**: `@repo/shared/contracts`가 SoT. codegen 명령은 turbo task로 등록.
+- **요점**: contracts(`@repo/contracts`) 기반 typed API client. fetch wrapper + retry/timeout + zod parse 통합.
+- **방향성**: `@repo/contracts`가 SoT. OpenAPI codegen은 *후속*(별 spec 또는 phase-09).
 - **연관 모듈**: `packages/frontend/sdk`
 
-### spec-04-05 — frontend-auth
+### spec-04-03 — apps-web-next-scaffold
 
-- **요점**: React provider + useSession hook + refresh interceptor + route guard (auth 3-package 중 3번째).
-- **방향성**: `@repo/shared/auth-contracts` + `@repo/frontend/sdk` 의존.
-- **참조**: ADR-0006, ARCHITECTURE.md §2.4.
-- **연관 모듈**: `packages/frontend/auth`
-
-### spec-04-06 — apps-web-next
-
-- **요점**: Next.js App Router + tanstack-query + sdk + auth + ui.
-- **방향성**: SSR + client component 혼용 reference.
+- **요점**: Next.js App Router scaffold + tanstack-query + sdk + ui. 기본 페이지 + non-auth API 호출 시연.
+- **방향성**: SSR + client component 혼용 reference. *auth wire-up은 phase-06*.
 - **연관 모듈**: `apps/web-next`
 
-### spec-04-07 — apps-web-vite
+### spec-04-04 — apps-web-vite-scaffold
 
-- **요점**: Vite + tanstack-router + tanstack-query + sdk + auth + ui.
-- **방향성**: SPA reference. apps/admin과 같은 스택을 공유 (분리 여부는 Icebox 이슈).
+- **요점**: Vite + tanstack-router + tanstack-query + sdk + ui. SPA reference.
+- **방향성**: apps/admin과 같은 스택을 공유 (분리 여부는 phase-09에서).
 - **연관 모듈**: `apps/web-vite`
-
-### spec-04-08 — apps-admin
-
-- **요점**: web-vite와 같은 스택, 별도 layout.
-- **방향성**: Icebox 이슈("apps/admin 별도 앱 vs apps/web-vite route") 결정 결과 따름.
-- **연관 모듈**: `apps/admin` (또는 `apps/web-vite` 안의 route)
-
-### spec-04-09 — apps-edge-api
-
-- **요점**: Hono 기반 edge / serverless 예제.
-- **방향성**: Icebox 이슈("scope: 같은 /api 모방 / 다른 엔드포인트 / Cloudflare Workers 전용") 결정 결과 따름.
-- **연관 모듈**: `apps/edge-api`
 
 ## 📌 결정 기록 (Review)
 
 | 이슈 | 선택지 | 결정 | 이유 |
 |---|---|---|---|
-| apps/admin 분리 여부 | 별도 앱 / web-vite route | 미정 (Icebox) | UI/권한 분리 비용 vs 코드 공유 이득의 trade-off 평가 후 결정 |
-| tailwind 위치 | ui 패키지 전용 / 앱별 설치 | 미정 (Icebox) | 번들 사이즈 + customization 자유도 평가 후 결정 |
-| apps/edge-api scope | /api 모방 / 다른 / CF Workers 전용 | 미정 (Icebox) | Hono의 차별화 가치(edge 부트 속도)를 보이는 최소 데모로 결정 |
+| tailwind 위치 | ui 패키지 전용 / 앱별 설치 | 진입 시 결정 | 번들 사이즈 + customization 자유도 평가 후 결정. Icebox 이슈 해소 |
+| sdk codegen | 본 phase / 후속 | 후속 | 본 phase는 *수동 wrap* — `@repo/contracts` zod schema → typed client. OpenAPI codegen은 phase-09 |
+| `auth-react` 위치 | 본 phase / phase-06 | **phase-06** | Auth Integration phase로 분리 — auth 어휘 박힌 후 통합 |
+| apps/admin / apps/edge-api / apps/worker | 본 phase / phase-09 | **phase-09** | apps 전체 wire-up은 phase-09 (Apps + Admin Tools) |
 
 ## 🧪 통합 테스트 시나리오 (간결)
 
-### 시나리오 1: vertical-slice login
+### 시나리오 1: frontend 부트
 
-- **Given**: 모든 spec-04-* 머지됨.
-- **When**: web-next 또는 web-vite에서 login 폼 제출 → API → Postgres → JWT → protected route → logout.
-- **Then**: 모든 단계 200 응답, JWT 만료 후 refresh 자동, logout 후 protected route 401.
-- **연관 SPEC**: spec-04-01, spec-04-04, spec-04-05, spec-04-06 또는 spec-04-07
+- **Given**: spec-04-01 ~ spec-04-04 머지됨 + phase-03 apps/api 부트 가능.
+- **When**: `pnpm --filter @apps/web-next dev` + `pnpm --filter @apps/web-vite dev`.
+- **Then**: 양 앱 부트 + 기본 페이지 렌더링 + sdk로 `/health` 호출 결과 표시.
+- **연관 SPEC**: 전체
 
 ### 시나리오 2: depcruise FE→BE 금지
 
-- **Given**: 모든 spec-04-* 머지됨.
+- **Given**: 전 spec 머지됨.
 - **When**: `pnpm exec depcruise --validate packages/frontend/`.
-- **Then**: `packages/backend/*` import 0건 (ARCHITECTURE.md §3.2).
-- **연관 SPEC**: spec-04-03, spec-04-04, spec-04-05
-
-### 시나리오 3: worker job
-
-- **Given**: spec-04-02 머지됨.
-- **When**: API가 BullMQ로 sample job enqueue → worker 처리.
-- **Then**: job DONE 상태 + observability trace 연결됨.
+- **Then**: `packages/backend/*` import 0건.
 - **연관 SPEC**: spec-04-01, spec-04-02
 
 ### 통합 테스트 실행
 
 ```bash
-# 가정: tooling/docker(Phase 5)가 아직 없으면 외부 Postgres/Redis 인스턴스 필요
 pnpm --filter @apps/api dev &
 pnpm --filter @apps/web-next dev &
-# 또는 playwright/e2e 셋업(spec-04 후반에 도입)
+pnpm --filter @apps/web-vite dev &
+pnpm exec depcruise --validate packages/frontend/
 ```
 
 ## 🔗 의존성
 
-- **선행 phase**: phase-02 + phase-03.
-- **외부 시스템**: PostgreSQL, Redis (tooling/docker는 Phase 5).
+- **선행 phase**: phase-02 (contracts) + phase-03 (Backend Foundation — apps/api 부트).
+- **외부 시스템**: 없음 (phase-03의 PostgreSQL은 본 phase에서 직접 사용 안 함).
 - **연관 ADR**:
-  - `docs/adr/0003-package-layout-and-naming.md` (apps/* 구조)
-  - `docs/adr/0005-backend-framework-and-orm-strategy.md` (apps/api framework)
-  - `docs/adr/0006-auth-strategy.md` (frontend/auth + backend/auth wire)
+  - `docs/adr/0003-package-layout-and-naming.md` (frontend 패키지 구조)
+  - `docs/adr/0006-auth-strategy.md` (auth-react는 phase-06에서 통합)
 
 ## 📝 위험 요소 및 완화
 
 | 위험 | 영향 | 완화책 |
 |---|---|---|
-| FE/BE 동시 부트 dev 경험 복잡 | 신규 기여자 onboarding 비용 | tooling/docker(Phase 5)로 일괄 부트 |
-| codegen 누락으로 sdk가 contracts와 drift | 컴파일 통과하나 런타임 실패 | codegen을 lefthook 또는 turbo task로 강제 |
-| Icebox 3 이슈 미결로 spec-04-08/09 지연 | phase 완료 지연 | Phase 4 진입 시점에 Icebox 일괄 정리 (queue.md) |
+| Next App Router + Vite tanstack-router 학습 곡선 | spec 진행 지연 | minimal scaffold 위주. 복잡한 라우팅 패턴은 phase-09에서 |
+| `frontend/sdk` codegen 부재로 contracts와 drift | 컴파일 통과하나 런타임 실패 | spec-04-02에서 *수동 wrap + zod parse* 패턴 박음 — codegen은 phase-09에서 결정 |
+| `tailwind` 위치 결정 미루면 spec-04-01 진입 어려움 | Icebox 무기한 | spec-04-01 진입 직전에 Icebox 이슈 정리 commit |
 
 ## 🏁 Phase Done 조건
 
-- [ ] 모든 SPEC(spec-04-01 ~ spec-04-09) main에 merge
+- [ ] 모든 SPEC(spec-04-01 ~ spec-04-04) main에 merge
 - [ ] 성공 기준 5개 충족
-- [ ] 통합 테스트 3개 시나리오 PASS
-- [ ] `docs/features/0001-login.md` 작성 + vertical-slice 동작
+- [ ] 통합 테스트 2개 시나리오 PASS
+- [ ] tailwind 위치 결정 (Icebox 해소)
 - [ ] 사용자 최종 승인
 
 ## 📊 검증 결과 (phase 완료 시 작성)
