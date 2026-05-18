@@ -34,12 +34,12 @@
 
 ## Task 3: `Email` + `Pagination` 공통 schema
 
-- [ ] `describe("Email")` 3 test (valid / invalid / 빈 string).
-- [ ] `describe("Pagination")` 4 test (defaults / 명시값 / page 0 reject / perPage 101 reject).
-- [ ] test → Fail.
-- [ ] `Email` + `Pagination` + `PaginationInput` / `PaginationOutput` type 구현.
-- [ ] test → Pass.
-- [ ] Commit: `feat(spec-02-03): add Email and Pagination schemas`
+- [x] `describe("Email")` 3 test (valid / invalid / 빈 string).
+- [x] `describe("Pagination")` 4 test (defaults / 명시값 / page 0 reject / perPage 101 reject).
+- [x] test → Fail (7 fail).
+- [x] `Email` + `Pagination` + `PaginationInput` / `PaginationOutput` type 구현.
+- [x] test → Pass (10/10).
+- [x] Commit: `feat(spec-02-03): add Email and Pagination schemas`
 
 ---
 
