@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-02** — Shared Primitives — 2 spec — 다음: (spec 없음)
+- **phase-02** — Shared Primitives — 3 spec — 다음: spec-02-03-shared-validation
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
