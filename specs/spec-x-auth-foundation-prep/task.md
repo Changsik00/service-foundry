@@ -131,12 +131,11 @@
 
 ## Task 9: Ship (필수)
 
-- [ ] `pnpm lint` + `pnpm typecheck` + `pnpm test` 그린 (코드 변경 없음 → 회귀 0 확인).
-- [ ] `bash .harness-kit/bin/sdd test passed`.
-- [ ] **walkthrough.md 작성** (결정 요약 + 2차안 채택 근거 + memory 정정 기록 + 발견 사항).
-- [ ] **pr_description.md 작성**.
-- [ ] `sdd ship --check` 통과.
-- [ ] **Ship Commit**: sdd ship 자동.
+- [x] `pnpm lint` + `pnpm typecheck` + `pnpm test` 그린 (FULL TURBO — 코드 변경 0 / 회귀 0).
+- [x] `bash .harness-kit/bin/sdd test passed`.
+- [x] **walkthrough.md 작성** (결정 10건 + 사용자 협의 4건 + RCA-001 검증 + 발견 사항 6건).
+- [x] **pr_description.md 작성**.
+- [ ] **Ship Commit** (수동 — spec-x는 sdd ship 메커니즘 외부).
 - [ ] **Push**: `git push -u origin spec-x-auth-foundation-prep`.
 - [ ] **PR 생성**: `gh pr create`.
 - [ ] **사용자 알림**.
