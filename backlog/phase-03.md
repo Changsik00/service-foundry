@@ -42,6 +42,7 @@ NestJS + Drizzle 기반의 *non-auth backend 인프라 패키지 6개* + `apps/a
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
 | `spec-03-01` | backend-settings | P? | Merged | `specs/spec-03-01-backend-settings/` |
+| `spec-03-02` | backend-logger | P? | Active | `specs/spec-03-02-backend-logger/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`

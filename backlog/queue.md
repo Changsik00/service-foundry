@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-03** — Backend Foundation — 1 spec — 다음: (spec 없음)
+- **phase-03** — Backend Foundation — 2 spec — 다음: spec-03-02-backend-logger
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
