@@ -8,11 +8,13 @@
 | **Phase** | `phase-03` (Backend Foundation, Phase Base Branch 모드) |
 | **Branch** | `spec-03-02-backend-logger` |
 | **PR Target** | `phase-03-backend-foundation` |
-| **상태** | Planning |
+| **상태** | In Progress (Review 후 force-push) |
 | **타입** | Feature |
 | **Integration Test Required** | no |
-| **작성일** | 2026-05-18 |
+| **작성일** | 2026-05-18 (2026-05-19 platform-agnostic 정정) |
 | **소유자** | dennis |
+
+> **2026-05-19 Scope 정정**: 본래 spec에 박힌 NestJS 어댑터 (`PinoLoggerService` / `BackendLoggerModule`)를 **별도 패키지 `@repo/backend-logger-nestjs`로 분리**. 사용자 발화 *"packages 에서는 어느 플렛폼에 붙을지는 몰라"* → memory `feedback_platform_agnostic_packages` 박힘. 본 spec scope = pure logger + NestJS 어댑터 (2 패키지).
 
 ## 📋 배경 및 문제 정의
 
@@ -33,12 +35,17 @@
 
 ### 해결 방안 (요약)
 
-`packages/backend/logger` 신규 패키지 (`@repo/backend-logger`):
+**2 패키지 분리** (platform-agnostic 원칙):
 
-1. **pino 인스턴스 factory** — `createLogger(options)` — `BaseBackendSchema.LOG_LEVEL` 기반 level + dev pretty 자동 전환 + 기본 redaction paths.
-2. **request-id middleware** — Node `crypto.randomUUID()` 또는 ULID로 unique ID 부여 + AsyncLocalStorage로 *함수 호출 context 통과* 없이 logger 접근 가능.
-3. **NestJS LoggerService adapter** — `class PinoLoggerService implements LoggerService`로 NestJS의 *모든 log call*을 pino로 전달.
-4. **NestJS module** — `BackendLoggerModule.forRoot({ level, redact?, transport? })` DynamicModule. spec-03-01 패턴 답습 (객체 리터럴 + symbol injection token).
+**A. `@repo/backend-logger` (pure, framework agnostic)**:
+1. **pino 인스턴스 factory** — `createLogger(options, destination?)` — pino 6단계 level + dev pretty + 기본 redaction paths.
+2. **request-id middleware** — Node `crypto.randomUUID()` + AsyncLocalStorage로 *함수 호출 context 통과* 없이 reqId 접근. Express/Fastify/Hono 호환 (req.headers + next() 만 의존).
+3. **export**: createLogger / DEFAULT_REDACT_PATHS / LogLevel / Logger (pino 재export) / runWithRequestId / getCurrentRequestId / generateRequestId / requestIdMiddleware. **NestJS 어휘 0**.
+
+**B. `@repo/backend-logger-nestjs` (NestJS 어댑터)**:
+1. **NestJS LoggerService adapter** — `PinoLoggerService implements LoggerService`로 NestJS *6 log method*을 pino로 전달.
+2. **NestJS module** — `BackendLoggerModule.forRoot(options)` DynamicModule (객체 리터럴 + `BACKEND_LOGGER` symbol injection token).
+3. **의존**: `@repo/backend-logger` (workspace) + `@nestjs/common` (catalog). 다른 framework (Fastify/Hono) 어댑터 필요 시 동일 패턴 별도 패키지.
 
 ## 📊 개념도
 
@@ -83,35 +90,40 @@ flowchart TB
 
 ### Functional Requirements
 
-1. **`packages/backend/logger` 신규 패키지** (`@repo/backend-logger`):
-   - scaffold (package.json / tsconfig.json (types: ["node"]) / vitest.config.ts) — spec-03-01 패턴 답습
-   - `dependencies`: `pino: catalog:` + `@nestjs/common: catalog:` + `@repo/backend-settings: workspace:*`
-   - `devDependencies`: 표준 + `@types/node: catalog:`
+1. **`packages/backend/logger` 신규 패키지** (`@repo/backend-logger`, **pure**):
+   - scaffold (package.json / tsconfig.json (types: ["node"]) / vitest.config.ts)
+   - `dependencies`: `pino: catalog:` **만** (framework dep 0)
+   - `devDependencies`: 표준 + `@types/node: catalog:` + `pino-pretty: catalog:`
    - `pino-pretty`는 *peer / optional* — dev에서만 dynamic require, prod에서는 부재 가능
 
-2. **`createLogger(options)` factory**:
-   - 시그니처: `createLogger({ level, redact?, transport? }): pino.Logger`
-   - `level`: `BaseBackendOutput["LOG_LEVEL"]` 호환 (pino 6단계)
-   - `redact`: 기본 paths 자동 적용 (`password` / `token` / `authorization` / `cookie` / `secret` / `api_key` — case-insensitive 패턴)
-   - `transport`: dev는 `pino-pretty` (dynamic load) / prod는 stdout JSON (기본)
-   - 검증 실패 시 `AppError({ code: "INTERNAL" })` throw (ADR-0009 일관)
+2. **`createLogger(options, destination?)` factory**:
+   - 시그니처: `createLogger({ level, redact?, pretty? }, destination?): Logger`
+   - `level`: pino 6단계 (`trace` / `debug` / `info` / `warn` / `error` / `fatal`)
+   - `redact`: 기본 paths 14개 (`DEFAULT_REDACT_PATHS`) 자동 적용 + 사용자 추가
+   - `pretty`: true → pino-pretty transport (dev)
+   - `destination`: 옵셔널 pino DestinationStream — test 캡처 / 후속 OTel transport 연계
 
 3. **request-id middleware + AsyncLocalStorage context**:
-   - `requestIdMiddleware`: Express/Fastify 호환 middleware. `X-Request-Id` header 존재 시 사용, 없으면 `crypto.randomUUID()`.
-   - `runWithRequestId(id, fn)`: AsyncLocalStorage로 context 통과 없이 *내부 함수에서 logger.child({ reqId })* 자동 사용 가능.
+   - `requestIdMiddleware({ header? })`: Express/Fastify/Hono 호환. `X-Request-Id` (case-insensitive) header 존재 시 사용, 없으면 `crypto.randomUUID()`.
+   - `runWithRequestId(id, fn)`: AsyncLocalStorage로 context 통과 없이 *내부 함수에서 getCurrentRequestId()* 호출 가능.
    - `getCurrentRequestId(): string | undefined` — context 외부에서는 undefined.
+   - `generateRequestId(): string` — `crypto.randomUUID()` 직접 호출.
 
-4. **`PinoLoggerService` (NestJS LoggerService impl)**:
+4. **`packages/backend/logger-nestjs` 신규 어댑터 패키지** (`@repo/backend-logger-nestjs`):
+   - scaffold (package.json / tsconfig.json (decorators + node types) / vitest.config.ts)
+   - `dependencies`: `@nestjs/common: catalog:` + `@repo/backend-logger: workspace:*` + `pino: catalog:` (Logger 타입) + `reflect-metadata: catalog:`
+
+5. **`PinoLoggerService` (NestJS LoggerService impl)** — 어댑터 패키지 안:
    - `log` / `error` / `warn` / `debug` / `verbose` / `fatal` 6 method
-   - context 인자 → pino `{ context }` field로
+   - context 인자 → pino `child({ context })`
    - `getCurrentRequestId()` 자동 attach (값 있을 때만)
 
-5. **`BackendLoggerModule.forRoot(options)` NestJS adapter**:
-   - DynamicModule 객체 리터럴 (spec-03-01 패턴)
+6. **`BackendLoggerModule.forRoot(options)` NestJS adapter** — 어댑터 패키지 안:
+   - DynamicModule 객체 리터럴
    - `BACKEND_LOGGER` symbol injection token
    - global module
 
-6. **단위 테스트**: ~10 test 예상.
+7. **단위 테스트**: ~11 test (logger 7 + logger-nestjs 4).
 
 ### Non-Functional Requirements
 
@@ -141,15 +153,15 @@ flowchart TB
 
 ## ✅ Definition of Done
 
-- [ ] `packages/backend/logger` 신규 패키지 scaffold
-- [ ] `createLogger` + redaction + dev/prod transport 분기
-- [ ] `requestIdMiddleware` + `runWithRequestId` + `getCurrentRequestId` AsyncLocalStorage 패턴
-- [ ] `PinoLoggerService` NestJS LoggerService impl
-- [ ] `BackendLoggerModule.forRoot()` DynamicModule
-- [ ] `pnpm test` 그린 (~10 test 추가)
-- [ ] `pnpm lint` / `pnpm typecheck` 그린
-- [ ] depcruise violation 0건 유지
-- [ ] `walkthrough.md` / `pr_description.md` ship commit
-- [ ] `spec-03-02-backend-logger` 브랜치 push
-- [ ] PR 생성 (base = `phase-03-backend-foundation`)
+- [x] `packages/backend/logger` 신규 패키지 scaffold (**pure, framework-agnostic**)
+- [x] `createLogger` + redaction + pretty option + destination 인자
+- [x] `requestIdMiddleware` + `runWithRequestId` + `getCurrentRequestId` AsyncLocalStorage 패턴
+- [x] `packages/backend/logger-nestjs` 어댑터 패키지 scaffold
+- [x] `PinoLoggerService` NestJS LoggerService impl — *어댑터 패키지 안*
+- [x] `BackendLoggerModule.forRoot()` DynamicModule — *어댑터 패키지 안*
+- [x] `pnpm test` 그린 (11 test: logger 7 + logger-nestjs 4)
+- [x] `pnpm lint` / `pnpm typecheck` 그린
+- [x] depcruise violation 0건 (41 modules / 53 deps)
+- [ ] `walkthrough.md` / `pr_description.md` ship commit (정정 반영)
+- [ ] PR #10 force-push (또는 정정 commit)
 - [ ] 사용자 알림

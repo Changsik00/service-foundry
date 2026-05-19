@@ -119,15 +119,43 @@ importers:
 
   packages/backend/logger:
     dependencies:
+      pino:
+        specifier: 'catalog:'
+        version: 10.3.1
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.4.15
+      '@repo/biome-config':
+        specifier: workspace:*
+        version: link:../../config/biome-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../config/typescript-config
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../../config/vitest-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.19
+      pino-pretty:
+        specifier: 'catalog:'
+        version: 13.1.3
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.6(@types/node@22.19.19)(vite@8.0.13(@types/node@22.19.19)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.22.1)(yaml@2.9.0))
+
+  packages/backend/logger-nestjs:
+    dependencies:
       '@nestjs/common':
         specifier: 'catalog:'
         version: 11.1.21(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@repo/backend-settings':
+      '@repo/backend-logger':
         specifier: workspace:*
-        version: link:../settings
-      '@repo/errors':
-        specifier: workspace:*
-        version: link:../../shared/errors
+        version: link:../logger
       pino:
         specifier: 'catalog:'
         version: 10.3.1
@@ -150,9 +178,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.19
-      pino-pretty:
-        specifier: 'catalog:'
-        version: 13.1.3
       typescript:
         specifier: 'catalog:'
         version: 6.0.3

@@ -1,6 +1,10 @@
 # Walkthrough: spec-03-02
 
-> Phase 3 (Backend Foundation) 두 번째 spec. `@repo/backend-logger` — pino 기반 dev/prod 통합 logger + AsyncLocalStorage request-id context + NestJS LoggerService 어댑터. **spec-03-01 패턴 답습** (객체 리터럴 DynamicModule + symbol injection token).
+> Phase 3 (Backend Foundation) 두 번째 spec. **2 패키지**:
+> - `@repo/backend-logger` — pino 기반 pure logger (framework-agnostic) + AsyncLocalStorage request-id context
+> - `@repo/backend-logger-nestjs` — NestJS LoggerService 어댑터 + DynamicModule
+>
+> **중요 정정 (2026-05-19)**: 본래 spec-03-01 패턴 답습으로 *한 패키지 안에 NestJS 어댑터 박음* — 사용자가 review 단계에서 *"packages 에서는 어느 플렛폼에 붙을지는 몰라"* 라며 platform-agnostic 위반 catch. 본 spec 안에서 *pure + 어댑터 2 패키지로 분리*. spec-03-01의 동일 결함은 phase-03 안 후속 spec에서 정정 예정. memory `feedback_platform_agnostic_packages` 박음.
 
 ## 📌 결정 기록
 
@@ -18,10 +22,12 @@
 | `createLogger` destination 인자 | 노출 / 숨김 | **노출 (옵셔널 2nd 인자)** | test 캡처 + 후속 OTel transport 연계 — pino native 시그니처 일관 |
 | NestJS verbose → pino | trace / debug / 자체 매핑 | **trace** | NestJS verbose는 *trace보다 더 자세* 의미 — pino trace가 자연 매핑 |
 | `PinoLoggerService` reqId 주입 | 매 호출 child / root에 mixin | **매 호출 child** | reqId는 *호출 시점의 ALS context* — root는 stateless 유지 |
-| `BackendLoggerModule` 구현 | NestJS @Module class / 객체 리터럴 (DynamicModule) | **객체 리터럴** | NestJS 직접 import 안 함 (spec-03-01 답습) — peer dep 비대 회피 |
-| BACKEND_LOGGER token | symbol vs string | **symbol** | NestJS 권장 + 유일성 보장 (spec-03-01 답습) |
+| `BackendLoggerModule` 구현 | NestJS @Module class / 객체 리터럴 (DynamicModule) | **객체 리터럴** | NestJS 직접 import 안 함 — peer dep 비대 회피 |
+| BACKEND_LOGGER token | symbol vs string | **symbol** | NestJS 권장 + 유일성 보장 |
 | global module | yes / no | **yes** | 모든 backend service에서 inject 가능해야 함 — global 적합 |
-| ADR 시점 | 없음 | 채택 | 본 spec은 *결정 적용*. 객체-리터럴 DynamicModule 패턴이 *3 spec 반복* 시 ADR 격상 후보 (spec-03-04 또는 spec-03-06 시점) |
+| **(정정) 패키지 분리** | **pure + 어댑터 통합 / 분리** | **분리** (2 패키지) | platform-agnostic 원칙 — `packages/backend/<pkg>` 는 framework dep 0. 어댑터는 `<pkg>-nestjs` 별도 패키지 |
+| **(정정) 어댑터 dep 방향** | logger ← nestjs / nestjs → logger | **nestjs → logger** | 어댑터가 pure에 의존 (workspace dep). 역방향이면 pure가 framework에 묶임 |
+| ADR 시점 | 없음 / *platform-agnostic 원칙 격상*? | **없음 (현재는 memory)** | 사용자 발화로 박힌 원칙 → memory 박음. 후속 spec(settings 정정 + http-client/database/observability/security) 적용 시 ADR 격상 검토 |
 
 ### ADR 승격 가이드
 
@@ -33,6 +39,8 @@
 - **주제 1** — observability 도구 명확화: 사용자가 *"Logging trash 서버"* 도입 가능성을 질문 → 어시스턴트가 LGTM 스택 (Loki + Grafana + Tempo + Mimir) 제안. 사용자가 *"error 추적 - crash 리포팅 되어야 하고.. methods order, data 진행상황 이런거 알아야 함.."* 으로 3가지 도메인 (logs / traces / errors) 분리 제시.
 - **주제 2** — 우선순위 명확화: 사용자가 *"sentry 는 내가 차후 라고 말한거고.. 운영 이슈라서.. 지금 우선시 해야 하는건 개발환경이야"* → Sentry는 phase-10 (또는 phase-05 신규 spec) 운영 영역으로 deferred. spec-03-02는 logs (pino + request-id) 만 책임, traces는 spec-03-05 OTel, errors는 후속 phase.
 - **주제 3** — Plan Accept *"좋아.."* → T1~T7 Strict Loop 진행.
+- **주제 4 (정정 트리거, 2026-05-19)** — PR #10 review 시점 사용자 질문: *"+ NestJS adapter 이건 무슨 의미지? packages 에서는 어느 플렛폼에 붙을지는 몰라.. 따라서 이런 연관성은 배제 해야 해"*. → spec-03-01 부터 박힌 *packages 안 NestJS 어휘* 결함 인식. 옵션 A/B/C 제시 후 사용자 *"A로 진행, spec-03-01 정정도 본 phase 안에서 하고"* → 본 spec scope 확장 (pure + 어댑터 2 패키지), spec-03-01 정정은 phase-03 안 후속 spec.
+- **주제 5 (별도 질문, 2026-05-19)** — *"pino 를 backend 로 넣었는데 이건 프론트에선 못쓰는 라이브러리야?"* → pino는 Node 전용 (process.stdout / worker thread). browser build (`pino/browser`) 존재하나 API 다르고 사실상 console wrapper. frontend 로깅은 *완전히 다른 도메인* (Sentry SDK / 텔레메트리 POST / loglevel 등) — phase-04+ frontend foundation에서 별도 결정 합의.
 
 ## 🔁 진행 과정
 
@@ -97,12 +105,29 @@
 - **GREEN**: 11/11 ✓.
 - Commit `fe1c957`.
 
-### T7 — Ship (본 commit)
+### T7 — Ship (1차 commit, force-push 대상)
 
-- `pnpm lint` ✓ (7 tasks, full turbo).
-- `pnpm typecheck` ✓ (FULL TURBO, 13 패키지).
-- `pnpm test` ✓ (7 tasks, 11+ test).
-- `pnpm exec depcruise --config packages/config/depcruise-config/base.cjs packages/` → **0 violations** (38 modules / 48 dependencies).
+- `pnpm lint` ✓ / `pnpm typecheck` ✓ / `pnpm test` ✓ (11 test).
+- `pnpm exec depcruise` → 0 violations (38 modules / 48 deps).
+- PR #10 생성 (base = `phase-03-backend-foundation`).
+
+### T7-bis — Platform-agnostic 분리 (2026-05-19 review 정정)
+
+PR #10 review에서 사용자 catch: *packages 에 NestJS 어휘가 들어감*. 옵션 A 채택 → 본 spec scope 확장:
+
+- `packages/backend/logger/src/index.ts`: NestJS 관련 코드 제거 (`LoggerService` import / `PinoLoggerService` / `BACKEND_LOGGER` / `BackendLoggerModule`). `Logger` 타입을 pino 재export로 추가 (어댑터 패키지가 사용).
+- `packages/backend/logger/package.json` deps 정리: `@nestjs/common` / `@repo/backend-settings` / `@repo/errors` / `reflect-metadata` 모두 제거. **`pino` 만 의존**.
+- `packages/backend/logger/src/index.test.ts`: NestJS test 4개 (PinoLoggerService 2 + BackendLoggerModule 2) 제거 → 7 test 남음.
+- `packages/backend/logger-nestjs/` **신규 패키지** scaffold:
+  - deps: `@nestjs/common` + `@repo/backend-logger` (workspace) + `pino` + `reflect-metadata`
+  - tsconfig: decorators + node types
+- `packages/backend/logger-nestjs/src/index.ts`: `PinoLoggerService` + `BACKEND_LOGGER` + `BackendLoggerModule` 이동.
+- `packages/backend/logger-nestjs/src/index.test.ts`: 4 test (PinoLoggerService 2 + BackendLoggerModule 2).
+- `pnpm install` → lockfile 갱신.
+- 검증: `pnpm lint` ✓ / `pnpm typecheck` ✓ / `pnpm test` ✓ (logger 7 + logger-nestjs 4 = 11) / `depcruise` 0 violations (41 modules / 53 deps).
+- memory `feedback_platform_agnostic_packages` 박음 + `MEMORY.md` index 갱신.
+- 본 walkthrough / pr_description 정정 반영.
+- Commit + PR #10 force-push.
 
 ## 🧪 검증
 
@@ -114,8 +139,12 @@ pnpm --filter @repo/backend-logger test
 ```
 
 11 test 구성:
+
+**`@repo/backend-logger` (pure, 7 test)**:
 - createLogger: 3 (level / redaction / pretty)
 - requestId context: 4 (runWithRequestId / getCurrentRequestId outside / header used / header missing generate)
+
+**`@repo/backend-logger-nestjs` (어댑터, 4 test)**:
 - PinoLoggerService: 2 (6 method routing / reqId child binding)
 - BackendLoggerModule: 2 (DynamicModule 구조 / 2 provider 노출)
 
@@ -127,6 +156,8 @@ pnpm --filter @repo/backend-logger test
 4. **AsyncLocalStorage 외 dep 0**: Express/Fastify 모두 호환 — middleware는 `req.headers` + `next()` 만 의존. framework 채택 시 *adapter 추가 없이* 즉시 사용 가능.
 5. **observability 3-tool 도메인 분리 명확**: 사용자 협의에서 *logs (pino/Loki) ≠ traces (OTel/Tempo) ≠ errors (Sentry)* 합의. 본 spec은 logs만 책임. traces는 spec-03-05, errors는 후속 phase. 향후 *3 도메인 통합 wire-up*은 phase-03 spec-03-07 apps-api scaffold + phase-10 docker-compose에서.
 6. **pino transport ↔ destination 차이**: `transport` (worker thread, pino-pretty 같은 자식 프로세스) vs `destination` (direct stream). test 캡처에는 destination, dev pretty에는 transport. createLogger 시그니처에서 둘 다 지원.
+7. **(정정) Platform-agnostic 원칙은 phase-03 시작 시 명시되지 않음**: spec-03-01 부터 *NestJS adapter를 같은 패키지 안에 박는* 결정이 review 없이 박힘. spec-03-02 review에서 catch → memory `feedback_platform_agnostic_packages` 박음. **후속 발견**: 같은 결함이 spec-03-01에도 있음 → 후속 spec으로 정정.
+8. **(정정) 어댑터 → pure 의존 방향 검증**: depcruise로 `packages/backend/logger-nestjs` → `packages/backend/logger` 단방향 확인. 역방향 (pure → nestjs) 시도 안 됨 (pure deps에 NestJS 없음). 이 패턴이 *깨지기 어려운* 정적 보장.
 
 ## ✅ Definition of Done
 
