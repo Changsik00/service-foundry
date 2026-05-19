@@ -1,5 +1,5 @@
 {
-  "name": "@repo/backend-logger-nestjs",
+  "name": "@repo/nestjs-settings",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -20,17 +20,20 @@
   },
   "dependencies": {
     "@nestjs/common": "catalog:",
-    "@repo/backend-logger": "workspace:*",
-    "pino": "catalog:",
+    "@repo/backend-settings": "workspace:*",
     "reflect-metadata": "catalog:"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
+    "@nestjs/core": "catalog:",
+    "@nestjs/testing": "catalog:",
     "@repo/biome-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@repo/vitest-config": "workspace:*",
     "@types/node": "catalog:",
+    "rxjs": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "zod": "catalog:"
   }
 }
