@@ -1,7 +1,14 @@
 import { Writable } from "node:stream";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import { createLogger, DEFAULT_REDACT_PATHS } from "./index.js";
+import {
+  createLogger,
+  DEFAULT_REDACT_PATHS,
+  generateRequestId,
+  getCurrentRequestId,
+  requestIdMiddleware,
+  runWithRequestId,
+} from "./index.js";
 
 const captureLines = () => {
   const lines: string[] = [];
@@ -46,5 +53,40 @@ describe("createLogger", () => {
 
   it("accepts pretty option without throwing (transport wired)", () => {
     expect(() => createLogger({ level: "info", pretty: true })).not.toThrow();
+  });
+});
+
+describe("requestId context", () => {
+  it("runWithRequestId — inner code reads injected id via getCurrentRequestId", () => {
+    runWithRequestId("req-abc-123", () => {
+      expect(getCurrentRequestId()).toBe("req-abc-123");
+    });
+  });
+
+  it("getCurrentRequestId — outside context returns undefined", () => {
+    expect(getCurrentRequestId()).toBeUndefined();
+  });
+
+  it("requestIdMiddleware — uses X-Request-Id header when present", () => {
+    const middleware = requestIdMiddleware();
+    let captured: string | undefined;
+    middleware({ headers: { "x-request-id": "incoming-id-42" } }, {}, () => {
+      captured = getCurrentRequestId();
+    });
+    expect(captured).toBe("incoming-id-42");
+  });
+
+  it("requestIdMiddleware — generates new id when header missing", () => {
+    const middleware = requestIdMiddleware();
+    let captured: string | undefined;
+    middleware({ headers: {} }, {}, () => {
+      captured = getCurrentRequestId();
+    });
+    expect(captured).toBeTypeOf("string");
+    expect(captured?.length ?? 0).toBeGreaterThan(0);
+    // crypto.randomUUID() format check (loose)
+    expect(captured).toMatch(/^[0-9a-f-]{36}$/i);
+    expect(typeof generateRequestId()).toBe("string");
+    vi.restoreAllMocks();
   });
 });

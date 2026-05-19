@@ -1,3 +1,5 @@
+import { AsyncLocalStorage } from "node:async_hooks";
+import { randomUUID } from "node:crypto";
 import pino, { type DestinationStream, type Logger } from "pino";
 
 export const DEFAULT_REDACT_PATHS = [
@@ -47,4 +49,35 @@ export const createLogger = (
   }
 
   return pino(baseOptions);
+};
+
+interface RequestContext {
+  requestId: string;
+}
+
+const requestStore = new AsyncLocalStorage<RequestContext>();
+
+export const runWithRequestId = <T>(requestId: string, fn: () => T): T =>
+  requestStore.run({ requestId }, fn);
+
+export const getCurrentRequestId = (): string | undefined => requestStore.getStore()?.requestId;
+
+export const generateRequestId = (): string => randomUUID();
+
+export interface RequestIdMiddlewareOptions {
+  header?: string;
+}
+
+interface MinimalRequest {
+  headers: Record<string, unknown>;
+}
+
+export const requestIdMiddleware = (options: RequestIdMiddlewareOptions = {}) => {
+  const headerName = (options.header ?? "X-Request-Id").toLowerCase();
+  return (req: MinimalRequest, _res: unknown, next: () => void): void => {
+    const incoming = req.headers[headerName];
+    const requestId =
+      typeof incoming === "string" && incoming.length > 0 ? incoming : generateRequestId();
+    requestStore.run({ requestId }, next);
+  };
 };
