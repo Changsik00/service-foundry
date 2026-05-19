@@ -1,6 +1,8 @@
+import { runWithRequestId } from "@repo/backend-logger";
 import { isAppError } from "@repo/errors";
 import { MockAgent, setGlobalDispatcher } from "undici";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { z } from "zod";
 
 import { createHttpClient } from "./index.js";
 
@@ -141,6 +143,70 @@ describe("timeout", () => {
       expect(isAppError(e)).toBe(true);
       if (isAppError(e)) {
         expect(e.code).toBe("TIMEOUT");
+      }
+    }
+  });
+});
+
+describe("X-Request-Id propagation", () => {
+  it("runWithRequestId 안 — outbound X-Request-Id header 자동 attach", async () => {
+    const pool = mockAgent.get("https://api.example.com");
+    pool
+      .intercept({
+        path: "/trace",
+        method: "GET",
+        headers: { "x-request-id": "req-abc-123" },
+      })
+      .reply(200, { ok: true });
+
+    const client = createHttpClient({ baseUrl: "https://api.example.com" });
+    await runWithRequestId("req-abc-123", async () => {
+      const result = await client.get<{ ok: boolean }>("/trace");
+      expect(result.ok).toBe(true);
+    });
+  });
+
+  it("runWithRequestId 밖 — X-Request-Id header 없음", async () => {
+    const pool = mockAgent.get("https://api.example.com");
+    pool
+      .intercept({
+        path: "/no-trace",
+        method: "GET",
+        headers: (headers) => !("x-request-id" in headers),
+      })
+      .reply(200, { ok: true });
+
+    const client = createHttpClient({ baseUrl: "https://api.example.com" });
+    const result = await client.get<{ ok: boolean }>("/no-trace");
+    expect(result.ok).toBe(true);
+  });
+});
+
+describe("schema validation", () => {
+  const UserSchema = z.object({
+    id: z.number(),
+    name: z.string(),
+  });
+
+  it("schema 인자 있을 때 — 통과 시 typed return / 실패 시 AppError VALIDATION", async () => {
+    const pool = mockAgent.get("https://api.example.com");
+    // 통과 케이스
+    pool.intercept({ path: "/valid", method: "GET" }).reply(200, { id: 1, name: "alice" });
+    // 실패 케이스 (name 누락)
+    pool.intercept({ path: "/invalid", method: "GET" }).reply(200, { id: 1 });
+
+    const client = createHttpClient({ baseUrl: "https://api.example.com" });
+
+    const valid = await client.get("/valid", { schema: UserSchema });
+    expect(valid.name).toBe("alice");
+
+    try {
+      await client.get("/invalid", { schema: UserSchema });
+      expect.fail("should have thrown");
+    } catch (e) {
+      expect(isAppError(e)).toBe(true);
+      if (isAppError(e)) {
+        expect(e.code).toBe("VALIDATION");
       }
     }
   });

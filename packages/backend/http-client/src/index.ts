@@ -1,5 +1,7 @@
+import { getCurrentRequestId } from "@repo/backend-logger";
 import { AppError } from "@repo/errors";
 import { fetch } from "undici";
+import type { ZodType } from "zod";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD";
 
@@ -11,22 +13,23 @@ export interface CreateHttpClientOptions {
   headers?: Record<string, string>;
 }
 
-export interface HttpRequestOptions {
+export interface HttpRequestOptions<TOutput = unknown> {
   method: HttpMethod;
   path: string;
   body?: unknown;
   headers?: Record<string, string>;
   retries?: number;
   timeoutMs?: number;
+  schema?: ZodType<TOutput>;
 }
 
 export interface HttpClient {
-  request<T>(opts: HttpRequestOptions): Promise<T>;
-  get<T>(path: string, opts?: Partial<HttpRequestOptions>): Promise<T>;
-  post<T>(path: string, body?: unknown, opts?: Partial<HttpRequestOptions>): Promise<T>;
-  put<T>(path: string, body?: unknown, opts?: Partial<HttpRequestOptions>): Promise<T>;
-  delete<T>(path: string, opts?: Partial<HttpRequestOptions>): Promise<T>;
-  patch<T>(path: string, body?: unknown, opts?: Partial<HttpRequestOptions>): Promise<T>;
+  request<T>(opts: HttpRequestOptions<T>): Promise<T>;
+  get<T>(path: string, opts?: Partial<HttpRequestOptions<T>>): Promise<T>;
+  post<T>(path: string, body?: unknown, opts?: Partial<HttpRequestOptions<T>>): Promise<T>;
+  put<T>(path: string, body?: unknown, opts?: Partial<HttpRequestOptions<T>>): Promise<T>;
+  delete<T>(path: string, opts?: Partial<HttpRequestOptions<T>>): Promise<T>;
+  patch<T>(path: string, body?: unknown, opts?: Partial<HttpRequestOptions<T>>): Promise<T>;
 }
 
 const IDEMPOTENT_METHODS: ReadonlySet<HttpMethod> = new Set(["GET", "PUT", "DELETE", "HEAD"]);
@@ -49,12 +52,14 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
   const baseBackoff = options.retryBackoffMs ?? DEFAULT_BACKOFF_MS;
   const baseTimeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
-  const request = async <T>(opts: HttpRequestOptions): Promise<T> => {
+  const request = async <T>(opts: HttpRequestOptions<T>): Promise<T> => {
     const url = `${baseUrl}${opts.path}`;
+    const reqId = getCurrentRequestId();
     const headers: Record<string, string> = {
       "content-type": "application/json",
       accept: "application/json",
       ...defaultHeaders,
+      ...(reqId && { "x-request-id": reqId }),
       ...(opts.headers ?? {}),
     };
 
@@ -97,7 +102,20 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
           });
         }
 
-        return (await response.json()) as T;
+        const body = await response.json();
+        if (opts.schema) {
+          const parsed = opts.schema.safeParse(body);
+          if (!parsed.success) {
+            throw new AppError({
+              code: "VALIDATION",
+              message: `Response validation failed: ${opts.method} ${opts.path}`,
+              statusCode: 502,
+              details: parsed.error.issues,
+            });
+          }
+          return parsed.data as T;
+        }
+        return body as T;
       } catch (err) {
         clearTimeout(timer);
 
@@ -138,15 +156,15 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
 
   return {
     request,
-    get: <T>(path: string, opts?: Partial<HttpRequestOptions>) =>
+    get: <T>(path: string, opts?: Partial<HttpRequestOptions<T>>) =>
       request<T>({ ...opts, method: "GET", path }),
-    post: <T>(path: string, body?: unknown, opts?: Partial<HttpRequestOptions>) =>
+    post: <T>(path: string, body?: unknown, opts?: Partial<HttpRequestOptions<T>>) =>
       request<T>({ ...opts, method: "POST", path, body }),
-    put: <T>(path: string, body?: unknown, opts?: Partial<HttpRequestOptions>) =>
+    put: <T>(path: string, body?: unknown, opts?: Partial<HttpRequestOptions<T>>) =>
       request<T>({ ...opts, method: "PUT", path, body }),
-    delete: <T>(path: string, opts?: Partial<HttpRequestOptions>) =>
+    delete: <T>(path: string, opts?: Partial<HttpRequestOptions<T>>) =>
       request<T>({ ...opts, method: "DELETE", path }),
-    patch: <T>(path: string, body?: unknown, opts?: Partial<HttpRequestOptions>) =>
+    patch: <T>(path: string, body?: unknown, opts?: Partial<HttpRequestOptions<T>>) =>
       request<T>({ ...opts, method: "PATCH", path, body }),
   };
 };
