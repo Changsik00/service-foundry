@@ -230,6 +230,7 @@ nestjs/<X>  → nestjs/<Y>     ⚠️ case-by-case
 ```
 
 * **현재 임시 위반** (2026-05-19): `@repo/backend-logger-nestjs` (PR #10 머지) + `@repo/backend-settings`의 `BackendSettingsModule` (PR #9 머지) — 후속 spec (재구성 spec) 에서 `packages/nestjs/logger` + `packages/nestjs/settings` 로 이동 + pkg name 변경 예정.
+* **어댑터 *내부* 모듈 구현 패턴** (ADR-0016): 표준 `@Module` decorator class 권장 (lifecycle hook 자연 + NestJS ecosystem 친화). ultra-thin adapter (token-only / 단순 wrap) 는 객체 리터럴 허용. 자세한 내용은 [ADR-0016](./docs/adr/0016-nestjs-adapter-standard-module-pattern.md).
 
 ### 3.3 export 컨벤션
 
