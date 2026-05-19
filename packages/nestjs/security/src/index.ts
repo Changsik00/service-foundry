@@ -8,6 +8,8 @@
  * `auth-specific` rate-limit (login attempt limit 등) 은 phase-05+ `auth-security` 패키지 영역.
  */
 import { type DynamicModule, type INestApplication, Module } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
+import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import helmet from "helmet";
 
 export interface SecurityOptions {
@@ -33,8 +35,15 @@ export interface BackendThrottlerOptions {
 
 @Module({})
 export class BackendThrottlerModule {
-  static forRoot(_opts: BackendThrottlerOptions = {}): DynamicModule {
-    // stub — TDD Green 단계에서 구현
-    throw new Error("not implemented");
+  static forRoot(opts: BackendThrottlerOptions = {}): DynamicModule {
+    const ttl = opts.ttl ?? 60_000;
+    const limit = opts.limit ?? 100;
+    return {
+      module: BackendThrottlerModule,
+      imports: [ThrottlerModule.forRoot([{ ttl, limit }])],
+      providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+      exports: [ThrottlerModule],
+      global: true,
+    };
   }
 }
