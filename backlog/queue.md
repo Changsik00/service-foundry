@@ -14,6 +14,7 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
+- [ ] spec-x-governance-reset-package-layout — governance-reset-package-layout
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
