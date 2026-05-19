@@ -7,7 +7,7 @@
  * 본 module 은 ADR-0015 (framework-adapter naming/layout) + ADR-0016 (NestJS standard `@Module` class) 따름.
  * `auth-specific` rate-limit (login attempt limit 등) 은 phase-05+ `auth-security` 패키지 영역.
  */
-import type { INestApplication } from "@nestjs/common";
+import { type DynamicModule, type INestApplication, Module } from "@nestjs/common";
 import helmet from "helmet";
 
 export interface SecurityOptions {
@@ -21,5 +21,20 @@ export function applySecurity(app: INestApplication, opts: SecurityOptions = {})
   }
   if (opts.cors !== false) {
     app.enableCors(opts.cors);
+  }
+}
+
+export interface BackendThrottlerOptions {
+  /** ms 단위 시간 윈도. default 60_000 (60s) */
+  ttl?: number;
+  /** 윈도당 최대 요청 수. default 100 */
+  limit?: number;
+}
+
+@Module({})
+export class BackendThrottlerModule {
+  static forRoot(_opts: BackendThrottlerOptions = {}): DynamicModule {
+    // stub — TDD Green 단계에서 구현
+    throw new Error("not implemented");
   }
 }
