@@ -1,7 +1,10 @@
+import { isAppError } from "@repo/errors";
 import type { Pool } from "pg";
 import { describe, expect, it, vi } from "vitest";
 
-import { createDatabase } from "./index.js";
+import { createDatabase, migrate, shutdown } from "./index.js";
+
+const migrateSpy = vi.fn().mockResolvedValue(undefined);
 
 vi.mock("pg", () => {
   class PoolMock {
@@ -16,6 +19,10 @@ vi.mock("pg", () => {
 
 vi.mock("drizzle-orm/node-postgres", () => ({
   drizzle: vi.fn((pool: Pool, opts: unknown) => ({ _pool: pool, _opts: opts, _isDb: true })),
+}));
+
+vi.mock("drizzle-orm/node-postgres/migrator", () => ({
+  migrate: (db: unknown, opts: unknown) => migrateSpy(db, opts),
 }));
 
 describe("createDatabase", () => {
@@ -49,5 +56,50 @@ describe("createDatabase", () => {
     });
     const options = (result.pool as unknown as { options: { max: number } }).options;
     expect(options.max).toBe(25);
+  });
+});
+
+describe("shutdown", () => {
+  it("pool.end() 가 호출된다", async () => {
+    const { pool } = createDatabase({
+      connectionUrl: "postgres://localhost:5432/test",
+      schema: { x: 1 },
+    });
+    await shutdown(pool);
+    expect((pool as unknown as { end: { mock: { calls: unknown[] } } }).end.mock.calls.length).toBe(
+      1,
+    );
+  });
+});
+
+describe("migrate", () => {
+  it("drizzle-kit migrate api 가 호출된다", async () => {
+    migrateSpy.mockClear();
+    const { db } = createDatabase({
+      connectionUrl: "postgres://localhost:5432/test",
+      schema: { x: 1 },
+    });
+    await migrate(db, { migrationsFolder: "./migrations" });
+    expect(migrateSpy).toHaveBeenCalledTimes(1);
+    expect(migrateSpy).toHaveBeenCalledWith(db, { migrationsFolder: "./migrations" });
+  });
+
+  it("drizzle-kit migrate 실패 시 AppError MIGRATION_FAILED throw", async () => {
+    migrateSpy.mockClear();
+    migrateSpy.mockRejectedValueOnce(new Error("DB locked"));
+    const { db } = createDatabase({
+      connectionUrl: "postgres://localhost:5432/test",
+      schema: { x: 1 },
+    });
+    try {
+      await migrate(db, { migrationsFolder: "./broken" });
+      expect.fail("should have thrown");
+    } catch (e) {
+      expect(isAppError(e)).toBe(true);
+      if (isAppError(e)) {
+        expect(e.code).toBe("MIGRATION_FAILED");
+        expect(e.statusCode).toBe(500);
+      }
+    }
   });
 });
