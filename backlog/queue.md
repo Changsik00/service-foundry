@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-03** — Backend Foundation — 6 spec — 다음: spec-03-06-rework-nestjs-adapters
+- **phase-03** — Backend Foundation — 6 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
