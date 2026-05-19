@@ -1,4 +1,4 @@
-import type { LoggerService } from "@nestjs/common";
+import { type DynamicModule, type LoggerService, Module } from "@nestjs/common";
 import {
   type CreateLoggerOptions,
   createLogger,
@@ -44,20 +44,10 @@ export class PinoLoggerService implements LoggerService {
 
 export const BACKEND_LOGGER = Symbol("BACKEND_LOGGER");
 
-interface LoggerDynamicModuleProvider {
-  provide: symbol | typeof PinoLoggerService;
-  useValue: unknown;
-}
-
-interface LoggerDynamicModule {
-  module: typeof BackendLoggerModule;
-  providers: LoggerDynamicModuleProvider[];
-  exports: (symbol | typeof PinoLoggerService)[];
-  global: true;
-}
-
-export const BackendLoggerModule = {
-  forRoot(options: CreateLoggerOptions): LoggerDynamicModule {
+// biome-ignore lint/complexity/noStaticOnlyClass: NestJS @Module pattern requires class with static forRoot (ADR-0016)
+@Module({})
+export class BackendLoggerModule {
+  static forRoot(options: CreateLoggerOptions): DynamicModule {
     const logger = createLogger(options);
     const service = new PinoLoggerService(logger);
     return {
@@ -69,5 +59,5 @@ export const BackendLoggerModule = {
       exports: [BACKEND_LOGGER, PinoLoggerService],
       global: true,
     };
-  },
-};
+  }
+}

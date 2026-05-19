@@ -68,13 +68,18 @@ describe("BackendLoggerModule", () => {
 
   it("exposes both BACKEND_LOGGER and PinoLoggerService providers", () => {
     const dynamicModule = BackendLoggerModule.forRoot({ level: "warn" });
-    const providerTokens = dynamicModule.providers.map((p) => p.provide);
+    const providers = dynamicModule.providers ?? [];
+    // biome-ignore lint/suspicious/noExplicitAny: NestJS Provider union narrowing — test 검증용 단순화
+    const providerTokens = providers.map((p: any) => p.provide);
     expect(providerTokens).toContain(BACKEND_LOGGER);
     expect(providerTokens).toContain(PinoLoggerService);
     expect(dynamicModule.exports).toContain(BACKEND_LOGGER);
     expect(dynamicModule.exports).toContain(PinoLoggerService);
 
-    const serviceProvider = dynamicModule.providers.find((p) => p.provide === PinoLoggerService);
+    // biome-ignore lint/suspicious/noExplicitAny: NestJS Provider union narrowing — test 검증용 단순화
+    const serviceProvider = providers.find((p: any) => p.provide === PinoLoggerService) as
+      | { provide: typeof PinoLoggerService; useValue: PinoLoggerService }
+      | undefined;
     expect(serviceProvider?.useValue).toBeInstanceOf(PinoLoggerService);
   });
 });
