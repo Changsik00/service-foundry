@@ -3,6 +3,8 @@ import type { Logger } from "pino";
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  BACKEND_LOGGER,
+  BackendLoggerModule,
   createLogger,
   DEFAULT_REDACT_PATHS,
   generateRequestId,
@@ -143,5 +145,27 @@ describe("PinoLoggerService", () => {
     >;
     expect(lastChildBindings.reqId).toBe("req-xyz-789");
     expect(lastChildBindings.context).toBe("Ctx");
+  });
+});
+
+describe("BackendLoggerModule", () => {
+  it("forRoot returns DynamicModule structure (module / providers / exports / global)", () => {
+    const dynamicModule = BackendLoggerModule.forRoot({ level: "info" });
+    expect(dynamicModule.module).toBe(BackendLoggerModule);
+    expect(dynamicModule.global).toBe(true);
+    expect(Array.isArray(dynamicModule.providers)).toBe(true);
+    expect(Array.isArray(dynamicModule.exports)).toBe(true);
+  });
+
+  it("exposes both BACKEND_LOGGER and PinoLoggerService providers", () => {
+    const dynamicModule = BackendLoggerModule.forRoot({ level: "warn" });
+    const providerTokens = dynamicModule.providers.map((p) => p.provide);
+    expect(providerTokens).toContain(BACKEND_LOGGER);
+    expect(providerTokens).toContain(PinoLoggerService);
+    expect(dynamicModule.exports).toContain(BACKEND_LOGGER);
+    expect(dynamicModule.exports).toContain(PinoLoggerService);
+
+    const serviceProvider = dynamicModule.providers.find((p) => p.provide === PinoLoggerService);
+    expect(serviceProvider?.useValue).toBeInstanceOf(PinoLoggerService);
   });
 });

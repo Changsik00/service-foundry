@@ -118,3 +118,33 @@ export class PinoLoggerService implements LoggerService {
     this.withContext(context).fatal(message);
   }
 }
+
+export const BACKEND_LOGGER = Symbol("BACKEND_LOGGER");
+
+interface LoggerDynamicModuleProvider {
+  provide: symbol | typeof PinoLoggerService;
+  useValue: unknown;
+}
+
+interface LoggerDynamicModule {
+  module: typeof BackendLoggerModule;
+  providers: LoggerDynamicModuleProvider[];
+  exports: (symbol | typeof PinoLoggerService)[];
+  global: true;
+}
+
+export const BackendLoggerModule = {
+  forRoot(options: CreateLoggerOptions): LoggerDynamicModule {
+    const logger = createLogger(options);
+    const service = new PinoLoggerService(logger);
+    return {
+      module: BackendLoggerModule,
+      providers: [
+        { provide: BACKEND_LOGGER, useValue: logger },
+        { provide: PinoLoggerService, useValue: service },
+      ],
+      exports: [BACKEND_LOGGER, PinoLoggerService],
+      global: true,
+    };
+  },
+};
