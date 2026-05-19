@@ -20,17 +20,12 @@
   },
   "dependencies": {
     "@env-kit/node-settings": "catalog:",
-    "@nestjs/common": "catalog:",
     "@repo/errors": "workspace:*",
     "@repo/utils": "workspace:*",
-    "reflect-metadata": "catalog:",
-    "rxjs": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@nestjs/core": "catalog:",
-    "@nestjs/testing": "catalog:",
     "@repo/biome-config": "workspace:*",
     "@types/node": "catalog:",
     "@repo/typescript-config": "workspace:*",
