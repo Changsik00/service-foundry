@@ -3,7 +3,10 @@
  *
  * pure settings (framework-agnostic) 를 NestJS DynamicModule 로 wrap.
  * 호출자는 `BackendSettingsModule.forRoot(loader)` 로 부트.
+ *
+ * ADR-0016: 표준 `@Module` class 패턴 채택.
  */
+import { type DynamicModule, Module } from "@nestjs/common";
 
 /**
  * NestJS DI injection token. 호출자는 `@Inject(BACKEND_SETTINGS)`로
@@ -36,11 +39,13 @@ export const BACKEND_SETTINGS = Symbol("BACKEND_SETTINGS");
  * }
  * ```
  */
-export const BackendSettingsModule = {
-  forRoot<TSettings>(
+// biome-ignore lint/complexity/noStaticOnlyClass: NestJS @Module pattern requires class with static forRoot (ADR-0016)
+@Module({})
+export class BackendSettingsModule {
+  static forRoot<TSettings>(
     loader: (env: Record<string, string | undefined>) => TSettings,
     env: Record<string, string | undefined> = process.env,
-  ) {
+  ): DynamicModule {
     const settings = loader(env);
     return {
       module: BackendSettingsModule,
@@ -48,5 +53,5 @@ export const BackendSettingsModule = {
       exports: [BACKEND_SETTINGS],
       global: true,
     };
-  },
-};
+  }
+}
