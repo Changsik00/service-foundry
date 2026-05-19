@@ -15,6 +15,7 @@
 
 <!-- sdd:specx:start -->
 - [ ] spec-x-governance-reset-package-layout — governance-reset-package-layout
+- [ ] spec-x-nestjs-adapter-standard-module — nestjs-adapter-standard-module
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
