@@ -1,27 +1,13 @@
-import {
-  type CreateHttpClientOptions,
-  createHttpClient,
-  type HttpClient,
-} from "@repo/backend-http-client";
+import { type DynamicModule, Module } from "@nestjs/common";
+import { type CreateHttpClientOptions, createHttpClient } from "@repo/backend-http-client";
 
 export type { CreateHttpClientOptions, HttpClient } from "@repo/backend-http-client";
 
 export const HTTP_CLIENT = Symbol("HTTP_CLIENT");
 
-interface HttpClientDynamicModuleProvider {
-  provide: symbol;
-  useValue: HttpClient;
-}
-
-interface HttpClientDynamicModule {
-  module: typeof HttpClientModule;
-  providers: HttpClientDynamicModuleProvider[];
-  exports: symbol[];
-  global: true;
-}
-
-export const HttpClientModule = {
-  forRoot(options: CreateHttpClientOptions): HttpClientDynamicModule {
+@Module({})
+export class HttpClientModule {
+  static forRoot(options: CreateHttpClientOptions): DynamicModule {
     const client = createHttpClient(options);
     return {
       module: HttpClientModule,
@@ -29,5 +15,5 @@ export const HttpClientModule = {
       exports: [HTTP_CLIENT],
       global: true,
     };
-  },
-};
+  }
+}

@@ -10,11 +10,16 @@ describe("HttpClientModule", () => {
     expect(Array.isArray(mod.providers)).toBe(true);
     expect(Array.isArray(mod.exports)).toBe(true);
 
-    const providerTokens = mod.providers.map((p) => p.provide);
+    const providers = mod.providers ?? [];
+    // biome-ignore lint/suspicious/noExplicitAny: NestJS Provider union narrowing — test 검증용
+    const providerTokens = providers.map((p: any) => p.provide);
     expect(providerTokens).toContain(HTTP_CLIENT);
     expect(mod.exports).toContain(HTTP_CLIENT);
 
-    const httpClientProvider = mod.providers.find((p) => p.provide === HTTP_CLIENT);
+    // biome-ignore lint/suspicious/noExplicitAny: NestJS Provider union narrowing — test 검증용
+    const httpClientProvider = providers.find((p: any) => p.provide === HTTP_CLIENT) as
+      | { provide: symbol; useValue: unknown }
+      | undefined;
     expect(httpClientProvider).toBeDefined();
     expect(typeof httpClientProvider?.useValue).toBe("object");
   });
