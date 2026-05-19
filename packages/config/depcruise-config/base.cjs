@@ -58,6 +58,42 @@ module.exports = {
       from: { path: "^packages/config/" },
       to: { path: "^packages/(?!config/)" },
     },
+    // === Framework adapter rules (ADR-0015, 2026-05-19) ===
+    // packages/<tier>/* (backend, frontend) must stay framework-agnostic.
+    // packages/<framework>/* (nestjs, react, fastify, ...) are the only place for framework deps.
+    // Adapter → pure (single direction). Pure → adapter is forbidden.
+    {
+      name: "backend-no-nestjs-imports",
+      severity: "error",
+      comment:
+        "packages/backend/* must remain framework-agnostic — no @nestjs/* dep. NestJS adapter goes in packages/nestjs/<name> (ADR-0015).",
+      from: { path: "^packages/backend/" },
+      to: { path: "^packages/nestjs/" },
+    },
+    {
+      name: "frontend-no-react-adapter-imports",
+      severity: "error",
+      comment:
+        "packages/frontend/* must remain framework-agnostic — no packages/react/* dep. React adapter goes in packages/react/<name> (ADR-0015).",
+      from: { path: "^packages/frontend/" },
+      to: { path: "^packages/react/" },
+    },
+    {
+      name: "nestjs-no-frontend-imports",
+      severity: "error",
+      comment:
+        "packages/nestjs/* (backend tier adapter) must not depend on packages/frontend/* or packages/react/* (browser tier).",
+      from: { path: "^packages/nestjs/" },
+      to: { path: "^packages/(frontend|react)/" },
+    },
+    {
+      name: "react-no-backend-imports",
+      severity: "error",
+      comment:
+        "packages/react/* (frontend tier adapter) must not depend on packages/backend/* or packages/nestjs/* (server tier).",
+      from: { path: "^packages/react/" },
+      to: { path: "^packages/(backend|nestjs)/" },
+    },
   ],
   options: {
     doNotFollow: { path: "node_modules" },
