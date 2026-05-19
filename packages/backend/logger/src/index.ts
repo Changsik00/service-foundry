@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { randomUUID } from "node:crypto";
+import type { LoggerService } from "@nestjs/common";
 import pino, { type DestinationStream, type Logger } from "pino";
 
 export const DEFAULT_REDACT_PATHS = [
@@ -81,3 +82,39 @@ export const requestIdMiddleware = (options: RequestIdMiddlewareOptions = {}) =>
     requestStore.run({ requestId }, next);
   };
 };
+
+export class PinoLoggerService implements LoggerService {
+  constructor(private readonly logger: Logger) {}
+
+  private withContext(context?: string): Logger {
+    const reqId = getCurrentRequestId();
+    const bindings: Record<string, string> = {};
+    if (context) bindings.context = context;
+    if (reqId) bindings.reqId = reqId;
+    return this.logger.child(bindings);
+  }
+
+  log(message: unknown, context?: string): void {
+    this.withContext(context).info(message);
+  }
+
+  error(message: unknown, trace?: string, context?: string): void {
+    this.withContext(context).error({ trace }, String(message));
+  }
+
+  warn(message: unknown, context?: string): void {
+    this.withContext(context).warn(message);
+  }
+
+  debug(message: unknown, context?: string): void {
+    this.withContext(context).debug(message);
+  }
+
+  verbose(message: unknown, context?: string): void {
+    this.withContext(context).trace(message);
+  }
+
+  fatal(message: unknown, context?: string): void {
+    this.withContext(context).fatal(message);
+  }
+}
