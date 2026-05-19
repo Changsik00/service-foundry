@@ -39,7 +39,6 @@ export const BACKEND_SETTINGS = Symbol("BACKEND_SETTINGS");
  * }
  * ```
  */
-// biome-ignore lint/complexity/noStaticOnlyClass: NestJS @Module pattern requires class with static forRoot (ADR-0016)
 @Module({})
 export class BackendSettingsModule {
   static forRoot<TSettings>(

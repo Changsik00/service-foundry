@@ -44,7 +44,6 @@ export class PinoLoggerService implements LoggerService {
 
 export const BACKEND_LOGGER = Symbol("BACKEND_LOGGER");
 
-// biome-ignore lint/complexity/noStaticOnlyClass: NestJS @Module pattern requires class with static forRoot (ADR-0016)
 @Module({})
 export class BackendLoggerModule {
   static forRoot(options: CreateLoggerOptions): DynamicModule {
