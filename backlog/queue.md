@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-03** — Backend Foundation — 7 spec — 다음: spec-03-07-backend-security
+- **phase-03** — Backend Foundation — 7 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
