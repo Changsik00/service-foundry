@@ -1,10 +1,13 @@
 # ADR-003: 패키지 레이아웃 & 네이밍 컨벤션
 
-* 상태: 채택됨
-* 날짜: 2026-05-17
+* 상태: 채택됨 (2026-05-19 갱신 — ADR-0015 framework adapter 카테고리 추가)
+* 날짜: 2026-05-17 (최초) / 2026-05-19 (갱신)
 * 스코프: 폴더 구조, npm scope, 패키지 및 도구 설정 네이밍
 
 ---
+
+> [!IMPORTANT]
+> **2026-05-19 갱신**: framework adapter 카테고리 (`nestjs/` / `react/` 등) + 명명 규칙 (framework-first prefix) 이 [ADR-0015](./0015-framework-adapter-naming-and-layout.md) 로 박혔다. 본 ADR의 §2 (폴더 레이아웃) / §4-bis (framework adapter naming, 신규) / §6 (카테고리 배치 규칙) 갱신됨.
 
 # 배경
 
@@ -56,12 +59,17 @@ Import path:         @repo/<pkg>   (flat — category never appears in scope)
 packages/
   config/    # tool configs (biome-config, typescript-config, ...)
   shared/    # FE+BE-safe (contracts, errors, validation, utils)
-  backend/   # Node-only (settings, logger, http-client, auth, ...)
-  frontend/  # browser-only (ui, sdk, auth)
+  backend/   # Node-only pure (framework-agnostic — settings, logger, http-client, ...)
+  frontend/  # browser-only pure (framework-agnostic — ui, sdk, ...)
+  nestjs/    # NestJS framework adapter — implies backend (ADR-0015, 신규)
+  react/     # React framework adapter — implies frontend (ADR-0015, 신규)
   testing/   # test helpers, fixtures
 ```
 
 각 `packages/<category>/<pkg>/`는 자체 `package.json`을 가진 실제 워크스페이스 패키지다. **카테고리 폴더 자체에는 `package.json`이 있으면 안 된다** (Turborepo 워크스페이스 resolution 요건; `docs/turborepo-rules.md`에서 확인됨).
+
+> [!NOTE]
+> **`backend/` / `frontend/` 는 framework-agnostic** — pino / zod / drizzle-orm 같은 framework-agnostic 라이브러리만 사용. NestJS / Express / React 같은 framework 직접 의존은 *어댑터 카테고리* (`nestjs/` / `react/` 등) 에서. 자세한 룰은 [ADR-0015](./0015-framework-adapter-naming-and-layout.md).
 
 ### 이유
 
@@ -107,6 +115,51 @@ packages:
 * npm 생태계 컨벤션 (`eslint-config-airbnb` 등)
 * IDE에서 알파벳 정렬·그룹화가 잘 됨
 
+## 4-bis. Framework adapter 네이밍 — `<framework>-<name>` prefix (2026-05-19 추가, ADR-0015)
+
+### 결정
+
+framework adapter 패키지는 *framework-first prefix* 사용:
+
+```
+@repo/nestjs-logger      ← packages/nestjs/logger/        (NestJS 어댑터)
+@repo/nestjs-settings    ← packages/nestjs/settings/      (NestJS 어댑터)
+@repo/react-form         ← packages/react/form/           (React 어댑터, 미래)
+```
+
+`@repo/backend-logger-nestjs` (suffix) 또는 `@repo/backend-nestjs-logger` (이중 prefix) 아님.
+
+전체 카테고리별 네이밍 표:
+
+| 카테고리 | dir-name | pkg-name |
+|---|---|---|
+| `config/` | `<name>-config` | `@repo/<name>-config` |
+| `shared/` | `<name>` | `@repo/<name>` |
+| `backend/` | `<name>` | `@repo/backend-<name>` |
+| `frontend/` | `<name>` | `@repo/frontend-<name>` |
+| `nestjs/` | `<name>` | `@repo/nestjs-<name>` |
+| `react/` | `<name>` | `@repo/react-<name>` |
+| `testing/` | `<name>` | `@repo/<name>` |
+
+### 이유
+
+* **영문법**: "NestJS logger" — adjective + noun (자연 어순). "logger NestJS" 는 역어순으로 어색.
+* **NPM dominant convention**: `@nestjs/config`, `react-query`, `express-session`, `koa-bodyparser`, `eslint-plugin-*` — 모두 framework-first prefix.
+* **dir-pkg 일관**: `packages/nestjs/logger/` ↔ `@repo/nestjs-logger` 매핑이 직관.
+* **implicit tier**: NestJS = server / React = browser — 카테고리만 보고 tier 추론 가능.
+
+### 의존 방향
+
+```
+nestjs/<X> → backend/<X>   ✅ (어댑터가 pure 의존)
+backend/<X> → nestjs/<X>   ❌ (pure가 framework 의존 = platform-agnostic 위반)
+nestjs/<X> → frontend/<X>  ❌ (server↔browser tier 침범)
+react/<X> → frontend/<X>   ✅
+react/<X> → backend/<X>    ❌
+```
+
+자세한 룰 + 검토한 대안 + 재검토 기준 → [ADR-0015](./0015-framework-adapter-naming-and-layout.md).
+
 ## 5. import 경로는 flat 유지
 
 ### 결정
@@ -119,22 +172,35 @@ packages:
 * 더 짧은 import
 * Turborepo / pnpm / TS resolution 기본값과 호환
 
-## 6. 카테고리 배치 규칙
+## 6. 카테고리 배치 규칙 (2026-05-19 갱신, ADR-0015)
 
-* 명확한 backend (Node 전용 API)? → `backend/`
-* 명확한 browser (DOM/React)? → `frontend/`
+* 명확한 backend (Node 전용 API)? 그리고 *framework-agnostic*? → `backend/`
+* 명확한 browser (DOM)? 그리고 *framework-agnostic*? → `frontend/`
 * 둘 다? → `shared/` — 기본적으로 browser-safe 해야 함
 * 도구 설정 → `config/`
 * 테스트 유틸 / fixture / harness → `testing/`
+* **framework-specific 어댑터** (NestJS / React / Express / Fastify / Hono / Vue ...) → `<framework>/` 카테고리 (ADR-0015)
 * 애매할 때 → `shared/` 선호, 강제될 때 나중에 분리
 
 server/client 분기가 1일차부터 확실한 경우에만 사전 분리 허용.
+
+### Framework adapter — 어디에 두나?
+
+| 패키지가 *직접 dep*으로 사용하는 framework | 카테고리 | 예 |
+|---|---|---|
+| (없음 — pure logic) | `shared/` / `backend/` / `frontend/` | `@repo/utils` / `@repo/backend-logger` |
+| `@nestjs/common` 등 NestJS | `nestjs/` | `@repo/nestjs-logger` (어댑터) |
+| `react` / `@tanstack/react-query` 등 React | `react/` | `@repo/react-form` (미래) |
+| `fastify` | `fastify/` (미래) | `@repo/fastify-logger` (미래) |
+| 둘 이상 framework | 결정 시 ADR-0015 §재검토 기준 적용 | — |
 
 ### 잠긴 예외
 
 `auth`는 1일차부터 3패키지로 분리: `shared/auth-contracts` + `backend/auth` + `frontend/auth`. server/client 분기가 사실상 확실하다.
 
 `logger`는 frontend 로깅이 실제 요구사항이 되기 전까지 단일 `backend/logger`로 유지 (lazy split).
+
+`backend/logger`의 NestJS 어댑터는 `nestjs/logger` (ADR-0015). 후속 framework 어댑터 (Fastify 등) 필요 시 동일 패턴.
 
 ---
 
@@ -178,3 +244,5 @@ server/client 분기가 1일차부터 확실한 경우에만 사전 분리 허�
 
 * [ADR-002](./0002-monorepo-foundations.md) — Foundations
 * [ADR-004](./0004-typescript-and-compilation-strategy.md) — TS & compilation
+* [ADR-0015](./0015-framework-adapter-naming-and-layout.md) — Framework Adapter Naming & Layout (본 ADR 갱신, 2026-05-19)
+* memory `feedback_platform_agnostic_packages` — packages/backend/* 의 framework agnostic 원칙

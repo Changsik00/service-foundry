@@ -214,6 +214,23 @@ config-*  (모두가 dev-deps로 참조; 런타임 의존 아님)
 * `packages/backend/observability`는 누구에게나 의존받되, **다른 packages를 import하지 않는다** (순환 방지).
 * `packages/frontend/*`는 절대 `packages/backend/*`를 import하지 않는다. 공유는 `shared/*` 경유.
 
+#### Framework adapter 룰 (2026-05-19 추가, ADR-0015)
+
+* `packages/backend/*` / `packages/frontend/*` 는 **framework-agnostic** — `@nestjs/*` / `express` / `react` / `vue` 등 framework dep 금지 (pino / zod / drizzle-orm 같은 framework-agnostic lib만).
+* framework adapter는 *별 카테고리*: `packages/nestjs/<name>` → `@repo/nestjs-<name>` (예: `@repo/nestjs-logger`).
+* 의존 방향: **어댑터 → pure 단방향**.
+
+```
+nestjs/<X>  → backend/<X>     ✅ (어댑터가 pure 의존)
+backend/<X> → nestjs/<X>     ❌ (pure가 framework 의존 — platform-agnostic 위반)
+nestjs/<X>  → frontend/<X>   ❌ (server↔browser tier 침범)
+react/<X>   → frontend/<X>   ✅
+react/<X>   → backend/<X>    ❌
+nestjs/<X>  → nestjs/<Y>     ⚠️ case-by-case
+```
+
+* **현재 임시 위반** (2026-05-19): `@repo/backend-logger-nestjs` (PR #10 머지) + `@repo/backend-settings`의 `BackendSettingsModule` (PR #9 머지) — 후속 spec (재구성 spec) 에서 `packages/nestjs/logger` + `packages/nestjs/settings` 로 이동 + pkg name 변경 예정.
+
 ### 3.3 export 컨벤션
 
 * 모든 패키지는 `package.json`의 `exports` 필드로만 export. `main`만 쓰지 않음.
