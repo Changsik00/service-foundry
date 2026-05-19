@@ -6,8 +6,10 @@
  * - Application/Domain 은 *Repository interface* 만 의존 → ORM 모름
  *
  * 자세한 패턴은 `@repo/backend-database` 모듈 docstring 참조.
+ *
+ * ADR-0016: 표준 `@Module` class + `implements OnModuleDestroy` 직접 박음 (우회 class 없음).
  */
-import type { OnModuleDestroy } from "@nestjs/common";
+import { type DynamicModule, Module, type OnModuleDestroy } from "@nestjs/common";
 import {
   type CreateDatabaseOptions,
   createDatabase,
@@ -19,51 +21,26 @@ export type { CreateDatabaseOptions, Database, NodePgDatabase } from "@repo/back
 
 export const DATABASE = Symbol("DATABASE");
 
-/**
- * NestJS lifecycle hook: 컨테이너 destroy 시 pool graceful close.
- *
- * NestJS의 `OnModuleDestroy` 는 *provider class* 에서만 동작 — `useValue` 객체에
- * 박을 수 없음. 따라서 별 provider 로 박아 pool 보유 + onModuleDestroy 에서 shutdown.
- */
-export class DatabaseShutdownService implements OnModuleDestroy {
-  constructor(private readonly database: Database<Record<string, unknown>>) {}
+@Module({})
+export class DatabaseModule implements OnModuleDestroy {
+  private static currentDatabase: Database<Record<string, unknown>> | undefined;
 
-  async onModuleDestroy(): Promise<void> {
-    await shutdown(this.database.pool);
-  }
-}
-
-interface DatabaseDynamicModuleProvider {
-  provide: symbol | typeof DatabaseShutdownService;
-  useValue?: unknown;
-  useFactory?: (...args: unknown[]) => unknown;
-  inject?: symbol[];
-}
-
-interface DatabaseDynamicModule {
-  module: typeof DatabaseModule;
-  providers: DatabaseDynamicModuleProvider[];
-  exports: (symbol | typeof DatabaseShutdownService)[];
-  global: true;
-}
-
-export const DatabaseModule = {
-  forRoot<TSchema extends Record<string, unknown>>(
+  static forRoot<TSchema extends Record<string, unknown>>(
     options: CreateDatabaseOptions<TSchema>,
-  ): DatabaseDynamicModule {
+  ): DynamicModule {
     const database = createDatabase(options);
+    DatabaseModule.currentDatabase = database as Database<Record<string, unknown>>;
     return {
       module: DatabaseModule,
-      providers: [
-        { provide: DATABASE, useValue: database },
-        {
-          provide: DatabaseShutdownService,
-          useFactory: () =>
-            new DatabaseShutdownService(database as Database<Record<string, unknown>>),
-        },
-      ],
+      providers: [{ provide: DATABASE, useValue: database }],
       exports: [DATABASE],
       global: true,
     };
-  },
-};
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    if (DatabaseModule.currentDatabase) {
+      await shutdown(DatabaseModule.currentDatabase.pool);
+    }
+  }
+}
