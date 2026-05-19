@@ -22,6 +22,8 @@ catalog:
   "@nestjs/config": ^4.0.4
   "@nestjs/core": ^11.1.21
   "@nestjs/testing": ^11.1.21
+  "@nestjs/throttler": ^6.5.0
+  helmet: ^8.1.0
   "reflect-metadata": ^0.2.2
   "rxjs": ^7.8.2
 
