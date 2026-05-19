@@ -1,5 +1,5 @@
 {
-  "name": "@repo/backend-logger-nestjs",
+  "name": "@repo/nestjs-logger",
   "version": "0.0.0",
   "private": true,
   "type": "module",
