@@ -7,6 +7,9 @@ status: accepted
 
 # ADR-0015: Framework Adapter Naming & Layout
 
+> [!IMPORTANT]
+> **2026-05-19 갱신**: 본 ADR 의 *카테고리/명명 룰* 은 그대로. *어댑터 내부 모듈 구현 패턴* (객체 리터럴 vs `@Module` class) 결정은 [ADR-0016](./0016-nestjs-adapter-standard-module-pattern.md) 로 격리. 본 ADR 5회 반복 후 reviewer 의견 → adapter 는 *NestJS 표준 친화* 로 박힘 (core 패키지 framework-agnostic 은 그대로).
+
 ## 📚 Context
 
 ADR-0003(패키지 레이아웃 & 네이밍)이 5 카테고리(`config` / `shared` / `backend` / `frontend` / `testing`)를 박았다. *framework adapter 패키지*에 대한 룰은 부재.
@@ -130,6 +133,7 @@ depcruise 룰 (Task 5에서 박음):
 ## 📚 관련 문서
 
 - [ADR-0003](./0003-package-layout-and-naming.md) — 기존 5 카테고리 (본 ADR로 갱신됨)
+- [ADR-0016](./0016-nestjs-adapter-standard-module-pattern.md) — 어댑터 *내부* 모듈 구현 패턴 (2026-05-19 추가)
 - memory `feedback_platform_agnostic_packages` — packages/backend/* 의 framework agnostic 원칙
 - spec-03-02 walkthrough §사용자 협의 주제 4-5 — 본 ADR 트리거 논의
 - ARCHITECTURE.md §3.2 — depcruise tier 룰
