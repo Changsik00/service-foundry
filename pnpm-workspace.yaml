@@ -21,15 +21,18 @@ catalog:
   "@nestjs/common": ^11.1.21
   "@nestjs/config": ^4.0.4
   "@nestjs/core": ^11.1.21
+  "@nestjs/platform-express": ^11.1.21
   "@nestjs/testing": ^11.1.21
   "@nestjs/throttler": ^6.5.0
   helmet: ^8.1.0
   "reflect-metadata": ^0.2.2
   "rxjs": ^7.8.2
+  supertest: ^7.2.2
 
   # types
   "@types/node": ^22.19.19
   "@types/pg": ^8.20.0
+  "@types/supertest": ^7.2.0
 
   # toolchain
   typescript: ^6.0.3
