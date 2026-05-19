@@ -60,6 +60,9 @@ catalogs:
     typescript:
       specifier: ^6.0.3
       version: 6.0.3
+    undici:
+      specifier: ^8.3.0
+      version: 8.3.0
     vitest:
       specifier: ^4.1.6
       version: 4.1.6
@@ -116,6 +119,43 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 4.1.6(@types/node@22.19.19)(vite@8.0.13(@types/node@22.19.19)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.22.1)(yaml@2.9.0))
+
+  packages/backend/http-client:
+    dependencies:
+      '@repo/backend-logger':
+        specifier: workspace:*
+        version: link:../logger
+      '@repo/errors':
+        specifier: workspace:*
+        version: link:../../shared/errors
+      undici:
+        specifier: 'catalog:'
+        version: 8.3.0
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.4.15
+      '@repo/biome-config':
+        specifier: workspace:*
+        version: link:../../config/biome-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../config/typescript-config
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../../config/vitest-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.19
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.6(@types/node@22.19.19)(vite@8.0.13(@types/node@22.19.19)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.22.1)(yaml@2.9.0))
 
   packages/backend/logger:
     dependencies:
@@ -205,6 +245,49 @@ importers:
 
   packages/config/vitest-config:
     dependencies:
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.6(@types/node@22.19.19)(vite@8.0.13(@types/node@22.19.19)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.22.1)(yaml@2.9.0))
+
+  packages/nestjs/http-client:
+    dependencies:
+      '@nestjs/common':
+        specifier: 'catalog:'
+        version: 11.1.21(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@repo/backend-http-client':
+        specifier: workspace:*
+        version: link:../../backend/http-client
+      reflect-metadata:
+        specifier: 'catalog:'
+        version: 0.2.2
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.4.15
+      '@nestjs/core':
+        specifier: 'catalog:'
+        version: 11.1.21(@nestjs/common@11.1.21(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/testing':
+        specifier: 'catalog:'
+        version: 11.1.21(@nestjs/common@11.1.21(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.21(@nestjs/common@11.1.21(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)(rxjs@7.8.2))
+      '@repo/biome-config':
+        specifier: workspace:*
+        version: link:../../config/biome-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../config/typescript-config
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../../config/vitest-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.19
+      rxjs:
+        specifier: 'catalog:'
+        version: 7.8.2
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
       vitest:
         specifier: 'catalog:'
         version: 4.1.6(@types/node@22.19.19)(vite@8.0.13(@types/node@22.19.19)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.22.1)(yaml@2.9.0))
@@ -2538,6 +2621,10 @@ packages:
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
+  undici@8.3.0:
+    resolution: {integrity: sha512-TkUDgb6tl7KOGZ+7e8E3d2FYgUQgF6z5YypqjWmixVQSQERFcVrVg0ySADm2LVLRh5ljAaHTCR5Fmz3Q34rB7Q==}
+    engines: {node: '>=22.19.0'}
+
   universalify@0.1.2:
     resolution: {integrity: sha512-rBJeI5CXAlmy1pV+617WB9J63U6XcazHHF2f2dbJix4XzpUF0RS3Zbj0FGIOCAva5P/d/GBOYaACQ1w+0azUkg==}
     engines: {node: '>= 4.0.0'}
@@ -4477,6 +4564,8 @@ snapshots:
   unbash@3.0.0: {}
 
   undici-types@6.21.0: {}
+
+  undici@8.3.0: {}
 
   universalify@0.1.2: {}
 
