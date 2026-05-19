@@ -103,3 +103,47 @@ describe("migrate", () => {
     }
   });
 });
+
+describe("logger integration", () => {
+  it("logQueries: true + logger 인자 시 drizzle 에 logger 옵션 전달", () => {
+    const debugSpy = vi.fn();
+    // biome-ignore lint/suspicious/noExplicitAny: pino Logger 호환 minimal mock
+    const logger: any = {
+      debug: debugSpy,
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      trace: vi.fn(),
+      fatal: vi.fn(),
+      child: vi.fn(),
+    };
+
+    const result = createDatabase({
+      connectionUrl: "postgres://localhost:5432/test",
+      schema: { x: 1 },
+      logger,
+      logQueries: true,
+    });
+    const opts = (
+      result.db as unknown as { _opts: { logger: { logQuery: (q: string, p: unknown[]) => void } } }
+    )._opts;
+    expect(opts.logger).toBeDefined();
+    expect(typeof opts.logger.logQuery).toBe("function");
+
+    // logQuery 호출 시 logger.debug 호출됨
+    opts.logger.logQuery("SELECT 1", [42]);
+    expect(debugSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("logQueries: false (default) — drizzle logger 옵션 비활성", () => {
+    // biome-ignore lint/suspicious/noExplicitAny: pino Logger 호환 minimal mock
+    const logger: any = { debug: vi.fn() };
+    const result = createDatabase({
+      connectionUrl: "postgres://localhost:5432/test",
+      schema: { x: 1 },
+      logger,
+    });
+    const opts = (result.db as unknown as { _opts: { logger: unknown } })._opts;
+    expect(opts.logger).toBe(false);
+  });
+});
