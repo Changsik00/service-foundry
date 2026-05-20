@@ -26,15 +26,24 @@ export const JwtPayload = z.object({
 });
 export type JwtPayload = z.output<typeof JwtPayload>;
 
-// === Auth flow schemas (spec-05-01) — stub === //
-// Green 단계에서 실 schema (length 검증 등) 박음.
-export const SignInInput = z.object({ email: Email, password: z.string() });
-export const SignUpInput = z.object({ email: Email, password: z.string() });
-export const RefreshInput = z.object({ refreshToken: z.string() });
+// === Auth flow primitives (spec-05-01) === //
+/** Password — 본 spec 은 *서버 최소 검증* 만 (강도 검증은 spec-05-04 auth-security). */
+export const Password = z.string().min(8).max(128);
+/** Token — URL-safe random 문자열 가정. 실 생성/검증은 spec-05-02 (auth-session). */
+export const Token = z.string().min(20);
+
+// === Auth flow schemas (spec-05-01) === //
+export const SignInInput = z.object({ email: Email, password: Password });
+export const SignUpInput = z.object({
+  email: Email,
+  password: Password,
+  displayName: z.string().min(1).max(100).optional(),
+});
+export const RefreshInput = z.object({ refreshToken: Token });
 export const PasswordResetRequest = z.object({ email: Email });
-export const PasswordResetConfirm = z.object({ token: z.string(), newPassword: z.string() });
+export const PasswordResetConfirm = z.object({ token: Token, newPassword: Password });
 export const EmailVerifyRequest = z.object({ email: Email });
-export const EmailVerifyConfirm = z.object({ token: z.string() });
+export const EmailVerifyConfirm = z.object({ token: Token });
 
 export type SignInInput = z.output<typeof SignInInput>;
 export type SignUpInput = z.output<typeof SignUpInput>;
