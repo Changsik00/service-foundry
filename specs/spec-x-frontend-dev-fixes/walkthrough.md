@@ -1,82 +1,49 @@
 # Walkthrough: spec-x-frontend-dev-fixes
 
-> 본 문서는 *작업 기록* 입니다. 결정 과정, 사용자 협의, 검증 결과를 미래의 자신과 리뷰어에게 남깁니다.
-> 작업을 진행하는 동안 *지속적으로* 갱신하세요. 마지막에 한 번에 작성하지 마세요.
+> phase-04 ship 직후 `pnpm dev` 박음 → 3 app 중 2 fail. 즉시 정정 spec-x.
 
-## 📌 결정 기록
+## 📌 결정
 
-> 작업 중 이슈가 발생했을 때, 어떤 선택지가 있었고 왜 이 방향을 결정했는지 기록합니다.
-
-| 이슈 | 선택지 | 결정 | 이유 |
-|---|---|---|---|
-| <이슈 1> | A 또는 B | A | <이유> |
-
-### ADR 승격 가이드
-
-> 위 결정 중 *cross-spec / long-lived* 인 것이 있다면 ADR 로 승격합니다 (constitution §6.3).
->
-> 승격 기준:
-> - 다른 spec 의 작업이 본 결정에 의존하는가?
-> - 6 개월 이상 유지될 가능성이 높은가?
-> - frontmatter `type:` 어휘 (`decision` / `invariant` / `convention` / `tradeoff`) 중 하나에 해당하는가?
->
-> 셋 중 둘 이상이면 ADR 후보. 비강제 — 미체크여도 ship 차단 없음.
-
-- [ ] ADR 승격 대상 있음 → 작성됨: `docs/decisions/ADR-<NNN>-<slug>.md`
-- [ ] 없음
+| 이슈 | 해결 |
+|---|---|
+| **web-vite `@/` alias 미박힘** | `vite.config.ts` 에 `resolve.alias = { "@": fileURLToPath(new URL("./src", import.meta.url)) }` 박음 — tsconfig paths 와 동기 |
+| **apps/api dotenv 미자동 로드** | `dev` / `start` script 에 `--env-file-if-exists=.env` 박음 (Node 22+ native, tsx 가 옵션 전달) |
+| **`.env` 박는 책임** | 사용자 직접 (Claude Code `.env*` Write 차단) — PR 본문 가이드 |
+| spec scope | spec-x (1 PR, 2 file edit, fix 성격) |
 
 ## 💬 사용자 협의
 
-> 사용자와 논의한 내용과 합의 사항을 기록합니다.
+| 시점 | 사용자 결정 |
+|---|---|
+| `pnpm dev` fail 박음 | "이거부터 확인하고 가자" |
+| 정정 방향 (지금 / 후속) | A: 지금 정정 |
+| Plan Accept | "여기에서 지금 문제 다 해결해봐" — 즉시 진행 |
 
-- **주제**: <논의 주제>
-  - **사용자 의견**: <사용자가 제시한 방향>
-  - **합의**: <최종 합의 내용>
+## 🔁 진행
 
-## 🧪 검증 결과
+### T1 — branch 생성
+- `git checkout -b spec-x-frontend-dev-fixes`
 
-### 1. 자동화 테스트
+### T2 — fix commit
+- `apps/web-vite/vite.config.ts` resolve.alias 박음
+- `apps/api/package.json` dev/start script `--env-file-if-exists=.env`
+- `pnpm typecheck` ✓ 20 tasks, `pnpm lint` ✓ 20 tasks
+- spec 문서 + queue.md auto-update 동봉
+- Commit: `fix(spec-x): vite @/ alias + apps/api dotenv 자동 로드`
 
-#### 단위 테스트
-- **명령**: `<프로젝트의 단위 테스트 명령>`
-- **결과**: ✅ Passed (X tests in Y.Y s) / ❌ Failed (자세한 내용 아래)
-- **로그 요약**:
-```text
-(핵심 로그 붙여넣기)
-```
-
-#### 통합 테스트 (Integration Test Required = yes 인 경우)
-- **명령**: `<프로젝트의 통합 테스트 명령>`
-- **결과**: ✅ Passed / ❌ Failed
-- **로그 요약**:
-```text
-(핵심 로그 붙여넣기)
-```
-
-### 2. 수동 검증
-
-> 에이전트가 실행한 단계와 결과를 시간순으로 기록.
-
-1. **Action**: `<실행한 명령 또는 행동>`
-   - **Result**: <관찰된 결과>
+### T3 — ship + PR (본 commit)
 
 ## 🔍 발견 사항
 
-<!-- 작업 중 발견한 흥미로운 점, 사이드 이슈, 다음 SPEC 후보 -->
+1. **phase-04 ship 시점 통합 부트 미검증** — agent 가 *test/build/depcruise* + *web-next curl* 만 검증. *3 app 동시 부트* 는 *사용자가 처음 박는 시점* 에 fail 드러남. **교훈**: phase ship 의 *통합 테스트 시나리오* 가 *실 부트 + 실 fetch* 까지 박혀있어야 *진짜 검증*. 후속 phase 답습 패턴.
 
-- <발견 1>
-- <발견 2>
+2. **`vite.config.ts` resolve.alias ↔ tsconfig paths**: vite 가 *tsconfig paths 자동 인식 안 함*. `vite-tsconfig-paths` plugin 또는 *명시 alias* 둘 중 하나 필요. boilerplate 는 *명시 alias* (zero dep). 후속 Vite 패키지 답습.
 
-## 🚧 이월 항목 (Optional)
+3. **`tsx --env-file-if-exists`** (Node 22+ native): tsx 가 *Node 옵션 전달* — `--env-file=.env` (파일 없으면 fail) 또는 `--env-file-if-exists=.env` (skip). 후자가 *dev 친화* (강제 fail 회피).
 
-> 본 SPEC 범위를 벗어나 다음 작업으로 미룬 항목.
+4. **`.env` Write 차단의 한계**: Claude Code 가 `.env*` 패턴 hard-block — 사용자 직접 박아야. PR 본문에 *명령 가이드* 박는 게 유일한 우회. 후속 spec 진입 시 동일.
 
-- <항목 1> → `backlog/queue.md` 에 추가됨
+## 🚧 이월
 
-## 📅 메타
-
-| 항목 | 값 |
-|---|---|
-| **작성자** | Agent + <user> |
-| **작성 기간** | YYYY-MM-DD ~ YYYY-MM-DD |
-| **최종 commit** | `<short hash>` |
+- **phase ship 검증 강화**: *실 부트 + 실 fetch* 통합 테스트 자동화 — 별 spec 또는 phase-10 (CI) 영역
+- **monorepo 공통 env 패턴**: root `.env` 박음 vs *각 app `.env`* — 별 spec
