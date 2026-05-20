@@ -12,7 +12,8 @@
 | **시작일** | 미정 |
 | **목표 종료일** | 미정 |
 | **소유자** | dennis |
-| **Base Branch** | 미정 (Phase 진입 시 결정) |
+| **Base Branch** | `phase-03-backend-foundation` |
+| **Base Branch 모드** | Phase Base Branch 모드 — Spec PR이 phase branch로 머지, 모든 Spec 완료 후 phase branch가 main으로 |
 
 ## 🎯 배경 및 목표
 
@@ -40,6 +41,14 @@ NestJS + Drizzle 기반의 *non-auth backend 인프라 패키지 6개* + `apps/a
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
+| `spec-03-01` | backend-settings | P? | Merged | `specs/spec-03-01-backend-settings/` |
+| `spec-03-02` | backend-logger | P? | Merged | `specs/spec-03-02-backend-logger/` |
+| `spec-03-03` | relocate-nestjs-adapters | P? | Merged | `specs/spec-03-03-relocate-nestjs-adapters/` |
+| `spec-03-04` | backend-http-client | P? | Merged | `specs/spec-03-04-backend-http-client/` |
+| `spec-03-05` | backend-database | P? | Merged | `specs/spec-03-05-backend-database/` |
+| `spec-03-06` | rework-nestjs-adapters | P? | Merged | `specs/spec-03-06-rework-nestjs-adapters/` |
+| `spec-03-07` | backend-security | P? | Merged | `specs/spec-03-07-backend-security/` |
+| `spec-03-08` | apps-api-scaffold | P? | Merged | `specs/spec-03-08-apps-api-scaffold/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`

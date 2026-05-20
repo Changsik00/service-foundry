@@ -40,5 +40,17 @@
   },
   "json": {
     "formatter": { "enabled": true, "indentWidth": 2 }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["packages/nestjs/**/src/**"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noStaticOnlyClass": "off"
+          }
+        }
+      }
+    }
+  ]
 }

@@ -1,0 +1,36 @@
+{
+  "name": "@repo/backend-settings",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "lint": "biome check .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@env-kit/node-settings": "catalog:",
+    "@repo/errors": "workspace:*",
+    "@repo/utils": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@repo/biome-config": "workspace:*",
+    "@types/node": "catalog:",
+    "@repo/typescript-config": "workspace:*",
+    "@repo/vitest-config": "workspace:*",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
