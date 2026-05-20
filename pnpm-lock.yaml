@@ -312,6 +312,9 @@ importers:
       '@repo/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/config/tailwind-config
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.100.11(react@19.2.6)
       next:
         specifier: 'catalog:'
         version: 16.2.6(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
