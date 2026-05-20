@@ -41,12 +41,13 @@
 
 ---
 
-## Task 4: `@repo/vitest-config/react` 확장
+## Task 4: `@repo/vitest-config/react` 확장 — *no-op*
 
-### 4-1. React vitest preset 박음
-- [ ] `packages/config/vitest-config/react.ts` 박음 (jsdom + react plugin + setup)
-- [ ] `packages/config/vitest-config/package.json` exports 갱신
-- [ ] Commit: `feat(spec-04-01): @repo/vitest-config 에 react preset 추가 (jsdom)`
+### 4-1. React vitest preset (이미 박혀있음)
+- [x] `packages/config/vitest-config/src/react.ts` 이미 박혀있음 (jsdom + tsx include + coverage)
+- [x] `package.json` exports 에 `./react` 이미 박혀있음
+- [x] **추가 작업 불필요** — `@testing-library/jest-dom` matchers 는 패키지가 자체 setupFile 박음
+- [x] Commit 없음 (no-op)
 
 ---
 
@@ -126,12 +127,12 @@
 
 ## Task 11: Ship
 
-- [ ] `walkthrough.md` 작성
-- [ ] `pr_description.md` 작성
-- [ ] Ship Commit (`sdd ship`)
-- [ ] Push: `git push -u origin spec-04-01-frontend-ui`
-- [ ] PR 생성: `gh pr create --base phase-04-frontend-foundation --head spec-04-01-frontend-ui ...`
-- [ ] 사용자 알림
+- [x] `walkthrough.md` 작성 (결정 13 / 협의 9 / 진행 11 / 검증 / 발견 8 / 이월 7)
+- [x] `pr_description.md` 작성 (Summary + Key Review Points 11 + Verification + DoD)
+- [x] Ship Commit (`sdd ship` 자동)
+- [x] Push: `git push -u origin spec-04-01-frontend-ui`
+- [x] PR 생성: [PR #24](https://github.com/Changsik00/service-foundry/pull/24)
+- [x] 사용자 알림 (본 응답)
 
 ---
 
