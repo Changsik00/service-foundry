@@ -3,7 +3,10 @@ import { createHttpClient } from "@repo/frontend-http-client";
 import { z } from "zod";
 
 import { HealthCard } from "@/components/health-card.js";
-import { env } from "@/env.js";
+import { getEnv } from "@/env.js";
+
+// `/health` 는 매 요청마다 fetch — build 시점 static 추출 회피 (env 의존 + 외부 호출).
+export const dynamic = "force-dynamic";
 
 const HealthSchema = z.object({
   status: z.string(),
@@ -17,10 +20,10 @@ const HealthSchema = z.object({
  * Next.js App Router 의 default 패턴 — `apps/api` 의 `/health` 를 *서버에서* 호출 + HTML 에 렌더.
  * client bundle 에 fetch 코드 포함 안 됨 (zero-bundle).
  *
- * Note: RSC 는 *매 요청마다* 서버에서 실행 (default dynamic). `cache` / `revalidate` 옵션은 별 spec.
+ * Note: `force-dynamic` 박혀있어 매 요청마다 RSC 실행. cache/revalidate 패러다임 진입은 별 spec.
  */
 export default async function Home(): Promise<React.ReactElement> {
-  const client = createHttpClient({ baseUrl: env.API_BASE_URL });
+  const client = createHttpClient({ baseUrl: getEnv().API_BASE_URL });
 
   let errorMessage: string | undefined;
   let data: z.infer<typeof HealthSchema> | undefined;
