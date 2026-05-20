@@ -8,11 +8,12 @@
 | 항목 | 값 |
 |---|---|
 | **Phase ID** | `phase-05` |
-| **상태** | Backlog |
-| **시작일** | 미정 |
+| **상태** | Planning (진입 시점) |
+| **시작일** | 2026-05-20 |
 | **목표 종료일** | 미정 |
 | **소유자** | dennis |
-| **Base Branch** | 미정 |
+| **Base Branch** | `phase-05-auth-core-security` |
+| **Base Branch 모드** | Phase Base Branch 모드 — Spec PR이 phase branch로 머지, 모든 Spec 완료 후 phase branch가 main으로 |
 
 ## 🎯 배경 및 목표
 
@@ -52,12 +53,14 @@
 - **요점**: `@repo/auth-contracts` 확장 — SignIn/SignUp/Refresh/PasswordReset/EmailVerify schema + AuthResult union type.
 - **참조**: ADR-0006 (AuthResult union), design note §Validation 전략.
 - **연관 모듈**: `packages/shared/auth-contracts`
+- **추가 검토**: `ts-pattern` 도입 (#19) — AuthResult discriminated union 매칭 + exhaustiveness check
 
 ### spec-05-02 — auth-session
 
 - **요점**: Session model (Drizzle schema) + rotation chain (`refreshTokenFamily`) + reuse detection.
 - **참조**: ADR-0013.
 - **연관 모듈**: `packages/backend/auth-session`
+- **추가 가치**: phase-03 의 *이연 항목 (drizzle migration 실 PostgreSQL 검증)* 자연 해소 — 첫 실 schema 정의 시점
 
 ### spec-05-03 — auth-jwt
 
@@ -76,12 +79,14 @@
 - **요점**: `/auth/password/reset` + `/auth/password/reset/confirm` endpoint. cryptographically random token + single-use + 15분 TTL + 응답 항상 200 (enumeration 방지).
 - **참조**: design note §핵심 플로우.
 - **연관 모듈**: apps/api + auth-session + auth-security
+- **추가 검토**: `nestjs-zod` 도입 (#19/#21) — endpoint DTO 자동 변환 + Swagger 호환 (phase-03 의 *backend lib 후보* 도입 자연)
 
 ### spec-05-06 — email-verify-flow
 
 - **요점**: `/auth/email/verify/request` + `/auth/email/verify/confirm` endpoint. single-use token + 24h TTL.
 - **참조**: design note §핵심 플로우.
 - **연관 모듈**: apps/api + auth-session
+- **추가 검토**: spec-05-05 에서 도입한 `nestjs-zod` 패턴 답습. `forRootAsync` 패턴 검토 (apps/api settings load — phase-03 spec-03-08 이월)
 
 ## 📌 결정 기록 (Review)
 
@@ -118,10 +123,22 @@
 
 ## 🔗 의존성
 
-- **선행 phase**: phase-02 (auth-contracts) + phase-03 (Backend Foundation).
+- **선행 phase**: phase-02 (auth-contracts) + phase-03 (Backend Foundation) + phase-04 (Frontend Foundation — backend-only 영역이라 직접 영향 없으나 통합 자연).
 - **외부 시스템**: PostgreSQL.
 - **연관 ADR**: 0005 / 0006 / 0008 / 0009 / 0010 / 0012 / 0013 / 0014
 - **연관 design note**: `docs/notes/auth-foundation-architecture.md`
+- **연관 GitHub issue**: #19 (library candidates — `ts-pattern` Phase 5 / `nestjs-zod` Phase 3 둘 다 본 phase 영역), #21 (NestJS auth/validation 라이브러리 선택)
+
+## 🆕 phase-05 진입 시점 추가 검토 항목 (2026-05-20)
+
+phase-03/04 진행 중 발견 + 사용자 협의로 본 phase 안 흡수:
+
+| 항목 | 흡수 위치 | 출처 |
+|---|---|---|
+| `ts-pattern` (AuthResult union 매칭) | spec-05-01 | #19 Phase 5 후보 |
+| `nestjs-zod` (endpoint DTO + Swagger) | spec-05-05/06 | #19/#21 Phase 3 후보 — 실 endpoint 진입 시점 자연 |
+| drizzle migration 실 PG 검증 | spec-05-02 (Session schema = 첫 실 schema) | phase-03 spec-03-08 이연 |
+| `forRootAsync` 패턴 (apps/api settings) | spec-05-06 또는 별 spec 검토 | phase-03 spec-03-08 이월 |
 
 ## 🏁 Phase Done 조건
 
