@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-04** — Frontend Foundation — 0/0 spec — (다음: 첫 spec 생성 대기)
+- **phase-04** — Frontend Foundation — 1 spec — 다음: spec-04-01-frontend-ui
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
