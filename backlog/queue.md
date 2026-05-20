@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-04** — Frontend Foundation — 3 spec — 다음: spec-04-03-web-next-scaffold
+- **phase-04** — Frontend Foundation — 3 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
