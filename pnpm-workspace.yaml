@@ -18,6 +18,7 @@ catalog:
   "@env-kit/node-settings": ^1.1.0
 
   # frontend (phase-04+)
+  ky: ^2.0.2
   react: ^19.2.6
   "react-dom": ^19.2.6
   tailwindcss: ^4.3.0

@@ -42,6 +42,7 @@
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
 | `spec-04-01` | frontend-ui | P? | Merged | `specs/spec-04-01-frontend-ui/` |
+| `spec-04-02` | frontend-sdk | P? | Active | `specs/spec-04-02-frontend-sdk/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`

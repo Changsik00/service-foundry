@@ -87,6 +87,9 @@ catalogs:
     knip:
       specifier: ^6.14.1
       version: 6.14.1
+    ky:
+      specifier: ^2.0.2
+      version: 2.0.2
     lefthook:
       specifier: ^2.1.6
       version: 2.1.6
@@ -467,6 +470,40 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 4.1.6(@types/node@22.19.19)(jsdom@29.1.1(@noble/hashes@1.8.0))(vite@8.0.13(@types/node@22.19.19)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.22.1)(yaml@2.9.0))
+
+  packages/frontend/sdk:
+    dependencies:
+      '@repo/errors':
+        specifier: workspace:*
+        version: link:../../shared/errors
+      ky:
+        specifier: 'catalog:'
+        version: 2.0.2
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.4.15
+      '@repo/biome-config':
+        specifier: workspace:*
+        version: link:../../config/biome-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../config/typescript-config
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../../config/vitest-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.19
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.6(@types/node@22.19.19)(jsdom@29.1.1(@noble/hashes@1.8.0))(vite@8.0.13(@types/node@22.19.19)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.22.1)(yaml@2.9.0))
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
 
   packages/frontend/ui:
     dependencies:
@@ -3270,6 +3307,10 @@ packages:
     resolution: {integrity: sha512-SN3Ly0ixzj5CQkY/rc4OPHpWrCC0XRIIjgdP76G9Cni5k72ur5jBYOyvJuF5oPTM14v8eHcMUgPbElHa+lnR0g==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
+
+  ky@2.0.2:
+    resolution: {integrity: sha512-/GmXpo9F9W+f8n4Ivr2iH+7h7wL7jLbLKWkMlpflcCRb6kGjBfTlASEXaZ9qUgNTn4VgS0P2pwxxzQ4EM6Ulgg==}
+    engines: {node: '>=22'}
 
   lefthook-darwin-arm64@2.1.6:
     resolution: {integrity: sha512-hyB7eeiX78BS66f70byTJacDLC/xV1vgMv9n+idFUsrM7J3Udd/ag9Ag5NP3t0eN0EqQqAtrNnt35EH01lxnRQ==}
@@ -6271,6 +6312,8 @@ snapshots:
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
+
+  ky@2.0.2: {}
 
   lefthook-darwin-arm64@2.1.6:
     optional: true
