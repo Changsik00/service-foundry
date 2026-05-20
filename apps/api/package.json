@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/main.ts",
-    "start": "tsx watch src/main.ts",
+    "dev": "tsx watch --env-file-if-exists=.env src/main.ts",
+    "start": "tsx watch --env-file-if-exists=.env src/main.ts",
     "lint": "biome check .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"

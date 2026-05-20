@@ -10,10 +10,14 @@ async function bootstrap(): Promise<void> {
   const settings = loadSettings(process.env);
 
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
-  app.useLogger(app.get(PinoLoggerService));
+  const logger = app.get(PinoLoggerService);
+  app.useLogger(logger);
   applySecurity(app);
 
   await app.listen(settings.PORT);
+
+  const url = await app.getUrl();
+  logger.log(`🚀 API listening on ${url}`, "Bootstrap");
 }
 
 bootstrap();

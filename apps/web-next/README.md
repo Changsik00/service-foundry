@@ -18,19 +18,19 @@ cp apps/web-next/env.example apps/web-next/.env
 
 ```bash
 # Terminal 1: apps/api (port 3000)
-NODE_ENV=development PORT=3000 LOG_LEVEL=info \
+NODE_ENV=development PORT=2026 LOG_LEVEL=info \
   DATABASE_URL=postgres://localhost:5432/test \
   HTTP_CLIENT_BASE_URL=http://localhost:9999 \
   npx tsx apps/api/src/main.ts
 
-# Terminal 2: apps/web-next (port 3001)
-API_BASE_URL=http://localhost:3000 \
+# Terminal 2: apps/web-next (port 2027)
+API_BASE_URL=http://localhost:2026 \
   pnpm --filter @apps/web-next dev
 ```
 
 ### 3. 브라우저
 
-`http://localhost:3001` — 페이지 안 `<HealthCard>` 가 `apps/api` 의 `/health` 응답 표시 (`status` / `uptime` / `version`).
+`http://localhost:2027` — 페이지 안 `<HealthCard>` 가 `apps/api` 의 `/health` 응답 표시 (`status` / `uptime` / `version`).
 
 ## env 변수
 
