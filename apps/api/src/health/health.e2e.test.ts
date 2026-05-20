@@ -3,7 +3,12 @@ import { Test } from "@nestjs/testing";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { AppModule } from "../app.module.js";
+// test 환경 process.env 셋업 — AppModule import 시점에 settings 로딩됨
+process.env.NODE_ENV ??= "test";
+process.env.DATABASE_URL ??= "postgres://localhost:5432/test";
+process.env.HTTP_CLIENT_BASE_URL ??= "http://localhost:9999";
+
+const { AppModule } = await import("../app.module.js");
 
 describe("GET /health (E2E)", () => {
   let app: INestApplication;
