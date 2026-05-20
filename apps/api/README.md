@@ -14,7 +14,7 @@ cp apps/api/env.example apps/api/.env
 pnpm --filter @apps/api start
 ```
 
-부트 후 `http://localhost:3000/health` 호출 시 200 응답:
+부트 후 `http://localhost:2026/health` 호출 시 200 응답:
 
 ```json
 { "status": "ok", "uptime": 1.234, "version": "0.0.0" }
@@ -27,7 +27,7 @@ pnpm --filter @apps/api start
 | 변수 | 타입 | 기본값 | 설명 |
 |---|---|---|---|
 | `NODE_ENV` | `development` \| `test` \| `staging` \| `production` | (필수) | 환경 구분 |
-| `PORT` | number (1~65535) | `3000` | listen 포트 |
+| `PORT` | number (1~65535) | `2026` | listen 포트 |
 | `LOG_LEVEL` | pino level | `info` | logger level |
 | `DATABASE_URL` | string | (필수) | PostgreSQL connection URL |
 | `HTTP_CLIENT_BASE_URL` | URL | (필수) | 외부 API base URL |

@@ -9,18 +9,18 @@ phase-04 의 Vite 7 SPA scaffold. **client query** 패턴 시연 — `useHealthQ
 ## 부트 방법
 
 ```bash
-# Terminal 1: apps/api (port 3000)
-NODE_ENV=development PORT=3000 LOG_LEVEL=info \
+# Terminal 1: apps/api (port 2026)
+NODE_ENV=development PORT=2026 LOG_LEVEL=info \
   DATABASE_URL=postgres://localhost:5432/test \
   HTTP_CLIENT_BASE_URL=http://localhost:9999 \
   npx tsx apps/api/src/main.ts
 
-# Terminal 2: apps/web-vite (port 3002)
-VITE_API_BASE_URL=http://localhost:3000 \
+# Terminal 2: apps/web-vite (port 2028)
+VITE_API_BASE_URL=http://localhost:2026 \
   pnpm --filter @apps/web-vite dev
 ```
 
-브라우저: `http://localhost:3002` — `<HealthCard>` 가 `useHealthQuery` 의 *loading → success / error* 상태 분기 표시.
+브라우저: `http://localhost:2028` — `<HealthCard>` 가 `useHealthQuery` 의 *loading → success / error* 상태 분기 표시.
 
 > ⚠️ `.env.example` 이 아닌 `env.example` 로 commit 됨 (Claude Code 차단 우회). 사용 시 `.env` 로 rename 또는 export.
 
