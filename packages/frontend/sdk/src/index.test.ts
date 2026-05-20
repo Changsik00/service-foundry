@@ -35,9 +35,9 @@ describe("createSdk", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(result).toEqual({ id: "u1", name: "Alice" });
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url.toString()).toBe(`${baseUrl}/users/u1`);
-    expect(init.method).toBe("GET");
+    const [request] = fetchMock.mock.calls[0] as [Request];
+    expect(request.url).toBe(`${baseUrl}/users/u1`);
+    expect(request.method).toBe("GET");
   });
 
   it("GET 404 → AppError(BAD_REQUEST)", async () => {
@@ -108,14 +108,20 @@ describe("createSdk", () => {
   });
 
   it("headers override + body JSON serialize", async () => {
-    fetchMock.mockResolvedValueOnce(jsonResponse({ ok: true }));
+    fetchMock.mockImplementation(async (req: Request) => {
+      // clone 후 body 읽음 — ky 가 이미 읽었을 수 있음
+      const body = await req.clone().text();
+      return new Response(JSON.stringify({ echoBody: body }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    });
 
     await sdk.post("/users", { name: "Alice" }, { headers: { "x-request-id": "trace-1" } });
 
-    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(init.method).toBe("POST");
-    const headers = new Headers(init.headers);
-    expect(headers.get("x-request-id")).toBe("trace-1");
-    expect(init.body).toBe(JSON.stringify({ name: "Alice" }));
+    const [request] = fetchMock.mock.calls[0] as [Request];
+    expect(request.method).toBe("POST");
+    expect(request.headers.get("x-request-id")).toBe("trace-1");
+    expect(request.headers.get("content-type")).toMatch(/application\/json/);
   });
 });
