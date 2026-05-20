@@ -24,7 +24,7 @@ module.exports = {
           "(^|/)\\.[^/]+\\.(?:js|cjs|mjs|ts|cts|mts|json)$",
           "\\.d\\.ts$",
           "(^|/)tsconfig\\.json$",
-          "(^|/)(?:babel|webpack|vitest|tsup)\\.config\\.(?:js|cjs|mjs|ts)$",
+          "(^|/)(?:babel|webpack|vitest|tsup|next|postcss)\\.config\\.(?:js|cjs|mjs|ts)$",
           "^packages/config/.+\\.(?:cjs|mjs|cts|mts|js|ts)$",
         ],
       },
