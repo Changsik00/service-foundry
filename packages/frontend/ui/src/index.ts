@@ -1,0 +1,19 @@
+/**
+ * @repo/frontend-ui — shared shadcn-style component registry for monorepo.
+ *
+ * - `cn(...inputs)` — class merge utility (clsx + tailwind-merge)
+ * - components: Button / Input / Label / Card / Form / Toaster (각 task 에서 추가)
+ *
+ * 호출자 (Next.js / Vite app):
+ * ```css
+ * @import "@repo/frontend-ui/styles.css";
+ * ```
+ *
+ * ```tsx
+ * import { Button } from "@repo/frontend-ui";
+ * ```
+ *
+ * 본 패키지는 ADR-0015 (framework-adapter naming/layout) 답습 — `packages/frontend/ui/`.
+ */
+
+export { cn } from "./lib/utils.js";
