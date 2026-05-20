@@ -1,8 +1,9 @@
 import { AppError } from "@repo/errors";
 import { createHttpClient } from "@repo/frontend-http-client";
+import { HealthCard, ThemeToggle } from "@repo/frontend-ui";
 import { z } from "zod";
 
-import { HealthCard } from "@/components/health-card.js";
+import { HealthCardClient } from "@/components/health-card-client.js";
 import { getEnv } from "@/env.js";
 
 // `/health` 는 매 요청마다 fetch — build 시점 static 추출 회피 (env 의존 + 외부 호출).
@@ -40,15 +41,31 @@ export default async function Home(): Promise<React.ReactElement> {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-8">
+    <main className="relative flex min-h-screen flex-col items-center justify-center gap-6 p-8">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <h1 className="font-semibold text-2xl">service-foundry</h1>
       <p className="text-muted-foreground text-sm">
-        Next.js 16 App Router scaffold (RSC + `@repo/frontend-http-client` + `@repo/frontend-ui`)
+        Next.js 16 App Router — **RSC + client query hybrid** 시연
       </p>
-      <HealthCard
-        {...(data !== undefined && { data })}
-        {...(errorMessage !== undefined && { error: errorMessage })}
-      />
+
+      <section className="flex flex-col gap-2">
+        <h2 className="font-medium text-sm text-muted-foreground">
+          RSC (server fetch — page.tsx async)
+        </h2>
+        <HealthCard
+          {...(data !== undefined && { data })}
+          {...(errorMessage !== undefined && { error: errorMessage })}
+        />
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="font-medium text-sm text-muted-foreground">
+          Client (useHealthQuery — `'use client'` component)
+        </h2>
+        <HealthCardClient />
+      </section>
     </main>
   );
 }

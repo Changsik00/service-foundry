@@ -20,4 +20,9 @@ describe("HealthCard", () => {
     render(<HealthCard error="connection refused" />);
     expect(screen.getByText(/connection refused/i)).toBeInTheDocument();
   });
+
+  it("data/error/loading 모두 없음 → null", () => {
+    const { container } = render(<HealthCard />);
+    expect(container.firstChild).toBeNull();
+  });
 });

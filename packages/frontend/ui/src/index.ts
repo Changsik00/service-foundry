@@ -16,6 +16,12 @@
  * 본 패키지는 ADR-0015 (framework-adapter naming/layout) 답습 — `packages/frontend/ui/`.
  */
 
+export {
+  HealthCard,
+  type HealthCardProps,
+  type HealthData,
+} from "./blocks/health-card.js";
+export { ThemeToggle } from "./blocks/theme-toggle.js";
 export { Button, type ButtonProps, buttonVariants } from "./components/button.js";
 export {
   Card,
