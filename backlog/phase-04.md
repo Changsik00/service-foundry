@@ -8,11 +8,12 @@
 | 항목 | 값 |
 |---|---|
 | **Phase ID** | `phase-04` |
-| **상태** | Backlog |
-| **시작일** | 미정 |
+| **상태** | Planning (진입 시점) |
+| **시작일** | 2026-05-20 |
 | **목표 종료일** | 미정 |
 | **소유자** | dennis |
-| **Base Branch** | 미정 |
+| **Base Branch** | `phase-04-frontend-foundation` |
+| **Base Branch 모드** | Phase Base Branch 모드 — Spec PR이 phase branch로 머지, 모든 Spec 완료 후 phase branch가 main으로 |
 
 ## 🎯 배경 및 목표
 
