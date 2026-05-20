@@ -8,11 +8,12 @@
 | 항목 | 값 |
 |---|---|
 | **Phase ID** | `phase-04` |
-| **상태** | Backlog |
-| **시작일** | 미정 |
+| **상태** | Planning (진입 시점) |
+| **시작일** | 2026-05-20 |
 | **목표 종료일** | 미정 |
 | **소유자** | dennis |
-| **Base Branch** | 미정 |
+| **Base Branch** | `phase-04-frontend-foundation` |
+| **Base Branch 모드** | Phase Base Branch 모드 — Spec PR이 phase branch로 머지, 모든 Spec 완료 후 phase branch가 main으로 |
 
 ## 🎯 배경 및 목표
 
@@ -40,6 +41,10 @@
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
+| `spec-04-01` | frontend-ui | P? | Merged | `specs/spec-04-01-frontend-ui/` |
+| `spec-04-02` | frontend-http-client | P? | Merged | `specs/spec-04-02-frontend-http-client/` |
+| `spec-04-03` | web-next-scaffold | P? | Merged | `specs/spec-04-03-web-next-scaffold/` |
+| `spec-04-04` | web-vite-scaffold | P? | Merged | `specs/spec-04-04-web-vite-scaffold/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
@@ -51,10 +56,10 @@
 - **참조**: ARCHITECTURE.md §2.4.
 - **연관 모듈**: `packages/frontend/ui`
 
-### spec-04-02 — frontend-sdk
+### spec-04-02 — frontend-http-client
 
-- **요점**: contracts(`@repo/contracts`) 기반 typed API client. fetch wrapper + retry/timeout + zod parse 통합.
-- **방향성**: `@repo/contracts`가 SoT. OpenAPI codegen은 *후속*(별 spec 또는 phase-09).
+- **요점**: ky 기반 typed HTTP client. backend-http-client 와 대칭. AppError 변환 + zod parse + retry/timeout.
+- **방향성**: 명확한 scope — *HTTP client* 만. auth client / state / query 등은 별 패키지. `@repo/contracts` 가 SoT (호출자가 schema 명시 import).
 - **연관 모듈**: `packages/frontend/sdk`
 
 ### spec-04-03 — apps-web-next-scaffold

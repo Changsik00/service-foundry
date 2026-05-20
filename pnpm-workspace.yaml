@@ -6,6 +6,7 @@ allowBuilds:
   '@nestjs/core': true
   esbuild: true
   lefthook: true
+  sharp: true
 
 catalog:
   # runtime
@@ -16,6 +17,27 @@ catalog:
   "drizzle-orm": ^0.45.2
   pg: ^8.21.0
   "@env-kit/node-settings": ^1.1.0
+
+  # frontend (phase-04+)
+  ky: ^2.0.2
+  next: ^16.2.6
+  react: ^19.2.6
+  "react-dom": ^19.2.6
+  vite: ^8.0.13
+  "@tanstack/react-router": ^1.170.4
+  "@tanstack/router-plugin": ^1.168.6
+  "@tanstack/react-query": ^5.100.11
+  tailwindcss: ^4.3.0
+  "@tailwindcss/postcss": ^4.3.0
+  "@tailwindcss/vite": ^4.3.0
+  "class-variance-authority": ^0.7.1
+  clsx: ^2.1.1
+  "tailwind-merge": ^3.6.0
+  "@radix-ui/react-label": ^2.1.8
+  "@radix-ui/react-slot": ^1.2.4
+  "react-hook-form": ^7.76.0
+  "@hookform/resolvers": ^5.2.2
+  sonner: ^2.0.7
 
   # backend framework (phase-03+)
   "@nestjs/common": ^11.1.21
@@ -32,6 +54,8 @@ catalog:
   # types
   "@types/node": ^22.19.19
   "@types/pg": ^8.20.0
+  "@types/react": ^19.2.15
+  "@types/react-dom": ^19.2.3
   "@types/supertest": ^7.2.0
 
   # toolchain
@@ -46,3 +70,7 @@ catalog:
   turbo: ^2.9.14
   lefthook: ^2.1.6
   "@changesets/cli": ^2.31.0
+  jsdom: ^29.1.1
+  "@testing-library/react": ^16.3.2
+  "@testing-library/jest-dom": ^6.9.1
+  "@vitejs/plugin-react": ^6.0.2
