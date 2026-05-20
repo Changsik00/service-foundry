@@ -6,7 +6,15 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/dist", "!**/.turbo", "!**/.next", "!**/coverage", "!**/node_modules"]
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/.turbo",
+      "!**/.next",
+      "!**/coverage",
+      "!**/node_modules",
+      "!**/*.css"
+    ]
   },
   "formatter": {
     "enabled": true,
