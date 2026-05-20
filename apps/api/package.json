@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "tsx watch src/main.ts",
     "start": "tsx watch src/main.ts",
     "lint": "biome check .",
     "typecheck": "tsc --noEmit",
