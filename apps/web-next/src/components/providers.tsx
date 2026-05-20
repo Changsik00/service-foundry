@@ -1,13 +1,17 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
 import { useState } from "react";
 
 /**
  * `Providers` — client component wrapper. layout.tsx 안에서 wrap.
  *
- * Next App Router 표준 — server 의 `layout.tsx` 가 *client provider* 를 *boundary* 로 박음.
- * `useState` 로 QueryClient 인스턴스화 — 매 render 마다 새 인스턴스 회피.
+ * 박힌 provider:
+ * - `<ThemeProvider>` (next-themes) — dark/light theme + system 감지 + localStorage 동기
+ * - `<QueryClientProvider>` (TanStack Query) — useState 로 인스턴스화 (매 render 마다 회피)
+ *
+ * 순서: ThemeProvider (outer) → QueryClient (inner). theme 가 query 와 무관 — 어느 순서도 가능.
  */
 export function Providers({ children }: { children: React.ReactNode }): React.ReactElement {
   const [queryClient] = useState(
@@ -22,5 +26,9 @@ export function Providers({ children }: { children: React.ReactNode }): React.Re
       }),
   );
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return (
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </ThemeProvider>
+  );
 }
