@@ -16,7 +16,6 @@
 <!-- sdd:specx:start -->
 - [ ] spec-x-governance-reset-package-layout — governance-reset-package-layout
 - [ ] spec-x-nestjs-adapter-standard-module — nestjs-adapter-standard-module
-- [ ] spec-x-frontend-dev-fixes — frontend-dev-fixes
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -68,6 +67,7 @@
 - [x] spec-x-auth-foundation-prep (완료)
 - **phase-03** — Backend Foundation — completed 2026-05-20
 - **phase-04** — Frontend Foundation — completed 2026-05-20
+- [x] spec-x-frontend-dev-fixes (완료)
 <!-- sdd:done:end -->
 
 ---
