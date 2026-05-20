@@ -24,7 +24,7 @@ module.exports = {
           "(^|/)\\.[^/]+\\.(?:js|cjs|mjs|ts|cts|mts|json)$",
           "\\.d\\.ts$",
           "(^|/)tsconfig\\.json$",
-          "(^|/)(?:babel|webpack|vitest|tsup|next|postcss)\\.config\\.(?:js|cjs|mjs|ts)$",
+          "(^|/)(?:babel|webpack|vitest|tsup|next|postcss|vite)\\.config\\.(?:js|cjs|mjs|ts)$",
           "^packages/config/.+\\.(?:cjs|mjs|cts|mts|js|ts)$",
         ],
       },
@@ -97,6 +97,8 @@ module.exports = {
   ],
   options: {
     doNotFollow: { path: "node_modules" },
+    // Build outputs / generated artifacts — depcruise scan 제외
+    exclude: { path: "(^|/)(?:\\.next|dist|coverage|\\.turbo)/" },
     tsPreCompilationDeps: true,
     // tsConfig intentionally omitted from base: per ADR-004 we have no root tsconfig.
     // Each package's depcruise invocation should pass --ts-config tsconfig.json
