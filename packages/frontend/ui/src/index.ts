@@ -25,6 +25,15 @@ export {
   CardHeader,
   CardTitle,
 } from "./components/card.js";
+export {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "./components/form.js";
 export { Input, type InputProps } from "./components/input.js";
 export { Label, type LabelProps } from "./components/label.js";
 export { cn } from "./lib/utils.js";
