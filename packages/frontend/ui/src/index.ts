@@ -36,4 +36,5 @@ export {
 } from "./components/form.js";
 export { Input, type InputProps } from "./components/input.js";
 export { Label, type LabelProps } from "./components/label.js";
+export { Toaster, toast } from "./components/toaster.js";
 export { cn } from "./lib/utils.js";
