@@ -16,4 +16,5 @@
  * 본 패키지는 ADR-0015 (framework-adapter naming/layout) 답습 — `packages/frontend/ui/`.
  */
 
+export { Button, type ButtonProps, buttonVariants } from "./components/button.js";
 export { cn } from "./lib/utils.js";
