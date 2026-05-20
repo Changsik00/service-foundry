@@ -1,8 +1,8 @@
 import { AppError } from "@repo/errors";
 import { createHttpClient } from "@repo/frontend-http-client";
+import { HealthCard } from "@repo/frontend-ui";
 import { z } from "zod";
 
-import { HealthCard } from "@/components/health-card.js";
 import { getEnv } from "@/env.js";
 
 // `/health` 는 매 요청마다 fetch — build 시점 static 추출 회피 (env 의존 + 외부 호출).

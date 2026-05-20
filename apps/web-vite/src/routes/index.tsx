@@ -1,6 +1,6 @@
+import { HealthCard } from "@repo/frontend-ui";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { HealthCard } from "@/components/health-card.js";
 import { useHealthQuery } from "@/lib/queries.js";
 
 export const Route = createFileRoute("/")({
