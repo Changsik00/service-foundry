@@ -6,7 +6,7 @@ import { HealthCard } from "./health-card.js";
 describe("HealthCard", () => {
   it("loading prop → loading 표시", () => {
     render(<HealthCard loading />);
-    expect(screen.getByText(/로딩|loading/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Loading\.\.\.$/)).toBeInTheDocument();
   });
 
   it("data prop → status / uptime / version 표시", () => {

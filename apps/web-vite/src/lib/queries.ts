@@ -14,13 +14,13 @@ export type HealthResponse = z.infer<typeof HealthSchema>;
 /**
  * `useHealthQuery` — `apps/api` 의 `/health` 호출 client query.
  *
- * stub — TDD Green 단계에서 구현.
+ * - `queryKey: ['health']`
+ * - `queryFn`: `httpClient.get("/health", { schema: HealthSchema })`
+ * - retry / cache / refetch 는 QueryClient default 따름 (main.tsx)
  */
 export function useHealthQuery(): UseQueryResult<HealthResponse> {
   return useQuery<HealthResponse>({
     queryKey: ["health"],
-    queryFn: () => {
-      throw new Error("not implemented");
-    },
+    queryFn: () => httpClient.get<HealthResponse>("/health", { schema: HealthSchema }),
   });
 }
