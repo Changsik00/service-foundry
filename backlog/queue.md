@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-03** — Backend Foundation — 7 spec — 다음: (spec 없음)
+- **phase-03** — Backend Foundation — 8 spec — 다음: spec-03-08-apps-api-scaffold
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
