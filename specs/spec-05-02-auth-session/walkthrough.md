@@ -74,13 +74,20 @@ phase-03 spec-03-05 의 `@repo/backend-database` docstring 가이드 답습 — 
 - DB 유출 시 raw token *plaintext 미노출*.
 - 검증 시 `hashToken(presented)` 박은 후 비교.
 
-### 3-3. Rotation chain + Reuse detection (ADR-0013)
+### 3-3. Rotation 4 분기 (ADR-0013)
 
 - `refreshTokenFamily` UUID — *같은 chain 의 모든 session* 이 공유.
 - `createSession` → family 신규 발행 (root).
-- `rotateSession` (active) → 기존 revoke + 새 token 발급 (family 공유).
-- `rotateSession` (already revoked) → **family 전체 revoke** + `reuse_detected` 반환.
+- `rotateSession` 의 4 분기:
+  - **not_found** — unknown token
+  - **reuse_detected** — revoked token 재제시 → **family 전체 revoke**
+  - **expired** — `expiresAt < now` → 거부만 (revoke 박지 않음)
+  - **rotated** — active 정상 → 기존 revoke + 새 token (같은 family)
 - 보안 의도: attacker 가 훔친 token 으로 rotate 박은 후 *원본 사용자* 가 본 token 다시 시도하면 둘 다 revoke → 둘 다 강제 재인증.
+
+### 3-4. minimal 구현 — 정공법은 별도 (README 참조)
+
+본 spec 은 *rotation 의 최소 표준* — 정공법 (absolute timeout / inactivity timeout / device fingerprint / rate limit / concurrent guard / user-wide revoke / audit log / sliding-vs-fixed TTL) 은 README.md 의 *Rotation 정공법 (미래 검토)* 절에 박힘. 후속 spec / phase 에서 처리. 멀티 디바이스는 *family UUID 자연 격리* 로 본 minimal 에서도 *디바이스별 보안 격리* 처리됨.
 
 ### 3-4. fake store 패턴 (drizzle mock 대신)
 

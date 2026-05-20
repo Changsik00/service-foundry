@@ -113,6 +113,19 @@ describe("rotateSession", () => {
     const result = await rotateSession(store, "unknown-token-1234567890");
     expect(result.type).toBe("not_found");
   });
+
+  it("만료된 active token → expired (revoke 박지 않음, 거부만)", async () => {
+    const { session, refreshToken } = await createSession(store, { userId });
+    // expiresAt 을 *과거* 로 박음 (fake store 직접 조작)
+    store.rows.set(session.id, { ...session, expiresAt: new Date(Date.now() - 1000) });
+
+    const result = await rotateSession(store, refreshToken);
+
+    expect(result.type).toBe("expired");
+    // expired 는 *revoke 박지 않음* — 그저 거부 (reuse 와 구분)
+    const after = store.rows.get(session.id);
+    expect(after?.revokedAt).toBeNull();
+  });
 });
 
 describe("revokeSession", () => {

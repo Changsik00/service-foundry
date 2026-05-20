@@ -19,6 +19,7 @@ export interface CreateSessionResult {
 export type RotateResult =
   | { type: "rotated"; session: SessionRow; refreshToken: string }
   | { type: "reuse_detected"; revokedCount: number }
+  | { type: "expired" }
   | { type: "not_found" };
 
 /**
@@ -52,13 +53,13 @@ export async function createSession(
 /**
  * `rotateSession` — refresh token rotation (ADR-0013).
  *
- * - active token → 기존 revoke + 새 token (same family)
- * - **revoked token 재제시 (reuse)** → family 전체 revoke + `reuse_detected`
+ * 분기 4 개:
  * - unknown token → `not_found`
+ * - revoked token 재제시 (reuse) → family 전체 revoke + `reuse_detected`
+ * - `expiresAt < now` (만료) → `expired` (revoke 박지 않음, 그저 거부)
+ * - active 정상 → 기존 revoke + 새 token (same family) → `rotated`
  *
- * Reuse 시 family 전체 revoke 가 **보안 핵심** — attacker 가 훔친 token 으로
- * 한 번 rotate 한 뒤 사용자가 *원본* 으로 다시 시도하면 *둘 다 revoke* 되어
- * 둘 다 강제 재인증.
+ * **본 spec 은 minimal** — 시간 검증은 `expiresAt` 만. 정공법 추가 항목 (absolute timeout / inactivity timeout / device fingerprint / rate limit / concurrent rotation guard / user-wide revoke / audit log) 은 README.md 의 *Rotation 정공법 (미래 검토)* 절 참조.
  */
 export async function rotateSession(
   store: SessionStore,
@@ -74,6 +75,10 @@ export async function rotateSession(
   if (existing.revokedAt !== null) {
     const revokedCount = await store.bulkRevokeByFamily(existing.refreshTokenFamily, now);
     return { type: "reuse_detected", revokedCount };
+  }
+
+  if (existing.expiresAt.getTime() < now.getTime()) {
+    return { type: "expired" };
   }
 
   await store.updateRevoked(existing.id, now);
