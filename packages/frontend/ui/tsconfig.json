@@ -3,7 +3,7 @@
   "compilerOptions": {
     "jsx": "preserve",
     "lib": ["DOM", "DOM.Iterable", "ES2023"],
-    "types": ["node"]
+    "types": ["node", "@testing-library/jest-dom"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]
 }
