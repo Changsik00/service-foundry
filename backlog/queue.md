@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-04** — Frontend Foundation — 4 spec — 다음: (spec 없음)
+(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -66,6 +66,7 @@
 - **phase-02** — Shared Primitives — completed 2026-05-18
 - [x] spec-x-auth-foundation-prep (완료)
 - **phase-03** — Backend Foundation — completed 2026-05-20
+- **phase-04** — Frontend Foundation — completed 2026-05-20
 <!-- sdd:done:end -->
 
 ---
