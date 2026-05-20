@@ -43,6 +43,7 @@
 |---|---|:---:|---|---|
 | `spec-04-01` | frontend-ui | P? | Merged | `specs/spec-04-01-frontend-ui/` |
 | `spec-04-02` | frontend-http-client | P? | Merged | `specs/spec-04-02-frontend-http-client/` |
+| `spec-04-03` | web-next-scaffold | P? | Active | `specs/spec-04-03-web-next-scaffold/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
