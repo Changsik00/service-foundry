@@ -47,7 +47,7 @@
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
 | `spec-05-01` | auth-contracts-extend | P? | Merged | `specs/spec-05-01-auth-contracts-extend/` |
-| `spec-05-02` | auth-session | P? | Active | `specs/spec-05-02-auth-session/` |
+| `spec-05-02` | auth-session | P? | Merged | `specs/spec-05-02-auth-session/` |
 <!-- sdd:specs:end -->
 
 ### spec-05-01 — auth-contracts-extend
