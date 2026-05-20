@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-03** — Backend Foundation — 8 spec — 다음: (spec 없음)
+(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -65,6 +65,7 @@
 - **phase-01** — 모노레포 골격 (Monorepo Skeleton) — completed 2026-05-17
 - **phase-02** — Shared Primitives — completed 2026-05-18
 - [x] spec-x-auth-foundation-prep (완료)
+- **phase-03** — Backend Foundation — completed 2026-05-20
 <!-- sdd:done:end -->
 
 ---
