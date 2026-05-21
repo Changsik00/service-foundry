@@ -136,8 +136,8 @@
 
 ## Task N: Ship
 
-- [ ] **walkthrough.md 작성**
-- [ ] **pr_description.md 작성**
+- [x] **walkthrough.md 작성**
+- [x] **pr_description.md 작성**
 - [ ] **Ship Commit**: `docs(spec-05-05): ship walkthrough and pr description`
 - [ ] **Push**: `git push -u origin spec-05-05-auth-rate-limit`
 - [ ] **PR 생성**: `/hk-pr-gh` (target: `phase-05-auth-core-security`)
@@ -149,6 +149,8 @@
 | 항목 | 값 |
 |---|---|
 | **총 Task 수** | 10 + Ship |
-| **예상 commit 수** | 14 (planning 1 + scaffold 1 + schema 1 + TDD red/green 4×2 + drizzle adapter 1 + README 1 + ship 1, 검증 task 0) |
-| **현재 단계** | Planning |
+| **실 commit 수** | 9 (planning 1 + scaffold 1 + schema 1 + store+fake 1 + drizzle adapter 1 + 도메인 3 + README 1) + ship 1 예정 |
+| **테스트** | 18/18 PASS (4 files) / 실 PG migration ✓ |
+| **품질 게이트** | lint ✓ / typecheck ✓ / depcruise ✓ |
+| **현재 단계** | Ship — push 대기 |
 | **마지막 업데이트** | 2026-05-21 12:00 |
