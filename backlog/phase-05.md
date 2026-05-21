@@ -71,25 +71,33 @@
 - **참조**: ADR-0013.
 - **연관 모듈**: `packages/backend/auth-jwt`
 
-### spec-05-04 — auth-security
+### spec-05-04 — auth-password (argon2)
 
-- **요점**: CSRF middleware + rate limiter (IP/account/progressive) + account lockout + argon2 password hash.
+- **요점**: argon2id password hashing — `@repo/backend-auth-password` *pure crypto* 패키지. `hashPassword` / `verifyPassword` + cost parameter (memory/time/parallelism) 표준. ADR-0014 의 *암호 영역* 분리.
 - **참조**: ADR-0014.
-- **연관 모듈**: `packages/backend/auth-security`
+- **연관 모듈**: `packages/backend/auth-password`
+- **분할 이유 (2026-05-21)**: 원안 `auth-security` 의 4 영역 (argon2/CSRF/rate-limit/lockout) 중 argon2 만 *완전 pure crypto* — 독립성 명확. 단일 라이브러리 의존 (argon2 / @node-rs/argon2 중 택1). 본 spec 후 `auth-rate-limit` (spec-05-05) 가 *DB schema + state machine* 응집.
 
-### spec-05-05 — password-reset-flow
+### spec-05-05 — auth-rate-limit (rate-limit + lockout + CSRF — core)
+
+- **요점**: framework-agnostic *core* — rate-limit decision engine + account lockout state machine + CSRF token issue/verify. DB schema (FailedLogin / Lockout) 포함. middleware mount (NestJS Throttler 어댑터 등) 는 phase-06.
+- **참조**: ADR-0014.
+- **연관 모듈**: `packages/backend/auth-rate-limit`
+- **추가 검토**: progressive backoff 정책 (IP / account / device 별 weight). CSRF token storage — session 동반 cookie vs server-side store.
+
+### spec-05-06 — password-reset-flow
 
 - **요점**: `/auth/password/reset` + `/auth/password/reset/confirm` endpoint. cryptographically random token + single-use + 15분 TTL + 응답 항상 200 (enumeration 방지).
 - **참조**: design note §핵심 플로우.
-- **연관 모듈**: apps/api + auth-session + auth-security
-- **추가 검토**: `nestjs-zod` 도입 (#19/#21) — endpoint DTO 자동 변환 + Swagger 호환 (phase-03 의 *backend lib 후보* 도입 자연)
+- **연관 모듈**: apps/api + auth-session + auth-password (-04) + auth-rate-limit (-05)
+- **추가 검토**: `nestjs-zod` 도입 (#19/#21) — endpoint DTO 자동 변환 + Swagger 호환 (phase-03 의 *backend lib 후보* 도입 자연). JWKS endpoint mount (`/.well-known/jwks.json`) 도 본 spec 영역.
 
-### spec-05-06 — email-verify-flow
+### spec-05-07 — email-verify-flow
 
 - **요점**: `/auth/email/verify/request` + `/auth/email/verify/confirm` endpoint. single-use token + 24h TTL.
 - **참조**: design note §핵심 플로우.
 - **연관 모듈**: apps/api + auth-session
-- **추가 검토**: spec-05-05 에서 도입한 `nestjs-zod` 패턴 답습. `forRootAsync` 패턴 검토 (apps/api settings load — phase-03 spec-03-08 이월)
+- **추가 검토**: spec-05-06 에서 도입한 `nestjs-zod` 패턴 답습. `forRootAsync` 패턴 검토 (apps/api settings load — phase-03 spec-03-08 이월)
 
 ## 📌 결정 기록 (Review)
 
@@ -112,17 +120,17 @@
 
 ### 시나리오 2: password reset 보안
 
-- **Given**: spec-05-05 머지됨.
+- **Given**: spec-05-06 머지됨.
 - **When**: 존재하지 않는 email로 /auth/password/reset 호출.
 - **Then**: 응답 200 (enumeration 방지) + token 발급 안 함.
-- **연관 SPEC**: spec-05-05
+- **연관 SPEC**: spec-05-06
 
-### 시나리오 3: rate limit
+### 시나리오 3: rate limit + argon2
 
-- **Given**: spec-05-04 머지됨.
-- **When**: 동일 IP에서 N회 signin 실패.
+- **Given**: spec-05-04 + spec-05-05 머지됨.
+- **When**: 동일 IP에서 N회 signin 실패 (argon2.verify 가 wrong password 식별).
 - **Then**: progressive backoff + N+1회째 lockout 응답 (응답 형식은 동일 — enumeration 방지).
-- **연관 SPEC**: spec-05-04
+- **연관 SPEC**: spec-05-04, spec-05-05
 
 ## 🔗 의존성
 
@@ -139,13 +147,14 @@ phase-03/04 진행 중 발견 + 사용자 협의로 본 phase 안 흡수:
 | 항목 | 흡수 위치 | 출처 |
 |---|---|---|
 | `ts-pattern` (AuthResult union 매칭) | spec-05-01 | #19 Phase 5 후보 |
-| `nestjs-zod` (endpoint DTO + Swagger) | spec-05-05/06 | #19/#21 Phase 3 후보 — 실 endpoint 진입 시점 자연 |
+| `nestjs-zod` (endpoint DTO + Swagger) | spec-05-06/07 | #19/#21 Phase 3 후보 — 실 endpoint 진입 시점 자연 |
 | drizzle migration 실 PG 검증 | spec-05-02 (Session schema = 첫 실 schema) | phase-03 spec-03-08 이연 |
-| `forRootAsync` 패턴 (apps/api settings) | spec-05-06 또는 별 spec 검토 | phase-03 spec-03-08 이월 |
+| `forRootAsync` 패턴 (apps/api settings) | spec-05-07 또는 별 spec 검토 | phase-03 spec-03-08 이월 |
+| **spec-05-04 → 2 분할** (argon2 / rate-limit+lockout+CSRF) | 2026-05-21 사용자 협의 | 4 영역 한 spec 은 scope 큼 — argon2 는 pure crypto 독립, rate-limit/lockout/CSRF 는 DB+state 응집 |
 
 ## 🏁 Phase Done 조건
 
-- [ ] 모든 SPEC(spec-05-01 ~ spec-05-06) main에 merge
+- [ ] 모든 SPEC(spec-05-01 ~ spec-05-07) main에 merge
 - [ ] 성공 기준 6개 충족
 - [ ] 통합 테스트 3개 시나리오 PASS
 - [ ] 사용자 최종 승인
