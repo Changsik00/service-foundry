@@ -18,6 +18,7 @@ export const InjectTokenStore = () => Inject(PASSWORD_RESET_TOKEN_STORE);
 export interface UserStore {
   findByEmail(email: string): Promise<UserRow | null>;
   updatePasswordHash(id: string, passwordHash: string): Promise<void>;
+  updateEmailVerified(id: string): Promise<void>;
 }
 
 export interface PasswordResetTokenStore {
@@ -42,6 +43,12 @@ export function createDrizzleUserStore(db: AnyDb): UserStore {
       await (db as NodePgDatabase<{ users: typeof users }>)
         .update(users)
         .set({ passwordHash })
+        .where(eq(users.id, id));
+    },
+    async updateEmailVerified(id) {
+      await (db as NodePgDatabase<{ users: typeof users }>)
+        .update(users)
+        .set({ emailVerified: true })
         .where(eq(users.id, id));
     },
   };
