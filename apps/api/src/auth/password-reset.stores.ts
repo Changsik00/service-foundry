@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import type {
   PasswordResetTokenInsert,
   PasswordResetTokenRow,
+  UserInsert,
   UserRow,
 } from "../infra/schema/index.js";
 import { passwordResetTokens, users } from "../infra/schema/index.js";
@@ -17,6 +18,8 @@ export const InjectTokenStore = () => Inject(PASSWORD_RESET_TOKEN_STORE);
 
 export interface UserStore {
   findByEmail(email: string): Promise<UserRow | null>;
+  findById(id: string): Promise<UserRow | null>;
+  insert(data: UserInsert): Promise<UserRow>;
   updatePasswordHash(id: string, passwordHash: string): Promise<void>;
   updateEmailVerified(id: string): Promise<void>;
 }
@@ -30,26 +33,26 @@ export interface PasswordResetTokenStore {
 type AnyDb = NodePgDatabase<Record<string, unknown>>;
 
 export function createDrizzleUserStore(db: AnyDb): UserStore {
+  const typedDb = db as NodePgDatabase<{ users: typeof users }>;
   return {
     async findByEmail(email) {
-      const rows = await (db as NodePgDatabase<{ users: typeof users }>)
-        .select()
-        .from(users)
-        .where(eq(users.email, email))
-        .limit(1);
+      const rows = await typedDb.select().from(users).where(eq(users.email, email)).limit(1);
       return rows[0] ?? null;
     },
+    async findById(id) {
+      const rows = await typedDb.select().from(users).where(eq(users.id, id)).limit(1);
+      return rows[0] ?? null;
+    },
+    async insert(data) {
+      const [row] = await typedDb.insert(users).values(data).returning();
+      if (!row) throw new Error("createDrizzleUserStore: insert returned no row");
+      return row;
+    },
     async updatePasswordHash(id, passwordHash) {
-      await (db as NodePgDatabase<{ users: typeof users }>)
-        .update(users)
-        .set({ passwordHash })
-        .where(eq(users.id, id));
+      await typedDb.update(users).set({ passwordHash }).where(eq(users.id, id));
     },
     async updateEmailVerified(id) {
-      await (db as NodePgDatabase<{ users: typeof users }>)
-        .update(users)
-        .set({ emailVerified: true })
-        .where(eq(users.id, id));
+      await typedDb.update(users).set({ emailVerified: true }).where(eq(users.id, id));
     },
   };
 }
