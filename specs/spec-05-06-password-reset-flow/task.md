@@ -10,7 +10,7 @@
 - [x] plan.md 작성
 - [x] task.md 작성 (이 파일)
 - [x] 백로그 업데이트 (phase-05.md SPEC 표 갱신 — sdd spec new)
-- [ ] 사용자 Plan Accept
+- [x] 사용자 Plan Accept
 
 ---
 
@@ -65,24 +65,18 @@
 ## Task 4: Password Reset Request Endpoint
 
 ### 4-1. PasswordResetService + AuthModule 작성 (request 로직)
-- [ ] `apps/api/src/auth/password-reset.service.ts`
-  - `request(ip: string, email: string): Promise<void>` — rate limit check → user lookup → token 생성 + DB 저장 + console.log (email stub). 항상 void (caller가 200 반환).
-  - `zodPipe(schema)` inline helper
-- [ ] `apps/api/src/auth/auth.controller.ts` — `POST /auth/password/reset` (`@Body(zodPipe(PasswordResetRequest)) body`)
-- [ ] `apps/api/src/auth/auth.module.ts` — providers: [PasswordResetService], controllers: [AuthController]
+- [x] `apps/api/src/auth/password-reset.service.ts`
+- [x] `apps/api/src/auth/auth.controller.ts` — `POST /auth/password/reset`
+- [x] `apps/api/src/auth/auth.module.ts`
 
 ### 4-2. 단위 테스트 (TDD)
-- [ ] `apps/api/src/auth/password-reset.service.test.ts`
-  - 케이스 1: 존재 email → DB에 token_hash 저장됨, TTL = 15분
-  - 케이스 2: 미존재 email → DB에 token 없음 (enumeration-safe)
-  - 케이스 3: rate limit 초과 → token 미생성 (rate limited)
-- [ ] `pnpm --filter @apps/api test` PASS
+- [x] `apps/api/src/auth/password-reset.service.test.ts` (3 tests PASS)
 
 ### 4-3. AppModule 업데이트
-- [ ] `app.module.ts`에 `AuthModule` import 추가
-- [ ] `pnpm typecheck` PASS
+- [x] `app.module.ts`에 `AuthModule` import 추가
+- [x] `pnpm typecheck` PASS
 
-- [ ] Commit: `feat(spec-05-06): password reset request endpoint — always-200 + token generation`
+- [x] Commit: `feat(spec-05-06): password reset request endpoint — always-200 + token generation`
 
 ---
 
