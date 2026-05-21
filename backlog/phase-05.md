@@ -52,7 +52,7 @@
 | `spec-05-04` | auth-password | P? | Merged | `specs/spec-05-04-auth-password/` |
 | `spec-05-05` | auth-rate-limit | P? | Merged | `specs/spec-05-05-auth-rate-limit/` |
 | `spec-05-06` | password-reset-flow | P? | Merged | `specs/spec-05-06-password-reset-flow/` |
-| `spec-05-07` | email-verify-flow | P? | Active | `specs/spec-05-07-email-verify-flow/` |
+| `spec-05-07` | email-verify-flow | P? | Merged | `specs/spec-05-07-email-verify-flow/` |
 <!-- sdd:specs:end -->
 
 ### spec-05-01 — auth-contracts-extend
