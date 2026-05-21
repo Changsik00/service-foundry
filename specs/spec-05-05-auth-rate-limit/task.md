@@ -138,9 +138,9 @@
 
 - [x] **walkthrough.md 작성**
 - [x] **pr_description.md 작성**
-- [ ] **Ship Commit**: `docs(spec-05-05): ship walkthrough and pr description`
-- [ ] **Push**: `git push -u origin spec-05-05-auth-rate-limit`
-- [ ] **PR 생성**: `/hk-pr-gh` (target: `phase-05-auth-core-security`)
+- [x] **Ship Commit**: `docs(spec-05-05): ship walkthrough and pr description`
+- [x] **Push**: `git push -u origin spec-05-05-auth-rate-limit`
+- [x] **PR 생성**: https://github.com/Changsik00/service-foundry/pull/37 (target: `phase-05-auth-core-security`)
 
 ---
 

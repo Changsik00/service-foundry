@@ -50,7 +50,7 @@
 | `spec-05-02` | auth-session | P? | Merged | `specs/spec-05-02-auth-session/` |
 | `spec-05-03` | auth-jwt | P? | Merged | `specs/spec-05-03-auth-jwt/` |
 | `spec-05-04` | auth-password | P? | Merged | `specs/spec-05-04-auth-password/` |
-| `spec-05-05` | auth-rate-limit | P? | Active | `specs/spec-05-05-auth-rate-limit/` |
+| `spec-05-05` | auth-rate-limit | P? | Merged | `specs/spec-05-05-auth-rate-limit/` |
 <!-- sdd:specs:end -->
 
 ### spec-05-01 — auth-contracts-extend
