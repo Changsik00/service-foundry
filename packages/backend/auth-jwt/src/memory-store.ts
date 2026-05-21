@@ -1,3 +1,7 @@
+import { randomUUID } from "node:crypto";
+
+import { generateKeyPair } from "jose";
+
 import type { KeyMaterial, KeyStore, PublicKeyMaterial } from "./keystore.js";
 
 /**
@@ -20,9 +24,43 @@ export interface CreateInMemoryKeyStoreOptions {
   verifyOnly?: PublicKeyMaterial[];
 }
 
+const toPublic = (m: KeyMaterial): PublicKeyMaterial => ({
+  kid: m.kid,
+  alg: m.alg,
+  publicKey: m.publicKey,
+});
+
 export const createInMemoryKeyStore = async (
-  _opts?: CreateInMemoryKeyStoreOptions,
+  opts?: CreateInMemoryKeyStoreOptions,
 ): Promise<InMemoryKeyStore> => {
-  // Red 단계 stub — Green commit 에서 jose.generateKeyPair 박음.
-  throw new Error("not implemented");
+  const { publicKey, privateKey } = await generateKeyPair("EdDSA", {
+    crv: "Ed25519",
+    extractable: true,
+  });
+  const active: KeyMaterial = {
+    kid: opts?.kid ?? randomUUID(),
+    alg: "EdDSA",
+    privateKey,
+    publicKey,
+  };
+  const verifyOnly = new Map<string, PublicKeyMaterial>();
+  for (const v of opts?.verifyOnly ?? []) verifyOnly.set(v.kid, v);
+
+  return {
+    addVerificationOnlyKey(key: PublicKeyMaterial): void {
+      verifyOnly.set(key.kid, key);
+    },
+    async getActiveSigningKey(): Promise<KeyMaterial> {
+      return active;
+    },
+    async getVerificationKey(kid: string): Promise<PublicKeyMaterial | null> {
+      if (kid === active.kid) return toPublic(active);
+      return verifyOnly.get(kid) ?? null;
+    },
+    async listActivePublicKeys(): Promise<PublicKeyMaterial[]> {
+      const result: PublicKeyMaterial[] = [toPublic(active)];
+      for (const v of verifyOnly.values()) result.push(v);
+      return result;
+    },
+  };
 };
