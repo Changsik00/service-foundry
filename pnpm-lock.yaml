@@ -248,6 +248,15 @@ importers:
       '@nestjs/throttler':
         specifier: 'catalog:'
         version: 6.5.0(@nestjs/common@11.1.21(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.21)(reflect-metadata@0.2.2)
+      '@repo/backend-auth-password':
+        specifier: workspace:*
+        version: link:../../packages/backend/auth-password
+      '@repo/backend-auth-rate-limit':
+        specifier: workspace:*
+        version: link:../../packages/backend/auth-rate-limit
+      '@repo/backend-auth-session':
+        specifier: workspace:*
+        version: link:../../packages/backend/auth-session
       '@repo/backend-settings':
         specifier: workspace:*
         version: link:../../packages/backend/settings
@@ -266,6 +275,9 @@ importers:
       '@repo/nestjs-settings':
         specifier: workspace:*
         version: link:../../packages/nestjs/settings
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.2(@types/pg@8.20.0)(pg@8.21.0)
       reflect-metadata:
         specifier: 'catalog:'
         version: 0.2.2
@@ -297,6 +309,9 @@ importers:
       '@types/supertest':
         specifier: 'catalog:'
         version: 7.2.0
+      drizzle-kit:
+        specifier: 'catalog:'
+        version: 0.31.10
       supertest:
         specifier: 'catalog:'
         version: 7.2.2
