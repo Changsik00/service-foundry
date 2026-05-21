@@ -3,4 +3,9 @@
  *
  * Framework-agnostic. NestJS adapter → phase-06.
  */
-export {};
+export { hashPassword } from "./hash.js";
+export {
+  DEFAULT_OPTIONS,
+  type HashOptions,
+  resolveOptions,
+} from "./options.js";

@@ -1,4 +1,7 @@
-import type { HashOptions } from "./options.js";
+import { AppError } from "@repo/errors";
+import argon2 from "argon2";
+
+import { type HashOptions, resolveOptions } from "./options.js";
 
 /**
  * `hashPassword(plain, opts?)` — argon2id PHC string 발급.
@@ -9,7 +12,20 @@ import type { HashOptions } from "./options.js";
  *
  * 반환: `$argon2id$v=19$m=...$t=...$p=...$<salt>$<hash>` 형식 string.
  */
-export const hashPassword = async (_plain: string, _opts?: HashOptions): Promise<string> => {
-  // Red 단계 stub — Green commit 에서 argon2.hash 박음.
-  throw new Error("not implemented");
+export const hashPassword = async (plain: string, opts?: HashOptions): Promise<string> => {
+  if (typeof plain !== "string" || plain.length === 0) {
+    throw new AppError({
+      code: "PASSWORD_EMPTY",
+      message: "hashPassword: plain must be a non-empty string",
+      statusCode: 400,
+    });
+  }
+  const resolved = resolveOptions(opts);
+  return await argon2.hash(plain, {
+    type: argon2.argon2id,
+    memoryCost: resolved.memoryCost,
+    timeCost: resolved.timeCost,
+    parallelism: resolved.parallelism,
+    hashLength: resolved.hashLength,
+  });
 };
