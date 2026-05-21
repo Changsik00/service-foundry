@@ -49,6 +49,7 @@
 | `spec-05-01` | auth-contracts-extend | P? | Merged | `specs/spec-05-01-auth-contracts-extend/` |
 | `spec-05-02` | auth-session | P? | Merged | `specs/spec-05-02-auth-session/` |
 | `spec-05-03` | auth-jwt | P? | Merged | `specs/spec-05-03-auth-jwt/` |
+| `spec-05-04` | auth-password | P? | Active | `specs/spec-05-04-auth-password/` |
 <!-- sdd:specs:end -->
 
 ### spec-05-01 — auth-contracts-extend

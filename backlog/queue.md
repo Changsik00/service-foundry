@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-05** — Auth Core + Security — 3 spec — 다음: (spec 없음)
+- **phase-05** — Auth Core + Security — 4 spec — 다음: spec-05-04-auth-password
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기

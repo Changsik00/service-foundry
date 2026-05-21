@@ -4,6 +4,7 @@ packages:
 
 allowBuilds:
   '@nestjs/core': true
+  argon2: true
   esbuild: true
   lefthook: true
   sharp: true
@@ -18,6 +19,7 @@ catalog:
   "drizzle-orm": ^0.45.2
   pg: ^8.21.0
   jose: ^6.2.0
+  argon2: ^0.44.0
   "@env-kit/node-settings": ^1.1.0
 
   # frontend (phase-04+)
