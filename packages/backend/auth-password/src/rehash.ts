@@ -1,4 +1,6 @@
-import type { HashOptions } from "./options.js";
+import argon2 from "argon2";
+
+import { type HashOptions, resolveOptions } from "./options.js";
 
 /**
  * `needsRehash(hash, opts?)` — 저장된 hash 의 cost 가 현 정책보다 약하면 `true`.
@@ -16,7 +18,11 @@ import type { HashOptions } from "./options.js";
  *
  * 현 정책 = `opts` (생략 시 `DEFAULT_OPTIONS`).
  */
-export const needsRehash = (_hash: string, _opts?: HashOptions): boolean => {
-  // Red 단계 stub — Green commit 에서 argon2.needsRehash 박음.
-  throw new Error("not implemented");
+export const needsRehash = (hash: string, opts?: HashOptions): boolean => {
+  const resolved = resolveOptions(opts);
+  return argon2.needsRehash(hash, {
+    memoryCost: resolved.memoryCost,
+    timeCost: resolved.timeCost,
+    parallelism: resolved.parallelism,
+  });
 };

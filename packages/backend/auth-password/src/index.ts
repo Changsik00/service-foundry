@@ -9,4 +9,5 @@ export {
   type HashOptions,
   resolveOptions,
 } from "./options.js";
+export { needsRehash } from "./rehash.js";
 export { verifyPassword } from "./verify.js";
