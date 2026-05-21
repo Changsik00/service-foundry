@@ -17,6 +17,7 @@
     "@nestjs/core": "catalog:",
     "@nestjs/platform-express": "catalog:",
     "@nestjs/throttler": "catalog:",
+    "@repo/backend-auth-jwt": "workspace:*",
     "@repo/backend-auth-password": "workspace:*",
     "@repo/backend-auth-rate-limit": "workspace:*",
     "@repo/backend-auth-session": "workspace:*",
