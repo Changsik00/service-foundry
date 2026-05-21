@@ -4,6 +4,7 @@ import * as authPassword from "@repo/backend-auth-password";
 import * as authSession from "@repo/backend-auth-session";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { JwtService } from "../jwt/jwt.service.js";
 import type { UserStore } from "./password-reset.stores.js";
 import type { SessionStore } from "./session.stores.js";
 import { SigninService } from "./signin.service.js";
@@ -60,18 +61,19 @@ function makeSessionStore(): SessionStore {
 }
 
 describe("SigninService", () => {
-  beforeEach(() => {
+  let jwtService: JwtService;
+
+  beforeEach(async () => {
     vi.mocked(authSession.createSession).mockResolvedValue(mockSessionResult);
+    const keyStore = await createInMemoryKeyStore({ kid: "test-key" });
+    jwtService = { getKeyStore: () => keyStore } as unknown as JwtService;
   });
+
+  const jwtOpts = { issuer: "http://localhost:3000", audience: "http://localhost:3000" };
 
   it("성공 — 올바른 credentials → accessToken + user + refreshToken 반환", async () => {
     vi.mocked(authPassword.verifyPassword).mockResolvedValue(true);
-    const keyStore = await createInMemoryKeyStore({ kid: "test-key" });
-    const service = new SigninService(makeUserStore(), makeSessionStore(), {
-      keyStore,
-      issuer: "http://localhost:3000",
-      audience: "http://localhost:3000",
-    });
+    const service = new SigninService(makeUserStore(), makeSessionStore(), jwtService, jwtOpts);
 
     const result = await service.signIn("test@example.com", "password123");
 
@@ -81,12 +83,7 @@ describe("SigninService", () => {
   });
 
   it("email 없음 → UnauthorizedException", async () => {
-    const keyStore = await createInMemoryKeyStore({ kid: "test-key" });
-    const service = new SigninService(makeUserStore(null), makeSessionStore(), {
-      keyStore,
-      issuer: "http://localhost:3000",
-      audience: "http://localhost:3000",
-    });
+    const service = new SigninService(makeUserStore(null), makeSessionStore(), jwtService, jwtOpts);
 
     await expect(service.signIn("ghost@example.com", "password123")).rejects.toThrow(
       UnauthorizedException,
@@ -95,12 +92,7 @@ describe("SigninService", () => {
 
   it("password 틀림 → UnauthorizedException", async () => {
     vi.mocked(authPassword.verifyPassword).mockResolvedValue(false);
-    const keyStore = await createInMemoryKeyStore({ kid: "test-key" });
-    const service = new SigninService(makeUserStore(), makeSessionStore(), {
-      keyStore,
-      issuer: "http://localhost:3000",
-      audience: "http://localhost:3000",
-    });
+    const service = new SigninService(makeUserStore(), makeSessionStore(), jwtService, jwtOpts);
 
     await expect(service.signIn("test@example.com", "wrongpassword")).rejects.toThrow(
       UnauthorizedException,

@@ -4,6 +4,7 @@ import * as authPassword from "@repo/backend-auth-password";
 import * as authSession from "@repo/backend-auth-session";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { JwtService } from "../jwt/jwt.service.js";
 import type { UserStore } from "./password-reset.stores.js";
 import type { SessionStore } from "./session.stores.js";
 import { SignupService } from "./signup.service.js";
@@ -60,18 +61,19 @@ function makeSessionStore(): SessionStore {
 }
 
 describe("SignupService", () => {
-  beforeEach(() => {
+  let jwtService: JwtService;
+
+  beforeEach(async () => {
     vi.mocked(authSession.createSession).mockResolvedValue(mockSessionResult);
     vi.mocked(authPassword.hashPassword).mockResolvedValue("$argon2id$hashed");
+    const keyStore = await createInMemoryKeyStore({ kid: "test-key" });
+    jwtService = { getKeyStore: () => keyStore } as unknown as JwtService;
   });
 
+  const jwtOpts = { issuer: "http://localhost:3000", audience: "http://localhost:3000" };
+
   it("성공 — 신규 이메일 → accessToken + user + refreshToken 반환", async () => {
-    const keyStore = await createInMemoryKeyStore({ kid: "test-key" });
-    const service = new SignupService(makeUserStore(), makeSessionStore(), {
-      keyStore,
-      issuer: "http://localhost:3000",
-      audience: "http://localhost:3000",
-    });
+    const service = new SignupService(makeUserStore(), makeSessionStore(), jwtService, jwtOpts);
 
     const result = await service.signUp("new@example.com", "password123");
 
@@ -81,12 +83,12 @@ describe("SignupService", () => {
   });
 
   it("이메일 중복 → ConflictException", async () => {
-    const keyStore = await createInMemoryKeyStore({ kid: "test-key" });
-    const service = new SignupService(makeUserStore(mockUserRow), makeSessionStore(), {
-      keyStore,
-      issuer: "http://localhost:3000",
-      audience: "http://localhost:3000",
-    });
+    const service = new SignupService(
+      makeUserStore(mockUserRow),
+      makeSessionStore(),
+      jwtService,
+      jwtOpts,
+    );
 
     await expect(service.signUp("new@example.com", "password123")).rejects.toThrow(
       ConflictException,
@@ -94,13 +96,8 @@ describe("SignupService", () => {
   });
 
   it("password 해싱 후 insert 호출됨", async () => {
-    const keyStore = await createInMemoryKeyStore({ kid: "test-key" });
     const userStore = makeUserStore();
-    const service = new SignupService(userStore, makeSessionStore(), {
-      keyStore,
-      issuer: "http://localhost:3000",
-      audience: "http://localhost:3000",
-    });
+    const service = new SignupService(userStore, makeSessionStore(), jwtService, jwtOpts);
 
     await service.signUp("new@example.com", "password123");
 
