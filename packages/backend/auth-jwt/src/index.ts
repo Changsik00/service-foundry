@@ -17,3 +17,8 @@ export {
   type SignedClaims,
   signAccessToken,
 } from "./sign.js";
+export {
+  JwtErrorCode,
+  type VerifyAccessTokenOptions,
+  verifyAccessToken,
+} from "./verify.js";
