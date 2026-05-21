@@ -251,6 +251,9 @@ importers:
       '@repo/auth-contracts':
         specifier: workspace:*
         version: link:../../packages/shared/auth-contracts
+      '@repo/backend-auth-audit':
+        specifier: workspace:*
+        version: link:../../packages/backend/auth-audit
       '@repo/backend-auth-jwt':
         specifier: workspace:*
         version: link:../../packages/backend/auth-jwt
@@ -497,6 +500,37 @@ importers:
       vite:
         specifier: 'catalog:'
         version: 8.0.13(@types/node@22.19.19)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.22.1)(yaml@2.9.0)
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.6(@types/node@22.19.19)(jsdom@29.1.1(@noble/hashes@1.8.0))(vite@8.0.13(@types/node@22.19.19)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.22.1)(yaml@2.9.0))
+
+  packages/backend/auth-audit:
+    dependencies:
+      '@repo/backend-database':
+        specifier: workspace:*
+        version: link:../database
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.4.15
+      '@repo/biome-config':
+        specifier: workspace:*
+        version: link:../../config/biome-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../config/typescript-config
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../../config/vitest-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.19
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.2(@types/pg@8.20.0)(pg@8.21.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
       vitest:
         specifier: 'catalog:'
         version: 4.1.6(@types/node@22.19.19)(jsdom@29.1.1(@noble/hashes@1.8.0))(vite@8.0.13(@types/node@22.19.19)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.22.1)(yaml@2.9.0))
