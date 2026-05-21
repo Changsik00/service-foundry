@@ -3,7 +3,7 @@
   "extends": ["@repo/biome-config/base"],
   "overrides": [
     {
-      "includes": ["apps/api/src/**"],
+      "includes": ["apps/api/src/**", "packages/nestjs/**/src/**"],
       "javascript": {
         "parser": {
           "unsafeParameterDecoratorsEnabled": true

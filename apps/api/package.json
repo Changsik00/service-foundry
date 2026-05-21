@@ -23,6 +23,7 @@
     "@repo/backend-auth-rate-limit": "workspace:*",
     "@repo/backend-auth-session": "workspace:*",
     "@repo/backend-settings": "workspace:*",
+    "@repo/nestjs-auth": "workspace:*",
     "@repo/nestjs-database": "workspace:*",
     "@repo/nestjs-http-client": "workspace:*",
     "@repo/nestjs-logger": "workspace:*",
