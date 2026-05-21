@@ -41,6 +41,7 @@
 |---|---|:---:|---|---|
 | `spec-06-01` | auth-nestjs | P? | Merged | `specs/spec-06-01-auth-nestjs/` |
 | `spec-06-02` | auth-react | P? | Merged | `specs/spec-06-02-auth-react/` |
+| `spec-06-03` | cookie-strategy | P? | Merged | `specs/spec-06-03-cookie-strategy/` |
 <!-- sdd:specs:end -->
 
 ### spec-06-01 — auth-nestjs
