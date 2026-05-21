@@ -256,6 +256,8 @@ The main session runs on **Opus** (planning, coordination, judgment). Sub-agents
 
 When delegating implementation to a Sonnet sub-agent, the main Opus agent MUST provide clear, specific instructions including: target files, expected behavior, test expectations, and commit message format.
 
+**Dispatch exception — docs-only tasks**: When all Spec tasks are limited to markdown/documentation file creation or editing (no code, scripts, or tests), run them in the main thread — sub-agent spin-up overhead exceeds the saving. See §6.7 sub-agent dispatch threshold for the general rule.
+
 ### 6.7 Workflow Patterns
 
 Generic agent behavior patterns that improve UX, latency, and cost without per-task tuning.
@@ -356,7 +358,7 @@ At key decision points requiring user input, the Agent SHOULD use the `AskUserQu
 - `"uxMode": "text"` — skip `AskUserQuestion`; fall back to text output for all decision points
 - Field absent — treat as `"interactive"` (backward-compatible default)
 
-To change: `sdd config ux-mode text` or `sdd config ux-mode interactive`
+To change: `sdd config ux-mode [interactive|text|toggle]` (or run `/hk-ask-mode` — toggles the current value).
 
 **Usage notes**: `AskUserQuestion` is Claude Code-specific. Keep options to 2–4, use concise labels, and put trade-offs in the description field.
 
