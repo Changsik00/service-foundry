@@ -8,10 +8,11 @@ import type { JwtClaims, KeyStore } from "./keystore.js";
  * `signAccessToken` 호출자 입력.
  *
  * - `sub` 필수 (token 의 subject — 보통 userId).
- * - 추가 custom claim 은 본 spec scope 밖 — RBAC 등은 별 spec. PII 금지 (ADR-0013 Decision 3).
+ * - `role` 등 추가 custom claim 은 index signature 로 포함 가능 (PII 금지 — ADR-0013 Decision 3).
  */
 export interface SignAccessTokenPayload {
   readonly sub: string;
+  readonly [key: string]: unknown;
 }
 
 export interface SignAccessTokenOptions {
@@ -45,9 +46,10 @@ export const signAccessToken = async (
   const jti = opts.jti ?? randomUUID();
   const expiresIn = opts.expiresIn ?? DEFAULT_EXPIRES_IN;
 
-  return await new SignJWT({})
+  const { sub, ...rest } = payload;
+  return await new SignJWT(rest)
     .setProtectedHeader({ alg: active.alg, kid: active.kid, typ: "JWT" })
-    .setSubject(payload.sub)
+    .setSubject(sub)
     .setIssuer(opts.issuer)
     .setAudience(opts.audience)
     .setJti(jti)
