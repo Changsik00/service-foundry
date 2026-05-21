@@ -3,6 +3,7 @@
  *
  * Framework-agnostic. NestJS middleware adapter → phase-06.
  */
+export { issueCsrfToken, verifyCsrfToken } from "./csrf.js";
 export { drizzleRateLimitStore } from "./drizzle-store.js";
 export { createFakeRateLimitStore, type FakeRateLimitStore } from "./fake-store.js";
 export {
