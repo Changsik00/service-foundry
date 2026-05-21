@@ -5,6 +5,15 @@
  */
 export { drizzleRateLimitStore } from "./drizzle-store.js";
 export { createFakeRateLimitStore, type FakeRateLimitStore } from "./fake-store.js";
+export {
+  checkRateLimit,
+  RATE_LIMIT_DEFAULTS,
+  type RateLimitContext,
+  type RateLimitDecision,
+  type RateLimitOptions,
+  recordFailure,
+  recordSuccess,
+} from "./rate-limit.js";
 export type {
   FailedLoginInsert,
   FailedLoginRow,
