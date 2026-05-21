@@ -5,6 +5,7 @@
  */
 
 export { createFakeKeyStore, type FakeKeyStore, type FakeKeyStoreInit } from "./fake-store.js";
+export { type Jwks, toJwks } from "./jwks.js";
 export type { Alg, JwtClaims, KeyMaterial, KeyStore, PublicKeyMaterial } from "./keystore.js";
 export {
   type CreateInMemoryKeyStoreOptions,
