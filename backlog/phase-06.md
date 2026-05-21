@@ -42,6 +42,7 @@
 | `spec-06-01` | auth-nestjs | P? | Merged | `specs/spec-06-01-auth-nestjs/` |
 | `spec-06-02` | auth-react | P? | Merged | `specs/spec-06-02-auth-react/` |
 | `spec-06-03` | cookie-strategy | P? | Merged | `specs/spec-06-03-cookie-strategy/` |
+| `spec-06-04` | audit-event-system | P? | Merged | `specs/spec-06-04-audit-event-system/` |
 <!-- sdd:specs:end -->
 
 ### spec-06-01 — auth-nestjs

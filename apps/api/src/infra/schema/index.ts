@@ -1,3 +1,4 @@
+import { type AuditLogRow, authAuditLogs } from "@repo/backend-auth-audit";
 import { type SessionInsert, type SessionRow, sessions } from "@repo/backend-auth-session";
 import {
   type EmailVerifyTokenInsert,
@@ -12,6 +13,7 @@ import {
 import { type UserInsert, type UserRow, users } from "./users.js";
 
 export type {
+  AuditLogRow,
   EmailVerifyTokenInsert,
   EmailVerifyTokenRow,
   PasswordResetTokenInsert,
@@ -21,6 +23,6 @@ export type {
   UserInsert,
   UserRow,
 };
-export { emailVerifyTokens, passwordResetTokens, sessions, users };
+export { authAuditLogs, emailVerifyTokens, passwordResetTokens, sessions, users };
 
-export const appSchema = { users, passwordResetTokens, emailVerifyTokens, sessions };
+export const appSchema = { users, passwordResetTokens, emailVerifyTokens, sessions, authAuditLogs };

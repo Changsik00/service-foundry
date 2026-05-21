@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { AuditService, AuthEventBus, drizzleAuditLogStore } from "@repo/backend-auth-audit";
 import { AuthGuard, NESTJS_AUTH_OPTIONS } from "@repo/nestjs-auth";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 
@@ -6,6 +7,8 @@ import { JwtModule } from "../jwt/jwt.module.js";
 // biome-ignore lint/style/useImportType: NestJS emitDecoratorMetadata requires runtime reference
 import { JwtService } from "../jwt/jwt.service.js";
 import { type AppSettings, loadSettings } from "../settings.js";
+// biome-ignore lint/style/useImportType: NestJS emitDecoratorMetadata requires runtime reference
+import { AuditEventListener } from "./audit.event-listener.js";
 import { AuthController } from "./auth.controller.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import {
@@ -34,6 +37,8 @@ const settings: AppSettings = loadSettings(process.env);
     SigninService,
     SignupService,
     AuthGuard,
+    AuthEventBus,
+    AuditEventListener,
     {
       provide: JWT_SIGN_OPTIONS,
       useValue: { issuer: settings.JWT_ISSUER, audience: settings.JWT_AUDIENCE },
@@ -46,6 +51,12 @@ const settings: AppSettings = loadSettings(process.env);
         issuer: opts.issuer,
         audience: opts.audience,
       }),
+    },
+    {
+      provide: AuditService,
+      inject: [DATABASE],
+      useFactory: (db: Database<Record<string, unknown>>) =>
+        new AuditService(drizzleAuditLogStore(db.db as Parameters<typeof drizzleAuditLogStore>[0])),
     },
     {
       provide: USER_STORE,
