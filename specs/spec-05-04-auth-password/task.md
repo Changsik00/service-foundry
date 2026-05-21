@@ -113,10 +113,10 @@
 - [x] 코드 품질 점검 재확인
 - [x] **walkthrough.md 작성**
 - [x] **pr_description.md 작성**
-- [ ] **Ship Commit**: `docs(spec-05-04): ship walkthrough and pr description`
-- [ ] **Push**: `git push -u origin spec-05-04-auth-password`
-- [ ] **PR 생성**: `/hk-pr-gh` (target: `phase-05-auth-core-security`)
-- [ ] **사용자 알림**: PR URL 보고 + 머지 대기
+- [x] **Ship Commit**: `docs(spec-05-04): ship walkthrough and pr description`
+- [x] **Push**: `git push -u origin spec-05-04-auth-password`
+- [x] **PR 생성**: https://github.com/Changsik00/service-foundry/pull/36 (target: `phase-05-auth-core-security`)
+- [x] **사용자 알림**: PR URL 보고 + 머지 대기
 
 ---
 
