@@ -1,5 +1,6 @@
 import { ConflictException, UnauthorizedException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
+import { AuthEventBus } from "@repo/backend-auth-audit";
 import { AuthGuard } from "@repo/nestjs-auth";
 import type { Request, Response } from "express";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -30,13 +31,18 @@ function makeMockRes(): Response {
 }
 
 function makeMockReq(cookie?: string): Request {
-  return { cookies: cookie ? { refresh_token: cookie } : {} } as unknown as Request;
+  return {
+    cookies: cookie ? { refresh_token: cookie } : {},
+    ip: "1.2.3.4",
+    headers: { "user-agent": "TestAgent/1.0" },
+  } as unknown as Request;
 }
 
 describe("AuthController", () => {
   let controller: AuthController;
   let signinService: SigninService;
   let signupService: SignupService;
+  let eventBus: AuthEventBus;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -64,6 +70,10 @@ describe("AuthController", () => {
           provide: EmailVerifyService,
           useValue: { request: vi.fn(), confirm: vi.fn() },
         },
+        {
+          provide: AuthEventBus,
+          useValue: { emit: vi.fn() },
+        },
       ],
     })
       .overrideGuard(AuthGuard)
@@ -73,14 +83,17 @@ describe("AuthController", () => {
     controller = moduleRef.get(AuthController);
     signinService = moduleRef.get(SigninService);
     signupService = moduleRef.get(SignupService);
+    eventBus = moduleRef.get(AuthEventBus);
   });
 
   describe("POST /auth/signin", () => {
     it("성공 → accessToken + user 반환, cookie 설정", async () => {
       const res = makeMockRes();
+      const req = makeMockReq();
       const result = await controller.signIn(
         { email: "test@example.com", password: "password123" },
         res,
+        req,
       );
       expect(result.accessToken).toBe("access-tok-abc");
       expect(result.user.email).toBe("test@example.com");
@@ -91,52 +104,81 @@ describe("AuthController", () => {
       );
     });
 
-    it("잘못된 credentials → UnauthorizedException 전파", async () => {
+    it("성공 → SIGNED_IN 이벤트 emit", async () => {
+      const res = makeMockRes();
+      const req = makeMockReq();
+      await controller.signIn({ email: "test@example.com", password: "password123" }, res, req);
+      expect(eventBus.emit).toHaveBeenCalledWith(
+        expect.objectContaining({ type: "SIGNED_IN", userId: mockUserRow.id }),
+      );
+    });
+
+    it("잘못된 credentials → UnauthorizedException 전파 + LOGIN_FAILED emit", async () => {
       vi.mocked(signinService.signIn).mockRejectedValue(new UnauthorizedException());
       const res = makeMockRes();
+      const req = makeMockReq();
       await expect(
-        controller.signIn({ email: "test@example.com", password: "wrongpassword" }, res),
+        controller.signIn({ email: "test@example.com", password: "wrongpassword" }, res, req),
       ).rejects.toThrow(UnauthorizedException);
+      expect(eventBus.emit).toHaveBeenCalledWith(
+        expect.objectContaining({ type: "LOGIN_FAILED", email: "test@example.com" }),
+      );
     });
   });
 
   describe("POST /auth/signup", () => {
     it("성공 → accessToken + user 반환, cookie 설정", async () => {
       const res = makeMockRes();
+      const req = makeMockReq();
       const result = await controller.signUp(
         { email: "new@example.com", password: "password123" },
         res,
+        req,
       );
       expect(result.accessToken).toBe("access-tok-abc");
       expect(res.cookie).toHaveBeenCalled();
     });
 
+    it("성공 → SIGNED_IN 이벤트 emit", async () => {
+      const res = makeMockRes();
+      const req = makeMockReq();
+      await controller.signUp({ email: "new@example.com", password: "password123" }, res, req);
+      expect(eventBus.emit).toHaveBeenCalledWith(
+        expect.objectContaining({ type: "SIGNED_IN", userId: mockUserRow.id }),
+      );
+    });
+
     it("이메일 중복 → ConflictException 전파", async () => {
       vi.mocked(signupService.signUp).mockRejectedValue(new ConflictException());
       const res = makeMockRes();
+      const req = makeMockReq();
       await expect(
-        controller.signUp({ email: "dup@example.com", password: "password123" }, res),
+        controller.signUp({ email: "dup@example.com", password: "password123" }, res, req),
       ).rejects.toThrow(ConflictException);
     });
   });
 
   describe("POST /auth/signout", () => {
-    it("cookie 삭제 + { status: ok } 반환", async () => {
+    it("cookie 삭제 + { status: ok } 반환 + SIGNED_OUT emit", async () => {
       const res = makeMockRes();
       const req = makeMockReq("some-token");
       const result = await controller.signOut(req, res);
       expect(result).toEqual({ status: "ok" });
       expect(res.clearCookie).toHaveBeenCalledWith("refresh_token", { path: "/" });
+      expect(eventBus.emit).toHaveBeenCalledWith(expect.objectContaining({ type: "SIGNED_OUT" }));
     });
   });
 
   describe("POST /auth/refresh", () => {
-    it("token rotation → 새 accessToken + cookie 설정", async () => {
+    it("token rotation → 새 accessToken + cookie 설정 + TOKEN_REFRESHED emit", async () => {
       const res = makeMockRes();
       const req = makeMockReq("old-refresh-token");
       const result = await controller.refresh(req, res);
       expect(result.accessToken).toBe("access-tok-abc");
       expect(res.cookie).toHaveBeenCalled();
+      expect(eventBus.emit).toHaveBeenCalledWith(
+        expect.objectContaining({ type: "TOKEN_REFRESHED" }),
+      );
     });
 
     it("유효하지 않은 token → UnauthorizedException 전파", async () => {
