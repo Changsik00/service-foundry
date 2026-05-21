@@ -9,3 +9,4 @@ export {
   type HashOptions,
   resolveOptions,
 } from "./options.js";
+export { verifyPassword } from "./verify.js";
