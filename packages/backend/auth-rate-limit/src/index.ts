@@ -3,6 +3,7 @@
  *
  * Framework-agnostic. NestJS middleware adapter → phase-06.
  */
+export { drizzleRateLimitStore } from "./drizzle-store.js";
 export { createFakeRateLimitStore, type FakeRateLimitStore } from "./fake-store.js";
 export type {
   FailedLoginInsert,
