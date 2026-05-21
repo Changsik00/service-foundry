@@ -139,10 +139,10 @@
 - [x] 코드 품질 점검 (이미 Task 8 에서 수행) — 재확인만
 - [x] **walkthrough.md 작성** (증거 로그 + 핵심 설계 결정 + 검증 결과)
 - [x] **pr_description.md 작성** (템플릿 준수)
-- [ ] **Ship Commit**: `docs(spec-05-03): ship walkthrough and pr description`
-- [ ] **Push**: `git push -u origin spec-05-03-auth-jwt`
-- [ ] **PR 생성**: `/hk-pr-gh` (target: `phase-05-auth-core-security`)
-- [ ] **사용자 알림**: PR URL 보고 + 머지 대기
+- [x] **Ship Commit**: `docs(spec-05-03): ship walkthrough and pr description`
+- [x] **Push**: `git push -u origin spec-05-03-auth-jwt`
+- [x] **PR 생성**: https://github.com/Changsik00/service-foundry/pull/35 (target: `phase-05-auth-core-security`)
+- [x] **사용자 알림**: PR URL 보고 + 머지 대기
 
 ---
 
