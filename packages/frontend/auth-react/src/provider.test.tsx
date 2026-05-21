@@ -1,7 +1,6 @@
 import type { AuthSDK, Session, User } from "@repo/auth-contracts";
 import { act, render, screen, waitFor } from "@testing-library/react";
-import React from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { useAuth, useSession } from "./hooks.js";
 import { AuthProvider } from "./provider.js";
@@ -80,7 +79,7 @@ describe("AuthProvider + useAuth + useSession", () => {
     );
     await waitFor(() => expect(screen.getByText("no-user")).toBeInTheDocument());
     await act(async () => {
-      await capturedSignIn!({ email: "test@example.com", password: "password1" });
+      await capturedSignIn?.({ email: "test@example.com", password: "password1" });
     });
     expect(screen.getByText(`user:${mockUser.email}`)).toBeInTheDocument();
     expect(sdk.signIn).toHaveBeenCalledWith({ email: "test@example.com", password: "password1" });
@@ -101,7 +100,7 @@ describe("AuthProvider + useAuth + useSession", () => {
     );
     await waitFor(() => expect(screen.getByText(`user:${mockUser.email}`)).toBeInTheDocument());
     await act(async () => {
-      await capturedSignOut!();
+      await capturedSignOut?.();
     });
     expect(screen.getByText("no-user")).toBeInTheDocument();
     expect(sdk.signOut).toHaveBeenCalledTimes(1);
