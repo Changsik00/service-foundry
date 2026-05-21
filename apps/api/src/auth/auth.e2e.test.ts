@@ -58,6 +58,40 @@ describe("Auth E2E (real PG)", () => {
     });
   });
 
+  describe("POST /auth/email/verify/request", () => {
+    it("미존재 email → 200 (enumeration-safe)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/email/verify/request")
+        .send({ email: "ghost@example.com" });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ status: "ok" });
+    });
+
+    it("잘못된 payload → 422/400", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/email/verify/request")
+        .send({ email: "not-an-email" });
+      expect(res.status).toBeGreaterThanOrEqual(400);
+    });
+  });
+
+  describe("POST /auth/email/verify/confirm", () => {
+    it("미존재 token → 200 (enumeration-safe)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/email/verify/confirm")
+        .send({ token: "nonexistent-token-aaaabbbbccccddddeeee" });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ status: "ok" });
+    });
+
+    it("잘못된 payload (짧은 token) → 422/400", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/email/verify/confirm")
+        .send({ token: "short" });
+      expect(res.status).toBeGreaterThanOrEqual(400);
+    });
+  });
+
   describe("GET /.well-known/jwks.json", () => {
     it("JWKS 구조 반환 (keys 배열, OKP/Ed25519/EdDSA)", async () => {
       const res = await request(app.getHttpServer()).get("/.well-known/jwks.json");
