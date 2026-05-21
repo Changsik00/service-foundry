@@ -40,6 +40,7 @@
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
 | `spec-06-01` | auth-nestjs | P? | Merged | `specs/spec-06-01-auth-nestjs/` |
+| `spec-06-02` | auth-react | P? | Merged | `specs/spec-06-02-auth-react/` |
 <!-- sdd:specs:end -->
 
 ### spec-06-01 — auth-nestjs
