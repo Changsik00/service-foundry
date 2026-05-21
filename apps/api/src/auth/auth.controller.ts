@@ -7,7 +7,8 @@ import {
   SignInInput,
   SignUpInput,
 } from "@repo/auth-contracts";
-import type { AuthEventBus } from "@repo/backend-auth-audit";
+// biome-ignore lint/style/useImportType: NestJS emitDecoratorMetadata requires runtime value
+import { AuthEventBus } from "@repo/backend-auth-audit";
 import { type AuthenticatedUser, AuthGuard, CurrentUser } from "@repo/nestjs-auth";
 import type { Request, Response } from "express";
 import type { z } from "zod";
