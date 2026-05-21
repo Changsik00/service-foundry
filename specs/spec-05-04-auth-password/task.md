@@ -99,20 +99,20 @@
 
 ## Task 7: 최종 검증
 
-- [ ] `pnpm --filter @repo/backend-auth-password lint` 통과
-- [ ] `pnpm --filter @repo/backend-auth-password typecheck` 통과
-- [ ] `pnpm --filter @repo/backend-auth-password test` 전체 PASS
-- [ ] 루트 `pnpm typecheck` 통과
-- [ ] depcruise 그린
-- [ ] Commit: 없음
+- [x] `pnpm --filter @repo/backend-auth-password lint` 통과 (12 files)
+- [x] `pnpm --filter @repo/backend-auth-password typecheck` 통과
+- [x] `pnpm --filter @repo/backend-auth-password test` 전체 PASS (13/13)
+- [x] 루트 `pnpm typecheck` 통과 (29 packages)
+- [x] depcruise 그린 (167 modules / 260 deps / 0 violations)
+- [x] Commit: 없음
 
 ---
 
 ## Task N: Ship
 
-- [ ] 코드 품질 점검 재확인
-- [ ] **walkthrough.md 작성**
-- [ ] **pr_description.md 작성**
+- [x] 코드 품질 점검 재확인
+- [x] **walkthrough.md 작성**
+- [x] **pr_description.md 작성**
 - [ ] **Ship Commit**: `docs(spec-05-04): ship walkthrough and pr description`
 - [ ] **Push**: `git push -u origin spec-05-04-auth-password`
 - [ ] **PR 생성**: `/hk-pr-gh` (target: `phase-05-auth-core-security`)
@@ -125,6 +125,8 @@
 | 항목 | 값 |
 |---|---|
 | **총 Task 수** | 7 + Ship |
-| **예상 commit 수** | 13 (planning 1 + scaffold 1 + TDD red/green 4×2 + README 1 + ship 1) |
-| **현재 단계** | Planning |
-| **마지막 업데이트** | 2026-05-21 10:40 |
+| **실 commit 수** | 11 (planning 1 + scaffold 1 + options 1 + TDD red/green 3×2 + README 1) + ship 1 예정 |
+| **테스트** | 13/13 PASS (4 files) |
+| **품질 게이트** | lint ✓ / typecheck ✓ / depcruise ✓ |
+| **현재 단계** | Ship — push 대기 |
+| **마지막 업데이트** | 2026-05-21 11:35 |
