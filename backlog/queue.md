@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-05** — Auth Core + Security — 5 spec — 다음: (spec 없음)
+- **phase-05** — Auth Core + Security — 6 spec — 다음: spec-05-06-password-reset-flow
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기

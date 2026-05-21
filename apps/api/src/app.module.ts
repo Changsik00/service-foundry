@@ -5,6 +5,7 @@ import { BackendLoggerModule } from "@repo/nestjs-logger";
 import { BackendThrottlerModule } from "@repo/nestjs-security";
 import { BackendSettingsModule } from "@repo/nestjs-settings";
 
+import { AuthModule } from "./auth/auth.module.js";
 import { HealthController } from "./health/health.controller.js";
 import { appSchema } from "./infra/schema/index.js";
 import { JwtModule } from "./jwt/jwt.module.js";
@@ -20,6 +21,7 @@ const settings: AppSettings = loadSettings(process.env);
     DatabaseModule.forRoot({ connectionUrl: settings.DATABASE_URL, schema: appSchema }),
     BackendThrottlerModule.forRoot(),
     JwtModule,
+    AuthModule,
   ],
   controllers: [HealthController],
 })

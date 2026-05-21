@@ -1,4 +1,14 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.4.15/schema.json",
-  "extends": ["@repo/biome-config/base"]
+  "extends": ["@repo/biome-config/base"],
+  "overrides": [
+    {
+      "includes": ["apps/api/src/**"],
+      "javascript": {
+        "parser": {
+          "unsafeParameterDecoratorsEnabled": true
+        }
+      }
+    }
+  ]
 }
