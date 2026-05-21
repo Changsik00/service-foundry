@@ -6,6 +6,13 @@
 export { drizzleRateLimitStore } from "./drizzle-store.js";
 export { createFakeRateLimitStore, type FakeRateLimitStore } from "./fake-store.js";
 export {
+  evaluateLockout,
+  isLocked,
+  LOCKOUT_DEFAULTS,
+  type LockoutOptions,
+  type LockoutStatus,
+} from "./lockout.js";
+export {
   checkRateLimit,
   RATE_LIMIT_DEFAULTS,
   type RateLimitContext,
