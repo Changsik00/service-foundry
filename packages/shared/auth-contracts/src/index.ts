@@ -66,3 +66,19 @@ export type AuthResult =
       success: false;
       reason: "invalid_credentials" | "rate_limited" | "account_locked" | "unverified_email";
     };
+
+// === Auth SDK Core Surface (ADR-0006 Decision 2) === //
+
+/**
+ * AuthSDK — 모든 auth provider 패키지가 구현하는 최소 인터페이스.
+ *
+ * "Consistent Wrapped SDK" 컨벤션: auth-react Provider 와 consumer 코드는
+ * 이 interface 만 의존 → SDK(구현체) 교체 시 코드 변경 없음.
+ */
+export interface AuthSDK {
+  signIn(input: SignInInput): Promise<AuthResult>;
+  signOut(): Promise<void>;
+  getCurrentUser(): Promise<User | null>;
+  signUp(input: SignUpInput): Promise<AuthResult>;
+  refresh(): Promise<Session | null>;
+}
