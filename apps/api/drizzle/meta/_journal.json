@@ -15,6 +15,20 @@
       "when": 1779341504769,
       "tag": "0001_nostalgic_wasp",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779350866651,
+      "tag": "0002_boring_silver_sable",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1779351008465,
+      "tag": "0003_legal_blue_shield",
+      "breakpoints": true
     }
   ]
 }
