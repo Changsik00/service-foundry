@@ -1,3 +1,7 @@
+import { randomUUID } from "node:crypto";
+
+import { SignJWT } from "jose";
+
 import type { JwtClaims, KeyStore } from "./keystore.js";
 
 /**
@@ -21,6 +25,8 @@ export interface SignAccessTokenOptions {
   readonly jti?: string;
 }
 
+const DEFAULT_EXPIRES_IN = "15m";
+
 /**
  * `signAccessToken(payload, store, opts)` — EdDSA Ed25519 서명, 15분 TTL 기본.
  *
@@ -28,12 +34,26 @@ export interface SignAccessTokenOptions {
  * `iat`/`exp`/`jti` 는 본 함수가 자동 부여. JWT header 의 `kid` 는 store 의 활성 키에서 채움.
  */
 export const signAccessToken = async (
-  _payload: SignAccessTokenPayload,
-  _store: KeyStore,
-  _opts: SignAccessTokenOptions,
+  payload: SignAccessTokenPayload,
+  store: KeyStore,
+  opts: SignAccessTokenOptions,
 ): Promise<string> => {
-  // Red 단계 stub — Green commit 에서 jose.SignJWT 박음.
-  throw new Error("not implemented");
+  if (!payload.sub || payload.sub.length === 0) {
+    throw new Error("signAccessToken: payload.sub must be a non-empty string");
+  }
+  const active = await store.getActiveSigningKey();
+  const jti = opts.jti ?? randomUUID();
+  const expiresIn = opts.expiresIn ?? DEFAULT_EXPIRES_IN;
+
+  return await new SignJWT({})
+    .setProtectedHeader({ alg: active.alg, kid: active.kid, typ: "JWT" })
+    .setSubject(payload.sub)
+    .setIssuer(opts.issuer)
+    .setAudience(opts.audience)
+    .setJti(jti)
+    .setIssuedAt()
+    .setExpirationTime(expiresIn)
+    .sign(active.privateKey);
 };
 
 /** 디코딩 후 검증된 claims (verify 단계 결과와 같은 shape). */

@@ -11,3 +11,9 @@ export {
   createInMemoryKeyStore,
   type InMemoryKeyStore,
 } from "./memory-store.js";
+export {
+  type SignAccessTokenOptions,
+  type SignAccessTokenPayload,
+  type SignedClaims,
+  signAccessToken,
+} from "./sign.js";
