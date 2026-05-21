@@ -1,3 +1,4 @@
+import { type SessionInsert, type SessionRow, sessions } from "@repo/backend-auth-session";
 import {
   type EmailVerifyTokenInsert,
   type EmailVerifyTokenRow,
@@ -15,9 +16,11 @@ export type {
   EmailVerifyTokenRow,
   PasswordResetTokenInsert,
   PasswordResetTokenRow,
+  SessionInsert,
+  SessionRow,
   UserInsert,
   UserRow,
 };
-export { emailVerifyTokens, passwordResetTokens, users };
+export { emailVerifyTokens, passwordResetTokens, sessions, users };
 
-export const appSchema = { users, passwordResetTokens, emailVerifyTokens };
+export const appSchema = { users, passwordResetTokens, emailVerifyTokens, sessions };
