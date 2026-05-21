@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, Post } from "@nestjs/common";
-import { PasswordResetRequest } from "@repo/auth-contracts";
+import { PasswordResetConfirm, PasswordResetRequest } from "@repo/auth-contracts";
 import type { z } from "zod";
 
 // biome-ignore lint/style/useImportType: NestJS decorator metadata requires runtime value
@@ -22,6 +22,14 @@ export class AuthController {
   async requestReset(@Body() body: unknown): Promise<{ status: "ok" }> {
     const { email } = zodPipe(PasswordResetRequest).transform(body);
     await this.passwordResetService.request(email);
+    return { status: "ok" };
+  }
+
+  @Post("password/reset/confirm")
+  @HttpCode(200)
+  async confirmReset(@Body() body: unknown): Promise<{ status: "ok" }> {
+    const { token, newPassword } = zodPipe(PasswordResetConfirm).transform(body);
+    await this.passwordResetService.confirm(token, newPassword);
     return { status: "ok" };
   }
 }

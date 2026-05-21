@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { hashPassword } from "@repo/backend-auth-password";
 import { generateRefreshToken, hashToken } from "@repo/backend-auth-session";
 
 import {
@@ -28,5 +29,18 @@ export class PasswordResetService {
     await this.tokenStore.insert({ userId: user.id, tokenHash, expiresAt });
 
     console.info(`[password-reset] token=${token} userId=${user.id}`);
+  }
+
+  async confirm(token: string, newPassword: string): Promise<void> {
+    const tokenHash = hashToken(token);
+    const row = await this.tokenStore.findByHash(tokenHash);
+
+    if (!row) return;
+    if (row.expiresAt < new Date()) return;
+    if (row.usedAt !== null) return;
+
+    const passwordHash = await hashPassword(newPassword);
+    await this.userStore.updatePasswordHash(row.userId, passwordHash);
+    await this.tokenStore.markUsed(row.id, new Date());
   }
 }
