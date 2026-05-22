@@ -95,6 +95,7 @@ describe("AuthController", () => {
         res,
         req,
       );
+      if (!("accessToken" in result)) throw new Error("expected session result");
       expect(result.accessToken).toBe("access-tok-abc");
       expect(result.user.email).toBe("test@example.com");
       expect(res.cookie).toHaveBeenCalledWith(

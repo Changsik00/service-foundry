@@ -272,6 +272,9 @@ importers:
       '@repo/backend-auth-jwt':
         specifier: workspace:*
         version: link:../../packages/backend/auth-jwt
+      '@repo/backend-auth-mfa':
+        specifier: workspace:*
+        version: link:../../packages/backend/auth-mfa
       '@repo/backend-auth-oauth':
         specifier: workspace:*
         version: link:../../packages/backend/auth-oauth
