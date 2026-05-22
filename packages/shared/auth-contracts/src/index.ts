@@ -95,3 +95,9 @@ export interface AuthSDK {
     credential: unknown,
   ): Promise<AuthResult>;
 }
+
+/** Provider 패키지가 최소한 구현해야 하는 Core Surface (5개 메서드). */
+export type CoreAuthSDK = Pick<
+  AuthSDK,
+  "signIn" | "signOut" | "getCurrentUser" | "signUp" | "refresh"
+>;

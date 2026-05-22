@@ -8,11 +8,11 @@
 | 항목 | 값 |
 |---|---|
 | **Phase ID** | `phase-08` |
-| **상태** | Backlog |
-| **시작일** | 미정 |
+| **상태** | In Progress |
+| **시작일** | 2026-05-22 |
 | **목표 종료일** | 미정 |
 | **소유자** | dennis |
-| **Base Branch** | 미정 |
+| **Base Branch** | `phase-08-provider-adapters` |
 
 ## 🎯 배경 및 목표
 
@@ -39,6 +39,10 @@
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
+| `spec-08-01` | auth-firebase | P? | Merged | `specs/spec-08-01-auth-firebase/` |
+| `spec-08-02` | auth-supabase | P? | Merged | `specs/spec-08-02-auth-supabase/` |
+| `spec-08-03` | auth-testing | P? | Merged | `specs/spec-08-03-auth-testing/` |
+| `spec-08-04` | sdk-swap-validation | P? | Active | `specs/spec-08-04-sdk-swap-validation/` |
 <!-- sdd:specs:end -->
 
 ### spec-08-01 — auth-firebase
