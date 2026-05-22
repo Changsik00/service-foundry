@@ -14,6 +14,8 @@ const mockUser: User = {
   createdAt: "2026-01-01T00:00:00.000Z",
 };
 
+const SIGN_RESPONSE = { accessToken: "token-abc", user: mockUser };
+
 describe("createHttpAuthSDK", () => {
   let mockPost: ReturnType<typeof vi.fn>;
 
@@ -29,49 +31,49 @@ describe("createHttpAuthSDK", () => {
     } as unknown as HttpClient);
   });
 
-  describe("getCurrentUser", () => {
-    it("초기값은 null이다", async () => {
-      const sdk = createHttpAuthSDK("http://localhost:3001");
-      expect(await sdk.getCurrentUser()).toBeNull();
-    });
+  it("getCurrentUser — 초기값은 null", async () => {
+    expect(await createHttpAuthSDK("http://localhost:3001").getCurrentUser()).toBeNull();
   });
 
   describe("signIn", () => {
-    it("성공 시 user를 저장하고 AuthResult success를 반환한다", async () => {
-      mockPost.mockResolvedValueOnce({ accessToken: "token-abc", user: mockUser });
+    it("성공 → user 저장 + AuthResult success", async () => {
+      mockPost.mockResolvedValueOnce(SIGN_RESPONSE);
       const sdk = createHttpAuthSDK("http://localhost:3001");
 
       const result = await sdk.signIn({ email: "test@example.com", password: "pw123456" });
 
-      expect(result.success).toBe(true);
-      if (result.success) expect(result.user).toEqual(mockUser);
+      expect(result).toMatchObject({ success: true, user: mockUser });
       expect(await sdk.getCurrentUser()).toEqual(mockUser);
     });
 
-    it("401 에러 시 invalid_credentials를 반환한다", async () => {
+    it("401 → invalid_credentials", async () => {
       mockPost.mockRejectedValueOnce(
         new AppError({ code: "BAD_REQUEST", message: "401", statusCode: 401 }),
       );
-      const sdk = createHttpAuthSDK("http://localhost:3001");
 
-      const result = await sdk.signIn({ email: "bad@example.com", password: "wrongpw1" });
+      const result = await createHttpAuthSDK("http://localhost:3001").signIn({
+        email: "bad@example.com",
+        password: "wrongpw1",
+      });
 
       expect(result).toEqual({ success: false, reason: "invalid_credentials" });
     });
 
-    it("429 에러 시 rate_limited를 반환한다", async () => {
+    it("429 → rate_limited", async () => {
       mockPost.mockRejectedValueOnce(
         new AppError({ code: "RATE_LIMIT", message: "429", statusCode: 429 }),
       );
-      const sdk = createHttpAuthSDK("http://localhost:3001");
 
-      const result = await sdk.signIn({ email: "test@example.com", password: "pw123456" });
+      const result = await createHttpAuthSDK("http://localhost:3001").signIn({
+        email: "test@example.com",
+        password: "pw123456",
+      });
 
       expect(result).toEqual({ success: false, reason: "rate_limited" });
     });
 
-    it("올바른 endpoint와 payload로 http.post를 호출한다", async () => {
-      mockPost.mockResolvedValueOnce({ accessToken: "t", user: mockUser });
+    it("올바른 endpoint + payload로 호출", async () => {
+      mockPost.mockResolvedValueOnce(SIGN_RESPONSE);
       const sdk = createHttpAuthSDK("http://localhost:3001");
 
       await sdk.signIn({ email: "test@example.com", password: "pw123456" });
@@ -84,23 +86,35 @@ describe("createHttpAuthSDK", () => {
   });
 
   describe("signUp", () => {
-    it("성공 시 user를 저장하고 AuthResult success를 반환한다", async () => {
-      mockPost.mockResolvedValueOnce({ accessToken: "token-xyz", user: mockUser });
+    it("성공 → user 저장 + AuthResult success", async () => {
+      mockPost.mockResolvedValueOnce(SIGN_RESPONSE);
       const sdk = createHttpAuthSDK("http://localhost:3001");
 
       const result = await sdk.signUp({ email: "new@example.com", password: "newpw123" });
 
-      expect(result.success).toBe(true);
-      if (result.success) expect(result.user).toEqual(mockUser);
+      expect(result).toMatchObject({ success: true, user: mockUser });
       expect(await sdk.getCurrentUser()).toEqual(mockUser);
+    });
+
+    it("에러 → invalid_credentials", async () => {
+      mockPost.mockRejectedValueOnce(
+        new AppError({ code: "CONFLICT", message: "409", statusCode: 409 }),
+      );
+
+      const result = await createHttpAuthSDK("http://localhost:3001").signUp({
+        email: "dup@example.com",
+        password: "newpw123",
+      });
+
+      expect(result).toEqual({ success: false, reason: "invalid_credentials" });
     });
   });
 
   describe("signOut", () => {
-    it("signOut 후 getCurrentUser가 null을 반환한다", async () => {
+    it("signOut 후 getCurrentUser = null", async () => {
       mockPost
-        .mockResolvedValueOnce({ accessToken: "t", user: mockUser })
-        .mockResolvedValueOnce({ status: "ok" });
+        .mockResolvedValueOnce(SIGN_RESPONSE) // signIn
+        .mockResolvedValueOnce({ status: "ok" }); // signOut
       const sdk = createHttpAuthSDK("http://localhost:3001");
       await sdk.signIn({ email: "test@example.com", password: "pw123456" });
 
@@ -111,23 +125,22 @@ describe("createHttpAuthSDK", () => {
   });
 
   describe("refresh", () => {
-    it("성공 시 Session을 반환하고 getCurrentUser를 갱신한다", async () => {
-      mockPost.mockResolvedValueOnce({ accessToken: "refreshed", user: mockUser });
+    it("성공 → Session 반환 + getCurrentUser 갱신", async () => {
+      mockPost.mockResolvedValueOnce(SIGN_RESPONSE);
       const sdk = createHttpAuthSDK("http://localhost:3001");
 
       const session = await sdk.refresh();
 
-      expect(session).not.toBeNull();
+      expect(session).toMatchObject({ userId: mockUser.id });
       expect(await sdk.getCurrentUser()).toEqual(mockUser);
     });
 
-    it("에러 시 null을 반환한다", async () => {
+    it("에러 → null", async () => {
       mockPost.mockRejectedValueOnce(
         new AppError({ code: "UNAUTHENTICATED", message: "401", statusCode: 401 }),
       );
-      const sdk = createHttpAuthSDK("http://localhost:3001");
 
-      expect(await sdk.refresh()).toBeNull();
+      expect(await createHttpAuthSDK("http://localhost:3001").refresh()).toBeNull();
     });
   });
 });
