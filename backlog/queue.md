@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-08** — Provider Adapters — Firebase + Supabase — 1 spec — 다음: (spec 없음)
+- **phase-08** — Provider Adapters — Firebase + Supabase — 2 spec — 다음: spec-08-02-auth-supabase
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
