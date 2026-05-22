@@ -1,9 +1,11 @@
 import type { User } from "@repo/auth-contracts";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { AppError } from "@repo/errors";
+import { createHttpClient, type HttpClient } from "@repo/frontend-http-client";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createHttpAuthSDK } from "./http-auth-sdk";
 
-const BASE_URL = "http://localhost:3001";
+vi.mock("@repo/frontend-http-client");
 
 const mockUser: User = {
   id: "00000000-0000-0000-0000-000000000001",
@@ -12,30 +14,32 @@ const mockUser: User = {
   createdAt: "2026-01-01T00:00:00.000Z",
 };
 
-function mockFetch(status: number, body: unknown) {
-  return vi.fn().mockResolvedValue({
-    ok: status >= 200 && status < 300,
-    status,
-    json: () => Promise.resolve(body),
-  });
-}
-
 describe("createHttpAuthSDK", () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
+  let mockPost: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    mockPost = vi.fn();
+    vi.mocked(createHttpClient).mockReturnValue({
+      post: mockPost,
+      get: vi.fn(),
+      put: vi.fn(),
+      delete: vi.fn(),
+      patch: vi.fn(),
+      request: vi.fn(),
+    } as unknown as HttpClient);
   });
 
   describe("getCurrentUser", () => {
     it("초기값은 null이다", async () => {
-      const sdk = createHttpAuthSDK(BASE_URL);
+      const sdk = createHttpAuthSDK("http://localhost:3001");
       expect(await sdk.getCurrentUser()).toBeNull();
     });
   });
 
   describe("signIn", () => {
-    it("성공 시 AuthResult success + user를 반환하고 getCurrentUser에 저장한다", async () => {
-      vi.stubGlobal("fetch", mockFetch(200, { accessToken: "token-abc", user: mockUser }));
-      const sdk = createHttpAuthSDK(BASE_URL);
+    it("성공 시 user를 저장하고 AuthResult success를 반환한다", async () => {
+      mockPost.mockResolvedValueOnce({ accessToken: "token-abc", user: mockUser });
+      const sdk = createHttpAuthSDK("http://localhost:3001");
 
       const result = await sdk.signIn({ email: "test@example.com", password: "pw123456" });
 
@@ -44,44 +48,45 @@ describe("createHttpAuthSDK", () => {
       expect(await sdk.getCurrentUser()).toEqual(mockUser);
     });
 
-    it("401 응답 시 invalid_credentials를 반환한다", async () => {
-      vi.stubGlobal("fetch", mockFetch(401, { message: "Unauthorized" }));
-      const sdk = createHttpAuthSDK(BASE_URL);
+    it("401 에러 시 invalid_credentials를 반환한다", async () => {
+      mockPost.mockRejectedValueOnce(
+        new AppError({ code: "BAD_REQUEST", message: "401", statusCode: 401 }),
+      );
+      const sdk = createHttpAuthSDK("http://localhost:3001");
 
       const result = await sdk.signIn({ email: "bad@example.com", password: "wrongpw1" });
 
       expect(result).toEqual({ success: false, reason: "invalid_credentials" });
     });
 
-    it("429 응답 시 rate_limited를 반환한다", async () => {
-      vi.stubGlobal("fetch", mockFetch(429, { message: "Too Many Requests" }));
-      const sdk = createHttpAuthSDK(BASE_URL);
+    it("429 에러 시 rate_limited를 반환한다", async () => {
+      mockPost.mockRejectedValueOnce(
+        new AppError({ code: "RATE_LIMIT", message: "429", statusCode: 429 }),
+      );
+      const sdk = createHttpAuthSDK("http://localhost:3001");
 
       const result = await sdk.signIn({ email: "test@example.com", password: "pw123456" });
 
       expect(result).toEqual({ success: false, reason: "rate_limited" });
     });
 
-    it("올바른 URL과 body로 fetch를 호출한다", async () => {
-      const fetchMock = mockFetch(200, { accessToken: "t", user: mockUser });
-      vi.stubGlobal("fetch", fetchMock);
-      const sdk = createHttpAuthSDK(BASE_URL);
+    it("올바른 endpoint와 payload로 http.post를 호출한다", async () => {
+      mockPost.mockResolvedValueOnce({ accessToken: "t", user: mockUser });
+      const sdk = createHttpAuthSDK("http://localhost:3001");
 
       await sdk.signIn({ email: "test@example.com", password: "pw123456" });
 
-      expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/auth/signin`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email: "test@example.com", password: "pw123456" }),
+      expect(mockPost).toHaveBeenCalledWith("auth/signin", {
+        email: "test@example.com",
+        password: "pw123456",
       });
     });
   });
 
   describe("signUp", () => {
-    it("성공 시 AuthResult success + user를 반환하고 getCurrentUser에 저장한다", async () => {
-      vi.stubGlobal("fetch", mockFetch(201, { accessToken: "token-xyz", user: mockUser }));
-      const sdk = createHttpAuthSDK(BASE_URL);
+    it("성공 시 user를 저장하고 AuthResult success를 반환한다", async () => {
+      mockPost.mockResolvedValueOnce({ accessToken: "token-xyz", user: mockUser });
+      const sdk = createHttpAuthSDK("http://localhost:3001");
 
       const result = await sdk.signUp({ email: "new@example.com", password: "newpw123" });
 
@@ -93,11 +98,12 @@ describe("createHttpAuthSDK", () => {
 
   describe("signOut", () => {
     it("signOut 후 getCurrentUser가 null을 반환한다", async () => {
-      vi.stubGlobal("fetch", mockFetch(200, { accessToken: "t", user: mockUser }));
-      const sdk = createHttpAuthSDK(BASE_URL);
+      mockPost
+        .mockResolvedValueOnce({ accessToken: "t", user: mockUser })
+        .mockResolvedValueOnce({ status: "ok" });
+      const sdk = createHttpAuthSDK("http://localhost:3001");
       await sdk.signIn({ email: "test@example.com", password: "pw123456" });
 
-      vi.stubGlobal("fetch", mockFetch(200, { status: "ok" }));
       await sdk.signOut();
 
       expect(await sdk.getCurrentUser()).toBeNull();
@@ -106,8 +112,8 @@ describe("createHttpAuthSDK", () => {
 
   describe("refresh", () => {
     it("성공 시 Session을 반환하고 getCurrentUser를 갱신한다", async () => {
-      vi.stubGlobal("fetch", mockFetch(200, { accessToken: "refreshed", user: mockUser }));
-      const sdk = createHttpAuthSDK(BASE_URL);
+      mockPost.mockResolvedValueOnce({ accessToken: "refreshed", user: mockUser });
+      const sdk = createHttpAuthSDK("http://localhost:3001");
 
       const session = await sdk.refresh();
 
@@ -115,9 +121,11 @@ describe("createHttpAuthSDK", () => {
       expect(await sdk.getCurrentUser()).toEqual(mockUser);
     });
 
-    it("401 응답 시 null을 반환한다", async () => {
-      vi.stubGlobal("fetch", mockFetch(401, {}));
-      const sdk = createHttpAuthSDK(BASE_URL);
+    it("에러 시 null을 반환한다", async () => {
+      mockPost.mockRejectedValueOnce(
+        new AppError({ code: "UNAUTHENTICATED", message: "401", statusCode: 401 }),
+      );
+      const sdk = createHttpAuthSDK("http://localhost:3001");
 
       expect(await sdk.refresh()).toBeNull();
     });

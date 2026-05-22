@@ -1,33 +1,23 @@
 import type { AuthResult, CoreAuthSDK, Session, User } from "@repo/auth-contracts";
+import { AppError } from "@repo/errors";
+import { createHttpClient } from "@repo/frontend-http-client";
 
 type SignResponse = { accessToken: string; user: User };
 type SignInResponse = SignResponse | { status: "mfa_required" };
 
-function httpReason(err: unknown): "invalid_credentials" | "rate_limited" {
-  const status = (err as { status?: number }).status;
-  if (status === 429) return "rate_limited";
+function toReason(err: unknown): "invalid_credentials" | "rate_limited" {
+  if (err instanceof AppError && err.statusCode === 429) return "rate_limited";
   return "invalid_credentials";
 }
 
-async function post<T>(baseUrl: string, path: string, body?: unknown): Promise<T> {
-  const init: RequestInit = {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-  };
-  if (body !== undefined) init.body = JSON.stringify(body);
-  const res = await fetch(`${baseUrl}/${path}`, init);
-  if (!res.ok) throw Object.assign(new Error(String(res.status)), { status: res.status });
-  return res.json() as Promise<T>;
-}
-
 export function createHttpAuthSDK(baseUrl: string): CoreAuthSDK {
+  const http = createHttpClient({ baseUrl, credentials: "include" });
   let currentUser: User | null = null;
 
   return {
     async signIn(input): Promise<AuthResult> {
       try {
-        const data = await post<SignInResponse>(baseUrl, "auth/signin", input);
+        const data = await http.post<SignInResponse>("auth/signin", input);
         if ("status" in data && data.status === "mfa_required") {
           return {
             success: false,
@@ -42,13 +32,13 @@ export function createHttpAuthSDK(baseUrl: string): CoreAuthSDK {
           session: { userId: currentUser.id, expiresAt: "" },
         };
       } catch (err) {
-        return { success: false, reason: httpReason(err) };
+        return { success: false, reason: toReason(err) };
       }
     },
 
     async signUp(input): Promise<AuthResult> {
       try {
-        const data = await post<SignResponse>(baseUrl, "auth/signup", input);
+        const data = await http.post<SignResponse>("auth/signup", input);
         currentUser = data.user;
         return {
           success: true,
@@ -56,13 +46,13 @@ export function createHttpAuthSDK(baseUrl: string): CoreAuthSDK {
           session: { userId: currentUser.id, expiresAt: "" },
         };
       } catch (err) {
-        return { success: false, reason: httpReason(err) };
+        return { success: false, reason: toReason(err) };
       }
     },
 
     async signOut(): Promise<void> {
       try {
-        await post(baseUrl, "auth/signout");
+        await http.post("auth/signout");
       } finally {
         currentUser = null;
       }
@@ -74,7 +64,7 @@ export function createHttpAuthSDK(baseUrl: string): CoreAuthSDK {
 
     async refresh(): Promise<Session | null> {
       try {
-        const data = await post<SignResponse>(baseUrl, "auth/refresh");
+        const data = await http.post<SignResponse>("auth/refresh");
         currentUser = data.user;
         return { userId: currentUser.id, expiresAt: "" };
       } catch {
