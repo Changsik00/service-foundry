@@ -41,8 +41,8 @@
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
-| `spec-09-01` | auth-adr | P? | Active | `specs/spec-09-01-auth-adr/` |
-| `spec-09-02` | login-ui | P? | Active | `specs/spec-09-02-login-ui/` |
+| `spec-09-01` | auth-adr | P? | Merged | `specs/spec-09-01-auth-adr/` |
+| `spec-09-02` | login-ui | P? | Merged | `specs/spec-09-02-login-ui/` |
 <!-- sdd:specs:end -->
 
 ### spec-09-01 — auth-adr
