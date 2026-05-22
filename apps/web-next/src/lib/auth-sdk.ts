@@ -1,17 +1,8 @@
 import type { AuthResult, CoreAuthSDK, User } from "@repo/auth-contracts";
 import { AppError } from "@repo/errors";
+import { tryRequest } from "@repo/frontend-http-client";
 
 import { type AuthApi, buildAuthApi, type SignResponse } from "./auth-api";
-
-// ── Result 타입 ───────────────────────────────────────────────────────────────
-type Ok<T> = { ok: true; data: T };
-type Err = { ok: false; err: unknown };
-
-const tryRequest = <T>(fn: () => Promise<T>): Promise<Ok<T> | Err> =>
-  fn().then(
-    (data) => ({ ok: true as const, data }),
-    (err) => ({ ok: false as const, err }),
-  );
 
 // ── 변환 헬퍼 ─────────────────────────────────────────────────────────────────
 const toReason = (err: unknown): "invalid_credentials" | "rate_limited" =>
@@ -24,7 +15,7 @@ const toSuccess = (user: User): Extract<AuthResult, { success: true }> => ({
 });
 
 // ── SDK factory ───────────────────────────────────────────────────────────────
-export function createHttpAuthSDK(baseUrl: string): CoreAuthSDK {
+export function createAuthSDK(baseUrl: string): CoreAuthSDK {
   const api: AuthApi = buildAuthApi(baseUrl);
   let currentUser: User | null = null;
 

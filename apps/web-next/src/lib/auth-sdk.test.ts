@@ -3,9 +3,12 @@ import { AppError } from "@repo/errors";
 import { createHttpClient, type HttpClient } from "@repo/frontend-http-client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createHttpAuthSDK } from "./http-auth-sdk";
+import { createAuthSDK } from "./auth-sdk";
 
-vi.mock("@repo/frontend-http-client");
+vi.mock("@repo/frontend-http-client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@repo/frontend-http-client")>();
+  return { ...actual, createHttpClient: vi.fn() };
+});
 
 const mockUser: User = {
   id: "00000000-0000-0000-0000-000000000001",
@@ -16,7 +19,7 @@ const mockUser: User = {
 
 const SIGN_RESPONSE = { accessToken: "token-abc", user: mockUser };
 
-describe("createHttpAuthSDK", () => {
+describe("createAuthSDK", () => {
   let mockPost: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
@@ -32,13 +35,13 @@ describe("createHttpAuthSDK", () => {
   });
 
   it("getCurrentUser — 초기값은 null", async () => {
-    expect(await createHttpAuthSDK("http://localhost:3001").getCurrentUser()).toBeNull();
+    expect(await createAuthSDK("http://localhost:3001").getCurrentUser()).toBeNull();
   });
 
   describe("signIn", () => {
     it("성공 → user 저장 + AuthResult success", async () => {
       mockPost.mockResolvedValueOnce(SIGN_RESPONSE);
-      const sdk = createHttpAuthSDK("http://localhost:3001");
+      const sdk = createAuthSDK("http://localhost:3001");
 
       const result = await sdk.signIn({ email: "test@example.com", password: "pw123456" });
 
@@ -51,7 +54,7 @@ describe("createHttpAuthSDK", () => {
         new AppError({ code: "BAD_REQUEST", message: "401", statusCode: 401 }),
       );
 
-      const result = await createHttpAuthSDK("http://localhost:3001").signIn({
+      const result = await createAuthSDK("http://localhost:3001").signIn({
         email: "bad@example.com",
         password: "wrongpw1",
       });
@@ -64,7 +67,7 @@ describe("createHttpAuthSDK", () => {
         new AppError({ code: "RATE_LIMIT", message: "429", statusCode: 429 }),
       );
 
-      const result = await createHttpAuthSDK("http://localhost:3001").signIn({
+      const result = await createAuthSDK("http://localhost:3001").signIn({
         email: "test@example.com",
         password: "pw123456",
       });
@@ -74,7 +77,7 @@ describe("createHttpAuthSDK", () => {
 
     it("올바른 endpoint + payload로 호출", async () => {
       mockPost.mockResolvedValueOnce(SIGN_RESPONSE);
-      const sdk = createHttpAuthSDK("http://localhost:3001");
+      const sdk = createAuthSDK("http://localhost:3001");
 
       await sdk.signIn({ email: "test@example.com", password: "pw123456" });
 
@@ -88,7 +91,7 @@ describe("createHttpAuthSDK", () => {
   describe("signUp", () => {
     it("성공 → user 저장 + AuthResult success", async () => {
       mockPost.mockResolvedValueOnce(SIGN_RESPONSE);
-      const sdk = createHttpAuthSDK("http://localhost:3001");
+      const sdk = createAuthSDK("http://localhost:3001");
 
       const result = await sdk.signUp({ email: "new@example.com", password: "newpw123" });
 
@@ -101,7 +104,7 @@ describe("createHttpAuthSDK", () => {
         new AppError({ code: "CONFLICT", message: "409", statusCode: 409 }),
       );
 
-      const result = await createHttpAuthSDK("http://localhost:3001").signUp({
+      const result = await createAuthSDK("http://localhost:3001").signUp({
         email: "dup@example.com",
         password: "newpw123",
       });
@@ -115,7 +118,7 @@ describe("createHttpAuthSDK", () => {
       mockPost
         .mockResolvedValueOnce(SIGN_RESPONSE) // signIn
         .mockResolvedValueOnce({ status: "ok" }); // signOut
-      const sdk = createHttpAuthSDK("http://localhost:3001");
+      const sdk = createAuthSDK("http://localhost:3001");
       await sdk.signIn({ email: "test@example.com", password: "pw123456" });
 
       await sdk.signOut();
@@ -127,7 +130,7 @@ describe("createHttpAuthSDK", () => {
   describe("refresh", () => {
     it("성공 → Session 반환 + getCurrentUser 갱신", async () => {
       mockPost.mockResolvedValueOnce(SIGN_RESPONSE);
-      const sdk = createHttpAuthSDK("http://localhost:3001");
+      const sdk = createAuthSDK("http://localhost:3001");
 
       const session = await sdk.refresh();
 
@@ -140,7 +143,7 @@ describe("createHttpAuthSDK", () => {
         new AppError({ code: "UNAUTHENTICATED", message: "401", statusCode: 401 }),
       );
 
-      expect(await createHttpAuthSDK("http://localhost:3001").refresh()).toBeNull();
+      expect(await createAuthSDK("http://localhost:3001").refresh()).toBeNull();
     });
   });
 });
