@@ -19,7 +19,7 @@ const buildApi = (http: HttpClient) => ({
 type Ok<T> = { ok: true; data: T };
 type Err = { ok: false; err: unknown };
 
-const tryCall = <T>(fn: () => Promise<T>): Promise<Ok<T> | Err> =>
+const tryRequest = <T>(fn: () => Promise<T>): Promise<Ok<T> | Err> =>
   fn().then(
     (data) => ({ ok: true as const, data }),
     (err) => ({ ok: false as const, err }),
@@ -47,14 +47,14 @@ export function createHttpAuthSDK(baseUrl: string): CoreAuthSDK {
   };
 
   // signIn / signUp 공통: 호출 결과 → AuthResult (성공 시 currentUser 갱신)
-  const withSign = async (call: () => Promise<SignResponse>): Promise<AuthResult> => {
-    const r = await tryCall(call);
+  const withSign = async (request: () => Promise<SignResponse>): Promise<AuthResult> => {
+    const r = await tryRequest(request);
     return r.ok ? storeAndSucceed(r.data.user) : { success: false, reason: toReason(r.err) };
   };
 
   return {
     signIn: async (input) => {
-      const r = await tryCall(() => api.signIn(input));
+      const r = await tryRequest(() => api.signIn(input));
       if (!r.ok) return { success: false, reason: toReason(r.err) };
       if ("status" in r.data) {
         return {
@@ -69,7 +69,7 @@ export function createHttpAuthSDK(baseUrl: string): CoreAuthSDK {
     signUp: (input) => withSign(() => api.signUp(input)),
 
     signOut: async () => {
-      const r = await tryCall(() => api.signOut());
+      const r = await tryRequest(() => api.signOut());
       currentUser = null;
       if (!r.ok) throw r.err;
     },
@@ -77,7 +77,7 @@ export function createHttpAuthSDK(baseUrl: string): CoreAuthSDK {
     getCurrentUser: async () => currentUser,
 
     refresh: async () => {
-      const r = await tryCall(() => api.refresh());
+      const r = await tryRequest(() => api.refresh());
       if (!r.ok) return null;
       currentUser = r.data.user;
       return { userId: currentUser.id, expiresAt: "" };
