@@ -20,9 +20,9 @@ export {
   HealthCard,
   type HealthCardProps,
   type HealthData,
-} from "./blocks/health-card.js";
-export { ThemeToggle } from "./blocks/theme-toggle.js";
-export { Button, type ButtonProps, buttonVariants } from "./components/button.js";
+} from "./blocks/health-card";
+export { ThemeToggle } from "./blocks/theme-toggle";
+export { Button, type ButtonProps, buttonVariants } from "./components/button";
 export {
   Card,
   CardContent,
@@ -30,7 +30,7 @@ export {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "./components/card.js";
+} from "./components/card";
 export {
   Form,
   FormControl,
@@ -39,8 +39,9 @@ export {
   FormItem,
   FormLabel,
   FormMessage,
-} from "./components/form.js";
-export { Input, type InputProps } from "./components/input.js";
-export { Label, type LabelProps } from "./components/label.js";
-export { Toaster, toast } from "./components/toaster.js";
-export { cn } from "./lib/utils.js";
+} from "./components/form";
+export { Input, type InputProps } from "./components/input";
+export { Label, type LabelProps } from "./components/label";
+export { Toaster, toast } from "./components/toaster";
+export { ThemeProvider, type ThemeProviderProps, useTheme } from "./lib/theme-context";
+export { cn } from "./lib/utils";

@@ -6,5 +6,6 @@ export default mergeConfig(reactPreset, {
   plugins: [react()],
   test: {
     setupFiles: ["./vitest.setup.ts"],
+    passWithNoTests: true,
   },
 });

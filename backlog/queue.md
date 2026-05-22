@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
+- **phase-06** — Auth Integration — 5 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -69,6 +69,7 @@
 - **phase-04** — Frontend Foundation — completed 2026-05-20
 - [x] spec-x-frontend-dev-fixes (완료)
 - [x] spec-x-frontend-foundation-followup (완료)
+- **phase-5** — ? — completed 2026-05-21
 <!-- sdd:done:end -->
 
 ---

@@ -2,7 +2,7 @@
 
 import { HealthCard } from "@repo/frontend-ui";
 
-import { useHealthQuery } from "@/lib/queries.js";
+import { useHealthQuery } from "@/lib/queries";
 
 /**
  * `HealthCardClient` — *client component* (web-vite 패턴 답습).

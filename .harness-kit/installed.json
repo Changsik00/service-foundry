@@ -1,11 +1,12 @@
 {
-  "kitVersion": "0.10.0",
+  "kitVersion": "0.13.1",
   "kitOrigin": "",
-  "installedAt": "2026-05-17T11:58:49Z",
+  "installedAt": "2026-05-20T10:36:13Z",
   "uxMode": "interactive",
   "installedCommands": [
     "hk-align",
     "hk-archive",
+    "hk-ask-mode",
     "hk-cleanup",
     "hk-code-review",
     "hk-doctor",

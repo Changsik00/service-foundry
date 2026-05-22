@@ -1,0 +1,195 @@
+import type { INestApplication } from "@nestjs/common";
+import { Test } from "@nestjs/testing";
+import cookieParser from "cookie-parser";
+import request from "supertest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
+process.env.NODE_ENV ??= "test";
+process.env.DATABASE_URL ??= "postgres://postgres:test@localhost:5434/test";
+process.env.HTTP_CLIENT_BASE_URL ??= "http://localhost:9999";
+
+const { AppModule } = await import("../app.module.js");
+
+function extractCookie(setCookieHeader: string | string[] | undefined, name: string): string {
+  const headers = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader ?? ""];
+  const entry = headers.find((h) => h.startsWith(`${name}=`));
+  if (!entry) throw new Error(`Cookie '${name}' not found in Set-Cookie header`);
+  return entry.split(";")[0] ?? entry;
+}
+
+describe("Auth E2E (real PG)", () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+    app = moduleRef.createNestApplication({ logger: false });
+    app.use(cookieParser());
+    await app.init();
+  });
+
+  afterAll(async () => {
+    if (app) await app.close();
+  });
+
+  describe("POST /auth/password/reset", () => {
+    it("존재하지 않는 email → 200 (enumeration-safe)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/password/reset")
+        .send({ email: "ghost@example.com" });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ status: "ok" });
+    });
+
+    it("잘못된 payload → 400 (validation error)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/password/reset")
+        .send({ email: "not-an-email" });
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBeDefined();
+    });
+  });
+
+  describe("POST /auth/password/reset/confirm", () => {
+    it("미존재 token → 200 (enumeration-safe)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/password/reset/confirm")
+        .send({ token: "nonexistent-token-aaaabbbbccccddddeeee", newPassword: "newPass123!" });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ status: "ok" });
+    });
+
+    it("잘못된 payload (짧은 token) → 400 (validation error)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/password/reset/confirm")
+        .send({ token: "short", newPassword: "newPass123!" });
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBeDefined();
+    });
+  });
+
+  describe("POST /auth/email/verify/request", () => {
+    it("미존재 email → 200 (enumeration-safe)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/email/verify/request")
+        .send({ email: "ghost@example.com" });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ status: "ok" });
+    });
+
+    it("잘못된 payload → 400 (validation error)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/email/verify/request")
+        .send({ email: "not-an-email" });
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBeDefined();
+    });
+  });
+
+  describe("POST /auth/email/verify/confirm", () => {
+    it("미존재 token → 200 (enumeration-safe)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/email/verify/confirm")
+        .send({ token: "nonexistent-token-aaaabbbbccccddddeeee" });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ status: "ok" });
+    });
+
+    it("잘못된 payload (짧은 token) → 400 (validation error)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/email/verify/confirm")
+        .send({ token: "short" });
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBeDefined();
+    });
+  });
+
+  describe("GET /.well-known/jwks.json", () => {
+    it("JWKS 구조 반환 (keys 배열, OKP/Ed25519/EdDSA)", async () => {
+      const res = await request(app.getHttpServer()).get("/.well-known/jwks.json");
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("keys");
+      expect(Array.isArray(res.body.keys)).toBe(true);
+      expect(res.body.keys.length).toBeGreaterThan(0);
+      const key = res.body.keys[0];
+      expect(key).toMatchObject({ kty: "OKP", crv: "Ed25519", alg: "EdDSA", use: "sig" });
+    });
+
+    it("비공개키 'd' 미포함", async () => {
+      const res = await request(app.getHttpServer()).get("/.well-known/jwks.json");
+      for (const key of res.body.keys) {
+        expect(key).not.toHaveProperty("d");
+      }
+    });
+  });
+
+  describe("로그인 수직 슬라이스", () => {
+    const email = `slice-${Date.now()}@example.com`;
+    const password = "SliceTest123!";
+    let accessToken: string;
+    let refreshCookie: string;
+    let userId: string;
+
+    it("POST /auth/signup → 201 + accessToken + refresh_token cookie", async () => {
+      const res = await request(app.getHttpServer()).post("/auth/signup").send({ email, password });
+      expect(res.status).toBe(201);
+      expect(res.body).toHaveProperty("accessToken");
+      expect(res.body.user.email).toBe(email);
+      userId = res.body.user.id as string;
+      refreshCookie = extractCookie(res.headers["set-cookie"], "refresh_token");
+      accessToken = res.body.accessToken as string;
+    });
+
+    it("GET /auth/me (Bearer accessToken) → 200, sub + role 반환", async () => {
+      const res = await request(app.getHttpServer())
+        .get("/auth/me")
+        .set("Authorization", `Bearer ${accessToken}`);
+      expect(res.status).toBe(200);
+      expect(res.body.user.sub).toBe(userId);
+      expect(res.body.user.role).toBe("user");
+    });
+
+    it("POST /auth/signout → 200", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/signout")
+        .set("Cookie", refreshCookie);
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ status: "ok" });
+    });
+
+    it("POST /auth/refresh (revoked cookie) → 401 (세션 취소 검증)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/refresh")
+        .set("Cookie", refreshCookie);
+      expect(res.status).toBe(401);
+    });
+
+    it("POST /auth/signin → 200 + 새 accessToken + 새 cookie", async () => {
+      const res = await request(app.getHttpServer()).post("/auth/signin").send({ email, password });
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("accessToken");
+      refreshCookie = extractCookie(res.headers["set-cookie"], "refresh_token");
+      accessToken = res.body.accessToken as string;
+    });
+
+    it("POST /auth/refresh (유효한 cookie) → 200 + 새 accessToken", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/refresh")
+        .set("Cookie", refreshCookie);
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("accessToken");
+      refreshCookie = extractCookie(res.headers["set-cookie"], "refresh_token");
+      accessToken = res.body.accessToken as string;
+    });
+
+    it("GET /auth/me (refresh 후 새 accessToken) → 200", async () => {
+      const res = await request(app.getHttpServer())
+        .get("/auth/me")
+        .set("Authorization", `Bearer ${accessToken}`);
+      expect(res.status).toBe(200);
+      expect(res.body.user.sub).toBe(userId);
+      expect(res.body.user.role).toBe("user");
+    });
+  });
+});

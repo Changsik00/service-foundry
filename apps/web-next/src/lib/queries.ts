@@ -3,7 +3,7 @@
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { httpClient } from "./http-client.js";
+import { httpClient } from "./http-client";
 
 export const HealthSchema = z.object({
   status: z.string(),

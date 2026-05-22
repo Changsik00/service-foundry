@@ -7,11 +7,11 @@
 | 항목 | 값 |
 |---|---|
 | **Phase ID** | `phase-06` |
-| **상태** | Backlog |
-| **시작일** | 미정 |
+| **상태** | Active |
+| **시작일** | 2026-05-21 |
 | **목표 종료일** | 미정 |
 | **소유자** | dennis |
-| **Base Branch** | 미정 |
+| **Base Branch** | `phase-06-auth-integration` |
 
 ## 🎯 배경 및 목표
 
@@ -39,6 +39,11 @@
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
+| `spec-06-01` | auth-nestjs | P? | Merged | `specs/spec-06-01-auth-nestjs/` |
+| `spec-06-02` | auth-react | P? | Merged | `specs/spec-06-02-auth-react/` |
+| `spec-06-03` | cookie-strategy | P? | Merged | `specs/spec-06-03-cookie-strategy/` |
+| `spec-06-04` | audit-event-system | P? | Merged | `specs/spec-06-04-audit-event-system/` |
+| `spec-06-05` | e2e-login-vertical-slice | P? | Merged | `specs/spec-06-05-e2e-login-vertical-slice/` |
 <!-- sdd:specs:end -->
 
 ### spec-06-01 — auth-nestjs

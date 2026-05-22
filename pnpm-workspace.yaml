@@ -4,6 +4,7 @@ packages:
 
 allowBuilds:
   '@nestjs/core': true
+  argon2: true
   esbuild: true
   lefthook: true
   sharp: true
@@ -11,11 +12,14 @@ allowBuilds:
 catalog:
   # runtime
   zod: ^4.4.3
+  "ts-pattern": ^5.9.0
   pino: ^10.3.1
   "pino-pretty": ^13.1.3
   undici: ^8.3.0
   "drizzle-orm": ^0.45.2
   pg: ^8.21.0
+  jose: ^6.2.0
+  argon2: ^0.44.0
   "@env-kit/node-settings": ^1.1.0
 
   # frontend (phase-04+)
@@ -48,16 +52,18 @@ catalog:
   "@nestjs/testing": ^11.1.21
   "@nestjs/throttler": ^6.5.0
   helmet: ^8.1.0
+  "cookie-parser": ^1.4.7
   "reflect-metadata": ^0.2.2
   "rxjs": ^7.8.2
   supertest: ^7.2.2
 
   # types
-  "@types/node": ^22.19.19
+  "@types/node": ^24.0.0
   "@types/pg": ^8.20.0
   "@types/react": ^19.2.15
   "@types/react-dom": ^19.2.3
   "@types/supertest": ^7.2.0
+  "@types/cookie-parser": ^1.4.8
 
   # toolchain
   typescript: ^6.0.3

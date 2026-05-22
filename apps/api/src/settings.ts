@@ -13,6 +13,8 @@ import { z } from "zod";
 const AppSettingsSchema = BaseBackendSchema.extend({
   DATABASE_URL: z.string().min(1),
   HTTP_CLIENT_BASE_URL: z.string().url(),
+  JWT_ISSUER: z.string().min(1).default("http://localhost:3000"),
+  JWT_AUDIENCE: z.string().min(1).default("http://localhost:3000"),
 });
 
 export type AppSettings = z.output<typeof AppSettingsSchema>;

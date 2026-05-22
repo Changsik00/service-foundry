@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/card.js";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/card";
 
 export interface HealthData {
   status: string;
