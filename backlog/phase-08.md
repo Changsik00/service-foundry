@@ -40,7 +40,8 @@
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
 | `spec-08-01` | auth-firebase | P? | Merged | `specs/spec-08-01-auth-firebase/` |
-| `spec-08-02` | auth-supabase | P? | Active | `specs/spec-08-02-auth-supabase/` |
+| `spec-08-02` | auth-supabase | P? | Merged | `specs/spec-08-02-auth-supabase/` |
+| `spec-08-03` | auth-testing | P? | Active | `specs/spec-08-03-auth-testing/` |
 <!-- sdd:specs:end -->
 
 ### spec-08-01 — auth-firebase
