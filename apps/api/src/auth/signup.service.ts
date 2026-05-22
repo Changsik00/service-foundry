@@ -4,7 +4,6 @@ import { hashPassword } from "@repo/backend-auth-password";
 import { createSession } from "@repo/backend-auth-session";
 
 import type { UserRow } from "../infra/schema/index.js";
-// biome-ignore lint/style/useImportType: NestJS emitDecoratorMetadata requires runtime reference
 import { JwtService } from "../jwt/jwt.service.js";
 import { JWT_SIGN_OPTIONS, type JwtSignOptions } from "./jwt-sign.options.js";
 import { InjectUserStore, type UserStore } from "./password-reset.stores.js";
@@ -15,7 +14,7 @@ export class SignupService {
   constructor(
     @InjectUserStore() private readonly userStore: UserStore,
     @InjectSessionStore() private readonly sessionStore: SessionStore,
-    private readonly jwtService: JwtService,
+    @Inject(JwtService) private readonly jwtService: JwtService,
     @Inject(JWT_SIGN_OPTIONS) private readonly jwtOpts: JwtSignOptions,
   ) {}
 
