@@ -2,7 +2,7 @@ import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import cookieParser from "cookie-parser";
 import request from "supertest";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 process.env.NODE_ENV ??= "test";
 process.env.DATABASE_URL ??= "postgres://postgres:test@localhost:5434/test";
@@ -190,6 +190,41 @@ describe("Auth E2E (real PG)", () => {
       expect(res.status).toBe(200);
       expect(res.body.user.sub).toBe(userId);
       expect(res.body.user.role).toBe("user");
+    });
+  });
+
+  describe("OAuth — GET /auth/oauth/:provider", () => {
+    it("GET /auth/oauth/google → 302 + state/pkce 쿠키 + Location에 accounts.google.com 포함", async () => {
+      const res = await request(app.getHttpServer()).get("/auth/oauth/google").redirects(0);
+
+      expect(res.status).toBe(302);
+      const location = res.headers["location"] as string;
+      expect(location).toContain("accounts.google.com");
+      expect(location).toContain("code_challenge");
+      expect(location).toContain("state=");
+
+      const cookies = (res.headers["set-cookie"] ?? []) as unknown as string[];
+      expect(cookies.some((c: string) => c.startsWith("oauth_state="))).toBe(true);
+      expect(cookies.some((c: string) => c.startsWith("oauth_pkce="))).toBe(true);
+    });
+
+    it("GET /auth/oauth/kakao → 302 + Location에 kauth.kakao.com 포함", async () => {
+      const res = await request(app.getHttpServer()).get("/auth/oauth/kakao").redirects(0);
+
+      expect(res.status).toBe(302);
+      const location = res.headers["location"] as string;
+      expect(location).toContain("kauth.kakao.com");
+    });
+  });
+
+  describe("OAuth — GET /auth/oauth/google/callback", () => {
+    it("state 불일치 → 401", async () => {
+      const res = await request(app.getHttpServer())
+        .get("/auth/oauth/google/callback")
+        .query({ code: "any-code", state: "wrong-state" })
+        .set("Cookie", "oauth_state=correct-state; oauth_pkce=verifier");
+
+      expect(res.status).toBe(401);
     });
   });
 });
