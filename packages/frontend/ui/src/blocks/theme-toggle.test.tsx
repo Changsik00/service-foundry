@@ -1,12 +1,12 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { ThemeProvider } from "next-themes";
 import { describe, expect, it } from "vitest";
 
+import { ThemeProvider } from "../lib/theme-context";
 import { ThemeToggle } from "./theme-toggle.js";
 
 function renderWithProvider(): void {
   render(
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+    <ThemeProvider defaultTheme="light">
       <ThemeToggle />
     </ThemeProvider>,
   );
