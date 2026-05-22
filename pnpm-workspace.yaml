@@ -23,6 +23,7 @@ catalog:
   "@env-kit/node-settings": ^1.1.0
   otplib: ^12.0.1
   bcryptjs: ^3.0.3
+  "@simplewebauthn/server": ^13.1.1
 
   # frontend (phase-04+)
   ky: ^2.0.2
