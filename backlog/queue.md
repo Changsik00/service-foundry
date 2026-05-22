@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-07** — Auth Extension — OAuth + MFA + Passkey — 4 spec — 다음: (spec 없음)
+(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -71,6 +71,7 @@
 - [x] spec-x-frontend-foundation-followup (완료)
 - **phase-5** — ? — completed 2026-05-21
 - **phase-6** — ? — completed 2026-05-22
+- **phase-07** — Auth Extension — OAuth + MFA + Passkey — completed 2026-05-22
 <!-- sdd:done:end -->
 
 ---
