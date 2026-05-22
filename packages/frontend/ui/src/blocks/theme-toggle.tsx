@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-import { Button } from "../components/button.js";
-import { useTheme } from "../lib/theme-context.js";
+import { Button } from "../components/button";
+import { useTheme } from "../lib/theme-context";
 
 /**
  * `ThemeToggle` — sun/moon emoji button. light ↔ dark 토글.
