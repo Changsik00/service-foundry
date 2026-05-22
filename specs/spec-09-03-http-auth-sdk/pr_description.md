@@ -1,35 +1,31 @@
-# PR: spec-09-03 HTTP auth SDK (frontend-auth-http)
+# PR: spec-09-03 HTTP auth SDK (web-next 인라인)
 
 ## Summary
 
-- `packages/frontend/auth-http` 신규 패키지 추가 — `createHttpAuthSDK(baseUrl): CoreAuthSDK`
+- `apps/web-next/src/lib/http-auth-sdk.ts` 추가 — `createHttpAuthSDK(baseUrl): CoreAuthSDK`
 - fetch 기반 5개 메서드: signIn, signUp, signOut, getCurrentUser(in-memory), refresh
-- `apps/web-next/src/lib/auth.ts` → `createHttpAuthSDK("http://localhost:3001")` 교체
-- ADR-0006 CoreAuthSDK 계약 충족 — SDK swap (HTTP ↔ Mock ↔ Firebase) 타입 안전
+- `apps/web-next/src/lib/auth.ts` → `createHttpAuthSDK("http://localhost:3001")` 사용
+- 별도 패키지 미생성 — NestJS 앱 전용이므로 `apps/web-next/src/lib/` 인라인 배치
 
 ## Changed Files
 
 | 파일 | 변경 |
 |---|---|
-| `packages/frontend/auth-http/package.json` | NEW — @repo/frontend-auth-http 패키지 |
-| `packages/frontend/auth-http/src/index.ts` | NEW — createHttpAuthSDK 구현 |
-| `packages/frontend/auth-http/src/index.test.ts` | NEW — TDD 9 test cases |
-| `packages/frontend/auth-http/tsconfig.json` | NEW |
-| `packages/frontend/auth-http/vitest.config.ts` | NEW |
-| `apps/web-next/src/lib/auth.ts` | MODIFY — HTTP SDK로 교체 |
-| `apps/web-next/package.json` | MODIFY — @repo/frontend-auth-http 의존성 추가 |
+| `apps/web-next/src/lib/http-auth-sdk.ts` | NEW — createHttpAuthSDK 구현 |
+| `apps/web-next/src/lib/http-auth-sdk.test.ts` | NEW — TDD 9 test cases |
+| `apps/web-next/src/lib/auth.ts` | MODIFY — HTTP SDK import로 교체 |
 
 ## Test Results
 
 ```
-@repo/frontend-auth-http: Test Files 1 passed (1) | Tests 9 passed (9)
+Test Files  3 passed (3)
+Tests       20 passed (20)
 ```
 
-`pnpm -r typecheck` → 40 packages PASS
+`pnpm -r typecheck` → 39 packages PASS
 
 ## Test Plan
 
-- [x] `pnpm --filter @repo/frontend-auth-http test` PASS
+- [x] `pnpm --filter @apps/web-next test` PASS (20 tests)
 - [x] `pnpm -r typecheck` PASS
-- [x] TDD Red → Green 순서 준수 (커밋 히스토리 확인)
 - [x] CoreAuthSDK 타입 계약 충족 확인
