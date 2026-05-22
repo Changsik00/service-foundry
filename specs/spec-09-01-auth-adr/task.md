@@ -17,30 +17,29 @@
 ## Task 1: 브랜치 생성 + ADR-0017 작성
 
 ### 1-1. 브랜치 생성
-- [ ] `git checkout -b spec-09-01-auth-adr` (from `phase-09-login-admin`)
+- [x] `git checkout -b spec-09-01-auth-adr` (from `phase-09-login-admin`)
 
 ### 1-2. docs/decisions 디렉토리 + ADR-0017 작성
-- [ ] `mkdir -p docs/decisions`
-- [ ] `docs/decisions/ADR-0017-auth-provider-sdk-prop-contract.md` 작성
-- [ ] ADR 템플릿 준수 확인 (frontmatter: `type: convention`, `status: accepted`)
-- [ ] Commit: `docs(spec-09-01): ADR-0017 auth-provider-sdk-prop-contract`
+- [x] `docs/adr/0017-auth-provider-sdk-prop-contract.md` 작성 (기존 `docs/adr/` 사용)
+- [x] ADR 템플릿 준수 확인 (frontmatter: `type: convention`, `status: accepted`)
+- [x] Commit: `docs(spec-09-01): ADR-0017 auth-provider-sdk-prop-contract`
 
 ---
 
 ## Task 2: ADR-0018 작성
 
 ### 2-1. ADR-0018 작성
-- [ ] `docs/decisions/ADR-0018-auth-provider-package-location.md` 작성
-- [ ] ADR 템플릿 준수 확인 (frontmatter: `type: decision`, `status: accepted`)
-- [ ] Commit: `docs(spec-09-01): ADR-0018 auth-provider-package-location`
+- [x] `docs/adr/0018-auth-provider-package-location.md` 작성
+- [x] ADR 템플릿 준수 확인 (frontmatter: `type: decision`, `status: accepted`)
+- [x] Commit: `docs(spec-09-01): ADR-0018 auth-provider-package-location`
 
 ---
 
 ## Task 3: Ship
 
-- [ ] `pnpm -r typecheck` → PASS (문서 변경, 타입 영향 없음)
-- [ ] **walkthrough.md 작성**
-- [ ] **pr_description.md 작성**
+- [x] `pnpm -r typecheck` → PASS (문서 변경, 타입 영향 없음)
+- [x] **walkthrough.md 작성**
+- [x] **pr_description.md 작성**
 - [ ] **Ship Commit**: `docs(spec-09-01): ship walkthrough and pr description`
 - [ ] **Push**: `git push -u origin spec-09-01-auth-adr`
 - [ ] **PR 생성** (base: `phase-09-login-admin`)
