@@ -1,7 +1,7 @@
 import { HealthCard, ThemeToggle } from "@repo/frontend-ui";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { useHealthQuery } from "@/lib/queries.js";
+import { useHealthQuery } from "@/lib/queries";
 
 export const Route = createFileRoute("/")({
   component: Home,
