@@ -1,9 +1,9 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
 import { Button } from "../components/button.js";
+import { useTheme } from "../lib/theme-context.js";
 
 /**
  * `ThemeToggle` — sun/moon emoji button. light ↔ dark 토글.

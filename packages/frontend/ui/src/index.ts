@@ -43,4 +43,5 @@ export {
 export { Input, type InputProps } from "./components/input.js";
 export { Label, type LabelProps } from "./components/label.js";
 export { Toaster, toast } from "./components/toaster.js";
+export { ThemeProvider, type ThemeProviderProps, useTheme } from "./lib/theme-context.js";
 export { cn } from "./lib/utils.js";
