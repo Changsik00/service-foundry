@@ -1,5 +1,9 @@
 // SDK 교체 지점 — 이 파일의 import 1줄만 변경하면 Provider 교체 완료.
 //
+// Mock SDK 사용 시:
+//   import { createMockAuthSDK } from "@repo/frontend-auth-testing";
+//   export const authSDK = createMockAuthSDK();
+//
 // Firebase 사용 시:
 //   import { createFirebaseAuthSDK } from "@repo/frontend-auth-firebase";
 //   import { initializeApp } from "firebase/app";
@@ -10,6 +14,6 @@
 //   import { createSupabaseAuthSDK } from "@repo/frontend-auth-supabase";
 //   export const authSDK = createSupabaseAuthSDK({ url: "...", anonKey: "..." });
 
-import { createMockAuthSDK } from "@repo/frontend-auth-testing";
+import { createHttpAuthSDK } from "@repo/frontend-auth-http";
 
-export const authSDK = createMockAuthSDK();
+export const authSDK = createHttpAuthSDK("http://localhost:3001");
