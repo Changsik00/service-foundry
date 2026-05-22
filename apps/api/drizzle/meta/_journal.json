@@ -36,6 +36,13 @@
       "when": 1779360411346,
       "tag": "0004_warm_inertia",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1779431293532,
+      "tag": "0005_bored_gravity",
+      "breakpoints": true
     }
   ]
 }

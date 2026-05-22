@@ -28,7 +28,7 @@ export class SigninService {
     password: string,
   ): Promise<{ accessToken: string; user: UserRow; refreshToken: string }> {
     const user = await this.userStore.findByEmail(email);
-    if (!user) throw new UnauthorizedException("invalid credentials");
+    if (!user || !user.passwordHash) throw new UnauthorizedException("invalid credentials");
 
     const valid = await verifyPassword(password, user.passwordHash);
     if (!valid) throw new UnauthorizedException("invalid credentials");
