@@ -315,4 +315,53 @@ describe("Auth E2E (real PG)", () => {
       expect(res.body.status).toBeUndefined();
     });
   });
+
+  describe("Passkey 수직 슬라이스", () => {
+    const email = `passkey-${Date.now()}@example.com`;
+    const password = "PasskeyTest123!";
+    let accessToken: string;
+
+    it("POST /auth/signup → 201 (passkey 등록 전 계정 생성)", async () => {
+      const res = await request(app.getHttpServer()).post("/auth/signup").send({ email, password });
+      expect(res.status).toBe(201);
+      accessToken = res.body.accessToken as string;
+    });
+
+    it("POST /auth/passkey/register/options (Bearer) → 200 + challengeToken + options", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/passkey/register/options")
+        .set("Authorization", `Bearer ${accessToken}`);
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("challengeToken");
+      expect(res.body).toHaveProperty("options");
+      expect(typeof res.body.challengeToken).toBe("string");
+    });
+
+    it("POST /auth/passkey/register/options (인증 없음) → 401", async () => {
+      const res = await request(app.getHttpServer()).post("/auth/passkey/register/options");
+      expect(res.status).toBe(401);
+    });
+
+    it("POST /auth/passkey/authenticate/options → 200 + challengeToken + options", async () => {
+      const res = await request(app.getHttpServer()).post("/auth/passkey/authenticate/options");
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("challengeToken");
+      expect(res.body).toHaveProperty("options");
+    });
+
+    it("POST /auth/passkey/register/verify (잘못된 payload) → 400", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/passkey/register/verify")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({ bad: "payload" });
+      expect(res.status).toBe(400);
+    });
+
+    it("POST /auth/passkey/authenticate/verify (잘못된 payload) → 400", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/passkey/authenticate/verify")
+        .send({ bad: "payload" });
+      expect(res.status).toBe(400);
+    });
+  });
 });

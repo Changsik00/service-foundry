@@ -3,5 +3,7 @@ export { sessions } from "@repo/backend-auth-session";
 export { emailVerifyTokens } from "./email-verify-tokens.js";
 export { mfaConfigs } from "./mfa-configs.js";
 export { oauthAccounts } from "./oauth-accounts.js";
+export { passkeyChallenges } from "./passkey-challenges.js";
+export { passkeyCredentials } from "./passkey-credentials.js";
 export { passwordResetTokens } from "./password-reset-tokens.js";
 export { users } from "./users.js";
