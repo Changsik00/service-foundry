@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-08** — Provider Adapters — Firebase + Supabase — 4 spec — 다음: spec-08-04-sdk-swap-validation
+- **phase-08** — Provider Adapters — Firebase + Supabase — 4 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기

@@ -1,6 +1,6 @@
-export type { AuthContextValue } from "./context.js";
-export { RequireAuth, RequireRole } from "./guards.js";
-export { useAuth, useSession } from "./hooks.js";
-export { useMfaChallenge } from "./mfa.js";
-export { usePasskeyRegister } from "./passkey.js";
-export { AuthProvider } from "./provider.js";
+export type { AuthContextValue } from "./context";
+export { RequireAuth, RequireRole } from "./guards";
+export { useAuth, useSession } from "./hooks";
+export { useMfaChallenge } from "./mfa";
+export { usePasskeyRegister } from "./passkey";
+export { AuthProvider } from "./provider";

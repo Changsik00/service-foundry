@@ -1,6 +1,6 @@
 import type { AuthResult, CoreAuthSDK, Session, User } from "@repo/auth-contracts";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { normalizeSupabaseAuthError } from "./normalize.js";
+import { normalizeSupabaseAuthError } from "./normalize";
 
 export interface SupabaseConfig {
   url: string;

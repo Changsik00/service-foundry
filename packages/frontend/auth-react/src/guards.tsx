@@ -1,7 +1,7 @@
 import type { Role } from "@repo/auth-contracts";
 import type { ReactNode } from "react";
 
-import { useAuth } from "./hooks.js";
+import { useAuth } from "./hooks";
 
 interface RequireAuthProps {
   children: ReactNode;

@@ -1,7 +1,7 @@
 import type { AuthResult, CoreAuthSDK, SignInInput, SignUpInput, User } from "@repo/auth-contracts";
 import { type ReactNode, useCallback, useEffect, useState } from "react";
 
-import { AuthContext } from "./context.js";
+import { AuthContext } from "./context";
 
 interface AuthProviderProps {
   sdk: CoreAuthSDK;
