@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-07** — Auth Extension — OAuth + MFA + Passkey — 3 spec — 다음: (spec 없음)
+- **phase-07** — Auth Extension — OAuth + MFA + Passkey — 4 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기

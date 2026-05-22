@@ -39,6 +39,9 @@ catalogs:
     '@radix-ui/react-slot':
       specifier: ^1.2.4
       version: 1.2.4
+    '@simplewebauthn/browser':
+      specifier: ^13.1.1
+      version: 13.3.0
     '@simplewebauthn/server':
       specifier: ^13.1.1
       version: 13.3.0
@@ -1023,6 +1026,9 @@ importers:
       '@repo/auth-contracts':
         specifier: workspace:*
         version: link:../../shared/auth-contracts
+      '@simplewebauthn/browser':
+        specifier: 'catalog:'
+        version: 13.3.0
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
@@ -3426,6 +3432,9 @@ packages:
     resolution: {integrity: sha512-QVTUovf40zgTqlFVrKA1uXMVvU2QWEFWfAH8Wdc48IxLvrJMQVMBRjuQyUpzZCDkakImib9eVazbWlC6ksWtJw==}
     cpu: [x64]
     os: [win32]
+
+  '@simplewebauthn/browser@13.3.0':
+    resolution: {integrity: sha512-BE/UWv6FOToAdVk0EokzkqQQDOWtNydYlY6+OrmiZ5SCNmb41VehttboTetUM3T/fr6EAFYVXjz4My2wg230rQ==}
 
   '@simplewebauthn/server@13.3.0':
     resolution: {integrity: sha512-MLHYFrYG8/wK2i+86XMhiecK72nMaHKKt4bo+7Q1TbuG9iGjlSdfkPWKO5ZFE/BX+ygCJ7pr8H/AJeyAj1EaTQ==}
@@ -7195,6 +7204,8 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.60.4':
     optional: true
+
+  '@simplewebauthn/browser@13.3.0': {}
 
   '@simplewebauthn/server@13.3.0':
     dependencies:
