@@ -20,6 +20,9 @@ import { createDrizzleMfaStore, MFA_STORE } from "./mfa.stores.js";
 import { OAuthController } from "./oauth.controller.js";
 import { OAuthService } from "./oauth.service.js";
 import { createDrizzleOAuthAccountStore, OAUTH_ACCOUNT_STORE } from "./oauth.stores.js";
+import { PasskeyController } from "./passkey.controller.js";
+import { PasskeyService } from "./passkey.service.js";
+import { createDrizzlePasskeyStore, PASSKEY_STORE } from "./passkey.stores.js";
 import { PasswordResetService } from "./password-reset.service.js";
 import {
   createDrizzleTokenStore,
@@ -95,7 +98,13 @@ const settings: AppSettings = loadSettings(process.env);
       inject: [DATABASE],
       useFactory: (db: Database<Record<string, unknown>>) => createDrizzleMfaStore(db.db),
     },
+    PasskeyService,
+    {
+      provide: PASSKEY_STORE,
+      inject: [DATABASE],
+      useFactory: (db: Database<Record<string, unknown>>) => createDrizzlePasskeyStore(db.db),
+    },
   ],
-  controllers: [AuthController, OAuthController, MfaController],
+  controllers: [AuthController, OAuthController, MfaController, PasskeyController],
 })
 export class AuthModule {}
