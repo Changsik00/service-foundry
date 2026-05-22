@@ -19,6 +19,7 @@
     "@nestjs/throttler": "catalog:",
     "@repo/auth-contracts": "workspace:*",
     "@repo/backend-auth-audit": "workspace:*",
+    "@repo/backend-auth-oauth": "workspace:*",
     "@repo/backend-auth-jwt": "workspace:*",
     "@repo/backend-auth-password": "workspace:*",
     "@repo/backend-auth-rate-limit": "workspace:*",
@@ -49,6 +50,7 @@
     "drizzle-kit": "catalog:",
     "supertest": "catalog:",
     "tsx": "catalog:",
+    "undici": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }
