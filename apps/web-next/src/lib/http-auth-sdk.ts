@@ -2,85 +2,85 @@ import type { AuthResult, CoreAuthSDK, Session, User } from "@repo/auth-contract
 import { AppError } from "@repo/errors";
 import { createHttpClient, type HttpClient } from "@repo/frontend-http-client";
 
-// ── 1. API 응답 타입 ────────────────────────────────────────────────────────
+// ── 1. API 응답 타입 ──────────────────────────────────────────────────────────
 type SignResponse = { accessToken: string; user: User };
 type SignInResponse = SignResponse | { status: "mfa_required" };
 
-// ── 2. API layer: endpoint 정의만 ─────────────────────────────────────────
-function buildApi(http: HttpClient) {
-  return {
-    signIn: (input: unknown) => http.post<SignInResponse>("auth/signin", input),
-    signUp: (input: unknown) => http.post<SignResponse>("auth/signup", input),
-    signOut: () => http.post("auth/signout"),
-    refresh: () => http.post<SignResponse>("auth/refresh"),
-  };
-}
+// ── 2. API layer: endpoint 정의만 ─────────────────────────────────────────────
+const buildApi = (http: HttpClient) => ({
+  signIn: (input: unknown) => http.post<SignInResponse>("auth/signin", input),
+  signUp: (input: unknown) => http.post<SignResponse>("auth/signup", input),
+  signOut: () => http.post("auth/signout"),
+  refresh: () => http.post<SignResponse>("auth/refresh"),
+});
 
-// ── 3. 공통 변환 헬퍼 ─────────────────────────────────────────────────────
-function toReason(err: unknown): "invalid_credentials" | "rate_limited" {
-  if (err instanceof AppError && err.statusCode === 429) return "rate_limited";
-  return "invalid_credentials";
-}
+// ── 3. Result 타입 + 래퍼 ─────────────────────────────────────────────────────
+// try/catch를 값으로 표현 — 알려진 에러를 예외가 아닌 데이터로 처리
+type Ok<T> = { ok: true; data: T };
+type Err = { ok: false; err: unknown };
 
-function toSuccess(user: User): Extract<AuthResult, { success: true }> {
-  return { success: true, user, session: { userId: user.id, expiresAt: "" } };
-}
+const tryCall = <T>(fn: () => Promise<T>): Promise<Ok<T> | Err> =>
+  fn().then(
+    (data) => ({ ok: true as const, data }),
+    (err) => ({ ok: false as const, err }),
+  );
 
-// ── 4. SDK factory ────────────────────────────────────────────────────────
+// ── 4. 변환 헬퍼 ─────────────────────────────────────────────────────────────
+const toReason = (err: unknown): "invalid_credentials" | "rate_limited" =>
+  err instanceof AppError && err.statusCode === 429 ? "rate_limited" : "invalid_credentials";
+
+const toSuccess = (user: User): Extract<AuthResult, { success: true }> => ({
+  success: true,
+  user,
+  session: { userId: user.id, expiresAt: "" },
+});
+
+// ── 5. SDK factory ────────────────────────────────────────────────────────────
 export function createHttpAuthSDK(baseUrl: string): CoreAuthSDK {
   const api = buildApi(createHttpClient({ baseUrl, credentials: "include" }));
   let currentUser: User | null = null;
 
-  // signIn / signUp 공통 패턴: 호출 → currentUser 갱신 → AuthResult 변환
-  async function withSign(call: () => Promise<SignResponse>): Promise<AuthResult> {
-    try {
-      const { user } = await call();
-      currentUser = user;
-      return toSuccess(user);
-    } catch (err) {
-      return { success: false, reason: toReason(err) };
-    }
-  }
+  // currentUser 갱신 + success AuthResult 반환
+  const storeAndSucceed = (user: User): AuthResult => {
+    currentUser = user;
+    return toSuccess(user);
+  };
+
+  // signIn / signUp 공통: 호출 결과 → AuthResult (성공 시 currentUser 갱신)
+  const withSign = async (call: () => Promise<SignResponse>): Promise<AuthResult> => {
+    const r = await tryCall(call);
+    return r.ok ? storeAndSucceed(r.data.user) : { success: false, reason: toReason(r.err) };
+  };
 
   return {
-    async signIn(input): Promise<AuthResult> {
-      try {
-        const data = await api.signIn(input);
-        if ("status" in data) {
-          // MFA 처리는 별도 phase로 이월
-          return {
-            success: false,
-            reason: "mfa_required",
-            challenge: { challengeId: "", method: "totp", expiresAt: "" },
-          };
-        }
-        currentUser = data.user;
-        return toSuccess(currentUser);
-      } catch (err) {
-        return { success: false, reason: toReason(err) };
+    signIn: async (input) => {
+      const r = await tryCall(() => api.signIn(input));
+      if (!r.ok) return { success: false, reason: toReason(r.err) };
+      if ("status" in r.data) {
+        return {
+          success: false,
+          reason: "mfa_required",
+          challenge: { challengeId: "", method: "totp", expiresAt: "" },
+        };
       }
+      return storeAndSucceed(r.data.user);
     },
 
     signUp: (input) => withSign(() => api.signUp(input)),
 
-    async signOut(): Promise<void> {
-      try {
-        await api.signOut();
-      } finally {
-        currentUser = null;
-      }
+    signOut: async () => {
+      const r = await tryCall(() => api.signOut());
+      currentUser = null;
+      if (!r.ok) throw r.err;
     },
 
     getCurrentUser: async () => currentUser,
 
-    async refresh(): Promise<Session | null> {
-      try {
-        const { user } = await api.refresh();
-        currentUser = user;
-        return { userId: user.id, expiresAt: "" };
-      } catch {
-        return null;
-      }
+    refresh: async () => {
+      const r = await tryCall(() => api.refresh());
+      if (!r.ok) return null;
+      currentUser = r.data.user;
+      return { userId: currentUser.id, expiresAt: "" };
     },
   };
 }
