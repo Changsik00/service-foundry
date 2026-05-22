@@ -78,6 +78,8 @@ export function ThemeProvider({
     const root = document.documentElement;
     root.classList.remove("light", "dark");
     root.classList.add(resolvedTheme);
+    // SSR FOUC 방지용 쿠키 — layout.tsx 서버 컴포넌트에서 읽어 초기 class 적용
+    document.cookie = `theme=${resolvedTheme};path=/;max-age=31536000;samesite=strict`;
   }, [resolvedTheme, disableTransitionOnChange]);
 
   const setTheme = useCallback((newTheme: string) => {

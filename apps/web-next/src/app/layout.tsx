@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Script from "next/script";
+import { cookies } from "next/headers";
 
 import { Providers } from "@/components/providers";
 
@@ -10,13 +10,14 @@ export const metadata: Metadata = {
   description: "Next.js 16 App Router scaffold",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = await cookies();
+  const cookieTheme = cookieStore.get("theme")?.value;
+  const themeClass = cookieTheme === "dark" || cookieTheme === "light" ? cookieTheme : undefined;
+
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="ko" className={themeClass} suppressHydrationWarning>
       <body className="min-h-screen bg-background text-foreground">
-        <Script id="theme-init" strategy="beforeInteractive">
-          {`try{var t=localStorage.getItem('theme')||'system';if(t==='system'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.classList.add(t)}catch(e){}`}
-        </Script>
         <Providers>{children}</Providers>
       </body>
     </html>
