@@ -81,4 +81,17 @@ export interface AuthSDK {
   getCurrentUser(): Promise<User | null>;
   signUp(input: SignUpInput): Promise<AuthResult>;
   refresh(): Promise<Session | null>;
+
+  // MFA
+  verifyMfaTotp(mfaChallengeToken: string, code: string): Promise<AuthResult>;
+
+  // Passkey
+  fetchPasskeyRegisterOptions(): Promise<{ challengeToken: string; options: object }>;
+  verifyPasskeyRegister(challengeToken: string, credential: unknown): Promise<void>;
+  fetchPasskeyAuthOptions(): Promise<{ challengeToken: string; options: object }>;
+  verifyPasskeyAuth(
+    challengeToken: string,
+    credentialId: string,
+    credential: unknown,
+  ): Promise<AuthResult>;
 }

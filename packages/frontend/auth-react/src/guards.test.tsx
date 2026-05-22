@@ -24,6 +24,11 @@ function makeSdk(user: User | null = mockUser): AuthSDK {
     getCurrentUser: vi.fn().mockResolvedValue(user),
     signUp: vi.fn().mockResolvedValue({ success: true, user: mockUser, session: mockSession }),
     refresh: vi.fn().mockResolvedValue(null),
+    verifyMfaTotp: vi.fn(),
+    fetchPasskeyRegisterOptions: vi.fn(),
+    verifyPasskeyRegister: vi.fn(),
+    fetchPasskeyAuthOptions: vi.fn(),
+    verifyPasskeyAuth: vi.fn(),
   };
 }
 

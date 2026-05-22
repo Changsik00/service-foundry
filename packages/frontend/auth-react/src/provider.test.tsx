@@ -24,6 +24,11 @@ function makeSdk(overrides: Partial<AuthSDK> = {}): AuthSDK {
     getCurrentUser: vi.fn().mockResolvedValue(mockUser),
     signUp: vi.fn().mockResolvedValue({ success: true, user: mockUser, session: mockSession }),
     refresh: vi.fn().mockResolvedValue(null),
+    verifyMfaTotp: vi.fn(),
+    fetchPasskeyRegisterOptions: vi.fn(),
+    verifyPasskeyRegister: vi.fn(),
+    fetchPasskeyAuthOptions: vi.fn(),
+    verifyPasskeyAuth: vi.fn(),
     ...overrides,
   };
 }
