@@ -8,7 +8,7 @@ import {
   getIdTokenResult,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { normalizeFirebaseAuthError } from "./normalize.js";
+import { normalizeFirebaseAuthError } from "./normalize";
 
 export interface FirebaseExtensions {
   getIdTokenResult(forceRefresh?: boolean): Promise<IdTokenResult | null>;
