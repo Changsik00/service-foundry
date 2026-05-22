@@ -390,9 +390,18 @@ importers:
 
   apps/web-next:
     dependencies:
+      '@repo/auth-contracts':
+        specifier: workspace:*
+        version: link:../../packages/shared/auth-contracts
       '@repo/errors':
         specifier: workspace:*
         version: link:../../packages/shared/errors
+      '@repo/frontend-auth-react':
+        specifier: workspace:*
+        version: link:../../packages/frontend/auth-react
+      '@repo/frontend-auth-testing':
+        specifier: workspace:*
+        version: link:../../packages/frontend/auth-testing
       '@repo/frontend-http-client':
         specifier: workspace:*
         version: link:../../packages/frontend/http-client
