@@ -21,6 +21,8 @@ catalog:
   jose: ^6.2.0
   argon2: ^0.44.0
   "@env-kit/node-settings": ^1.1.0
+  otplib: ^12.0.1
+  bcryptjs: ^3.0.3
 
   # frontend (phase-04+)
   ky: ^2.0.2
@@ -64,6 +66,7 @@ catalog:
   "@types/react-dom": ^19.2.3
   "@types/supertest": ^7.2.0
   "@types/cookie-parser": ^1.4.8
+  "@types/bcryptjs": ^3.0.0
 
   # toolchain
   typescript: ^6.0.3
