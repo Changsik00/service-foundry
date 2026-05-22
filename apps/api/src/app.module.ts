@@ -10,7 +10,6 @@ import { AuthModule } from "./auth/auth.module.js";
 import { HealthController } from "./health/health.controller.js";
 import { appSchema } from "./infra/schema/index.js";
 import { JwtModule } from "./jwt/jwt.module.js";
-// biome-ignore lint/style/useImportType: NestJS emitDecoratorMetadata requires runtime reference
 import { JwtService } from "./jwt/jwt.service.js";
 import { type AppSettings, loadSettings } from "./settings.js";
 

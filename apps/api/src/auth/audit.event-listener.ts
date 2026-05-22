@@ -1,5 +1,6 @@
 import { Injectable, type OnModuleInit } from "@nestjs/common";
-import type { AuditService, AuthEventBus } from "@repo/backend-auth-audit";
+// biome-ignore lint/style/useImportType: NestJS emitDecoratorMetadata requires runtime reference
+import { AuditService, AuthEventBus } from "@repo/backend-auth-audit";
 
 @Injectable()
 export class AuditEventListener implements OnModuleInit {

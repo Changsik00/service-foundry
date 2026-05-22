@@ -31,7 +31,7 @@ export class SigninService {
     const user = await this.userStore.findByEmail(email);
     if (!user) throw new UnauthorizedException("invalid credentials");
 
-    const valid = await verifyPassword(user.passwordHash, password);
+    const valid = await verifyPassword(password, user.passwordHash);
     if (!valid) throw new UnauthorizedException("invalid credentials");
 
     const { refreshToken } = await createSession(this.sessionStore, { userId: user.id });

@@ -4,10 +4,8 @@ import { AuthGuard, NESTJS_AUTH_OPTIONS } from "@repo/nestjs-auth";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 
 import { JwtModule } from "../jwt/jwt.module.js";
-// biome-ignore lint/style/useImportType: NestJS emitDecoratorMetadata requires runtime reference
 import { JwtService } from "../jwt/jwt.service.js";
 import { type AppSettings, loadSettings } from "../settings.js";
-// biome-ignore lint/style/useImportType: NestJS emitDecoratorMetadata requires runtime reference
 import { AuditEventListener } from "./audit.event-listener.js";
 import { AuthController } from "./auth.controller.js";
 import { EmailVerifyService } from "./email-verify.service.js";
