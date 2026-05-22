@@ -39,7 +39,8 @@
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
 | `spec-07-01` | auth-oauth | P? | Merged | `specs/spec-07-01-auth-oauth/` |
-| `spec-07-02` | auth-mfa-totp | P? | Active | `specs/spec-07-02-auth-mfa-totp/` |
+| `spec-07-02` | auth-mfa-totp | P? | Merged | `specs/spec-07-02-auth-mfa-totp/` |
+| `spec-07-03` | auth-passkey | P? | Merged | `specs/spec-07-03-auth-passkey/` |
 <!-- sdd:specs:end -->
 
 ### spec-07-01 — auth-oauth (Core + Providers 번들)
