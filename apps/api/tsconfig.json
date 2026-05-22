@@ -1,9 +1,4 @@
 {
-  "extends": "@repo/typescript-config/base",
-  "compilerOptions": {
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "types": ["node"]
-  },
+  "extends": "@repo/typescript-config/nestjs",
   "include": ["src/**/*.ts"]
 }
