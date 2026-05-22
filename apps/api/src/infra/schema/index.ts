@@ -5,6 +5,7 @@ import {
   type EmailVerifyTokenRow,
   emailVerifyTokens,
 } from "./email-verify-tokens.js";
+import { type MfaConfigInsert, type MfaConfigRow, mfaConfigs } from "./mfa-configs.js";
 import { type OAuthAccountInsert, type OAuthAccountRow, oauthAccounts } from "./oauth-accounts.js";
 import {
   type PasswordResetTokenInsert,
@@ -17,6 +18,8 @@ export type {
   AuditLogRow,
   EmailVerifyTokenInsert,
   EmailVerifyTokenRow,
+  MfaConfigInsert,
+  MfaConfigRow,
   OAuthAccountInsert,
   OAuthAccountRow,
   PasswordResetTokenInsert,
@@ -26,7 +29,15 @@ export type {
   UserInsert,
   UserRow,
 };
-export { authAuditLogs, emailVerifyTokens, oauthAccounts, passwordResetTokens, sessions, users };
+export {
+  authAuditLogs,
+  emailVerifyTokens,
+  mfaConfigs,
+  oauthAccounts,
+  passwordResetTokens,
+  sessions,
+  users,
+};
 
 export const appSchema = {
   users,
@@ -35,4 +46,5 @@ export const appSchema = {
   sessions,
   authAuditLogs,
   oauthAccounts,
+  mfaConfigs,
 };
