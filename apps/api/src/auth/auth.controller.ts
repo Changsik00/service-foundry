@@ -1,4 +1,15 @@
-import { Body, Controller, Get, HttpCode, Post, Req, Res, UseGuards } from "@nestjs/common";
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Inject,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from "@nestjs/common";
 import {
   EmailVerifyConfirm,
   EmailVerifyRequest,
@@ -7,27 +18,27 @@ import {
   SignInInput,
   SignUpInput,
 } from "@repo/auth-contracts";
-// biome-ignore lint/style/useImportType: NestJS emitDecoratorMetadata requires runtime value
 import { AuthEventBus } from "@repo/backend-auth-audit";
 import { type AuthenticatedUser, AuthGuard, CurrentUser } from "@repo/nestjs-auth";
 import type { Request, Response } from "express";
-import type { z } from "zod";
+import { ZodError, type z } from "zod";
 
 import type { UserRow } from "../infra/schema/index.js";
 import { clearRefreshTokenCookie, setRefreshTokenCookie } from "./cookie.helper.js";
-// biome-ignore lint/style/useImportType: NestJS decorator metadata requires runtime value
 import { EmailVerifyService } from "./email-verify.service.js";
-// biome-ignore lint/style/useImportType: NestJS decorator metadata requires runtime value
 import { PasswordResetService } from "./password-reset.service.js";
-// biome-ignore lint/style/useImportType: NestJS decorator metadata requires runtime value
 import { SigninService } from "./signin.service.js";
-// biome-ignore lint/style/useImportType: NestJS decorator metadata requires runtime value
 import { SignupService } from "./signup.service.js";
 
 function zodPipe<T>(schema: z.ZodType<T>) {
   return {
     transform(value: unknown): T {
-      return schema.parse(value);
+      try {
+        return schema.parse(value);
+      } catch (err) {
+        if (err instanceof ZodError) throw new BadRequestException(err.issues);
+        throw err;
+      }
     },
   };
 }
@@ -44,11 +55,11 @@ type SignResponse = { accessToken: string; user: Pick<UserRow, "id" | "email" | 
 @Controller("auth")
 export class AuthController {
   constructor(
-    private readonly passwordResetService: PasswordResetService,
-    private readonly emailVerifyService: EmailVerifyService,
-    private readonly signinService: SigninService,
-    private readonly signupService: SignupService,
-    private readonly eventBus: AuthEventBus,
+    @Inject(PasswordResetService) private readonly passwordResetService: PasswordResetService,
+    @Inject(EmailVerifyService) private readonly emailVerifyService: EmailVerifyService,
+    @Inject(SigninService) private readonly signinService: SigninService,
+    @Inject(SignupService) private readonly signupService: SignupService,
+    @Inject(AuthEventBus) private readonly eventBus: AuthEventBus,
   ) {}
 
   @Post("signin")

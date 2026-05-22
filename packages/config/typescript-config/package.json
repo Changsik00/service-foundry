@@ -6,12 +6,14 @@
   "files": [
     "base.json",
     "library.json",
+    "nestjs.json",
     "node-app.json",
     "react-app.json"
   ],
   "exports": {
     "./base": "./base.json",
     "./library": "./library.json",
+    "./nestjs": "./nestjs.json",
     "./node-app": "./node-app.json",
     "./react-app": "./react-app.json",
     "./package.json": "./package.json"

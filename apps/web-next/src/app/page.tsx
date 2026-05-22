@@ -3,8 +3,8 @@ import { createHttpClient } from "@repo/frontend-http-client";
 import { HealthCard, ThemeToggle } from "@repo/frontend-ui";
 import { z } from "zod";
 
-import { HealthCardClient } from "@/components/health-card-client.js";
-import { getEnv } from "@/env.js";
+import { HealthCardClient } from "@/components/health-card-client";
+import { getEnv } from "@/env";
 
 // `/health` 는 매 요청마다 fetch — build 시점 static 추출 회피 (env 의존 + 외부 호출).
 export const dynamic = "force-dynamic";

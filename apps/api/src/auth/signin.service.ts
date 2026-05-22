@@ -9,7 +9,6 @@ import {
 } from "@repo/backend-auth-session";
 
 import type { UserRow } from "../infra/schema/index.js";
-// biome-ignore lint/style/useImportType: NestJS emitDecoratorMetadata requires runtime reference
 import { JwtService } from "../jwt/jwt.service.js";
 import { JWT_SIGN_OPTIONS, type JwtSignOptions } from "./jwt-sign.options.js";
 import { InjectUserStore, type UserStore } from "./password-reset.stores.js";
@@ -20,7 +19,7 @@ export class SigninService {
   constructor(
     @InjectUserStore() private readonly userStore: UserStore,
     @InjectSessionStore() private readonly sessionStore: SessionStore,
-    private readonly jwtService: JwtService,
+    @Inject(JwtService) private readonly jwtService: JwtService,
     @Inject(JWT_SIGN_OPTIONS) private readonly jwtOpts: JwtSignOptions,
   ) {}
 
@@ -31,7 +30,7 @@ export class SigninService {
     const user = await this.userStore.findByEmail(email);
     if (!user) throw new UnauthorizedException("invalid credentials");
 
-    const valid = await verifyPassword(user.passwordHash, password);
+    const valid = await verifyPassword(password, user.passwordHash);
     if (!valid) throw new UnauthorizedException("invalid credentials");
 
     const { refreshToken } = await createSession(this.sessionStore, { userId: user.id });
