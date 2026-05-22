@@ -1,8 +1,9 @@
 import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import cookieParser from "cookie-parser";
+import { authenticator } from "otplib";
 import request from "supertest";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 process.env.NODE_ENV ??= "test";
 process.env.DATABASE_URL ??= "postgres://postgres:test@localhost:5434/test";
@@ -190,6 +191,177 @@ describe("Auth E2E (real PG)", () => {
       expect(res.status).toBe(200);
       expect(res.body.user.sub).toBe(userId);
       expect(res.body.user.role).toBe("user");
+    });
+  });
+
+  describe("OAuth — GET /auth/oauth/:provider", () => {
+    it("GET /auth/oauth/google → 302 + state/pkce 쿠키 + Location에 accounts.google.com 포함", async () => {
+      const res = await request(app.getHttpServer()).get("/auth/oauth/google").redirects(0);
+
+      expect(res.status).toBe(302);
+      const location = res.headers["location"] as string;
+      expect(location).toContain("accounts.google.com");
+      expect(location).toContain("code_challenge");
+      expect(location).toContain("state=");
+
+      const cookies = (res.headers["set-cookie"] ?? []) as unknown as string[];
+      expect(cookies.some((c: string) => c.startsWith("oauth_state="))).toBe(true);
+      expect(cookies.some((c: string) => c.startsWith("oauth_pkce="))).toBe(true);
+    });
+
+    it("GET /auth/oauth/kakao → 302 + Location에 kauth.kakao.com 포함", async () => {
+      const res = await request(app.getHttpServer()).get("/auth/oauth/kakao").redirects(0);
+
+      expect(res.status).toBe(302);
+      const location = res.headers["location"] as string;
+      expect(location).toContain("kauth.kakao.com");
+    });
+  });
+
+  describe("OAuth — GET /auth/oauth/google/callback", () => {
+    it("state 불일치 → 401", async () => {
+      const res = await request(app.getHttpServer())
+        .get("/auth/oauth/google/callback")
+        .query({ code: "any-code", state: "wrong-state" })
+        .set("Cookie", "oauth_state=correct-state; oauth_pkce=verifier");
+
+      expect(res.status).toBe(401);
+    });
+  });
+
+  describe("MFA TOTP 수직 슬라이스", () => {
+    const email = `mfa-${Date.now()}@example.com`;
+    const password = "MfaTest123!";
+    let accessToken: string;
+    let totpSecret: string;
+    let mfaChallengeToken: string;
+
+    it("POST /auth/signup → 201 (MFA 미등록 상태)", async () => {
+      const res = await request(app.getHttpServer()).post("/auth/signup").send({ email, password });
+      expect(res.status).toBe(201);
+      accessToken = res.body.accessToken as string;
+    });
+
+    it("POST /auth/mfa/totp/enroll (Bearer) → 200 + totpUri", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/mfa/totp/enroll")
+        .set("Authorization", `Bearer ${accessToken}`);
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("totpUri");
+      expect(res.body.totpUri as string).toMatch(/^otpauth:\/\/totp\//);
+      const url = new URL(res.body.totpUri as string);
+      totpSecret = url.searchParams.get("secret") ?? "";
+      expect(totpSecret.length).toBeGreaterThan(0);
+    });
+
+    it("POST /auth/mfa/totp/enroll/confirm (잘못된 코드) → 401", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/mfa/totp/enroll/confirm")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({ code: "000000" });
+      expect(res.status).toBe(401);
+    });
+
+    it("POST /auth/mfa/totp/enroll/confirm (유효 코드) → 200 + backupCodes", async () => {
+      const code = authenticator.generate(totpSecret);
+      const res = await request(app.getHttpServer())
+        .post("/auth/mfa/totp/enroll/confirm")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({ code });
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body.backupCodes)).toBe(true);
+      expect((res.body.backupCodes as string[]).length).toBe(10);
+    });
+
+    it("POST /auth/signin (MFA 활성화) → 200 + mfa_required", async () => {
+      const res = await request(app.getHttpServer()).post("/auth/signin").send({ email, password });
+      expect(res.status).toBe(200);
+      expect(res.body.status).toBe("mfa_required");
+      expect(res.body).toHaveProperty("mfaChallengeToken");
+      mfaChallengeToken = res.body.mfaChallengeToken as string;
+    });
+
+    it("POST /auth/mfa/totp/verify (잘못된 코드) → 401", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/mfa/totp/verify")
+        .send({ mfaChallengeToken, code: "000000" });
+      expect(res.status).toBe(401);
+    });
+
+    it("POST /auth/mfa/totp/verify (유효 코드) → 200 + accessToken + refresh cookie", async () => {
+      const code = authenticator.generate(totpSecret);
+      const res = await request(app.getHttpServer())
+        .post("/auth/mfa/totp/verify")
+        .send({ mfaChallengeToken, code });
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("accessToken");
+      accessToken = res.body.accessToken as string;
+    });
+
+    it("POST /auth/mfa/totp/disable (유효 코드) → 200", async () => {
+      const code = authenticator.generate(totpSecret);
+      const res = await request(app.getHttpServer())
+        .post("/auth/mfa/totp/disable")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({ code });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ status: "ok" });
+    });
+
+    it("POST /auth/signin (MFA 비활성화 후) → 200 + accessToken (정상 세션)", async () => {
+      const res = await request(app.getHttpServer()).post("/auth/signin").send({ email, password });
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("accessToken");
+      expect(res.body.status).toBeUndefined();
+    });
+  });
+
+  describe("Passkey 수직 슬라이스", () => {
+    const email = `passkey-${Date.now()}@example.com`;
+    const password = "PasskeyTest123!";
+    let accessToken: string;
+
+    it("POST /auth/signup → 201 (passkey 등록 전 계정 생성)", async () => {
+      const res = await request(app.getHttpServer()).post("/auth/signup").send({ email, password });
+      expect(res.status).toBe(201);
+      accessToken = res.body.accessToken as string;
+    });
+
+    it("POST /auth/passkey/register/options (Bearer) → 200 + challengeToken + options", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/passkey/register/options")
+        .set("Authorization", `Bearer ${accessToken}`);
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("challengeToken");
+      expect(res.body).toHaveProperty("options");
+      expect(typeof res.body.challengeToken).toBe("string");
+    });
+
+    it("POST /auth/passkey/register/options (인증 없음) → 401", async () => {
+      const res = await request(app.getHttpServer()).post("/auth/passkey/register/options");
+      expect(res.status).toBe(401);
+    });
+
+    it("POST /auth/passkey/authenticate/options → 200 + challengeToken + options", async () => {
+      const res = await request(app.getHttpServer()).post("/auth/passkey/authenticate/options");
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("challengeToken");
+      expect(res.body).toHaveProperty("options");
+    });
+
+    it("POST /auth/passkey/register/verify (잘못된 payload) → 400", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/passkey/register/verify")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({ bad: "payload" });
+      expect(res.status).toBe(400);
+    });
+
+    it("POST /auth/passkey/authenticate/verify (잘못된 payload) → 400", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/passkey/authenticate/verify")
+        .send({ bad: "payload" });
+      expect(res.status).toBe(400);
     });
   });
 });

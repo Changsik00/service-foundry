@@ -5,6 +5,18 @@ import {
   type EmailVerifyTokenRow,
   emailVerifyTokens,
 } from "./email-verify-tokens.js";
+import { type MfaConfigInsert, type MfaConfigRow, mfaConfigs } from "./mfa-configs.js";
+import { type OAuthAccountInsert, type OAuthAccountRow, oauthAccounts } from "./oauth-accounts.js";
+import {
+  type PasskeyChallengeInsert,
+  type PasskeyChallengeRow,
+  passkeyChallenges,
+} from "./passkey-challenges.js";
+import {
+  type PasskeyCredentialInsert,
+  type PasskeyCredentialRow,
+  passkeyCredentials,
+} from "./passkey-credentials.js";
 import {
   type PasswordResetTokenInsert,
   type PasswordResetTokenRow,
@@ -16,6 +28,14 @@ export type {
   AuditLogRow,
   EmailVerifyTokenInsert,
   EmailVerifyTokenRow,
+  MfaConfigInsert,
+  MfaConfigRow,
+  OAuthAccountInsert,
+  OAuthAccountRow,
+  PasskeyChallengeInsert,
+  PasskeyChallengeRow,
+  PasskeyCredentialInsert,
+  PasskeyCredentialRow,
   PasswordResetTokenInsert,
   PasswordResetTokenRow,
   SessionInsert,
@@ -23,6 +43,26 @@ export type {
   UserInsert,
   UserRow,
 };
-export { authAuditLogs, emailVerifyTokens, passwordResetTokens, sessions, users };
+export {
+  authAuditLogs,
+  emailVerifyTokens,
+  mfaConfigs,
+  oauthAccounts,
+  passkeyChallenges,
+  passkeyCredentials,
+  passwordResetTokens,
+  sessions,
+  users,
+};
 
-export const appSchema = { users, passwordResetTokens, emailVerifyTokens, sessions, authAuditLogs };
+export const appSchema = {
+  users,
+  passwordResetTokens,
+  emailVerifyTokens,
+  sessions,
+  authAuditLogs,
+  oauthAccounts,
+  mfaConfigs,
+  passkeyCredentials,
+  passkeyChallenges,
+};

@@ -14,6 +14,15 @@ import {
   EMAIL_VERIFY_TOKEN_STORE,
 } from "./email-verify.stores.js";
 import { JWT_SIGN_OPTIONS, type JwtSignOptions } from "./jwt-sign.options.js";
+import { MfaController } from "./mfa.controller.js";
+import { MfaService } from "./mfa.service.js";
+import { createDrizzleMfaStore, MFA_STORE } from "./mfa.stores.js";
+import { OAuthController } from "./oauth.controller.js";
+import { OAuthService } from "./oauth.service.js";
+import { createDrizzleOAuthAccountStore, OAUTH_ACCOUNT_STORE } from "./oauth.stores.js";
+import { PasskeyController } from "./passkey.controller.js";
+import { PasskeyService } from "./passkey.service.js";
+import { createDrizzlePasskeyStore, PASSKEY_STORE } from "./passkey.stores.js";
 import { PasswordResetService } from "./password-reset.service.js";
 import {
   createDrizzleTokenStore,
@@ -34,6 +43,8 @@ const settings: AppSettings = loadSettings(process.env);
     EmailVerifyService,
     SigninService,
     SignupService,
+    OAuthService,
+    MfaService,
     AuthGuard,
     AuthEventBus,
     AuditEventListener,
@@ -77,7 +88,23 @@ const settings: AppSettings = loadSettings(process.env);
       useFactory: (db: Database<Record<string, unknown>>) =>
         createDrizzleEmailVerifyTokenStore(db.db),
     },
+    {
+      provide: OAUTH_ACCOUNT_STORE,
+      inject: [DATABASE],
+      useFactory: (db: Database<Record<string, unknown>>) => createDrizzleOAuthAccountStore(db.db),
+    },
+    {
+      provide: MFA_STORE,
+      inject: [DATABASE],
+      useFactory: (db: Database<Record<string, unknown>>) => createDrizzleMfaStore(db.db),
+    },
+    PasskeyService,
+    {
+      provide: PASSKEY_STORE,
+      inject: [DATABASE],
+      useFactory: (db: Database<Record<string, unknown>>) => createDrizzlePasskeyStore(db.db),
+    },
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, OAuthController, MfaController, PasskeyController],
 })
 export class AuthModule {}

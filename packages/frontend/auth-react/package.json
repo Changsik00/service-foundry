@@ -19,7 +19,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@repo/auth-contracts": "workspace:*"
+    "@repo/auth-contracts": "workspace:*",
+    "@simplewebauthn/browser": "catalog:"
   },
   "peerDependencies": {
     "react": "^19.0.0"

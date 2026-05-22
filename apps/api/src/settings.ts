@@ -15,6 +15,15 @@ const AppSettingsSchema = BaseBackendSchema.extend({
   HTTP_CLIENT_BASE_URL: z.string().url(),
   JWT_ISSUER: z.string().min(1).default("http://localhost:3000"),
   JWT_AUDIENCE: z.string().min(1).default("http://localhost:3000"),
+  OAUTH_STATE_SECRET: z.string().min(1).default("dev-secret-change-in-production"),
+  OAUTH_REDIRECT_BASE_URL: z.string().url().default("http://localhost:3000"),
+  GOOGLE_CLIENT_ID: z.string().default(""),
+  GOOGLE_CLIENT_SECRET: z.string().default(""),
+  KAKAO_CLIENT_ID: z.string().default(""),
+  KAKAO_CLIENT_SECRET: z.string().default(""),
+  PASSKEY_RP_ID: z.string().min(1).default("localhost"),
+  PASSKEY_RP_NAME: z.string().min(1).default("service-foundry"),
+  PASSKEY_ORIGIN: z.string().url().default("http://localhost:3000"),
 });
 
 export type AppSettings = z.output<typeof AppSettingsSchema>;

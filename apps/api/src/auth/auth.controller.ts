@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   Inject,
+  Optional,
   Post,
   Req,
   Res,
@@ -26,6 +27,7 @@ import { ZodError, type z } from "zod";
 import type { UserRow } from "../infra/schema/index.js";
 import { clearRefreshTokenCookie, setRefreshTokenCookie } from "./cookie.helper.js";
 import { EmailVerifyService } from "./email-verify.service.js";
+import { MfaService } from "./mfa.service.js";
 import { PasswordResetService } from "./password-reset.service.js";
 import { SigninService } from "./signin.service.js";
 import { SignupService } from "./signup.service.js";
@@ -51,6 +53,7 @@ function getContext(req: Request): { ip: string; userAgent: string } {
 }
 
 type SignResponse = { accessToken: string; user: Pick<UserRow, "id" | "email" | "role"> };
+type SignInResponse = SignResponse | { status: "mfa_required"; mfaChallengeToken: string };
 
 @Controller("auth")
 export class AuthController {
@@ -60,6 +63,7 @@ export class AuthController {
     @Inject(SigninService) private readonly signinService: SigninService,
     @Inject(SignupService) private readonly signupService: SignupService,
     @Inject(AuthEventBus) private readonly eventBus: AuthEventBus,
+    @Optional() @Inject(MfaService) private readonly mfaService: MfaService | undefined,
   ) {}
 
   @Post("signin")
@@ -68,7 +72,7 @@ export class AuthController {
     @Body() body: unknown,
     @Res({ passthrough: true }) res: Response,
     @Req() req: Request,
-  ): Promise<SignResponse> {
+  ): Promise<SignInResponse> {
     const { email, password } = zodPipe(SignInInput).transform(body);
     const ctx = getContext(req);
     let result: Awaited<ReturnType<SigninService["signIn"]>>;
@@ -84,6 +88,12 @@ export class AuthController {
       throw err;
     }
     const { accessToken, user, refreshToken } = result;
+
+    if (this.mfaService && (await this.mfaService.isMfaEnabled(user.id))) {
+      const mfaChallengeToken = await this.mfaService.signMfaChallengeToken(user.id);
+      return { status: "mfa_required", mfaChallengeToken };
+    }
+
     setRefreshTokenCookie(res, refreshToken);
     this.eventBus.emit({
       type: "SIGNED_IN",

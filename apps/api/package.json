@@ -19,6 +19,9 @@
     "@nestjs/throttler": "catalog:",
     "@repo/auth-contracts": "workspace:*",
     "@repo/backend-auth-audit": "workspace:*",
+    "@repo/backend-auth-mfa": "workspace:*",
+    "@repo/backend-auth-oauth": "workspace:*",
+    "@repo/backend-auth-passkey": "workspace:*",
     "@repo/backend-auth-jwt": "workspace:*",
     "@repo/backend-auth-password": "workspace:*",
     "@repo/backend-auth-rate-limit": "workspace:*",
@@ -47,8 +50,10 @@
     "@types/cookie-parser": "catalog:",
     "@types/supertest": "catalog:",
     "drizzle-kit": "catalog:",
+    "otplib": "catalog:",
     "supertest": "catalog:",
     "tsx": "catalog:",
+    "undici": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

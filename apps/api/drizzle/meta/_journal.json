@@ -36,6 +36,27 @@
       "when": 1779360411346,
       "tag": "0004_warm_inertia",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1779431293532,
+      "tag": "0005_bored_gravity",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779433469823,
+      "tag": "0006_last_doctor_doom",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1779436814692,
+      "tag": "0007_cold_enchantress",
+      "breakpoints": true
     }
   ]
 }
