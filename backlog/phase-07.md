@@ -11,7 +11,7 @@
 | **시작일** | 미정 |
 | **목표 종료일** | 미정 |
 | **소유자** | dennis |
-| **Base Branch** | 미정 |
+| **Base Branch** | phase-07-auth-extension |
 
 ## 🎯 배경 및 목표
 
@@ -38,32 +38,29 @@
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
+| `spec-07-01` | auth-oauth | P? | Active | `specs/spec-07-01-auth-oauth/` |
 <!-- sdd:specs:end -->
 
-### spec-07-01 — auth-oauth-core
+### spec-07-01 — auth-oauth (Core + Providers 번들)
 
-- **요점**: OAuth Authorization Code flow + PKCE + State (cookie-bound) + Nonce (OIDC).
+- **요점**: OAuth Authorization Code flow + PKCE + State (cookie-bound) + Nonce (OIDC) + Google + Kakao provider 설정 + `/auth/oauth/:provider` + `/auth/oauth/:provider/callback` endpoint.
 - **참조**: ADR-0014 §OAuth.
-- **연관 모듈**: `packages/backend/auth-oauth`
-
-### spec-07-02 — auth-oauth-providers (Google + Kakao)
-
-- **요점**: Google + Kakao provider 설정 + `/auth/oauth/:provider` + `/auth/oauth/:provider/callback` endpoint.
 - **연관 모듈**: `packages/backend/auth-oauth` + apps/api
+- **번들 사유**: core와 providers는 분리 시 실익이 없어 단일 PR로 합산.
 
-### spec-07-03 — auth-mfa-totp
+### spec-07-02 — auth-mfa-totp
 
 - **요점**: TOTP enroll (QR code 발급) + verify + backup codes.
 - **라이브러리**: `otplib` 또는 동등.
 - **연관 모듈**: `packages/backend/auth-mfa`
 
-### spec-07-04 — auth-passkey
+### spec-07-03 — auth-passkey
 
 - **요점**: WebAuthn register + authenticate. `@simplewebauthn/server` + frontend `@simplewebauthn/browser` 통합.
 - **참조**: design note §MFA / Passkey.
 - **연관 모듈**: `packages/backend/auth-passkey` + `packages/frontend/auth-react` (passkey hook)
 
-### spec-07-05 — mfa-react-hook
+### spec-07-04 — mfa-react-hook
 
 - **요점**: `useMfaChallenge` hook — AuthResult `mfa_required` 분기 처리. TOTP code 입력 UI + Passkey 인증 UI.
 - **연관 모듈**: `packages/frontend/auth-react`
@@ -108,7 +105,7 @@
 
 ## 🏁 Phase Done 조건
 
-- [ ] 모든 SPEC(spec-07-01 ~ spec-07-05) main에 merge
+- [ ] 모든 SPEC(spec-07-01 ~ spec-07-04) main에 merge
 - [ ] 성공 기준 5개 충족
 - [ ] 통합 테스트 3개 시나리오 PASS
 - [ ] 사용자 최종 승인
