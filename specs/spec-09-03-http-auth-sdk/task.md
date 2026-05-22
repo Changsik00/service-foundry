@@ -10,39 +10,39 @@
 - [x] plan.md 작성
 - [x] task.md 작성 (이 파일)
 - [x] 백로그 업데이트 (phase-09.md SPEC 표 갱신)
-- [ ] 사용자 Plan Accept
+- [x] 사용자 Plan Accept
 
 ---
 
 ## Task 1: 브랜치 생성 + auth-http 패키지 스캐폴드 + TDD Red
 
 ### 1-1. 브랜치 생성
-- [ ] `git checkout -b spec-09-03-http-auth-sdk` (from `phase-09-login-admin`)
+- [x] `git checkout -b spec-09-03-http-auth-sdk` (from `phase-09-login-admin`)
 
 ### 1-2. auth-http 패키지 스캐폴드 + 테스트 작성 (TDD Red)
-- [ ] `packages/frontend/auth-http/` 패키지 생성 (package.json, tsconfig.json, biome.jsonc, src/index.ts 스텁)
-- [ ] `packages/frontend/auth-http/src/index.test.ts` 작성 (8 테스트 케이스)
-- [ ] `pnpm --filter @repo/frontend-auth-http test` → Fail 확인
-- [ ] Commit: `test(spec-09-03): auth-http TDD Red`
+- [x] `packages/frontend/auth-http/` 패키지 생성 (package.json, tsconfig.json, biome.jsonc, src/index.ts 스텁)
+- [x] `packages/frontend/auth-http/src/index.test.ts` 작성 (8 테스트 케이스)
+- [x] `pnpm --filter @repo/frontend-auth-http test` → Fail 확인
+- [x] Commit: `test(spec-09-03): auth-http TDD Red`
 
 ---
 
 ## Task 2: createHttpAuthSDK 구현 + web-next auth.ts 교체 (TDD Green)
 
 ### 2-1. 구현 + 교체
-- [ ] `packages/frontend/auth-http/src/index.ts` 구현
-- [ ] `apps/web-next/src/lib/auth.ts` → `createHttpAuthSDK("http://localhost:3001")`
-- [ ] `pnpm install` (workspace 연결)
-- [ ] `pnpm --filter @repo/frontend-auth-http test` → PASS
-- [ ] `pnpm -r typecheck` → PASS
-- [ ] Commit: `feat(spec-09-03): createHttpAuthSDK 구현 + web-next auth.ts 교체`
+- [x] `packages/frontend/auth-http/src/index.ts` 구현
+- [x] `apps/web-next/src/lib/auth.ts` → `createHttpAuthSDK("http://localhost:3001")`
+- [x] `pnpm install` (workspace 연결)
+- [x] `pnpm --filter @repo/frontend-auth-http test` → PASS
+- [x] `pnpm -r typecheck` → PASS
+- [x] Commit: `feat(spec-09-03): createHttpAuthSDK 구현 + web-next auth.ts 교체`
 
 ---
 
 ## Task 3: Ship
 
-- [ ] **walkthrough.md 작성**
-- [ ] **pr_description.md 작성**
+- [x] **walkthrough.md 작성**
+- [x] **pr_description.md 작성**
 - [ ] **Ship Commit**: `docs(spec-09-03): ship walkthrough and pr description`
 - [ ] **Push**: `git push -u origin spec-09-03-http-auth-sdk`
 - [ ] **PR 생성** (base: `phase-09-login-admin`)
