@@ -1,10 +1,10 @@
-import type { AuthResult, AuthSDK, SignInInput, SignUpInput, User } from "@repo/auth-contracts";
+import type { AuthResult, CoreAuthSDK, SignInInput, SignUpInput, User } from "@repo/auth-contracts";
 import { type ReactNode, useCallback, useEffect, useState } from "react";
 
 import { AuthContext } from "./context.js";
 
 interface AuthProviderProps {
-  sdk: AuthSDK;
+  sdk: CoreAuthSDK;
   children: ReactNode;
 }
 

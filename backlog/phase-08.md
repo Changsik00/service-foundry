@@ -41,7 +41,8 @@
 |---|---|:---:|---|---|
 | `spec-08-01` | auth-firebase | P? | Merged | `specs/spec-08-01-auth-firebase/` |
 | `spec-08-02` | auth-supabase | P? | Merged | `specs/spec-08-02-auth-supabase/` |
-| `spec-08-03` | auth-testing | P? | Active | `specs/spec-08-03-auth-testing/` |
+| `spec-08-03` | auth-testing | P? | Merged | `specs/spec-08-03-auth-testing/` |
+| `spec-08-04` | sdk-swap-validation | P? | Active | `specs/spec-08-04-sdk-swap-validation/` |
 <!-- sdd:specs:end -->
 
 ### spec-08-01 — auth-firebase
