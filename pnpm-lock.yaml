@@ -281,6 +281,9 @@ importers:
       '@repo/backend-auth-oauth':
         specifier: workspace:*
         version: link:../../packages/backend/auth-oauth
+      '@repo/backend-auth-passkey':
+        specifier: workspace:*
+        version: link:../../packages/backend/auth-passkey
       '@repo/backend-auth-password':
         specifier: workspace:*
         version: link:../../packages/backend/auth-password
