@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-09** — 로그인 UI + 수직 통합 슬라이스 — 0/0 spec — (다음: 첫 spec 생성 대기)
+- **phase-09** — 로그인 UI + 수직 통합 슬라이스 — 1 spec — 다음: spec-09-01-auth-adr
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
