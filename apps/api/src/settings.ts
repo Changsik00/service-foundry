@@ -21,6 +21,9 @@ const AppSettingsSchema = BaseBackendSchema.extend({
   GOOGLE_CLIENT_SECRET: z.string().default(""),
   KAKAO_CLIENT_ID: z.string().default(""),
   KAKAO_CLIENT_SECRET: z.string().default(""),
+  PASSKEY_RP_ID: z.string().min(1).default("localhost"),
+  PASSKEY_RP_NAME: z.string().min(1).default("service-foundry"),
+  PASSKEY_ORIGIN: z.string().url().default("http://localhost:3000"),
 });
 
 export type AppSettings = z.output<typeof AppSettingsSchema>;

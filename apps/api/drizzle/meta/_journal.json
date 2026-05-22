@@ -50,6 +50,13 @@
       "when": 1779433469823,
       "tag": "0006_last_doctor_doom",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1779436814692,
+      "tag": "0007_cold_enchantress",
+      "breakpoints": true
     }
   ]
 }
