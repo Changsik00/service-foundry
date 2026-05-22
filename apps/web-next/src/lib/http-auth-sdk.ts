@@ -1,4 +1,4 @@
-import type { AuthResult, CoreAuthSDK, Session, User } from "@repo/auth-contracts";
+import type { AuthResult, CoreAuthSDK, User } from "@repo/auth-contracts";
 import { AppError } from "@repo/errors";
 import { createHttpClient, type HttpClient } from "@repo/frontend-http-client";
 
