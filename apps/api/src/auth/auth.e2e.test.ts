@@ -24,7 +24,7 @@ describe("Auth E2E (real PG)", () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
-    app = moduleRef.createNestApplication();
+    app = moduleRef.createNestApplication({ logger: false });
     app.use(cookieParser());
     await app.init();
   });
@@ -42,11 +42,12 @@ describe("Auth E2E (real PG)", () => {
       expect(res.body).toEqual({ status: "ok" });
     });
 
-    it("잘못된 payload → 422/400", async () => {
+    it("잘못된 payload → 400 (validation error)", async () => {
       const res = await request(app.getHttpServer())
         .post("/auth/password/reset")
         .send({ email: "not-an-email" });
-      expect(res.status).toBeGreaterThanOrEqual(400);
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBeDefined();
     });
   });
 
@@ -59,11 +60,12 @@ describe("Auth E2E (real PG)", () => {
       expect(res.body).toEqual({ status: "ok" });
     });
 
-    it("잘못된 payload (짧은 token) → 422/400", async () => {
+    it("잘못된 payload (짧은 token) → 400 (validation error)", async () => {
       const res = await request(app.getHttpServer())
         .post("/auth/password/reset/confirm")
         .send({ token: "short", newPassword: "newPass123!" });
-      expect(res.status).toBeGreaterThanOrEqual(400);
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBeDefined();
     });
   });
 
@@ -76,11 +78,12 @@ describe("Auth E2E (real PG)", () => {
       expect(res.body).toEqual({ status: "ok" });
     });
 
-    it("잘못된 payload → 422/400", async () => {
+    it("잘못된 payload → 400 (validation error)", async () => {
       const res = await request(app.getHttpServer())
         .post("/auth/email/verify/request")
         .send({ email: "not-an-email" });
-      expect(res.status).toBeGreaterThanOrEqual(400);
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBeDefined();
     });
   });
 
@@ -93,11 +96,12 @@ describe("Auth E2E (real PG)", () => {
       expect(res.body).toEqual({ status: "ok" });
     });
 
-    it("잘못된 payload (짧은 token) → 422/400", async () => {
+    it("잘못된 payload (짧은 token) → 400 (validation error)", async () => {
       const res = await request(app.getHttpServer())
         .post("/auth/email/verify/confirm")
         .send({ token: "short" });
-      expect(res.status).toBeGreaterThanOrEqual(400);
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBeDefined();
     });
   });
 
