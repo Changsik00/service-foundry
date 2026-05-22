@@ -39,6 +39,7 @@
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
+| `spec-08-01` | auth-firebase | P? | Merged | `specs/spec-08-01-auth-firebase/` |
 <!-- sdd:specs:end -->
 
 ### spec-08-01 — auth-firebase
