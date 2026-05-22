@@ -1,6 +1,7 @@
 import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import cookieParser from "cookie-parser";
+import { authenticator } from "otplib";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -225,6 +226,93 @@ describe("Auth E2E (real PG)", () => {
         .set("Cookie", "oauth_state=correct-state; oauth_pkce=verifier");
 
       expect(res.status).toBe(401);
+    });
+  });
+
+  describe("MFA TOTP 수직 슬라이스", () => {
+    const email = `mfa-${Date.now()}@example.com`;
+    const password = "MfaTest123!";
+    let accessToken: string;
+    let totpSecret: string;
+    let mfaChallengeToken: string;
+
+    it("POST /auth/signup → 201 (MFA 미등록 상태)", async () => {
+      const res = await request(app.getHttpServer()).post("/auth/signup").send({ email, password });
+      expect(res.status).toBe(201);
+      accessToken = res.body.accessToken as string;
+    });
+
+    it("POST /auth/mfa/totp/enroll (Bearer) → 200 + totpUri", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/mfa/totp/enroll")
+        .set("Authorization", `Bearer ${accessToken}`);
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("totpUri");
+      expect(res.body.totpUri as string).toMatch(/^otpauth:\/\/totp\//);
+      const url = new URL(res.body.totpUri as string);
+      totpSecret = url.searchParams.get("secret") ?? "";
+      expect(totpSecret.length).toBeGreaterThan(0);
+    });
+
+    it("POST /auth/mfa/totp/enroll/confirm (잘못된 코드) → 401", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/mfa/totp/enroll/confirm")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({ code: "000000" });
+      expect(res.status).toBe(401);
+    });
+
+    it("POST /auth/mfa/totp/enroll/confirm (유효 코드) → 200 + backupCodes", async () => {
+      const code = authenticator.generate(totpSecret);
+      const res = await request(app.getHttpServer())
+        .post("/auth/mfa/totp/enroll/confirm")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({ code });
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body.backupCodes)).toBe(true);
+      expect((res.body.backupCodes as string[]).length).toBe(10);
+    });
+
+    it("POST /auth/signin (MFA 활성화) → 200 + mfa_required", async () => {
+      const res = await request(app.getHttpServer()).post("/auth/signin").send({ email, password });
+      expect(res.status).toBe(200);
+      expect(res.body.status).toBe("mfa_required");
+      expect(res.body).toHaveProperty("mfaChallengeToken");
+      mfaChallengeToken = res.body.mfaChallengeToken as string;
+    });
+
+    it("POST /auth/mfa/totp/verify (잘못된 코드) → 401", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/auth/mfa/totp/verify")
+        .send({ mfaChallengeToken, code: "000000" });
+      expect(res.status).toBe(401);
+    });
+
+    it("POST /auth/mfa/totp/verify (유효 코드) → 200 + accessToken + refresh cookie", async () => {
+      const code = authenticator.generate(totpSecret);
+      const res = await request(app.getHttpServer())
+        .post("/auth/mfa/totp/verify")
+        .send({ mfaChallengeToken, code });
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("accessToken");
+      accessToken = res.body.accessToken as string;
+    });
+
+    it("POST /auth/mfa/totp/disable (유효 코드) → 200", async () => {
+      const code = authenticator.generate(totpSecret);
+      const res = await request(app.getHttpServer())
+        .post("/auth/mfa/totp/disable")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({ code });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ status: "ok" });
+    });
+
+    it("POST /auth/signin (MFA 비활성화 후) → 200 + accessToken (정상 세션)", async () => {
+      const res = await request(app.getHttpServer()).post("/auth/signin").send({ email, password });
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("accessToken");
+      expect(res.body.status).toBeUndefined();
     });
   });
 });

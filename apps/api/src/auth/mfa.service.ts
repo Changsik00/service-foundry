@@ -13,6 +13,7 @@ import { createSession } from "@repo/backend-auth-session";
 import { JwtService } from "../jwt/jwt.service.js";
 import { JWT_SIGN_OPTIONS, type JwtSignOptions } from "./jwt-sign.options.js";
 import { InjectMfaStore, type MfaStore } from "./mfa.stores.js";
+import { InjectUserStore, type UserStore } from "./password-reset.stores.js";
 import { InjectSessionStore, type SessionStore } from "./session.stores.js";
 
 const MFA_CHALLENGE_AUDIENCE = "mfa_challenge";
@@ -23,25 +24,26 @@ export class MfaService {
   constructor(
     @InjectMfaStore() private readonly mfaStore: MfaStore,
     @InjectSessionStore() private readonly sessionStore: SessionStore,
+    @InjectUserStore() private readonly userStore: UserStore,
     @Inject(JwtService) private readonly jwtService: JwtService,
     @Inject(JWT_SIGN_OPTIONS) private readonly jwtOpts: JwtSignOptions,
   ) {}
 
-  async enroll(userId: string): Promise<{ totpUri: string; backupCodes: string[] }> {
+  async enroll(userId: string): Promise<{ totpUri: string }> {
     const secret = generateSecret();
-    const backupCodes = generateBackupCodes();
     await this.mfaStore.upsert(userId, secret);
     const totpUri = generateTotpUri(secret, userId, this.jwtOpts.issuer);
-    return { totpUri, backupCodes };
+    return { totpUri };
   }
 
-  async confirmEnroll(userId: string, code: string): Promise<void> {
+  async confirmEnroll(userId: string, code: string): Promise<{ backupCodes: string[] }> {
     const config = await this.mfaStore.findByUserId(userId);
     if (!config) throw new UnauthorizedException("MFA not enrolled");
     if (!verifyTotp(config.secret, code)) throw new UnauthorizedException("invalid TOTP code");
     const backupCodes = generateBackupCodes();
     const hashes = await hashBackupCodes(backupCodes);
     await this.mfaStore.updateEnabled(userId, true, hashes);
+    return { backupCodes };
   }
 
   async signMfaChallengeToken(userId: string): Promise<string> {
@@ -74,11 +76,15 @@ export class MfaService {
       await this.mfaStore.updateEnabled(userId, true, updatedHashes);
     }
 
+    const user = await this.userStore.findById(userId);
+    if (!user) throw new UnauthorizedException("user not found");
+
     const { refreshToken } = await createSession(this.sessionStore, { userId });
-    const accessToken = await signAccessToken({ sub: userId }, this.jwtService.getKeyStore(), {
-      issuer: this.jwtOpts.issuer,
-      audience: this.jwtOpts.audience,
-    });
+    const accessToken = await signAccessToken(
+      { sub: userId, role: user.role },
+      this.jwtService.getKeyStore(),
+      { issuer: this.jwtOpts.issuer, audience: this.jwtOpts.audience },
+    );
     return { accessToken, refreshToken, userId };
   }
 

@@ -354,6 +354,9 @@ importers:
       drizzle-kit:
         specifier: 'catalog:'
         version: 0.31.10
+      otplib:
+        specifier: 'catalog:'
+        version: 12.0.1
       supertest:
         specifier: 'catalog:'
         version: 7.2.2

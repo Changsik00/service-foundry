@@ -49,6 +49,7 @@
     "@types/cookie-parser": "catalog:",
     "@types/supertest": "catalog:",
     "drizzle-kit": "catalog:",
+    "otplib": "catalog:",
     "supertest": "catalog:",
     "tsx": "catalog:",
     "undici": "catalog:",
