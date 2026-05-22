@@ -1,7 +1,7 @@
 import type { User } from "@repo/auth-contracts";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { createHttpAuthSDK } from "./index";
+import { createHttpAuthSDK } from "./http-auth-sdk";
 
 const BASE_URL = "http://localhost:3001";
 
@@ -40,9 +40,7 @@ describe("createHttpAuthSDK", () => {
       const result = await sdk.signIn({ email: "test@example.com", password: "pw123456" });
 
       expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.user).toEqual(mockUser);
-      }
+      if (result.success) expect(result.user).toEqual(mockUser);
       expect(await sdk.getCurrentUser()).toEqual(mockUser);
     });
 
@@ -88,9 +86,7 @@ describe("createHttpAuthSDK", () => {
       const result = await sdk.signUp({ email: "new@example.com", password: "newpw123" });
 
       expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.user).toEqual(mockUser);
-      }
+      if (result.success) expect(result.user).toEqual(mockUser);
       expect(await sdk.getCurrentUser()).toEqual(mockUser);
     });
   });
@@ -123,9 +119,7 @@ describe("createHttpAuthSDK", () => {
       vi.stubGlobal("fetch", mockFetch(401, {}));
       const sdk = createHttpAuthSDK(BASE_URL);
 
-      const session = await sdk.refresh();
-
-      expect(session).toBeNull();
+      expect(await sdk.refresh()).toBeNull();
     });
   });
 });

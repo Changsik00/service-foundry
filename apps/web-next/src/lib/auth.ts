@@ -14,6 +14,6 @@
 //   import { createSupabaseAuthSDK } from "@repo/frontend-auth-supabase";
 //   export const authSDK = createSupabaseAuthSDK({ url: "...", anonKey: "..." });
 
-import { createHttpAuthSDK } from "@repo/frontend-auth-http";
+import { createHttpAuthSDK } from "./http-auth-sdk";
 
 export const authSDK = createHttpAuthSDK("http://localhost:3001");
