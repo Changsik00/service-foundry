@@ -25,6 +25,7 @@ catalog:
   bcryptjs: ^3.0.3
   "@simplewebauthn/server": ^13.1.1
   "@simplewebauthn/browser": ^13.1.1
+  firebase: ^11.0.0
 
   # frontend (phase-04+)
   ky: ^2.0.2
