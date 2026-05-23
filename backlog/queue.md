@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-09** — 로그인 UI + 수직 통합 슬라이스 — 2 spec — 다음: spec-09-02-login-ui
+- **phase-09** — 로그인 UI + 수직 통합 슬라이스 — 3 spec — 다음: spec-09-03-http-auth-sdk
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
