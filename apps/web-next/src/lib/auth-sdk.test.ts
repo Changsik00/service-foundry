@@ -5,10 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createAuthSDK } from "./auth-sdk";
 
-vi.mock("@repo/frontend-http-client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@repo/frontend-http-client")>();
-  return { ...actual, createHttpClient: vi.fn() };
-});
+vi.mock("@repo/frontend-http-client");
 
 const mockUser: User = {
   id: "00000000-0000-0000-0000-000000000001",

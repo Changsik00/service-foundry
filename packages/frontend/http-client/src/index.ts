@@ -79,16 +79,6 @@ function toAppError(err: unknown): AppError {
   });
 }
 
-// ── Result 유틸리티 ───────────────────────────────────────────────────────────
-// HTTP 요청 결과를 예외 대신 값으로 표현. 호출자가 try/catch 없이 분기 가능.
-export type RequestResult<T> = { ok: true; data: T } | { ok: false; err: unknown };
-
-export const tryRequest = <T>(fn: () => Promise<T>): Promise<RequestResult<T>> =>
-  fn().then(
-    (data) => ({ ok: true as const, data }),
-    (err) => ({ ok: false as const, err }),
-  );
-
 export const createHttpClient = (options: CreateHttpClientOptions): HttpClient => {
   const baseInstance: KyInstance = ky.create({
     baseUrl: options.baseUrl.replace(/\/$/, ""),

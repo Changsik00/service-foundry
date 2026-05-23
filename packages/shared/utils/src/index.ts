@@ -65,3 +65,11 @@ export const flatMap = <T, U, E, F>(
   result: Result<T, E>,
   fn: (value: T) => Result<U, F>,
 ): Result<U, E | F> => (result.ok ? fn(result.value) : result);
+
+export const fromPromise = async <T>(fn: () => Promise<T>): Promise<Result<T, unknown>> => {
+  try {
+    return ok(await fn());
+  } catch (error) {
+    return err(error);
+  }
+};
