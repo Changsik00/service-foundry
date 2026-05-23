@@ -52,7 +52,10 @@ function getContext(req: Request): { ip: string; userAgent: string } {
   };
 }
 
-type SignResponse = { accessToken: string; user: Pick<UserRow, "id" | "email" | "role"> };
+type SignResponse = {
+  accessToken: string;
+  user: Pick<UserRow, "id" | "email" | "role" | "createdAt">;
+};
 type SignInResponse = SignResponse | { status: "mfa_required"; mfaChallengeToken: string };
 
 @Controller("auth")
@@ -102,7 +105,15 @@ export class AuthController {
       ip: ctx.ip,
       userAgent: ctx.userAgent,
     });
-    return { accessToken, user: { id: user.id, email: user.email, role: user.role } };
+    return {
+      accessToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt,
+      },
+    };
   }
 
   @Post("signup")
@@ -123,7 +134,15 @@ export class AuthController {
       ip: ctx.ip,
       userAgent: ctx.userAgent,
     });
-    return { accessToken, user: { id: user.id, email: user.email, role: user.role } };
+    return {
+      accessToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt,
+      },
+    };
   }
 
   @Post("signout")
@@ -152,7 +171,15 @@ export class AuthController {
     const { accessToken, user, refreshToken } = await this.signinService.refresh(token ?? "");
     setRefreshTokenCookie(res, refreshToken);
     this.eventBus.emit({ type: "TOKEN_REFRESHED", sessionId: refreshToken });
-    return { accessToken, user: { id: user.id, email: user.email, role: user.role } };
+    return {
+      accessToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt,
+      },
+    };
   }
 
   @Get("me")

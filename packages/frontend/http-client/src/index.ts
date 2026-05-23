@@ -27,6 +27,8 @@ export interface CreateHttpClientOptions {
   retryBackoffMs?: number;
   /** default headers (모든 요청) */
   headers?: Record<string, string>;
+  /** fetch credentials 모드 — cross-origin cookie 전송 시 "include" */
+  credentials?: RequestCredentials;
 }
 
 export interface HttpRequestOptions<TOutput = unknown> {
@@ -88,6 +90,7 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
       backoffLimit: 30_000,
     },
     ...(options.headers && { headers: options.headers }),
+    ...(options.credentials && { credentials: options.credentials }),
   });
 
   const request = async <T>(opts: HttpRequestOptions<T>): Promise<T> => {
