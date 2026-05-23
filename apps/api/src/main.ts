@@ -14,7 +14,9 @@ async function bootstrap(): Promise<void> {
   app.use(cookieParser());
   const logger = app.get(PinoLoggerService);
   app.useLogger(logger);
-  applySecurity(app);
+  applySecurity(app, {
+    cors: { origin: settings.CORS_ORIGIN, credentials: true },
+  });
 
   await app.listen(settings.PORT);
 

@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-09** — 로그인 UI + 수직 통합 슬라이스 — 3 spec — 다음: spec-09-03-http-auth-sdk
+(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -73,6 +73,7 @@
 - **phase-6** — ? — completed 2026-05-22
 - **phase-07** — Auth Extension — OAuth + MFA + Passkey — completed 2026-05-22
 - **phase-8** — ? — completed 2026-05-22
+- **phase-09** — 로그인 UI + 수직 통합 슬라이스 — completed 2026-05-23
 <!-- sdd:done:end -->
 
 ---
