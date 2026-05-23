@@ -13,6 +13,7 @@ import { z } from "zod";
 const AppSettingsSchema = BaseBackendSchema.extend({
   DATABASE_URL: z.string().min(1),
   HTTP_CLIENT_BASE_URL: z.string().url(),
+  CORS_ORIGIN: z.string().url().default("http://localhost:2027"),
   JWT_ISSUER: z.string().min(1).default("http://localhost:3000"),
   JWT_AUDIENCE: z.string().min(1).default("http://localhost:3000"),
   OAUTH_STATE_SECRET: z.string().min(1).default("dev-secret-change-in-production"),
