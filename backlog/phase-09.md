@@ -28,9 +28,9 @@
 ### 성공 기준 (Success Criteria) — 정량 우선
 
 1. `/login` 페이지 — LoginForm 렌더 + signIn() 호출 → 성공 시 / 리다이렉트, 실패 시 에러 메시지
-2. `packages/frontend/auth-http` — NestJS auth API를 CoreAuthSDK로 래핑하는 패키지 존재 + 테스트 PASS
-3. web-next `src/lib/auth.ts`에서 `createHttpAuthSDK()`로 교체 → typecheck PASS + 실제 로그인 동작
-4. ADR `docs/decisions/ADR-0017-auth-provider-sdk-prop-contract.md` + `ADR-0018-auth-provider-package-location.md` 작성
+2. `apps/web-next/src/lib/auth-sdk.ts` — NestJS auth REST API를 CoreAuthSDK로 래핑하는 인라인 구현 존재 + 테스트 PASS (별도 패키지 미생성 — ADR-0018)
+3. web-next `src/lib/auth.ts`에서 `createAuthSDK()`로 교체 → typecheck PASS + 실제 로그인 동작
+4. ADR `docs/adr/ADR-0017-auth-provider-sdk-prop-contract.md` + `docs/adr/ADR-0018-auth-provider-package-location.md` 작성
 5. `pnpm -r typecheck` 39+ packages PASS
 
 ## 🧩 작업 단위 (SPECs)
@@ -43,7 +43,7 @@
 |---|---|:---:|---|---|
 | `spec-09-01` | auth-adr | P? | Merged | `specs/spec-09-01-auth-adr/` |
 | `spec-09-02` | login-ui | P? | Merged | `specs/spec-09-02-login-ui/` |
-| `spec-09-03` | http-auth-sdk | P? | Active | `specs/spec-09-03-http-auth-sdk/` |
+| `spec-09-03` | http-auth-sdk | P? | Merged | `specs/spec-09-03-http-auth-sdk/` |
 <!-- sdd:specs:end -->
 
 ### spec-09-01 — auth-adr
@@ -77,6 +77,8 @@
 |---|---|---|---|
 | 기존 phase-09 scope (API extend/worker/edge-api) | 유지 / 로그인 UI로 교체 | 로그인 UI로 교체 | 사용자가 볼 수 있는 결과물 우선. 나머지는 phase-10으로 이월. |
 | ADR 작성 위치 | walkthrough 주석 / 별도 ADR | ADR 파일 작성 | phase-08 완료 시 작성 약속. spec-09-01 docs PR로 처리. |
+| spec-09-04 (admin-scaffold) 포함 여부 | phase-09 포함 / phase-10 이월 | phase-10 이월 | spec-09-03 결정 번복(패키지→인라인) 비용 발생으로 phase 완성도 우선. admin-scaffold는 독립 기능이므로 별도 phase로 처리가 자연스러움. |
+| HTTP auth SDK 구현 위치 | `packages/frontend/auth-http` 별도 패키지 | `apps/web-next/src/lib/` 인라인 | `frontend-http-client`와 혼동 유발. NestJS 백엔드에 묶인 앱 전용 구현 — 재사용 가능성 없음. ADR-0018 기록. |
 
 ## 🧪 통합 테스트 시나리오 (간결)
 
@@ -113,7 +115,7 @@
 
 ## 🏁 Phase Done 조건
 
-- [ ] 모든 SPEC(spec-09-01 ~ spec-09-04) main에 merge
+- [ ] 모든 SPEC(spec-09-01 ~ spec-09-03) main에 merge (spec-09-04는 phase-10으로 이월)
 - [ ] 통합 테스트 3개 시나리오 PASS (시나리오 1·2는 수동 확인, 시나리오 3은 typecheck)
 - [ ] 성공 기준 5개 충족
 - [ ] 사용자 최종 승인
