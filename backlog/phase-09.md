@@ -43,7 +43,7 @@
 |---|---|:---:|---|---|
 | `spec-09-01` | auth-adr | P? | Merged | `specs/spec-09-01-auth-adr/` |
 | `spec-09-02` | login-ui | P? | Merged | `specs/spec-09-02-login-ui/` |
-| `spec-09-03` | http-auth-sdk | P? | Active | `specs/spec-09-03-http-auth-sdk/` |
+| `spec-09-03` | http-auth-sdk | P? | Merged | `specs/spec-09-03-http-auth-sdk/` |
 <!-- sdd:specs:end -->
 
 ### spec-09-01 — auth-adr
