@@ -1,4 +1,4 @@
-# spec-09-03: HTTP auth SDK (frontend-auth-http)
+# spec-09-03: HTTP auth SDK (web-next 인라인)
 
 ## 📋 메타
 
@@ -7,7 +7,7 @@
 | **Spec ID** | `spec-09-03` |
 | **Phase** | `phase-09` |
 | **Branch** | `spec-09-03-http-auth-sdk` |
-| **상태** | Planning |
+| **상태** | Merged |
 | **타입** | Feature |
 | **Integration Test Required** | no |
 | **작성일** | 2026-05-22 |
@@ -28,39 +28,46 @@ Mock SDK로는 실제 로그인 플로우 검증 불가. HTTP fetch 기반의 `C
 
 ### 해결 방안 (요약)
 
-`packages/frontend/auth-http` 신규 패키지를 만들어 `createHttpAuthSDK(baseUrl)` 함수를 제공한다. NestJS auth REST API를 fetch로 호출해 `CoreAuthSDK` 계약을 구현한다. web-next `src/lib/auth.ts`를 이 SDK로 교체한다.
+`apps/web-next/src/lib/` 에 `auth-api.ts` + `auth-sdk.ts` 를 추가하여 NestJS auth REST API를 `CoreAuthSDK` 계약으로 래핑한다. 별도 패키지 미생성 — NestJS 백엔드에 결합된 앱 전용 구현 (ADR-0018). web-next `src/lib/auth.ts`를 `createAuthSDK()`로 교체한다.
 
-## 📊 개념도
+## 📊 레이어 구조
 
-```mermaid
-flowchart LR
-    LF["LoginForm\n(useAuth)"] --> AP["AuthProvider"]
-    AP --> SDK["createHttpAuthSDK\n(packages/frontend/auth-http)"]
-    SDK -->|"POST /auth/signin\nPOST /auth/signup\nPOST /auth/signout\nPOST /auth/refresh"| API["NestJS\n(apps/api)"]
+```
+@repo/frontend-http-client   ← request/response/error (transport)
+        ↓
+auth-api.ts                  ← endpoint·HTTP메서드·payload·Zod schema (API contract)
+        ↓
+auth-sdk.ts                  ← createAuthSDK, AuthResult 매핑 (SDK)
+        ↓
+auth.ts                      ← 싱글턴 export (env var 기반 baseUrl)
 ```
 
 ## 🎯 요구사항
 
 ### Functional Requirements
 
-1. `packages/frontend/auth-http` 신규 패키지
-   - `createHttpAuthSDK(baseUrl: string): CoreAuthSDK` export
+1. `apps/web-next/src/lib/auth-api.ts` (Layer 2 — API 계약)
+   - `createAuthApi(http: HttpClient): AuthApi` — endpoint·HTTP메서드·payload·Zod schema 정의
+   - `buildAuthApi(baseUrl: string): AuthApi` — `createHttpClient` 연결
+   - Zod schema 기반 runtime response validation (`schema` 옵션 활용)
+
+2. `apps/web-next/src/lib/auth-sdk.ts` (Layer 3 — SDK)
+   - `createAuthSDK(baseUrl: string): CoreAuthSDK` export
    - 5개 메서드 구현:
      - `signIn({ email, password })` → `POST {baseUrl}/auth/signin` → `AuthResult`
      - `signUp({ email, password })` → `POST {baseUrl}/auth/signup` → `AuthResult`
      - `signOut()` → `POST {baseUrl}/auth/signout`
      - `getCurrentUser()` → in-memory 저장된 user 반환 (초기: null)
      - `refresh()` → `POST {baseUrl}/auth/refresh` → `Session | null`
-   - signIn/signUp/refresh 성공 시 user를 in-memory에 저장
-   - signOut 시 in-memory 초기화
-   - HTTP 4xx/5xx → 적절한 `AuthResult` failure 반환
+   - `fromPromise()` (@repo/utils) 활용으로 Result 패턴 적용
+   - `isCode(err, "RATE_LIMIT")` (@repo/errors) 기반 에러 판단
 
-2. `apps/web-next/src/lib/auth.ts` 교체
-   - `createMockAuthSDK()` → `createHttpAuthSDK("http://localhost:3001")`
+3. `apps/web-next/src/lib/auth.ts` 교체
+   - `createMockAuthSDK()` → `createAuthSDK(process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:2026")`
 
 ### Non-Functional Requirements
 
-1. `pnpm --filter @repo/frontend-auth-http test` PASS (단위 테스트 포함)
+1. `pnpm --filter @apps/web-next test` PASS (단위 테스트 포함)
 2. `pnpm -r typecheck` PASS (39+ packages)
 
 ## 🚫 Out of Scope
@@ -70,15 +77,16 @@ flowchart LR
 - 토큰 자동 갱신 (인터셉터)
 - GET /auth/me 네트워크 호출 (in-memory user로 충분)
 
-## 📑 ADR 후보
+## 📑 ADR
 
-- [ ] 없음
+- ADR-0018: auth-provider-package-location — 별도 패키지 미생성 결정
 
 ## ✅ Definition of Done
 
-- [ ] `pnpm --filter @repo/frontend-auth-http test` PASS
-- [ ] `pnpm -r typecheck` PASS
-- [ ] `apps/web-next/src/lib/auth.ts` → `createHttpAuthSDK` 사용
-- [ ] `walkthrough.md` 와 `pr_description.md` 작성 및 ship commit
-- [ ] `spec-09-03-http-auth-sdk` 브랜치 push 완료
-- [ ] 사용자 검토 요청 알림 완료
+- [x] `pnpm --filter @apps/web-next test` PASS (21 tests)
+- [x] `pnpm -r typecheck` PASS (39 packages)
+- [x] `apps/web-next/src/lib/auth.ts` → `createAuthSDK()` 사용 + 환경변수 baseUrl
+- [x] `auth-api.ts` Zod schema validation 적용
+- [x] `walkthrough.md` 와 `pr_description.md` 작성 및 ship commit
+- [x] `spec-09-03-http-auth-sdk` 브랜치 push 완료
+- [x] 사용자 검토 요청 알림 완료

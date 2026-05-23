@@ -78,10 +78,11 @@ describe("createAuthSDK", () => {
 
       await sdk.signIn({ email: "test@example.com", password: "pw123456" });
 
-      expect(mockPost).toHaveBeenCalledWith("auth/signin", {
-        email: "test@example.com",
-        password: "pw123456",
-      });
+      expect(mockPost).toHaveBeenCalledWith(
+        "auth/signin",
+        { email: "test@example.com", password: "pw123456" },
+        expect.objectContaining({ schema: expect.anything() }),
+      );
     });
   });
 
