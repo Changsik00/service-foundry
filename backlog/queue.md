@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
+- **phase-13** — Service Foundations II · API & Data — 1 spec — 다음: spec-13-01-pagination-contracts
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
