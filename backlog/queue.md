@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-12** — Service Foundations I · Runtime — 4 spec — 다음: (spec 없음)
+(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -88,6 +88,7 @@
 - **phase-10** — Ops & Tooling — completed 2026-05-30
 - [x] spec-x-secure-reset-token-logging (완료)
 - **phase-11** — Observability + App Generator — completed 2026-05-30
+- **phase-12** — Service Foundations I · Runtime — completed 2026-05-30
 <!-- sdd:done:end -->
 
 ---
