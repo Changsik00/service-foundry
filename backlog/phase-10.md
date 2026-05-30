@@ -80,7 +80,7 @@ phase-09까지 끝나면 apps/api + apps/web-* + apps/admin + apps/worker + apps
 | 이슈 | 선택지 | 결정 | 이유 |
 |---|---|---|---|
 | 통합 테스트 orchestration | testcontainers / docker-compose snapshot | 진입 시 결정 | per-test 격리 vs 전체 환경 trade-off |
-| 보안 linter | semgrep / socket.dev / 없음 | **No-Go (ADR-0019)** — phase-11 CI 재평가 | CI 부재로 강제력 0, 범위 폭주 방지 (spec-10-03) |
+| 보안 linter | semgrep / socket.dev / 없음 | **No-Go (ADR-0019)** — phase-15 CI 재평가 | CI 부재로 강제력 0, 범위 폭주 방지 (spec-10-03) |
 
 ## 🧪 통합 테스트 시나리오 (간결)
 
