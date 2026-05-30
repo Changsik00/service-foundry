@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-10** — Ops & Tooling — 3 spec — 다음: (spec 없음)
+(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -76,6 +76,7 @@
 - **phase-09** — 로그인 UI + 수직 통합 슬라이스 — completed 2026-05-23
 - [x] spec-x-governance-reset-package-layout (완료)
 - [x] spec-x-nestjs-adapter-standard-module (완료)
+- **phase-10** — Ops & Tooling — completed 2026-05-30
 <!-- sdd:done:end -->
 
 ---
