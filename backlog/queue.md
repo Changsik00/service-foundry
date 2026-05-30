@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-12** — Service Foundations I · Runtime — 2 spec — 다음: (spec 없음)
+- **phase-12** — Service Foundations I · Runtime — 3 spec — 다음: spec-12-03-caching
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
