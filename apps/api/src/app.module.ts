@@ -11,6 +11,7 @@ import { HealthController } from "./health/health.controller.js";
 import { appSchema } from "./infra/schema/index.js";
 import { JwtModule } from "./jwt/jwt.module.js";
 import { JwtService } from "./jwt/jwt.service.js";
+import { LifecycleModule } from "./lifecycle/lifecycle.module.js";
 import { ObservabilityModule } from "./metrics/observability.module.js";
 import { NotificationModule } from "./notification/notification.module.js";
 import { type AppSettings, loadSettings } from "./settings.js";
@@ -24,6 +25,7 @@ const settings: AppSettings = loadSettings(process.env);
     HttpClientModule.forRoot({ baseUrl: settings.HTTP_CLIENT_BASE_URL }),
     DatabaseModule.forRoot({ connectionUrl: settings.DATABASE_URL, schema: appSchema }),
     BackendThrottlerModule.forRoot(),
+    LifecycleModule,
     ObservabilityModule,
     NotificationModule,
     JwtModule,
