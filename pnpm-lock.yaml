@@ -338,6 +338,9 @@ importers:
       '@repo/backend-auth-session':
         specifier: workspace:*
         version: link:../../packages/backend/auth-session
+      '@repo/backend-notification':
+        specifier: workspace:*
+        version: link:../../packages/backend/notification
       '@repo/backend-observability':
         specifier: workspace:*
         version: link:../../packages/backend/observability
@@ -988,6 +991,30 @@ importers:
       pino-pretty:
         specifier: 'catalog:'
         version: 13.1.3
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@24.12.4)(jsdom@29.1.1(@noble/hashes@1.8.0))(vite@8.0.13(@types/node@24.12.4)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.22.1)(yaml@2.9.0))
+
+  packages/backend/notification:
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.4.15
+      '@repo/biome-config':
+        specifier: workspace:*
+        version: link:../../config/biome-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../config/typescript-config
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../../config/vitest-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.12.4
       typescript:
         specifier: 'catalog:'
         version: 6.0.3

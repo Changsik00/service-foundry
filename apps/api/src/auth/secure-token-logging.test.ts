@@ -3,12 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const SENTINEL = "SENTINEL-TOKEN-do-not-log-1234567890abcdef";
 
-// generateRefreshToken 을 sentinel 로 고정 — 로그에 이 값이 새는지 결정론적으로 검증.
+// generateRefreshToken 을 sentinel 로 고정 — 토큰이 어디로 가는지 결정론적으로 검증.
 vi.mock("@repo/backend-auth-session", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@repo/backend-auth-session")>();
   return { ...actual, generateRefreshToken: () => SENTINEL };
 });
 
+import { NOTIFIER } from "../notification/notifier.provider.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import { EMAIL_VERIFY_TOKEN_STORE } from "./email-verify.stores.js";
 import { PasswordResetService } from "./password-reset.service.js";
@@ -28,9 +29,16 @@ const userStore = {
   updateEmailVerified: vi.fn(),
 };
 const tokenStore = { insert: vi.fn(), findByHash: vi.fn(), markUsed: vi.fn() };
+const notifier = { sendEmail: vi.fn() };
 
 const loggedText = (spy: ReturnType<typeof vi.spyOn>): string =>
   spy.mock.calls.flat().map(String).join(" ");
+
+const sentText = (): string =>
+  notifier.sendEmail.mock.calls
+    .flat()
+    .map((m) => JSON.stringify(m))
+    .join(" ");
 
 async function runReset(): Promise<void> {
   const m = await Test.createTestingModule({
@@ -38,6 +46,7 @@ async function runReset(): Promise<void> {
       PasswordResetService,
       { provide: USER_STORE, useValue: userStore },
       { provide: PASSWORD_RESET_TOKEN_STORE, useValue: tokenStore },
+      { provide: NOTIFIER, useValue: notifier },
     ],
   }).compile();
   await m.get(PasswordResetService).request("alice@example.com");
@@ -49,12 +58,13 @@ async function runVerify(): Promise<void> {
       EmailVerifyService,
       { provide: USER_STORE, useValue: userStore },
       { provide: EMAIL_VERIFY_TOKEN_STORE, useValue: tokenStore },
+      { provide: NOTIFIER, useValue: notifier },
     ],
   }).compile();
   await m.get(EmailVerifyService).request("alice@example.com");
 }
 
-describe("reset/verify 토큰 로깅 보안", () => {
+describe("reset/verify 토큰 — notification 포트 위임 (직접 로깅 금지)", () => {
   let infoSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
@@ -64,26 +74,19 @@ describe("reset/verify 토큰 로깅 보안", () => {
     infoSpy = vi.spyOn(console, "info").mockImplementation(() => undefined);
   });
 
-  afterEach(() => {
-    infoSpy.mockRestore();
-    vi.unstubAllEnvs();
-  });
+  afterEach(() => infoSpy.mockRestore());
 
-  it("non-dev(production): password-reset 가 raw 토큰을 로깅하지 않는다", async () => {
-    vi.stubEnv("NODE_ENV", "production");
+  it("password-reset: 토큰을 console 에 직접 찍지 않고 notifier 로 전달", async () => {
     await runReset();
     expect(loggedText(infoSpy)).not.toContain(SENTINEL);
+    expect(notifier.sendEmail).toHaveBeenCalledOnce();
+    expect(sentText()).toContain(SENTINEL);
   });
 
-  it("non-dev(production): email-verify 가 raw 토큰을 로깅하지 않는다", async () => {
-    vi.stubEnv("NODE_ENV", "production");
+  it("email-verify: 토큰을 console 에 직접 찍지 않고 notifier 로 전달", async () => {
     await runVerify();
     expect(loggedText(infoSpy)).not.toContain(SENTINEL);
-  });
-
-  it("dev: 로컬 편의를 위해 토큰 로깅을 유지한다", async () => {
-    vi.stubEnv("NODE_ENV", "development");
-    await runReset();
-    expect(loggedText(infoSpy)).toContain(SENTINEL);
+    expect(notifier.sendEmail).toHaveBeenCalledOnce();
+    expect(sentText()).toContain(SENTINEL);
   });
 });

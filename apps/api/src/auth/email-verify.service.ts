@@ -1,6 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { generateRefreshToken, hashToken } from "@repo/backend-auth-session";
+import type { Notifier } from "@repo/backend-notification";
 
+import { NOTIFIER } from "../notification/notifier.provider.js";
 import { type EmailVerifyTokenStore, InjectEmailVerifyTokenStore } from "./email-verify.stores.js";
 import { InjectUserStore, type UserStore } from "./password-reset.stores.js";
 
@@ -11,6 +13,7 @@ export class EmailVerifyService {
   constructor(
     @InjectUserStore() private readonly userStore: UserStore,
     @InjectEmailVerifyTokenStore() private readonly tokenStore: EmailVerifyTokenStore,
+    @Inject(NOTIFIER) private readonly notifier: Notifier,
   ) {}
 
   async request(email: string): Promise<void> {
@@ -24,13 +27,12 @@ export class EmailVerifyService {
 
     await this.tokenStore.insert({ userId: user.id, tokenHash, expiresAt });
 
-    // dev 편의용 토큰 로깅 — dev 외 환경에서는 raw 토큰을 절대 출력하지 않는다.
-    // 근본 해소(이메일 전송 어댑터)는 phase-13 notification 포트.
-    if (process.env.NODE_ENV === "development") {
-      console.info(`[email-verify] (dev) token=${token} userId=${user.id}`);
-    } else {
-      console.info(`[email-verify] requested userId=${user.id}`);
-    }
+    // 전송은 notification 포트로 위임 — dev 어댑터는 로그(가시성), 비-dev noop(토큰 미로깅).
+    await this.notifier.sendEmail({
+      to: email,
+      subject: "이메일 인증",
+      body: `이메일 인증 토큰: ${token}`,
+    });
   }
 
   async confirm(token: string): Promise<void> {

@@ -1,7 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { hashPassword } from "@repo/backend-auth-password";
 import { generateRefreshToken, hashToken } from "@repo/backend-auth-session";
+import type { Notifier } from "@repo/backend-notification";
 
+import { NOTIFIER } from "../notification/notifier.provider.js";
 import {
   InjectTokenStore,
   InjectUserStore,
@@ -16,6 +18,7 @@ export class PasswordResetService {
   constructor(
     @InjectUserStore() private readonly userStore: UserStore,
     @InjectTokenStore() private readonly tokenStore: PasswordResetTokenStore,
+    @Inject(NOTIFIER) private readonly notifier: Notifier,
   ) {}
 
   async request(email: string): Promise<void> {
@@ -28,13 +31,12 @@ export class PasswordResetService {
 
     await this.tokenStore.insert({ userId: user.id, tokenHash, expiresAt });
 
-    // dev 편의용 토큰 로깅 — dev 외 환경에서는 raw 토큰을 절대 출력하지 않는다.
-    // 근본 해소(이메일 전송 어댑터)는 phase-13 notification 포트.
-    if (process.env.NODE_ENV === "development") {
-      console.info(`[password-reset] (dev) token=${token} userId=${user.id}`);
-    } else {
-      console.info(`[password-reset] requested userId=${user.id}`);
-    }
+    // 전송은 notification 포트로 위임 — dev 어댑터는 로그(가시성), 비-dev noop(토큰 미로깅).
+    await this.notifier.sendEmail({
+      to: email,
+      subject: "비밀번호 재설정",
+      body: `비밀번호 재설정 토큰: ${token}`,
+    });
   }
 
   async confirm(token: string, newPassword: string): Promise<void> {

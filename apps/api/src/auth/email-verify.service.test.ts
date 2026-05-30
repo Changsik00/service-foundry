@@ -1,5 +1,6 @@
 import { Test } from "@nestjs/testing";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NOTIFIER } from "../notification/notifier.provider.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import { EMAIL_VERIFY_TOKEN_STORE } from "./email-verify.stores.js";
 import { USER_STORE } from "./password-reset.stores.js";
@@ -28,6 +29,7 @@ describe("EmailVerifyService.request", () => {
         EmailVerifyService,
         { provide: USER_STORE, useValue: userStore },
         { provide: EMAIL_VERIFY_TOKEN_STORE, useValue: tokenStore },
+        { provide: NOTIFIER, useValue: { sendEmail: vi.fn() } },
       ],
     }).compile();
     service = module.get(EmailVerifyService);
