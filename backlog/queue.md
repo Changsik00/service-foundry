@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-12** — Service Foundations I · Runtime — 2 spec — 다음: spec-12-02-queue-worker
+- **phase-12** — Service Foundations I · Runtime — 2 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
