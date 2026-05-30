@@ -8,14 +8,12 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
+- **phase-10** — Ops & Tooling — 1 spec — 다음: spec-10-01-tooling-docker
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
-- [ ] spec-x-governance-reset-package-layout — governance-reset-package-layout
-- [ ] spec-x-nestjs-adapter-standard-module — nestjs-adapter-standard-module
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -30,6 +28,7 @@
 - [ ] Hono apps/edge-api scope: 같은 `/api` 모방 / 다른 엔드포인트 / Cloudflare Workers 전용 데모 (phase-09)
 - [ ] commit-time hook 명령 set (Biome only / + typecheck / + affected test) (phase-03~10 중 결정)
 - [ ] 보안 linter (semgrep / socket.dev) 추가 여부 — ADR 후보 (phase-10 이전)
+- [ ] check-secrets 훅 false positive 개선 — compose/env 의 `${VAR:-default}` 보간값을 시크릿으로 오탐 (spec-10-01 에서 2회 warn 우회). `${...}`-only 값 무시 또는 allowlist. spec-x 후보
 - [ ] lat.md Phase 2 도입 평가 (지식 그래프 도구)
 - [ ] ARCHITECTURE.md 본체 재작성 (Phase 3 직전, ADR-0005 결정 후)
 
@@ -74,6 +73,8 @@
 - **phase-07** — Auth Extension — OAuth + MFA + Passkey — completed 2026-05-22
 - **phase-8** — ? — completed 2026-05-22
 - **phase-09** — 로그인 UI + 수직 통합 슬라이스 — completed 2026-05-23
+- [x] spec-x-governance-reset-package-layout (완료)
+- [x] spec-x-nestjs-adapter-standard-module (완료)
 <!-- sdd:done:end -->
 
 ---
