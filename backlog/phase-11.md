@@ -40,6 +40,7 @@ apps/api 가 trace(OTEL→tempo) + metric(prometheus) 을 실제 방출하고, g
 | `spec-11-01` | app-generator | P? | Merged | `specs/spec-11-01-app-generator/` |
 | `spec-11-02` | otel-tracing | P? | Merged | `specs/spec-11-02-otel-tracing/` |
 | `spec-11-03` | metrics-endpoint | P? | Merged | `specs/spec-11-03-metrics-endpoint/` |
+| `spec-11-04` | grafana-dashboards-alerts | P? | Merged | `specs/spec-11-04-grafana-dashboards-alerts/` |
 <!-- sdd:specs:end -->
 
 ### spec-11-01 — app-generator
