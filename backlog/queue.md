@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-10** — Ops & Tooling — 2 spec — 다음: (spec 없음)
+- **phase-10** — Ops & Tooling — 3 spec — 다음: spec-10-03-tooling-scripts
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -27,7 +27,7 @@
 - [ ] Integration test orchestration: testcontainers (per-test 격리) vs docker-compose snapshot (전체 환경 미리 부팅) (phase-10)
 - [ ] Hono apps/edge-api scope: 같은 `/api` 모방 / 다른 엔드포인트 / Cloudflare Workers 전용 데모 (phase-09)
 - [ ] commit-time hook 명령 set (Biome only / + typecheck / + affected test) (phase-03~10 중 결정)
-- [ ] 보안 linter (semgrep / socket.dev) 추가 여부 — ADR 후보 (phase-10 이전)
+- ~~보안 linter (semgrep / socket.dev) 추가 여부~~ **해소**: ADR-0019 No-Go (phase-11 CI 재평가) — spec-10-03 (2026-05-30)
 - [ ] check-secrets 훅 false positive 개선 — compose/env 의 `${VAR:-default}` 보간값을 시크릿으로 오탐 (spec-10-01 에서 2회 warn 우회). `${...}`-only 값 무시 또는 allowlist. spec-x 후보
 - [ ] lat.md Phase 2 도입 평가 (지식 그래프 도구)
 - [ ] ARCHITECTURE.md 본체 재작성 (Phase 3 직전, ADR-0005 결정 후)

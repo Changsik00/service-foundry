@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
+import { maskConfig } from "@repo/backend-settings";
 import { PinoLoggerService } from "@repo/nestjs-logger";
 import { applySecurity } from "@repo/nestjs-security";
 import cookieParser from "cookie-parser";
@@ -14,6 +15,10 @@ async function bootstrap(): Promise<void> {
   app.use(cookieParser());
   const logger = app.get(PinoLoggerService);
   app.useLogger(logger);
+
+  // startup report — 로드된 config 를 시크릿 마스킹하여 1회 출력 (spec-10-03)
+  logger.log(`startup config: ${JSON.stringify(maskConfig(settings))}`, "Bootstrap");
+
   applySecurity(app, {
     cors: { origin: settings.CORS_ORIGIN, credentials: true },
   });
