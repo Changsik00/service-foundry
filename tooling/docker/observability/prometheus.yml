@@ -1,13 +1,23 @@
-# Prometheus 최소 stub 설정 (spec-10-01)
+# Prometheus 설정.
 #
-# 기동·healthy 검증 목적의 self-scrape 만 포함한다.
-# 실제 scrape target (apps/api metric endpoint 등) 추가는 spec-10-06.
+# self-scrape + apps/api (호스트 실행) /metrics scrape.
+# grafana 대시보드/alert rule 은 spec-11-04.
 
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
+rule_files:
+  - /etc/prometheus/prometheus-rules.yml
+
 scrape_configs:
   - job_name: prometheus
     static_configs:
       - targets: ["localhost:9090"]
+
+  # apps/api 는 호스트에서 실행 → host.docker.internal 로 접근 (macOS/Windows).
+  # Linux 에서는 compose 의 extra_hosts(host-gateway) 또는 host 네트워크 필요.
+  - job_name: apps-api
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["host.docker.internal:2026"]

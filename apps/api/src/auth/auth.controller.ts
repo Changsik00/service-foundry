@@ -20,11 +20,13 @@ import {
   SignUpInput,
 } from "@repo/auth-contracts";
 import { AuthEventBus } from "@repo/backend-auth-audit";
+import type { AuthMetrics } from "@repo/backend-observability";
 import { type AuthenticatedUser, AuthGuard, CurrentUser } from "@repo/nestjs-auth";
 import type { Request, Response } from "express";
 import { ZodError, type z } from "zod";
 
 import type { UserRow } from "../infra/schema/index.js";
+import { AUTH_METRICS } from "../metrics/auth-metrics.provider.js";
 import { clearRefreshTokenCookie, setRefreshTokenCookie } from "./cookie.helper.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import { MfaService } from "./mfa.service.js";
@@ -66,6 +68,7 @@ export class AuthController {
     @Inject(SigninService) private readonly signinService: SigninService,
     @Inject(SignupService) private readonly signupService: SignupService,
     @Inject(AuthEventBus) private readonly eventBus: AuthEventBus,
+    @Inject(AUTH_METRICS) private readonly metrics: AuthMetrics,
     @Optional() @Inject(MfaService) private readonly mfaService: MfaService | undefined,
   ) {}
 
@@ -78,10 +81,12 @@ export class AuthController {
   ): Promise<SignInResponse> {
     const { email, password } = zodPipe(SignInInput).transform(body);
     const ctx = getContext(req);
+    this.metrics.recordLoginAttempt();
     let result: Awaited<ReturnType<SigninService["signIn"]>>;
     try {
       result = await this.signinService.signIn(email, password);
     } catch (err) {
+      this.metrics.recordLoginFailure();
       this.eventBus.emit({
         type: "LOGIN_FAILED",
         email,
@@ -90,6 +95,7 @@ export class AuthController {
       });
       throw err;
     }
+    this.metrics.recordLoginSuccess();
     const { accessToken, user, refreshToken } = result;
 
     if (this.mfaService && (await this.mfaService.isMfaEnabled(user.id))) {
