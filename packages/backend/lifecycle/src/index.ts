@@ -20,7 +20,47 @@ export interface CreateLifecycleOptions {
   ready?: boolean;
 }
 
-// TDD 스텁 — 구현은 Green 단계.
-export function createLifecycle(_opts?: CreateLifecycleOptions): Lifecycle {
-  throw new Error("not implemented");
+export function createLifecycle(opts: CreateLifecycleOptions = {}): Lifecycle {
+  let ready = opts.ready ?? true;
+  const hooks: Array<() => Promise<void>> = [];
+  let shuttingDown: Promise<void> | null = null;
+
+  const runHooks = async (): Promise<void> => {
+    for (const hook of hooks) {
+      try {
+        await hook();
+      } catch {
+        // 정리 훅 실패는 종료를 막지 않는다 (best-effort drain).
+      }
+    }
+  };
+
+  return {
+    isReady: () => ready,
+    setReady: (value: boolean) => {
+      ready = value;
+    },
+    onShutdown: (hook: () => Promise<void>) => {
+      hooks.push(hook);
+    },
+    shutdown: (options: ShutdownOptions = {}): Promise<void> => {
+      if (shuttingDown) return shuttingDown;
+      ready = false; // 정리보다 먼저 트래픽 차단
+      shuttingDown = (async () => {
+        const drain = runHooks();
+        const timeoutMs = options.timeoutMs;
+        if (!timeoutMs || timeoutMs <= 0) {
+          await drain;
+          return;
+        }
+        let timer: NodeJS.Timeout | undefined;
+        const timeout = new Promise<void>((resolve) => {
+          timer = setTimeout(resolve, timeoutMs);
+        });
+        await Promise.race([drain, timeout]);
+        if (timer) clearTimeout(timer);
+      })();
+      return shuttingDown;
+    },
+  };
 }
