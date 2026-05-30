@@ -29,10 +29,15 @@ export const cursorPaginatedResponse = <T>(itemSchema: ZodType<T>) =>
   });
 
 // === opaque cursor 코덱 (spec-13-01) === //
-// TDD 스텁 — 구현은 Green 단계.
-export function encodeCursor(_value: unknown): string {
-  throw new Error("not implemented");
+// base64(URI-encoded JSON) — 브라우저/Node 공통 btoa/atob, 유니코드 안전.
+export function encodeCursor(value: unknown): string {
+  return btoa(encodeURIComponent(JSON.stringify(value)));
 }
-export function decodeCursor<T>(_cursor: string): T | null {
-  throw new Error("not implemented");
+
+export function decodeCursor<T>(cursor: string): T | null {
+  try {
+    return JSON.parse(decodeURIComponent(atob(cursor))) as T;
+  } catch {
+    return null;
+  }
 }
