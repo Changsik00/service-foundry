@@ -28,7 +28,13 @@ export class PasswordResetService {
 
     await this.tokenStore.insert({ userId: user.id, tokenHash, expiresAt });
 
-    console.info(`[password-reset] token=${token} userId=${user.id}`);
+    // dev 편의용 토큰 로깅 — dev 외 환경에서는 raw 토큰을 절대 출력하지 않는다.
+    // 근본 해소(이메일 전송 어댑터)는 phase-13 notification 포트.
+    if (process.env.NODE_ENV === "development") {
+      console.info(`[password-reset] (dev) token=${token} userId=${user.id}`);
+    } else {
+      console.info(`[password-reset] requested userId=${user.id}`);
+    }
   }
 
   async confirm(token: string, newPassword: string): Promise<void> {
