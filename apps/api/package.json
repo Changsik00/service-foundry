@@ -26,6 +26,8 @@
     "@repo/backend-auth-password": "workspace:*",
     "@repo/backend-auth-rate-limit": "workspace:*",
     "@repo/backend-auth-session": "workspace:*",
+    "@repo/backend-lifecycle": "workspace:*",
+    "@repo/backend-notification": "workspace:*",
     "@repo/backend-observability": "workspace:*",
     "@repo/backend-settings": "workspace:*",
     "@repo/nestjs-auth": "workspace:*",
