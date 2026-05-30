@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-11** — Observability + App Generator — 1 spec — 다음: spec-11-01-app-generator
+- **phase-11** — Observability + App Generator — 1 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기

@@ -37,7 +37,7 @@ apps/api 가 trace(OTEL→tempo) + metric(prometheus) 을 실제 방출하고, g
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
-| `spec-11-01` | app-generator | P? | Active | `specs/spec-11-01-app-generator/` |
+| `spec-11-01` | app-generator | P? | Merged | `specs/spec-11-01-app-generator/` |
 <!-- sdd:specs:end -->
 
 ### spec-11-01 — app-generator
