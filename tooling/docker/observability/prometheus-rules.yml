@@ -1,0 +1,16 @@
+# Prometheus alert rules (spec-11-04).
+# alertmanager 없이 prometheus 가 평가 — firing 상태는 /api/v1/rules · /api/v1/alerts 로 확인.
+
+groups:
+  - name: auth-alerts
+    rules:
+      # brute force: 로그인 실패율(초당) 급증. 임계 0.2/s (~12/min) — 데모 기본값.
+      - alert: AuthBruteForce
+        expr: rate(auth_login_failure_total[1m]) > 0.2
+        for: 1m
+        labels:
+          severity: warning
+          area: auth
+        annotations:
+          summary: "로그인 실패율 급증 (brute force 의심)"
+          description: "auth_login_failure_total rate = {{ $value }}/s (임계 0.2 초과)"
