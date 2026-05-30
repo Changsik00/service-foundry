@@ -22,6 +22,7 @@
     "clean": "turbo run clean && rm -rf node_modules .turbo",
     "new": "turbo gen",
     "tooling:manifest": "tsx tooling/scripts/manifest/run.ts",
+    "tooling:config-graph": "tsx tooling/scripts/config-graph/run.ts",
     "infra:up": "docker compose -f tooling/docker/compose.yaml up -d",
     "infra:down": "docker compose -f tooling/docker/compose.yaml down",
     "infra:logs": "docker compose -f tooling/docker/compose.yaml logs -f",
