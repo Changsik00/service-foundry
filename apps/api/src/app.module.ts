@@ -11,6 +11,7 @@ import { HealthController } from "./health/health.controller.js";
 import { appSchema } from "./infra/schema/index.js";
 import { JwtModule } from "./jwt/jwt.module.js";
 import { JwtService } from "./jwt/jwt.service.js";
+import { ObservabilityModule } from "./metrics/observability.module.js";
 import { type AppSettings, loadSettings } from "./settings.js";
 
 const settings: AppSettings = loadSettings(process.env);
@@ -22,6 +23,7 @@ const settings: AppSettings = loadSettings(process.env);
     HttpClientModule.forRoot({ baseUrl: settings.HTTP_CLIENT_BASE_URL }),
     DatabaseModule.forRoot({ connectionUrl: settings.DATABASE_URL, schema: appSchema }),
     BackendThrottlerModule.forRoot(),
+    ObservabilityModule,
     JwtModule,
     NestjsAuthModule.forRootAsync({
       imports: [JwtModule],
