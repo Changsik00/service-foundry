@@ -1,0 +1,5 @@
+name: web-next
+port: 2027
+expose: true
+depends:
+  - api

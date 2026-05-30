@@ -83,6 +83,7 @@ catalog:
   dependency-cruiser: ^17.4.0
   turbo: ^2.9.14
   "@turbo/gen": ^2.9.14
+  yaml: ^2.6.1
   lefthook: ^2.1.6
   "@changesets/cli": ^2.31.0
   jsdom: ^29.1.1

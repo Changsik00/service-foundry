@@ -21,6 +21,7 @@
     "build": "turbo run build",
     "clean": "turbo run clean && rm -rf node_modules .turbo",
     "new": "turbo gen",
+    "tooling:manifest": "tsx tooling/scripts/manifest/run.ts",
     "infra:up": "docker compose -f tooling/docker/compose.yaml up -d",
     "infra:down": "docker compose -f tooling/docker/compose.yaml down",
     "infra:logs": "docker compose -f tooling/docker/compose.yaml logs -f",
@@ -46,6 +47,7 @@
     "turbo": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",
+    "yaml": "catalog:",
     "zod": "catalog:"
   }
 }
