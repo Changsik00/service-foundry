@@ -338,6 +338,9 @@ importers:
       '@repo/backend-auth-session':
         specifier: workspace:*
         version: link:../../packages/backend/auth-session
+      '@repo/backend-notification':
+        specifier: workspace:*
+        version: link:../../packages/backend/notification
       '@repo/backend-observability':
         specifier: workspace:*
         version: link:../../packages/backend/observability
