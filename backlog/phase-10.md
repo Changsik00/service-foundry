@@ -39,7 +39,7 @@ phase-09까지 끝나면 apps/api + apps/web-* + apps/admin + apps/worker + apps
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
 | `spec-10-01` | tooling-docker | P? | Merged | `specs/spec-10-01-tooling-docker/` |
-| `spec-10-02` | tooling-generators | P? | Active | `specs/spec-10-02-tooling-generators/` |
+| `spec-10-02` | tooling-generators | P? | Merged | `specs/spec-10-02-tooling-generators/` |
 <!-- sdd:specs:end -->
 
 ### spec-10-01 — tooling-docker

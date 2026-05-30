@@ -65,9 +65,9 @@
 - [x] **walkthrough.md 작성**
 - [x] **pr_description.md 작성**
 - [x] **Ship Commit**: `docs(spec-10-02): ship walkthrough and pr description`
-- [ ] **Push**: `git push -u origin spec-10-02-tooling-generators`
-- [ ] **PR 생성**: base = `phase-10-ops-tooling`
-- [ ] **사용자 알림**: PR URL 보고
+- [x] **Push**: `git push -u origin spec-10-02-tooling-generators`
+- [x] **PR 생성**: PR #64 (base = `phase-10-ops-tooling`)
+- [x] **사용자 알림**: PR URL 보고
 
 ---
 
