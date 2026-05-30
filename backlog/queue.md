@@ -85,6 +85,7 @@
 - [x] spec-x-governance-reset-package-layout (완료)
 - [x] spec-x-nestjs-adapter-standard-module (완료)
 - **phase-10** — Ops & Tooling — completed 2026-05-30
+- [x] spec-x-secure-reset-token-logging (완료)
 <!-- sdd:done:end -->
 
 ---
