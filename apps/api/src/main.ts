@@ -1,3 +1,4 @@
+import "./tracing.js"; // OTEL 자동계측 — 다른 import 보다 먼저 (env-gated, opt-in)
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
 import { maskConfig } from "@repo/backend-settings";
