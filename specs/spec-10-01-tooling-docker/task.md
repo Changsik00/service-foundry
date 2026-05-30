@@ -68,9 +68,9 @@
 - [x] **walkthrough.md 작성** (증거 로그: smoke-test 출력, `compose ps` running)
 - [x] **pr_description.md 작성** (템플릿 준수)
 - [x] **Ship Commit**: `docs(spec-10-01): ship walkthrough and pr description`
-- [ ] **Push**: `git push -u origin spec-10-01-tooling-docker`
-- [ ] **PR 생성**: `/hk-pr-gh` (base = `phase-10-ops-tooling`)
-- [ ] **사용자 알림**: 푸시 완료 + PR URL 보고
+- [x] **Push**: `git push -u origin spec-10-01-tooling-docker` (base 브랜치 phase-10-ops-tooling 도 생성·push)
+- [x] **PR 생성**: PR #63 (base = `phase-10-ops-tooling`)
+- [x] **사용자 알림**: PR URL 보고
 
 ---
 
