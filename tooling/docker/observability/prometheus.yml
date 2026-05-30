@@ -1,0 +1,13 @@
+# Prometheus 최소 stub 설정 (spec-10-01)
+#
+# 기동·healthy 검증 목적의 self-scrape 만 포함한다.
+# 실제 scrape target (apps/api metric endpoint 등) 추가는 spec-10-06.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

@@ -1,0 +1,22 @@
+# Tempo 최소 stub 설정 (spec-10-01)
+#
+# 단일노드, local 스토리지. 기동·/ready healthy 검증 목적.
+# 실제 trace 수집 파이프라인 연동은 spec-10-06.
+
+server:
+  http_listen_port: 3200
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        http:
+        grpc:
+
+storage:
+  trace:
+    backend: local
+    local:
+      path: /var/tempo/blocks
+    wal:
+      path: /var/tempo/wal
