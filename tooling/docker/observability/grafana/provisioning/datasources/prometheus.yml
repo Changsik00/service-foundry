@@ -1,0 +1,11 @@
+# Grafana datasource provisioning — prometheus 자동 등록.
+# grafana 는 compose 네트워크에서 service 명으로 prometheus 에 접근.
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false
