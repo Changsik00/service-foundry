@@ -20,6 +20,12 @@
     "test": "turbo run test",
     "build": "turbo run build",
     "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "new": "turbo gen",
+    "tooling:manifest": "tsx tooling/scripts/manifest/run.ts",
+    "tooling:config-graph": "tsx tooling/scripts/config-graph/run.ts",
+    "infra:up": "docker compose -f tooling/docker/compose.yaml up -d",
+    "infra:down": "docker compose -f tooling/docker/compose.yaml down",
+    "infra:logs": "docker compose -f tooling/docker/compose.yaml logs -f",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "changeset publish",
@@ -32,6 +38,7 @@
     "@repo/depcruise-config": "workspace:*",
     "@repo/knip-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@turbo/gen": "catalog:",
     "@types/node": "catalog:",
     "dependency-cruiser": "catalog:",
     "knip": "catalog:",
@@ -40,6 +47,8 @@
     "tsx": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "yaml": "catalog:",
+    "zod": "catalog:"
   }
 }

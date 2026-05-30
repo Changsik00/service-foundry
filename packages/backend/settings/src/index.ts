@@ -33,3 +33,11 @@ export const BaseBackendSchema = z.object({
 
 export type BaseBackendInput = z.input<typeof BaseBackendSchema>;
 export type BaseBackendOutput = z.output<typeof BaseBackendSchema>;
+
+export {
+  DEFAULT_REDACT_KEYS,
+  DEFAULT_REDACT_SUBSTRINGS,
+  MASK,
+  type MaskOptions,
+  maskConfig,
+} from "./mask.js";

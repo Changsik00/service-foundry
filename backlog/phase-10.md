@@ -10,9 +10,9 @@
 | **Phase ID** | `phase-10` |
 | **상태** | Backlog |
 | **시작일** | 미정 |
-| **목표 종료일** | 미정 |
+| **목표 종료일** | 2026-05-30 |
 | **소유자** | dennis |
-| **Base Branch** | 미정 |
+| **Base Branch** | phase-10-ops-tooling |
 
 ## 🎯 배경 및 목표
 
@@ -38,6 +38,9 @@ phase-09까지 끝나면 apps/api + apps/web-* + apps/admin + apps/worker + apps
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
+| `spec-10-01` | tooling-docker | P? | Merged | `specs/spec-10-01-tooling-docker/` |
+| `spec-10-02` | tooling-generators | P? | Merged | `specs/spec-10-02-tooling-generators/` |
+| `spec-10-03` | tooling-scripts | P? | Merged | `specs/spec-10-03-tooling-scripts/` |
 <!-- sdd:specs:end -->
 
 ### spec-10-01 — tooling-docker
@@ -50,22 +53,21 @@ phase-09까지 끝나면 apps/api + apps/web-* + apps/admin + apps/worker + apps
 - **요점**: plop 기반 `pnpm new package` / `pnpm new app`. ADR-0003 layout 자동 적용.
 - **연관 모듈**: `tooling/generators/`
 
-### spec-10-03 — tooling-script-service-manifest
+### spec-10-03 — tooling-scripts (번들: 구 10-03/04/05 + 10-07 결정)
 
-- **요점**: 각 app의 `service.yaml` (port / expose / depends) + manifest validator.
-- **연관 모듈**: `tooling/scripts/manifest/`
+> **2026-05-30 재조정 (§11.4 bundle)**: 소형 `tooling/scripts` 유틸 3종 + 보안 linter 결정을 한 spec 으로 묶음 (ceremony 3→1 절감, phase 응집도 유지).
 
-### spec-10-04 — tooling-script-startup-report
+- **요점**:
+  - **service-manifest**: 각 app의 `service.yaml` (port / expose / depends) + validator (`tooling/scripts/manifest/`)
+  - **startup-report**: apps/api 부트 시 masked config dump (`tooling/scripts/startup-report/` + backend/settings)
+  - **config-graph**: backend/settings config schema → dot/mermaid export (`tooling/scripts/config-graph/`)
+  - **security-linter 결정**: semgrep / socket.dev 평가 + Go/No-Go (구 spec-10-07; 결정 노트, Go 시 경량 도입)
+- **연관 모듈**: `tooling/scripts/*`
+- **흡수**: 구 spec-10-04 (startup-report), spec-10-05 (config-graph), spec-10-07 (security-linter) → 본 번들로 통합
 
-- **요점**: apps/api 부트 시 masked config dump.
-- **연관 모듈**: `tooling/scripts/startup-report/` + backend/settings
+### spec-10-06 — auth-observability-dashboards (⏭ 후속 phase 이월)
 
-### spec-10-05 — tooling-script-typed-config-graph
-
-- **요점**: backend/settings의 config schema 트리 → dot/mermaid export.
-- **연관 모듈**: `tooling/scripts/config-graph/`
-
-### spec-10-06 — auth-observability-dashboards
+> **2026-05-30 이월**: 규모가 크고(메트릭+대시보드+alert 3중) app metric endpoint·geo 의존이라, phase-10 은 tooling 3종(10-01~03)으로 종료하고 본 spec + `pnpm new app` 을 **후속 phase 로 이월** (queue.md 대기 Phase 참조).
 
 - **요점**: Prometheus metric collection + Grafana panel + alert rule.
 - **참조**: design note §Observability.
@@ -73,17 +75,12 @@ phase-09까지 끝나면 apps/api + apps/web-* + apps/admin + apps/worker + apps
 - **알림**: brute force / impossible travel (geo) / mass session revocation / refresh reuse 감지
 - **연관 모듈**: `tooling/grafana/` + apps/api metric endpoint
 
-### spec-10-07 — security-linter-evaluation (조건부)
-
-- **요점**: semgrep / socket.dev 평가 + 결정. Icebox 이슈 해소.
-- **연관 모듈**: 결정 따라 변경
-
 ## 📌 결정 기록 (Review)
 
 | 이슈 | 선택지 | 결정 | 이유 |
 |---|---|---|---|
 | 통합 테스트 orchestration | testcontainers / docker-compose snapshot | 진입 시 결정 | per-test 격리 vs 전체 환경 trade-off |
-| 보안 linter | semgrep / socket.dev / 없음 | spec-10-07에서 결정 | 도입 시 ADR로 박을 가치 |
+| 보안 linter | semgrep / socket.dev / 없음 | **No-Go (ADR-0019)** — phase-11 CI 재평가 | CI 부재로 강제력 0, 범위 폭주 방지 (spec-10-03) |
 
 ## 🧪 통합 테스트 시나리오 (간결)
 
@@ -114,7 +111,9 @@ phase-09까지 끝나면 apps/api + apps/web-* + apps/admin + apps/worker + apps
 
 ## 🏁 Phase Done 조건
 
-- [ ] 모든 SPEC(spec-10-01 ~ spec-10-06, 조건부 spec-10-07) main에 merge
-- [ ] 성공 기준 6개 충족
-- [ ] 통합 테스트 3개 시나리오 PASS
-- [ ] 사용자 최종 승인
+> **2026-05-30 재조정**: observability(spec-10-06) + `pnpm new app` 을 후속 phase 로 이월. tooling 3종(10-01~03)으로 phase-10 종료.
+
+- [x] SPEC spec-10-01 ~ spec-10-03 phase 브랜치에 merge
+- [x] 성공 기준 1~5 충족 (6번 observability → 후속 phase 이월)
+- [x] 통합 시나리오 1(인프라 부트)·2(generator round-trip) PASS (시나리오 3 observability → 이월)
+- [ ] 사용자 최종 승인 (phase-ship go/no-go)

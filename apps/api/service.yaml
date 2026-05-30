@@ -1,0 +1,6 @@
+# apps/api 서비스 매니페스트 (tooling:manifest 로 검증)
+name: api
+port: 2026
+expose: true
+# 인프라(postgres/redis)는 tooling/docker/compose.yaml 소관 — depends 는 앱 간 의존만
+depends: []
