@@ -35,6 +35,7 @@
     "@repo/depcruise-config": "workspace:*",
     "@repo/knip-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@turbo/gen": "catalog:",
     "@types/node": "catalog:",
     "dependency-cruiser": "catalog:",
     "knip": "catalog:",
