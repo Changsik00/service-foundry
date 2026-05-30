@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-10** — Ops & Tooling — 3 spec — 다음: spec-10-03-tooling-scripts
+- **phase-10** — Ops & Tooling — 3 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기

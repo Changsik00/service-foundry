@@ -95,8 +95,8 @@
 - [x] 통합: `bash tooling/scripts/smoke-test.sh` PASS
 - [x] **walkthrough.md** / **pr_description.md**
 - [x] **Ship Commit**: `docs(spec-10-03): ship walkthrough and pr description`
-- [ ] **Push** + **PR** (base = `phase-10-ops-tooling`)
-- [ ] **사용자 알림**: PR URL
+- [x] **Push** + **PR** (PR #65, base = `phase-10-ops-tooling`)
+- [x] **사용자 알림**: PR URL
 
 ---
 

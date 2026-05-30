@@ -40,7 +40,7 @@ phase-09까지 끝나면 apps/api + apps/web-* + apps/admin + apps/worker + apps
 |---|---|:---:|---|---|
 | `spec-10-01` | tooling-docker | P? | Merged | `specs/spec-10-01-tooling-docker/` |
 | `spec-10-02` | tooling-generators | P? | Merged | `specs/spec-10-02-tooling-generators/` |
-| `spec-10-03` | tooling-scripts | P? | Active | `specs/spec-10-03-tooling-scripts/` |
+| `spec-10-03` | tooling-scripts | P? | Merged | `specs/spec-10-03-tooling-scripts/` |
 <!-- sdd:specs:end -->
 
 ### spec-10-01 — tooling-docker
