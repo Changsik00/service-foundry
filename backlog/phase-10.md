@@ -10,9 +10,9 @@
 | **Phase ID** | `phase-10` |
 | **상태** | Backlog |
 | **시작일** | 미정 |
-| **목표 종료일** | 미정 |
+| **목표 종료일** | 2026-05-30 |
 | **소유자** | dennis |
-| **Base Branch** | 미정 |
+| **Base Branch** | phase-10-ops-tooling |
 
 ## 🎯 배경 및 목표
 
@@ -65,14 +65,15 @@ phase-09까지 끝나면 apps/api + apps/web-* + apps/admin + apps/worker + apps
 - **연관 모듈**: `tooling/scripts/*`
 - **흡수**: 구 spec-10-04 (startup-report), spec-10-05 (config-graph), spec-10-07 (security-linter) → 본 번들로 통합
 
-### spec-10-06 — auth-observability-dashboards
+### spec-10-06 — auth-observability-dashboards (⏭ 후속 phase 이월)
+
+> **2026-05-30 이월**: 규모가 크고(메트릭+대시보드+alert 3중) app metric endpoint·geo 의존이라, phase-10 은 tooling 3종(10-01~03)으로 종료하고 본 spec + `pnpm new app` 을 **후속 phase 로 이월** (queue.md 대기 Phase 참조).
 
 - **요점**: Prometheus metric collection + Grafana panel + alert rule.
 - **참조**: design note §Observability.
 - **메트릭**: auth.login.attempts / .success / .failure / auth.token.issued / .refreshed / auth.session.revoked / auth.mfa.challenged
 - **알림**: brute force / impossible travel (geo) / mass session revocation / refresh reuse 감지
 - **연관 모듈**: `tooling/grafana/` + apps/api metric endpoint
-- **잔여**: phase-10 마지막 별도 spec (앱 metric endpoint 의존 + 규모 큼). `pnpm new app` 후속 spec 도 본 spec 후 별도.
 
 ## 📌 결정 기록 (Review)
 
@@ -110,7 +111,9 @@ phase-09까지 끝나면 apps/api + apps/web-* + apps/admin + apps/worker + apps
 
 ## 🏁 Phase Done 조건
 
-- [ ] 모든 SPEC(spec-10-01 ~ spec-10-06, 조건부 spec-10-07) main에 merge
-- [ ] 성공 기준 6개 충족
-- [ ] 통합 테스트 3개 시나리오 PASS
-- [ ] 사용자 최종 승인
+> **2026-05-30 재조정**: observability(spec-10-06) + `pnpm new app` 을 후속 phase 로 이월. tooling 3종(10-01~03)으로 phase-10 종료.
+
+- [x] SPEC spec-10-01 ~ spec-10-03 phase 브랜치에 merge
+- [x] 성공 기준 1~5 충족 (6번 observability → 후속 phase 이월)
+- [x] 통합 시나리오 1(인프라 부트)·2(generator round-trip) PASS (시나리오 3 observability → 이월)
+- [ ] 사용자 최종 승인 (phase-ship go/no-go)

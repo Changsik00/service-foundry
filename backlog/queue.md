@@ -55,6 +55,7 @@
 - **phase-09** — Apps + Admin Tools (vertical-slice login acceptance + apps/admin or auth-admin)
 - **phase-10** — Ops & Tooling (docker-compose / generators / service-manifest + auth observability dashboards)
 - **phase-11** — CI / CD (GitHub Actions + changesets release PR + docker publish + 선택 k8s manifest)
+- **phase-12** — Auth Observability + App Generator (구 phase-10 이월: spec-10-06 prometheus metric + grafana dashboard + alert rule + `pnpm new app`) — 2026-05-30 phase-10 종료 시 분리
 
 ## ✅ 완료
 
