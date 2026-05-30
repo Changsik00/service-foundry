@@ -5,6 +5,7 @@ import { AuthGuard } from "@repo/nestjs-auth";
 import type { Request, Response } from "express";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { AUTH_METRICS } from "../metrics/auth-metrics.provider.js";
 import { AuthController } from "./auth.controller.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import { PasswordResetService } from "./password-reset.service.js";
@@ -73,6 +74,15 @@ describe("AuthController", () => {
         {
           provide: AuthEventBus,
           useValue: { emit: vi.fn() },
+        },
+        {
+          provide: AUTH_METRICS,
+          useValue: {
+            recordLoginAttempt: vi.fn(),
+            recordLoginSuccess: vi.fn(),
+            recordLoginFailure: vi.fn(),
+            metricsText: vi.fn(),
+          },
         },
       ],
     })

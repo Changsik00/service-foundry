@@ -9,4 +9,5 @@ export {
   type TracingConfig,
   type TracingDefaults,
 } from "./config.js";
+export { type AuthMetrics, createAuthMetrics } from "./metrics.js";
 export { createTracingSdk, startTracing } from "./tracing.js";
