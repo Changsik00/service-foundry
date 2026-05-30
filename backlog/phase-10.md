@@ -40,6 +40,7 @@ phase-09까지 끝나면 apps/api + apps/web-* + apps/admin + apps/worker + apps
 |---|---|:---:|---|---|
 | `spec-10-01` | tooling-docker | P? | Merged | `specs/spec-10-01-tooling-docker/` |
 | `spec-10-02` | tooling-generators | P? | Merged | `specs/spec-10-02-tooling-generators/` |
+| `spec-10-03` | tooling-scripts | P? | Active | `specs/spec-10-03-tooling-scripts/` |
 <!-- sdd:specs:end -->
 
 ### spec-10-01 — tooling-docker
@@ -52,20 +53,17 @@ phase-09까지 끝나면 apps/api + apps/web-* + apps/admin + apps/worker + apps
 - **요점**: plop 기반 `pnpm new package` / `pnpm new app`. ADR-0003 layout 자동 적용.
 - **연관 모듈**: `tooling/generators/`
 
-### spec-10-03 — tooling-script-service-manifest
+### spec-10-03 — tooling-scripts (번들: 구 10-03/04/05 + 10-07 결정)
 
-- **요점**: 각 app의 `service.yaml` (port / expose / depends) + manifest validator.
-- **연관 모듈**: `tooling/scripts/manifest/`
+> **2026-05-30 재조정 (§11.4 bundle)**: 소형 `tooling/scripts` 유틸 3종 + 보안 linter 결정을 한 spec 으로 묶음 (ceremony 3→1 절감, phase 응집도 유지).
 
-### spec-10-04 — tooling-script-startup-report
-
-- **요점**: apps/api 부트 시 masked config dump.
-- **연관 모듈**: `tooling/scripts/startup-report/` + backend/settings
-
-### spec-10-05 — tooling-script-typed-config-graph
-
-- **요점**: backend/settings의 config schema 트리 → dot/mermaid export.
-- **연관 모듈**: `tooling/scripts/config-graph/`
+- **요점**:
+  - **service-manifest**: 각 app의 `service.yaml` (port / expose / depends) + validator (`tooling/scripts/manifest/`)
+  - **startup-report**: apps/api 부트 시 masked config dump (`tooling/scripts/startup-report/` + backend/settings)
+  - **config-graph**: backend/settings config schema → dot/mermaid export (`tooling/scripts/config-graph/`)
+  - **security-linter 결정**: semgrep / socket.dev 평가 + Go/No-Go (구 spec-10-07; 결정 노트, Go 시 경량 도입)
+- **연관 모듈**: `tooling/scripts/*`
+- **흡수**: 구 spec-10-04 (startup-report), spec-10-05 (config-graph), spec-10-07 (security-linter) → 본 번들로 통합
 
 ### spec-10-06 — auth-observability-dashboards
 
@@ -74,18 +72,14 @@ phase-09까지 끝나면 apps/api + apps/web-* + apps/admin + apps/worker + apps
 - **메트릭**: auth.login.attempts / .success / .failure / auth.token.issued / .refreshed / auth.session.revoked / auth.mfa.challenged
 - **알림**: brute force / impossible travel (geo) / mass session revocation / refresh reuse 감지
 - **연관 모듈**: `tooling/grafana/` + apps/api metric endpoint
-
-### spec-10-07 — security-linter-evaluation (조건부)
-
-- **요점**: semgrep / socket.dev 평가 + 결정. Icebox 이슈 해소.
-- **연관 모듈**: 결정 따라 변경
+- **잔여**: phase-10 마지막 별도 spec (앱 metric endpoint 의존 + 규모 큼). `pnpm new app` 후속 spec 도 본 spec 후 별도.
 
 ## 📌 결정 기록 (Review)
 
 | 이슈 | 선택지 | 결정 | 이유 |
 |---|---|---|---|
 | 통합 테스트 orchestration | testcontainers / docker-compose snapshot | 진입 시 결정 | per-test 격리 vs 전체 환경 trade-off |
-| 보안 linter | semgrep / socket.dev / 없음 | spec-10-07에서 결정 | 도입 시 ADR로 박을 가치 |
+| 보안 linter | semgrep / socket.dev / 없음 | **No-Go (ADR-0019)** — phase-11 CI 재평가 | CI 부재로 강제력 0, 범위 폭주 방지 (spec-10-03) |
 
 ## 🧪 통합 테스트 시나리오 (간결)
 
