@@ -33,7 +33,7 @@ notification 포트(어댑터 교체식) + job queue/worker + caching + graceful
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
-| `spec-12-01` | notification-port | P? | Active | `specs/spec-12-01-notification-port/` |
+| `spec-12-01` | notification-port | P? | Merged | `specs/spec-12-01-notification-port/` |
 <!-- sdd:specs:end -->
 
 ### spec-12-01 — notification-port

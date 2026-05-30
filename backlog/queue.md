@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-12** — Service Foundations I · Runtime — 1 spec — 다음: spec-12-01-notification-port
+- **phase-12** — Service Foundations I · Runtime — 1 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
