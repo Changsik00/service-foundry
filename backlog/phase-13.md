@@ -37,6 +37,7 @@ phase-12 까지 런타임 기반(알림/큐/캐시/shutdown)은 갖췄으나, AP
 |---|---|:---:|---|---|
 | `spec-13-01` | pagination-contracts | P? | Merged | `specs/spec-13-01-pagination-contracts/` |
 | `spec-13-02` | idempotency | P? | Merged | `specs/spec-13-02-idempotency/` |
+| `spec-13-03` | data-foundations | P? | Active | `specs/spec-13-03-data-foundations/` |
 <!-- sdd:specs:end -->
 
 ### spec-13-01 — pagination-contracts
@@ -47,28 +48,24 @@ phase-12 까지 런타임 기반(알림/큐/캐시/shutdown)은 갖췄으나, AP
 - **요점**: Idempotency-Key 미들웨어 — 키별 응답 저장/재생, 진행 중 충돌 처리.
 - **연관 모듈**: `packages/backend/idempotency/` (+ 저장소: cache/db)
 
-### spec-13-03 — typed-client-codegen
-- **요점**: `@repo/contracts` → 프론트용 타입 클라이언트 생성(또는 타입 추출). frontend-http-client 결합.
-- **연관 모듈**: `tooling/scripts/` 또는 `packages/frontend/http-client`
+### spec-13-03 — data-foundations (번들)
+> 규모가 작은 3 항목을 1 spec/PR 로 통합 (구 13-03/04/06).
+- **요점 A (object-storage)**: storage 포트(put/get/del/url) + in-memory 어댑터(테스트). S3/R2 는 인터페이스만.
+- **요점 B (typed-client)**: codegen 대신 **경량 타입 추출** — `@repo/contracts` zod 스키마 기반 thin fetch 래퍼(응답 런타임 검증). 위험표 "타입 추출 우선" 채택.
+- **요점 C (seeding-migration)**: seed 헬퍼 + 테스트 팩토리 패턴 + 마이그레이션 러너 정리.
+- **연관 모듈**: `packages/backend/storage/`, `packages/frontend/http-client/`(또는 contracts 재노출), `tooling/scripts/db/`
 
-### spec-13-04 — object-storage
-- **요점**: object storage 포트(put/get/del/url) + in-memory 어댑터 + S3/R2 어댑터(인터페이스).
-- **연관 모듈**: `packages/backend/storage/`
-
-### spec-13-05 — outbox
-- **요점**: transactional outbox — 도메인 이벤트를 같은 트랜잭션에 적재 + 발행기(relay). audit/events 연동.
+### spec-13-04 — outbox (분리 유지)
+- **요점**: transactional outbox — 도메인 이벤트를 같은 트랜잭션에 적재 + 발행기(relay). 복잡/위험하여 번들에서 제외.
 - **연관 모듈**: `packages/backend/outbox/` + drizzle
-
-### spec-13-06 — seeding-migration
-- **요점**: DB seeding + 테스트 팩토리 + 마이그레이션 통합 러너(현재 패키지별 drizzle.config 분산).
-- **연관 모듈**: `tooling/scripts/db/` + drizzle
 
 ## 📌 결정 기록 (Review)
 
 | 이슈 | 선택지 | 결정 | 이유 |
 |---|---|---|---|
-| idempotency 저장소 | cache(redis) / db | spec-13-02 진입 시 | TTL vs 영속 |
-| typed client | codegen / 타입 추출 | spec-13-03 진입 시 | 빌드 복잡도 |
+| idempotency 저장소 | cache(redis) / db | cache 포트 재사용 (#79) | TTL vs 영속 |
+| typed client | codegen / 타입 추출 | **타입 추출(경량)** | 빌드 복잡도 회피 |
+| 잔여 spec 통합 | 4 개 개별 / 번들 | **3 개 번들(13-03) + outbox(13-04) 분리** | 작은 항목 묶되 위험한 outbox 격리 |
 
 ## 🧪 통합 테스트 시나리오 (간결)
 
