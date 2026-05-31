@@ -31,9 +31,35 @@ export interface MemoryStorageOptions {
   baseUrl?: string;
 }
 
-const STUB = "spec-13-03: createMemoryStorage not implemented yet";
+interface StoredObject {
+  data: Uint8Array;
+  contentType?: string | undefined;
+}
+
+function toBytes(data: StorageData): Uint8Array {
+  return typeof data === "string" ? new TextEncoder().encode(data) : data;
+}
 
 /** 테스트/dev 용 in-memory Storage 어댑터. */
-export function createMemoryStorage(_opts?: MemoryStorageOptions): Storage {
-  throw new Error(STUB);
+export function createMemoryStorage(opts?: MemoryStorageOptions): Storage {
+  const baseUrl = (opts?.baseUrl ?? "memory://").replace(/\/$/, "");
+  const store = new Map<string, StoredObject>();
+
+  return {
+    async put(key, data, putOpts) {
+      store.set(key, { data: toBytes(data), contentType: putOpts?.contentType });
+    },
+    async get(key) {
+      return store.get(key)?.data ?? null;
+    },
+    async del(key) {
+      store.delete(key);
+    },
+    async exists(key) {
+      return store.has(key);
+    },
+    url(key) {
+      return `${baseUrl}/${key}`;
+    },
+  };
 }
