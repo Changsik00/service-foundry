@@ -36,7 +36,7 @@ phase-12 까지 런타임 기반(알림/큐/캐시/shutdown)은 갖췄으나, AP
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
 | `spec-13-01` | pagination-contracts | P? | Merged | `specs/spec-13-01-pagination-contracts/` |
-| `spec-13-02` | idempotency | P? | Active | `specs/spec-13-02-idempotency/` |
+| `spec-13-02` | idempotency | P? | Merged | `specs/spec-13-02-idempotency/` |
 <!-- sdd:specs:end -->
 
 ### spec-13-01 — pagination-contracts
