@@ -6,25 +6,25 @@
 - [x] Spec ID 확정 및 디렉토리 생성
 - [x] spec.md / plan.md / task.md 작성
 - [x] 백로그 업데이트 (phase-14.md SPEC 표 자동)
-- [ ] 사용자 Plan Accept
+- [x] 사용자 Plan Accept
 
 ---
 
 ## Task 0: 브랜치
-- [ ] `git checkout -b spec-14-01-ci-verify-gate` (from phase-14-quality-cicd)
+- [x] `git checkout -b spec-14-01-ci-verify-gate`
 
 ## Task 1: verify 워크플로
-- [ ] `.github/workflows/verify.yml` 작성
-- [ ] 로컬 동등 그린: `pnpm install --frozen-lockfile` + `pnpm turbo run lint typecheck test build`
-- [ ] YAML 유효성 확인
-- [ ] Commit: `feat(spec-14-01): add CI verify gate (frozen-lockfile + turbo lint/typecheck/test/build)`
+- [x] `.github/workflows/verify.yml` (postgres service + migrate)
+- [x] fix: NOTIFIER mock 누락(confirm 테스트 8) 보정
+- [x] 로컬 동등 그린: 129/129 (PG 5434 + migrate)
+- [x] Commit: fix + feat
 
 ## Task 2: Ship
-- [ ] walkthrough.md / pr_description.md 작성
-- [ ] Ship Commit: `docs(spec-14-01): ship walkthrough and pr description`
-- [ ] Push + PR (base `phase-14-quality-cicd`)
-- [ ] **본 PR 의 verify 워크플로 green 확인** (통합 검증)
-- [ ] 사용자 알림
+- [x] walkthrough.md / pr_description.md 작성
+- [x] Ship Commit
+- [x] Push + PR (base `phase-14-quality-cicd`)
+- [ ] **본 PR 의 verify 워크플로 green 확인** (통합 검증 — 관측 대기)
+- [x] 사용자 알림
 
 ---
 
