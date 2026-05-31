@@ -62,8 +62,8 @@
 - [x] 통합 smoke PASS
 - [x] walkthrough / pr_description
 - [x] Ship Commit: `docs(spec-11-02): ship walkthrough and pr description`
-- [ ] Push + PR (base `phase-11-observability`)
-- [ ] 사용자 알림
+- [x] Push + PR (PR #69, base `phase-11-observability`)
+- [x] 사용자 알림
 
 ---
 
