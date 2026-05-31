@@ -1,74 +1,41 @@
-# @apps/web-next
+# web-next
 
-phase-04 의 Next.js 16 App Router scaffold. RSC (Server Component) 패턴으로 `apps/api` 의 `/health` 호출 + UI 표시 시연.
+> Next.js 16 App Router + React 19 기반 SSR 웹 앱. RSC 서버 패치와 TanStack Query 클라이언트 패치를 동시에 시연하며, 로그인 UI와 인증 SDK를 통합한다.
 
-> **scope 제한**: 본 app 은 *통합 검증용 최소 스켈레톤*. TanStack Query / nuqs / Authentication 등은 별 spec.
-
-## 부트 방법
-
-### 1. env 파일 준비
+## 실행
 
 ```bash
-cp apps/web-next/env.example apps/web-next/.env
+# 개발 (포트 2027)
+pnpm dev
+
+# 프로덕션 빌드
+pnpm build
+
+# 프로덕션 서버 시작
+pnpm start
 ```
 
-> ⚠️ `.env.example` 이 아닌 `env.example` 로 commit 됨 (Claude Code 의 `.env*` Write 차단 우회).
+환경변수: `API_BASE_URL` (서버 컴포넌트 → api 호출, server-only)
 
-### 2. 동시 부트 (2 터미널)
+## 구성
 
-```bash
-# Terminal 1: apps/api (port 3000)
-NODE_ENV=development PORT=2026 LOG_LEVEL=info \
-  DATABASE_URL=postgres://localhost:5432/test \
-  HTTP_CLIENT_BASE_URL=http://localhost:9999 \
-  npx tsx apps/api/src/main.ts
+조립하는 핵심 `@repo` 패키지:
 
-# Terminal 2: apps/web-next (port 2027)
-API_BASE_URL=http://localhost:2026 \
-  pnpm --filter @apps/web-next dev
-```
+- `@repo/frontend-auth-react` — React 인증 훅·프로바이더 SDK
+- `@repo/frontend-http-client` — ky 기반 HTTP 클라이언트
+- `@repo/frontend-ui` — 공유 UI 컴포넌트 (HealthCard·ThemeToggle 등)
+- `@repo/auth-contracts` — 공유 인증 계약 타입
+- `@repo/errors` — AppError 타입
+- `@repo/tailwind-config` — Tailwind v4 글로벌 스타일
 
-### 3. 브라우저
+## 주요 라우트
 
-`http://localhost:2027` — 페이지 안 `<HealthCard>` 가 `apps/api` 의 `/health` 응답 표시 (`status` / `uptime` / `version`).
-
-## env 변수
-
-| 변수 | 타입 | 기본값 | 범위 |
-|---|---|---|---|
-| `API_BASE_URL` | URL | (필수) | **server-only** (RSC / Route Handler / Server Action) |
-
-> `NEXT_PUBLIC_` prefix 안 박힘 — 보안 (client bundle 노출 회피). client 에서 필요 시 별 spec 에서 `NEXT_PUBLIC_API_BASE_URL` 또는 props 패턴.
-
-## 아키텍처 — Next.js App Router + RSC
-
-```tsx
-// src/app/page.tsx — async server component (RSC)
-export default async function Home() {
-  const client = createHttpClient({ baseUrl: env.API_BASE_URL });
-  const health = await client.get("/health", { schema: HealthSchema });
-  return <HealthCard data={health} />;
-}
-```
-
-- **page.tsx**: async server component (default) — fetch 가 *서버에서* 실행 + HTML 에 결과 렌더
-- **HealthCard**: presentation only — props 받음, server / client 어느 쪽에서도 render 가능 (`'use client'` 미박힘)
-- **layout.tsx**: root layout + `globals.css` (tailwind v4 entry — `@repo/tailwind-config` 답습)
-
-## scope 밖
-
-| 항목 | 시점 |
+| 경로 | 설명 |
 |---|---|
-| TanStack Query (client interaction) | client component 등장 시점 별 spec |
-| nuqs (URL state) | 실 페이징/필터 진입 시점 별 spec |
-| Authentication wire-up | phase-06 |
-| Playwright E2E | 별 spec |
-| dark mode toggle UI | 별 spec |
-| i18n / SEO meta 풍부 | 별 spec |
+| `/` | 홈 — RSC 서버 패치 + TanStack Query 클라이언트 패치 하이브리드 시연 |
+| `/login` | 로그인 페이지 — `LoginForm` 클라이언트 컴포넌트 (`frontend-auth-react` 기반) |
 
-## 테스트
+## 자세히
 
-```bash
-pnpm --filter @apps/web-next test       # HealthCard render (jsdom)
-pnpm --filter @apps/web-next build      # Next.js production build 검증
-```
+- 레퍼런스: [`docs/reference/apps/web-next.md`](../../docs/reference/apps/web-next.md)
+- 동작 원리: [`docs/explainers/frontend/login-ui-form.md`](../../docs/explainers/frontend/login-ui-form.md)
