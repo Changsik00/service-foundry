@@ -6,28 +6,26 @@
 - [x] Spec ID 확정 및 디렉토리 생성
 - [x] spec.md / plan.md / task.md 작성
 - [x] 백로그 업데이트 (phase-14.md SPEC 표 자동)
-- [ ] 사용자 Plan Accept
+- [x] 사용자 Plan Accept
 
 ---
 
 ## Task 0: 브랜치
-- [ ] `git checkout -b spec-14-06-ci-release-docker` (from phase-14-quality-cicd)
+- [x] `git checkout -b spec-14-06-ci-release-docker`
 
 ## Task 1: prod start + Dockerfile
-- [ ] api/worker `start:prod` 스크립트
-- [ ] `apps/api/Dockerfile` + `apps/worker/Dockerfile` + 루트 `.dockerignore`
-- [ ] 로컬 `docker build` 둘 다 성공 확인
-- [ ] Commit: `feat(spec-14-06): add prod start + Dockerfiles for api/worker`
+- [x] api/worker start:prod + Dockerfile 2개 + .dockerignore + prepare 관대화
+- [x] 로컬 docker build 양쪽 성공 (api/worker, 1.61GB)
+- [x] Commit (feat)
 
 ## Task 2: release.yml
-- [ ] `.github/workflows/release.yml` (changesets Version PR + ghcr docker push)
-- [ ] YAML 유효성 + verify 게이트 무변경 확인
-- [ ] Commit: `feat(spec-14-06): add release workflow (changesets + ghcr docker)`
+- [x] release.yml (changesets Version PR + ghcr docker matrix)
+- [x] YAML 유효(node yaml) + verify 무변경
+- [x] Commit (feat)
 
 ## Task 3: Ship
-- [ ] 전체 단위 PASS + typecheck 0 (verify)
-- [ ] walkthrough / pr_description
-- [ ] Ship Commit + Push + PR (base `phase-14-quality-cicd`) + 알림 + CI green
+- [x] walkthrough / pr_description
+- [x] Ship Commit + Push + PR + CI green
 
 ---
 
