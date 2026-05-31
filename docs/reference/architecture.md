@@ -109,6 +109,7 @@ flowchart LR
 | 검증 | zod 4 + `parse → Result` | [[adr/0010-validation-zod-result-integration|ADR-0010]] |
 | 관측성 | request-id 전파 + pino + OTel + prom-client | [[explainers/backend/request-id-propagation]] · [[explainers/backend/otel-tracing-init-order]] |
 | 빌드 | turbo pipeline + tsup(backend)/JIT(shared·frontend) | [[adr/0004-typescript-and-compilation-strategy|ADR-0004]] · [[explainers/platform/monorepo-build-turbo-tsup]] |
+| DB | Drizzle 마이그레이션 + pool lifecycle | [[explainers/backend/drizzle-migrations-lifecycle]] |
 | 포트/어댑터 | Notifier·Cache·Queue·Storage·RateLimiter·SecretsProvider 포트 | [[explainers/backend/notification-port-adapter]] 외 |
 
 ## 6. 패키지 카테고리 요약
