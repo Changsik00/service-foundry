@@ -33,6 +33,7 @@
 ## 🧩 작업 단위 (SPECs)
 
 <!-- sdd:specs:start -->
+| `spec-14-01` | ci-verify-gate | P? | Active | `specs/spec-14-01-ci-verify-gate/` |
 <!-- sdd:specs:end -->
 
 ### spec-14-01 — ci-verify-gate (우선)
