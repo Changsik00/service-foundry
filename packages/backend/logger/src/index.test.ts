@@ -88,4 +88,24 @@ describe("requestId context", () => {
     expect(typeof generateRequestId()).toBe("string");
     vi.restoreAllMocks();
   });
+
+  it("generateRequestId — 호출마다 유일한 값", () => {
+    expect(generateRequestId()).not.toBe(generateRequestId());
+  });
+
+  it("requestIdMiddleware — custom header 옵션 사용", () => {
+    const middleware = requestIdMiddleware({ header: "X-Trace-Id" });
+    let captured: string | undefined;
+    middleware({ headers: { "x-trace-id": "trace-77" } }, {}, () => {
+      captured = getCurrentRequestId();
+    });
+    expect(captured).toBe("trace-77");
+  });
+
+  it("requestIdMiddleware — next 를 1회 호출", () => {
+    const middleware = requestIdMiddleware();
+    const next = vi.fn();
+    middleware({ headers: {} }, {}, next);
+    expect(next).toHaveBeenCalledOnce();
+  });
 });
