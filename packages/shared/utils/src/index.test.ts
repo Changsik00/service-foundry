@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { err, flatMap, isErr, isOk, map, ok, omit, pick, type Result, sleep } from "./index.js";
+import {
+  err,
+  flatMap,
+  fromPromise,
+  isErr,
+  isOk,
+  map,
+  ok,
+  omit,
+  pick,
+  type Result,
+  sleep,
+} from "./index.js";
 
 describe("sleep", () => {
   it("resolves after at least the requested duration", async () => {
@@ -101,5 +113,29 @@ describe("Result", () => {
     });
     expect(result).toEqual({ ok: false, error: e });
     expect(called).toBe(false);
+  });
+});
+
+describe("fromPromise", () => {
+  it("resolve → ok(value)", async () => {
+    const result = await fromPromise(async () => 42);
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) expect(result.value).toBe(42);
+  });
+
+  it("reject → err(error) (동일 에러 보존)", async () => {
+    const boom = new Error("boom");
+    const result = await fromPromise(async () => {
+      throw boom;
+    });
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) expect(result.error).toBe(boom);
+  });
+
+  it("동기 throw 도 err 로 포착", async () => {
+    const result = await fromPromise(() => {
+      throw new Error("sync");
+    });
+    expect(isErr(result)).toBe(true);
   });
 });
