@@ -24,7 +24,14 @@ pnpm turbo run lint typecheck test build --force → 129/129 successful
 ```
 - apps/api 단위(confirm) NOTIFIER 수정 후: 11/11, 전체 apps/api 85/85(e2e 포함).
 ### 통합 (Integration Test Required = yes)
-- 본 PR push 시 `verify` 워크플로 트리거 → **green 확인 필요**(워크플로 자기 검증). PR 체크에서 관측.
+- 본 PR `verify` 워크플로 → **green** (run 26701277137, 2m8s). 워크플로 자기 검증 완료.
+
+### CI 수렴 기록 (게이트가 clean 환경에서 잡은 잠재 결함 — 4 라운드)
+1. **ERR_PNPM_IGNORED_BUILDS** (`@firebase/util`/`protobufjs`): pnpm 11 clean install 은 미승인 build script 를 에러 처리 → `allowBuilds: false` 명시.
+2. **NOTIFIER 단위버그** (confirm 테스트 8): mock 누락 보정.
+3. **crypto 타임아웃** (`backend-auth-mfa` 등): bcrypt/argon2 가 2-core 러너에서 5s 초과 → 공유 vitest 프리셋 testTimeout/hookTimeout CI 30s.
+4. **routeTree.gen.ts 부재** (`web-vite`): TanStack 생성 파일(gitignored)이 clean checkout 엔 없음 → 패키지 turbo.json 에서 typecheck→build 의존.
+> 전부 로컬(빠른 머신 + already-built)에선 안 보이던 누수. 게이트의 존재 이유를 즉시 입증.
 
 ## 🔍 발견 사항 (게이트가 즉시 잡은 잠재 결함)
 - **apps/api 31 fail 잠재**: (a) `password-reset/email-verify .confirm.service.test.ts` 가 phase-12 NOTIFIER 포트 도입 후 mock 누락(8) → 형제 테스트 패턴대로 수정. (b) `auth.e2e.test.ts`(~23, real PG) 는 인프라 의존 → service container 제공으로 해소.

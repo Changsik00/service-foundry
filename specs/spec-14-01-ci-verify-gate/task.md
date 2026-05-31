@@ -23,7 +23,7 @@
 - [x] walkthrough.md / pr_description.md 작성
 - [x] Ship Commit
 - [x] Push + PR (base `phase-14-quality-cicd`)
-- [ ] **본 PR 의 verify 워크플로 green 확인** (통합 검증 — 관측 대기)
+- [x] **본 PR 의 verify 워크플로 green 확인** (run 26701277137, 2m8s ✅)
 - [x] 사용자 알림
 
 ---
