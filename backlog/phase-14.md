@@ -38,6 +38,7 @@
 | `spec-14-03` | auth-guard-verified-claims | P? | Merged | `specs/spec-14-03-auth-guard-verified-claims/` |
 | `spec-14-04` | boundary-tests | P? | Merged | `specs/spec-14-04-boundary-tests/` |
 | `spec-14-05` | security-ports | P? | Active | `specs/spec-14-05-security-ports/` |
+| `spec-14-06` | ci-release-docker | P? | Active | `specs/spec-14-06-ci-release-docker/` |
 <!-- sdd:specs:end -->
 
 ### spec-14-01 — ci-verify-gate (우선)
