@@ -6,29 +6,28 @@
 - [x] Spec ID 확정 및 디렉토리 생성
 - [x] spec.md / plan.md / task.md 작성
 - [x] 백로그 업데이트 (phase-14.md SPEC 표 자동)
-- [ ] 사용자 Plan Accept
+- [x] 사용자 Plan Accept
 
 ---
 
 ## Task 0: 브랜치
-- [ ] `git checkout -b spec-14-05-security-ports` (from phase-14-quality-cicd)
+- [x] `git checkout -b spec-14-05-security-ports`
 
 ## Task 1: `@repo/backend-rate-limit` (TDD)
-- [ ] scaffold(types:node) + test(허용/차단/리셋/cost/키독립) → Fail
-- [ ] Commit: `test(spec-14-05): add failing tests for rate limiter`
-- [ ] `RateLimiter` + `createMemoryRateLimiter` → Pass
-- [ ] Commit: `feat(spec-14-05): add @repo/backend-rate-limit (port + memory)`
+- [x] scaffold + test → Fail (5)
+- [x] Commit (test, 양 포트 묶음)
+- [x] createMemoryRateLimiter → Pass (5/5)
+- [x] Commit (feat)
 
 ## Task 2: `@repo/backend-secrets` (TDD)
-- [ ] scaffold + test(env/memory get·require·없음→AppError) → Fail
-- [ ] Commit: `test(spec-14-05): add failing tests for secrets provider`
-- [ ] `SecretsProvider` + env/memory 어댑터 → Pass
-- [ ] Commit: `feat(spec-14-05): add @repo/backend-secrets (port + env/memory)`
+- [x] scaffold + test → Fail (4) (test commit 에 묶음)
+- [x] env/memory SecretsProvider → Pass (4/4)
+- [x] Commit (feat)
 
 ## Task 3: Ship
-- [ ] 전체 단위 PASS + typecheck 0
-- [ ] walkthrough / pr_description
-- [ ] Ship Commit + Push + PR (base `phase-14-quality-cicd`) + 알림 + CI green
+- [x] 단위 PASS (9) + typecheck 0
+- [x] walkthrough / pr_description
+- [x] Ship Commit + Push + PR + CI green
 
 ---
 
