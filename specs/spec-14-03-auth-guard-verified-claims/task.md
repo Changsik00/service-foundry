@@ -6,27 +6,24 @@
 - [x] Spec ID 확정 및 디렉토리 생성
 - [x] spec.md / plan.md / task.md 작성
 - [x] 백로그 업데이트 (phase-14.md SPEC 표 자동)
-- [ ] 사용자 Plan Accept
+- [x] 사용자 Plan Accept
 
 ---
 
 ## Task 0: 브랜치
-- [ ] `git checkout -b spec-14-03-auth-guard-verified-claims` (from phase-14-quality-cicd)
+- [x] `git checkout -b spec-14-03-auth-guard-verified-claims`
 
 ## Task 1: auth-jwt — 커스텀 claim 보존
-- [ ] `JwtClaims` index signature + `narrowClaims` custom claim 보존
-- [ ] `verify.test.ts` verified role 보존 단언
-- [ ] Commit: `feat(spec-14-03): preserve verified custom claims in JwtClaims`
+- [x] JwtClaims index signature + narrowClaims 보존 + verify.test 단언 (26/26)
+- [x] Commit (feat)
 
 ## Task 2: nestjs-auth — guard 가 verified role 사용
-- [ ] `auth.guard.ts` `result.value.role` + `decodeJwt` 제거
-- [ ] `auth.guard.test.ts` 보강
-- [ ] Commit: `fix(spec-14-03): read role from verified claims (drop decodeJwt footgun)`
+- [x] guard result.value.role + decodeJwt 제거 (10/10)
+- [x] Commit (fix)
 
 ## Task 3: Ship
-- [ ] 전체 단위 PASS + typecheck 0
-- [ ] walkthrough / pr_description
-- [ ] Ship Commit + Push + PR (base `phase-14-quality-cicd`) + 알림 + CI green
+- [x] walkthrough / pr_description
+- [x] Ship Commit + Push + PR + CI green
 
 ---
 
