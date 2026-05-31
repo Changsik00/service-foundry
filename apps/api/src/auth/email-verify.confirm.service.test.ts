@@ -44,8 +44,9 @@ describe("EmailVerifyService.confirm", () => {
     userStore.updateEmailVerified.mockResolvedValue(undefined);
     tokenStore.markUsed.mockResolvedValue(undefined);
 
-    await service.confirm(token);
+    const outcome = await service.confirm(token);
 
+    expect(outcome).toBe("confirmed");
     expect(userStore.updateEmailVerified).toHaveBeenCalledOnce();
     expect(userStore.updateEmailVerified).toHaveBeenCalledWith(validRow.userId);
     expect(tokenStore.markUsed).toHaveBeenCalledOnce();
@@ -58,8 +59,9 @@ describe("EmailVerifyService.confirm", () => {
     const token = "expired-token-string-123456789012345678901234";
     tokenStore.findByHash.mockResolvedValue(makeToken({ expiresAt: new Date(Date.now() - 1000) }));
 
-    await service.confirm(token);
+    const outcome = await service.confirm(token);
 
+    expect(outcome).toBe("expired");
     expect(userStore.updateEmailVerified).not.toHaveBeenCalled();
     expect(tokenStore.markUsed).not.toHaveBeenCalled();
   });
@@ -68,8 +70,9 @@ describe("EmailVerifyService.confirm", () => {
     const token = "used-token-string-123456789012345678901234";
     tokenStore.findByHash.mockResolvedValue(makeToken({ usedAt: new Date(Date.now() - 5000) }));
 
-    await service.confirm(token);
+    const outcome = await service.confirm(token);
 
+    expect(outcome).toBe("used");
     expect(userStore.updateEmailVerified).not.toHaveBeenCalled();
     expect(tokenStore.markUsed).not.toHaveBeenCalled();
   });
@@ -78,8 +81,9 @@ describe("EmailVerifyService.confirm", () => {
     const token = "unknown-token-string-123456789012345678901234";
     tokenStore.findByHash.mockResolvedValue(null);
 
-    await service.confirm(token);
+    const outcome = await service.confirm(token);
 
+    expect(outcome).toBe("invalid");
     expect(userStore.updateEmailVerified).not.toHaveBeenCalled();
     expect(tokenStore.markUsed).not.toHaveBeenCalled();
   });

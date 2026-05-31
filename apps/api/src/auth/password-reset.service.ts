@@ -4,6 +4,7 @@ import { generateRefreshToken, hashToken } from "@repo/backend-auth-session";
 import type { Notifier } from "@repo/backend-notification";
 
 import { NOTIFIER } from "../notification/notifier.provider.js";
+import type { ConfirmOutcome } from "./confirm-outcome.js";
 import {
   InjectTokenStore,
   InjectUserStore,
@@ -39,16 +40,17 @@ export class PasswordResetService {
     });
   }
 
-  async confirm(token: string, newPassword: string): Promise<void> {
+  async confirm(token: string, newPassword: string): Promise<ConfirmOutcome> {
     const tokenHash = hashToken(token);
     const row = await this.tokenStore.findByHash(tokenHash);
 
-    if (!row) return;
-    if (row.expiresAt < new Date()) return;
-    if (row.usedAt !== null) return;
+    if (!row) return "invalid";
+    if (row.expiresAt < new Date()) return "expired";
+    if (row.usedAt !== null) return "used";
 
     const passwordHash = await hashPassword(newPassword);
     await this.userStore.updatePasswordHash(row.userId, passwordHash);
     await this.tokenStore.markUsed(row.id, new Date());
+    return "confirmed";
   }
 }
