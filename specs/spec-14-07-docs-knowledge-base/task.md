@@ -12,21 +12,13 @@ created: 2026-05-31
 > 오케스트레이션: 메인(Opus) 조율, [S]=Sonnet sub-agent 위임(동시 최대 3). 커밋은 메인이 task 단위 직렬.
 
 ## Pre-flight
-- [ ] Plan Accept (사용자 승인)
-- [ ] **task-01**: 브랜치 `spec-14-07-docs-knowledge-base` 생성(phase-14 팁) + spec/plan/task 커밋
-  - 완료: `docs(spec-14-07): add spec/plan/task`, HEAD 이동 확인
+- [x] Plan Accept (사용자 승인)
+- [x] **task-01**: 브랜치 `spec-14-07-docs-knowledge-base` 생성(phase-14 팁) + spec/plan/task 커밋 — 497acc9
 
 ## Tasks
 
-- [ ] **task-02**: 문서 규약 + 메타 스켈레톤 [메인]
-  - 산출: `docs/CONVENTIONS.md`(frontmatter/4층 태그/명명/wikilink + reference·explainer·README 스켈레톤), `docs/glossary.md` 골격, `docs/log.md` 시작
-  - 완료: 커밋 `docs(spec-14-07): doc conventions + meta skeletons`
-
-- [ ] **task-03**: 코드/spec/ADR 마이닝 → 구조화 다이제스트 [S ×3 병렬]
-  - A: backend 22 패키지 + apps/api,worker (책임·export·의존·관련 spec/ADR)
-  - B: frontend 7 + nestjs 6 + shared 6 + config 7 + web-next,web-vite
-  - C: ADR 20 + docs/notes + pnpm catalog 의존성 → 도입 근거 + 핵심 메커니즘 후보
-  - 완료: 다이제스트 수신·검수 (읽기 — 커밋 없음)
+- [x] **task-02**: 문서 규약 + 메타 스켈레톤 [메인] — d9034c0
+- [x] **task-03**: 코드/spec/ADR 마이닝 → 구조화 다이제스트 [S ×3 병렬] — 완료(의존그래프/spec맵/메커니즘/ADR/의존근거 수신)
 
 - [ ] **task-04**: `docs/reference/architecture.md` + 패키지 의존 mermaid 그래프 [메인]
   - 완료: 커밋 `docs(spec-14-07): architecture + dependency graph`
