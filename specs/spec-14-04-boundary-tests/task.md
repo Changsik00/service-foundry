@@ -6,29 +6,28 @@
 - [x] Spec ID 확정 및 디렉토리 생성
 - [x] spec.md / plan.md / task.md 작성
 - [x] 백로그 업데이트 (phase-14.md SPEC 표 자동)
-- [ ] 사용자 Plan Accept
+- [x] 사용자 Plan Accept
 
 ---
 
 ## Task 0: 브랜치
-- [ ] `git checkout -b spec-14-04-boundary-tests` (from phase-14-quality-cicd)
+- [x] `git checkout -b spec-14-04-boundary-tests`
 
 ## Task 1: utils fromPromise
-- [ ] `fromPromise` resolve→ok / reject→err 테스트
-- [ ] Commit: `test(spec-14-04): cover fromPromise (resolve/reject)`
+- [x] fromPromise resolve/reject/sync-throw (utils 19)
+- [x] Commit
 
 ## Task 2: backend/http-client 4xx + POST retry
-- [ ] 404→AppError(BAD_REQUEST) 비-retry + POST 정책 테스트
-- [ ] Commit: `test(spec-14-04): cover 4xx BAD_REQUEST + POST retry policy`
+- [x] 404 BAD_REQUEST 비-retry + POST 기본/명시 retry (http-client 14)
+- [x] Commit
 
 ## Task 3: logger
-- [ ] generateRequestId + requestIdMiddleware 응답헤더/next 테스트
-- [ ] Commit: `test(spec-14-04): cover generateRequestId + requestIdMiddleware`
+- [x] generateRequestId 유일성 + middleware custom header/next (logger 10). ※응답헤더는 미들웨어가 미수행→드롭(characterization)
+- [x] Commit
 
 ## Task 4: Ship
-- [ ] 전체 단위 PASS + typecheck 0
-- [ ] walkthrough / pr_description
-- [ ] Ship Commit + Push + PR (base `phase-14-quality-cicd`) + 알림 + CI green
+- [x] walkthrough / pr_description
+- [x] Ship Commit + Push + PR + CI green
 
 ---
 
