@@ -35,7 +35,7 @@
 <!-- sdd:specs:start -->
 | `spec-14-01` | ci-verify-gate | P? | Merged | `specs/spec-14-01-ci-verify-gate/` |
 | `spec-14-02` | error-convention | P? | Merged | `specs/spec-14-02-error-convention/` |
-| `spec-14-03` | auth-guard-verified-claims | P? | Active | `specs/spec-14-03-auth-guard-verified-claims/` |
+| `spec-14-03` | auth-guard-verified-claims | P? | Merged | `specs/spec-14-03-auth-guard-verified-claims/` |
 <!-- sdd:specs:end -->
 
 ### spec-14-01 — ci-verify-gate (우선)
