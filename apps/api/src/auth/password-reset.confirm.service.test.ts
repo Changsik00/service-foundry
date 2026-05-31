@@ -30,8 +30,9 @@ describe("PasswordResetService.confirm", () => {
     userStore.updatePasswordHash.mockResolvedValue(undefined);
     tokenStore.markUsed.mockResolvedValue(undefined);
 
-    await service.confirm(token, "newPassword123");
+    const outcome = await service.confirm(token, "newPassword123");
 
+    expect(outcome).toBe("confirmed");
     expect(userStore.updatePasswordHash).toHaveBeenCalledOnce();
     expect(tokenStore.markUsed).toHaveBeenCalledOnce();
     const [[id, usedAt]] = tokenStore.markUsed.mock.calls as unknown as [[string, Date]];
@@ -44,8 +45,9 @@ describe("PasswordResetService.confirm", () => {
     const expiredRow = makeToken({ expiresAt: new Date(Date.now() - 1000) });
     tokenStore.findByHash.mockResolvedValue(expiredRow);
 
-    await service.confirm(token, "newPassword123");
+    const outcome = await service.confirm(token, "newPassword123");
 
+    expect(outcome).toBe("expired");
     expect(userStore.updatePasswordHash).not.toHaveBeenCalled();
     expect(tokenStore.markUsed).not.toHaveBeenCalled();
   });
@@ -55,8 +57,9 @@ describe("PasswordResetService.confirm", () => {
     const usedRow = makeToken({ usedAt: new Date(Date.now() - 5000) });
     tokenStore.findByHash.mockResolvedValue(usedRow);
 
-    await service.confirm(token, "newPassword123");
+    const outcome = await service.confirm(token, "newPassword123");
 
+    expect(outcome).toBe("used");
     expect(userStore.updatePasswordHash).not.toHaveBeenCalled();
     expect(tokenStore.markUsed).not.toHaveBeenCalled();
   });
@@ -65,8 +68,9 @@ describe("PasswordResetService.confirm", () => {
     const token = "unknown-token-string-123456789012345678901234";
     tokenStore.findByHash.mockResolvedValue(null);
 
-    await service.confirm(token, "newPassword123");
+    const outcome = await service.confirm(token, "newPassword123");
 
+    expect(outcome).toBe("invalid");
     expect(userStore.updatePasswordHash).not.toHaveBeenCalled();
     expect(tokenStore.markUsed).not.toHaveBeenCalled();
   });
