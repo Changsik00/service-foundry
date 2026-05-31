@@ -39,6 +39,7 @@
 | `spec-14-04` | boundary-tests | P? | Merged | `specs/spec-14-04-boundary-tests/` |
 | `spec-14-05` | security-ports | P? | Merged | `specs/spec-14-05-security-ports/` |
 | `spec-14-06` | ci-release-docker | P? | Merged | `specs/spec-14-06-ci-release-docker/` |
+| `spec-14-07` | docs-knowledge-base | P? | Active | `specs/spec-14-07-docs-knowledge-base/` |
 <!-- sdd:specs:end -->
 
 ### spec-14-01 — ci-verify-gate (우선)
