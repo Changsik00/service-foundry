@@ -150,3 +150,47 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
       request<T>({ ...opts, method: "PATCH", path, body }),
   };
 };
+
+/**
+ * 계약 기반 typed client (codegen 없는 "타입 추출").
+ *
+ * 엔드포인트 맵(`{ method, path, response: schema }`) 을 한 번 정의하면
+ * 각 키에 대응하는 타입+런타임 검증된 메서드를 생성한다. `@repo/contracts` 의
+ * zod 스키마를 `response` 로 그대로 사용 — drift 방지를 기존 `schema` 검증 위에 얹는다.
+ */
+export interface EndpointDef<Out = unknown> {
+  method: HttpMethod;
+  /** 엔드포인트 경로. path 파라미터는 호출 시 `opts.path` 로 override */
+  path: string;
+  /** 응답 검증 스키마 (`@repo/contracts`) */
+  response: ZodType<Out>;
+}
+
+export interface ApiCallOptions {
+  body?: unknown;
+  headers?: Record<string, string>;
+  /** 정의된 path 대신 사용할 경로 (path 파라미터 치환용) */
+  path?: string;
+}
+
+export type ApiClient<E extends Record<string, EndpointDef>> = {
+  [K in keyof E]: E[K] extends EndpointDef<infer O> ? (opts?: ApiCallOptions) => Promise<O> : never;
+};
+
+export function createApiClient<E extends Record<string, EndpointDef>>(
+  http: HttpClient,
+  endpoints: E,
+): ApiClient<E> {
+  const client = {} as Record<string, (opts?: ApiCallOptions) => Promise<unknown>>;
+  for (const [name, def] of Object.entries(endpoints)) {
+    client[name] = (opts?: ApiCallOptions) =>
+      http.request({
+        method: def.method,
+        path: opts?.path ?? def.path,
+        schema: def.response,
+        ...(opts?.body !== undefined && { body: opts.body }),
+        ...(opts?.headers && { headers: opts.headers }),
+      });
+  }
+  return client as ApiClient<E>;
+}
