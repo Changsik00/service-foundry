@@ -1,5 +1,6 @@
 import { Test } from "@nestjs/testing";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NOTIFIER } from "../notification/notifier.provider.js";
 import { PasswordResetService } from "./password-reset.service.js";
 import { makeToken } from "./password-reset.service.test.js";
 import { PASSWORD_RESET_TOKEN_STORE, USER_STORE } from "./password-reset.stores.js";
@@ -16,6 +17,7 @@ describe("PasswordResetService.confirm", () => {
         PasswordResetService,
         { provide: USER_STORE, useValue: userStore },
         { provide: PASSWORD_RESET_TOKEN_STORE, useValue: tokenStore },
+        { provide: NOTIFIER, useValue: { sendEmail: vi.fn() } },
       ],
     }).compile();
     service = module.get(PasswordResetService);
