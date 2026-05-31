@@ -1,3 +1,5 @@
+import { AppError } from "@repo/errors";
+
 export type OAuthProviderName = "google" | "kakao";
 
 export interface OAuthProvider {
@@ -31,6 +33,13 @@ export const providers: Record<OAuthProviderName, OAuthProvider> = {
 
 export function getProvider(name: string): OAuthProvider {
   const provider = providers[name as OAuthProviderName];
-  if (!provider) throw new Error(`Unknown OAuth provider: ${name}`);
+  // name 은 보통 라우트 파라미터(사용자 입력) → 미지 provider 는 404.
+  if (!provider) {
+    throw new AppError({
+      code: "NOT_FOUND",
+      message: `Unknown OAuth provider: ${name}`,
+      statusCode: 404,
+    });
+  }
   return provider;
 }
