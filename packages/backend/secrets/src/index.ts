@@ -13,17 +13,32 @@ export interface SecretsProvider {
   require(key: string): Promise<string>;
 }
 
-const STUB = "spec-14-05: secrets provider not implemented yet";
+function fromLookup(lookup: (key: string) => string | undefined): SecretsProvider {
+  return {
+    async get(key) {
+      return lookup(key) ?? null;
+    },
+    async require(key) {
+      const value = lookup(key);
+      if (value === undefined || value === "") {
+        // 필수 secret 부재 = 구성 오류 (ADR-0020: plain Error 금지).
+        throw new AppError({
+          code: "INTERNAL",
+          message: `Required secret not configured: ${key}`,
+          statusCode: 500,
+        });
+      }
+      return value;
+    },
+  };
+}
 
 export function createEnvSecrets(
-  _env: Record<string, string | undefined> = process.env,
+  env: Record<string, string | undefined> = process.env,
 ): SecretsProvider {
-  throw new Error(STUB);
+  return fromLookup((key) => env[key]);
 }
 
-export function createMemorySecrets(_map: Record<string, string>): SecretsProvider {
-  throw new Error(STUB);
+export function createMemorySecrets(map: Record<string, string>): SecretsProvider {
+  return fromLookup((key) => map[key]);
 }
-
-// AppError 참조 보존(Red 단계 unused import 방지) — 구현 단계에서 require 가 사용.
-void AppError;
