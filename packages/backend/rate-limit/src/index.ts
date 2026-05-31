@@ -29,8 +29,33 @@ export interface MemoryRateLimiterOptions {
   now?: () => number;
 }
 
-const STUB = "spec-14-05: createMemoryRateLimiter not implemented yet";
+interface Bucket {
+  count: number;
+  windowStart: number;
+}
 
-export function createMemoryRateLimiter(_opts: MemoryRateLimiterOptions): RateLimiter {
-  throw new Error(STUB);
+export function createMemoryRateLimiter(opts: MemoryRateLimiterOptions): RateLimiter {
+  const now = opts.now ?? (() => Date.now());
+  const buckets = new Map<string, Bucket>();
+
+  return {
+    async consume(key, cost = 1) {
+      const t = now();
+      let bucket = buckets.get(key);
+      // 윈도우 경과 → 리셋
+      if (!bucket || t - bucket.windowStart >= opts.windowMs) {
+        bucket = { count: 0, windowStart: t };
+        buckets.set(key, bucket);
+      }
+      if (bucket.count + cost <= opts.limit) {
+        bucket.count += cost;
+        return { allowed: true, remaining: opts.limit - bucket.count, retryAfterMs: 0 };
+      }
+      return {
+        allowed: false,
+        remaining: 0,
+        retryAfterMs: bucket.windowStart + opts.windowMs - t,
+      };
+    },
+  };
 }
