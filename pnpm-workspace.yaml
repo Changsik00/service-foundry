@@ -3,11 +3,13 @@ packages:
   - "packages/*/*"
 
 allowBuilds:
+  '@firebase/util': false
   '@nestjs/core': true
   argon2: true
   esbuild: true
   lefthook: true
   msgpackr-extract: false
+  protobufjs: false
   sharp: true
 
 catalog:
