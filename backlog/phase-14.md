@@ -34,6 +34,7 @@
 
 <!-- sdd:specs:start -->
 | `spec-14-01` | ci-verify-gate | P? | Merged | `specs/spec-14-01-ci-verify-gate/` |
+| `spec-14-02` | error-convention | P? | Active | `specs/spec-14-02-error-convention/` |
 <!-- sdd:specs:end -->
 
 ### spec-14-01 — ci-verify-gate (우선)
