@@ -31,8 +31,8 @@
 - [x] 단위 PASS (14) + typecheck
 - [x] walkthrough / pr_description
 - [x] Ship Commit: `docs(spec-13-01): ship walkthrough and pr description`
-- [ ] Push + PR (base `phase-13-api-data`)
-- [ ] 사용자 알림
+- [x] Push + PR (base `phase-13-api-data`)
+- [x] 사용자 알림
 
 ---
 

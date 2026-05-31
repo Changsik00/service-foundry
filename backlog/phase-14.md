@@ -37,6 +37,10 @@
 | `spec-14-02` | error-convention | P? | Merged | `specs/spec-14-02-error-convention/` |
 | `spec-14-03` | auth-guard-verified-claims | P? | Merged | `specs/spec-14-03-auth-guard-verified-claims/` |
 | `spec-14-04` | boundary-tests | P? | Merged | `specs/spec-14-04-boundary-tests/` |
+<<<<<<< Updated upstream
+=======
+| `spec-14-05` | security-ports | P? | Merged | `specs/spec-14-05-security-ports/` |
+>>>>>>> Stashed changes
 <!-- sdd:specs:end -->
 
 ### spec-14-01 — ci-verify-gate (우선)

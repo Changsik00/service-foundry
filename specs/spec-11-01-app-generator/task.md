@@ -49,8 +49,8 @@
 - [x] 통합 `app-smoke-test.sh` PASS (api 0 error)
 - [x] walkthrough.md / pr_description.md
 - [x] Ship Commit: `docs(spec-11-01): ship walkthrough and pr description`
-- [ ] Push + PR (base `phase-11-observability` — JIT 생성)
-- [ ] 사용자 알림
+- [x] Push + PR (PR #68, base `phase-11-observability` — JIT 생성)
+- [x] 사용자 알림
 
 ---
 
