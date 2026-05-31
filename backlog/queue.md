@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-13** — Service Foundations II · API & Data — 1 spec — 다음: (spec 없음)
+- **phase-13** — Service Foundations II · API & Data — 2 spec — 다음: spec-13-02-idempotency
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
