@@ -6,32 +6,28 @@
 - [x] Spec ID 확정 및 디렉토리 생성
 - [x] spec.md / plan.md / task.md 작성
 - [x] 백로그 업데이트 (phase-14.md SPEC 표 자동)
-- [ ] 사용자 Plan Accept
+- [x] 사용자 Plan Accept
 
 ---
 
 ## Task 0: 브랜치
-- [ ] `git checkout -b spec-14-02-error-convention` (from phase-14-quality-cicd)
+- [x] `git checkout -b spec-14-02-error-convention`
 
 ## Task 1: ADR-0020
-- [ ] `docs/adr/0020-error-handling-convention.md` — 결정 트리 + 예시 + 안티패턴
-- [ ] Commit: `docs(spec-14-02): add ADR-0020 error-handling convention`
+- [x] ADR-0020 작성
+- [x] Commit (docs)
 
 ## Task 2: P0 — silent confirm → outcome union (TDD)
-- [ ] `*.confirm.service.test.ts` outcome 단언으로 변경 → Fail
-- [ ] Commit: `test(spec-14-02): assert confirm outcome union`
-- [ ] `email-verify/password-reset.service.ts` confirm 반환 union + 컨트롤러 200 고정 유지 → Pass
-- [ ] Commit: `refactor(spec-14-02): confirm returns outcome union (enumeration-safe preserved)`
+- [x] confirm → ConfirmOutcome union + 테스트 outcome 단언 (11/11)
+- [x] Commit (refactor, test+impl 타입결합 단일)
 
 ## Task 3: P2 — plain Error → AppError
-- [ ] 6곳 `throw new Error` → `AppError(INTERNAL)` (+ package.json @repo/errors dep 필요시)
-- [ ] 관련 테스트 조정(AppError code 단언)
-- [ ] Commit: `refactor(spec-14-02): plain Error → AppError(INTERNAL) at invariant sites`
+- [x] 6곳 → AppError (INTERNAL/NOT_FOUND). 4 패키지 75 tests green, 비파괴
+- [x] Commit (refactor)
 
 ## Task 4: Ship
-- [ ] 전체 단위 PASS + typecheck 0
-- [ ] walkthrough / pr_description
-- [ ] Ship Commit + Push + PR (base `phase-14-quality-cicd`) + 알림 + CI green 확인
+- [x] walkthrough / pr_description
+- [x] Ship Commit + Push + PR + CI green 확인
 
 ---
 
