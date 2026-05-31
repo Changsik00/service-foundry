@@ -38,9 +38,9 @@ created: 2026-05-31
 - docs md 파일: 95
 
 ## Ship
-- [ ] walkthrough.md 작성
-- [ ] pr_description.md 작성
-- [ ] push + PR 생성 (base: `phase-14-quality-cicd`)
+- [x] walkthrough.md 작성
+- [x] pr_description.md 작성
+- [x] push + PR 생성 (base: `phase-14-quality-cicd`)
 
 ## 진행 요약
 | 항목 | 값 |
