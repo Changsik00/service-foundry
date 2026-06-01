@@ -33,7 +33,7 @@
 
 | # | 기준 | 결과 | 증거 |
 |:---:|---|:---:|---|
-| 1 | CSRF 배선 (상태변경 거부) | ✅ PASS | `auth.controller.ts` CsrfGuard 9개 endpoint; e2e 헤더누락/csrf_id부재/위조 → 403, 동반 → 200 |
+| 1 | CSRF 배선 (상태변경 거부) | ✅ PASS | `auth.controller.ts` CsrfGuard 8개 endpoint(인증 4 + 미인증 4); e2e 헤더누락/csrf_id부재/위조 → 403, 동반 → 200 |
 | 2 | 로그인 rate-limit + lockout | ✅ PASS | `signin.service.ts` 5호출(isLocked/checkRateLimit/recordFailure/evaluateLockout/recordSuccess); migration `0008` (failed_logins/lockouts +2 idx); e2e 5×401 → 429 |
 | 3 | CI knip+depcruise 게이트 | ✅ PASS | `verify.yml:54` `pnpm turbo run knip depcruise` (clean exit 0); spec-15-01 canary: knip unused→exit1, depcruise frontend→backend→exit1 |
 | 4 | request-id 배선 | ✅ PASS | `main.ts:19` configureApp → `app.setup.ts:16` requestIdMiddleware; e2e reqId 2건. 부정검증: 배선 제거 시 e2e 2건 FAIL (C1, d6e43d8) |
