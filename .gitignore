@@ -44,3 +44,10 @@ Thumbs.db
 # harness-kit (runtime / backup only — .harness-kit/ and .claude/commands|settings are tracked)
 .harness-backup-*/
 .claude/state/
+.harness-kit/cache.json
+
+# Obsidian (docs/ vault) — 공유 설정(app/appearance/core-plugins)은 추적, 개인 상태는 ignore
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/graph.json
+.obsidian/cache
