@@ -22,6 +22,7 @@ find "$ROOT" -name '*.md' -exec grep -ohE '\[\[[^]]+\]\]' {} \; \
   | sed -E 's:.*/::; s/^ +//; s/ +$//' \
   | grep -v '^$' \
   | grep -v '[<>]'                  `# CONVENTIONS 예시 placeholder 제외` \
+  | grep -v ':'                     `# POSIX 정규식 클래스([[:space:]]) 오인 제외 — wikilink 타깃엔 : 없음` \
   | grep -vxE 'their-name|basename|\.\.\.|adr-\.\.\.' \
   | sort -u > "$bases.links"
 broken="$(comm -23 "$bases.links" "$bases")"

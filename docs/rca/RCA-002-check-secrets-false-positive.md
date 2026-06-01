@@ -32,7 +32,7 @@ compose 의 `${DB_PASSWORD:-postgres}` 기본값 보간을 커밋해도 동일�
 
 ## 🎯 Root Cause
 
-`check-secrets.sh` 정규식 `(password|secret|api_key|...)[[:space:]]*[=:][[:space:]]*<값>` 이 **할당 텍스트의 문맥을 구분하지 못한다**: `${VAR:-default}` 셸 기본값 보간, 마크다운 본문/코드펜스 안의 설명용 예시, placeholder 값이 실제 자격증명 하드코딩과 동일하게 매치된다. 파일 종류(`docs/**`, compose) 별 예외도 없다.
+`check-secrets.sh` 정규식 `(password|secret|api_key|...)\s*[=:]\s*<값>` (POSIX space 클래스 사용) 이 **할당 텍스트의 문맥을 구분하지 못한다**: `${VAR:-default}` 셸 기본값 보간, 마크다운 본문/코드펜스 안의 설명용 예시, placeholder 값이 실제 자격증명 하드코딩과 동일하게 매치된다. 파일 종류(`docs/**`, compose) 별 예외도 없다.
 
 ## 🛡 Invariant Violated
 
