@@ -28,12 +28,12 @@
 - [x] 검증: typecheck PASS
 - [x] Commit: `feat(spec-15-03): wire drizzle RateLimitStore provider`
 
-## Task 4: SigninService 배선 (TDD)
-- [ ] Red: `signin.service.test.ts` 에 fake store 주입 + 시나리오(5회 실패→429 lock, 성공→reset, 잠긴 계정→429). Fail 확인.
-- [ ] Green: `signin.service.ts` — `signIn(email,password,ip)`, isLocked→checkRateLimit→verify→record*. 차단 429(`HttpException`).
-- [ ] `auth.controller.ts`: `signIn(email, password, ctx.ip)` 전달.
-- [ ] 검증: `pnpm --filter @apps/api test -- signin.service` + typecheck
-- [ ] Commit: `feat(spec-15-03): enforce rate-limit + lockout in SigninService`
+## Task 4: SigninService 배선 (TDD) ✅
+- [x] `signin.service.test.ts`: `createFakeRateLimitStore` 주입 + 5회 실패→6회차 429, 성공→reset 시나리오 (5 tests)
+- [x] `signin.service.ts`: `signIn(email,password,ip)`, isLocked→checkRateLimit→verify→(실패)recordFailure+evaluateLockout/(성공)recordSuccess. 차단 `HttpException` 429.
+- [x] `auth.controller.ts`: `signIn(email, password, ctx.ip)` 전달.
+- [x] 검증: signin.service 5/5 + apps/api 전체 99/99 (e2e 39 회귀 없음) + typecheck
+- [x] Commit: `feat(spec-15-03): enforce rate-limit + lockout in SigninService`
 
 ## Task 5: e2e 통합 검증
 - [ ] `auth.e2e.test.ts`: "rate-limit/lockout" describe — 전용 계정 5회 오답(postCsrf)→ 이후 429. 정상 흐름 회귀 확인.
