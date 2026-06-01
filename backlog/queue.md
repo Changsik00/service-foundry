@@ -32,6 +32,10 @@
 - ~~🔒 **CSRF 미배선**~~ **→ phase-15-01 로 승격** (2026-06-01, wiring audit §A)
 - ~~**생성기 backend tsconfig `types:["node"]` 누락**~~ **→ phase-15-05 로 승격** (2026-06-01, wiring audit §E)
 - [ ] **wiring audit 🟡 의도적 미배선 항목들** (passkey env · HttpClient/Settings DI · web-vite theme · 프론트 MFA/Passkey UI · RequireAuth · provider 교체) — 보일러플레이트 의도적, 필요 시 개별 승격. `docs/review/2026-06-01-wiring-audit.md` §🟡
+- [ ] **MFA/passkey 상태변경 POST 8개 CSRF 보호** (phase-15 회고 W5) — `mfa/totp/{enroll,enroll/confirm,verify,disable}`·`passkey/{register,authenticate}/{options,verify}`. ADR-0021 메커니즘(csrf_id) 동일 적용 가능, 배선만 후속. 특히 `mfa/totp/verify`·`passkey/authenticate/verify` 는 미인증 로그인 완료 endpoint. spec-x/phase-16 후보
+- [ ] **CSRF/OAuth secret production 가드** (phase-15 회고 W3) — `CSRF_SECRET`·`OAUTH_STATE_SECRET` 이 `NODE_ENV=production` 에서도 dev 기본값 통과. production 기동 시 기본값 거부 가드 추가. spec-x 후보
+- [ ] **web-next CSRF 403 자가복구 + web-vite/SDK 헤더 동반** (phase-15 회고 W6) — 403(토큰 만료/불일치) 시 재부트스트랩+재시도. password-reset/email-verify 흐름 클라이언트 부재분. web-vite·`packages/frontend/auth-*` SDK CSRF 헤더. 후속
+- [ ] **knip-config ignoreDependency 정리** (phase-15 회고 W4) — spec-15-02 가 `@repo/backend-auth-rate-limit` 실배선 후 spec-15-01 등록 ignore 잔존 → knip 40 redundant hint. 배선 완료 dep 의 ignore 제거. 비차단, 정리 항목
 - [ ] lat.md Phase 2 도입 평가 (지식 그래프 도구)
 - [ ] ARCHITECTURE.md 본체 재작성 (Phase 3 직전, ADR-0005 결정 후)
 

@@ -82,7 +82,9 @@ UI 부재·RBAC 미사용·provider 교체점 등은 보일러플레이트의 *�
 | 갭 기준 | 전부 / 보안·검증만 | **보안·검증만** | YAGNI 면제 보일러플레이트 — UI/RBAC/provider 교체점은 의도적 미배선 (사용자 결정 2026-06-01) |
 | 묶음 단위 | spec-x 산발 / 새 phase | **phase-15** | 5건 응집(배선 테마), 3+ spec → Phase 진입조건 충족 |
 | phase 번호 | — | Security=15, deploy=16 | 보안이 더 급함 → deploy/k8s 를 phase-16 으로 밀어냄 (사용자 결정 2026-06-01) |
-| CI 갭(§C) 책임 | — | **phase-ship 검증 누락** | 에이전트가 phase-14 성공기준5 의 knip/depcruise 부분을 놓치고 PASS 판정 → RCA 후보(phase-ship 성공기준 문자 단위 대조) |
+| CI 갭(§C) 책임 | — | **phase-ship 검증 누락** | 에이전트가 phase-14 성공기준5 의 knip/depcruise 부분을 놓치고 PASS 판정 → **RCA-003 작성** (phase-ship 성공기준 문자 단위 대조 누락 패턴, 2026-06-01) |
+| CSRF 바인딩 전략 | session / per-client csrf_id | **csrf_id (session 비의존)** | 미인증 endpoint 보호 위해 → **ADR-0021 작성** (session-revoke 자동 무효화 포기 trade-off, 2026-06-01) |
+| 회고 C1 (SC4 통합테스트) | 방치 / 보완 | **보완 (phase FF)** | e2e 가 main.ts 배선 복제본을 검증 → `configureApp` SoT 추출로 배선 회귀 차단. 대조 검증(배선 제거 시 e2e fail) 완료. commit d6e43d8 |
 
 ## 🧪 통합 테스트 시나리오 (간결)
 
@@ -125,4 +127,11 @@ UI 부재·RBAC 미사용·provider 교체점 등은 보일러플레이트의 *�
 
 ## 📊 검증 결과 (phase 완료 시 작성)
 
-<!-- 통합 테스트 로그, 성공 기준 측정값 -->
+### 회고 (`/hk-phase-review`, 독립 Opus 감사자, 2026-06-01)
+- **권고**: Conditional Go — C1 보완 후 phase-ship 가능.
+- **🔴 C1 (해소됨)**: SC4 통합테스트가 `main.ts` 배선이 아닌 e2e 하네스 복제본을 검증 → 배선 제거해도 GREEN. `configureApp` SoT 추출로 해소(commit d6e43d8), 대조 검증(배선 제거 시 reqId e2e 2건 FAIL) 완료.
+- **🟡 닫음**: W1 → RCA-003, W2 → ADR-0021.
+- **🟡 이월(Icebox)**: W3(prod secret 가드)·W4(knip ignore 정리)·W5(MFA/passkey CSRF)·W6(web-next 403 자가복구/SDK 헤더).
+- **목표 달성도**: 성공기준 5개 — SC1·2·3·5 ✅ 충족, SC4 ✅ (C1 보완 후).
+
+<!-- phase-ship 시 통합 테스트 로그 + 성공 기준 정량 측정값 추가 -->
