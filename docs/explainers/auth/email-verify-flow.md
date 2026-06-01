@@ -23,12 +23,12 @@ sequenceDiagram
     participant Email as Email (stub)
 
     Note over U,Email: 인증 요청
-    U->>API: POST /auth/email/verify\n{ email }
+    U->>API: POST /auth/email/verify<br/>{ email }
     API->>DB: findUserByEmail(email)
     alt 이메일 존재 & 미인증
         DB-->>API: user row (email_verified=false)
-        API->>API: token = randomBytes(32).base64url\ntokenHash = SHA-256(token)
-        API->>DB: INSERT email_verify_tokens\n{ userId, tokenHash, expiresAt=+24h }
+        API->>API: token = randomBytes(32).base64url<br/>tokenHash = SHA-256(token)
+        API->>DB: INSERT email_verify_tokens<br/>{ userId, tokenHash, expiresAt=+24h }
         API->>Email: console.info("[email-verify] token=...")
     else 이미 인증됨 또는 미존재
         Note over API: 아무 처리 없음
@@ -36,12 +36,12 @@ sequenceDiagram
     API-->>U: 200 { status:"ok" }
 
     Note over U,DB: 링크 클릭 → 확인
-    U->>API: POST /auth/email/verify/confirm\n{ token }
+    U->>API: POST /auth/email/verify/confirm<br/>{ token }
     API->>API: tokenHash = SHA-256(token)
-    API->>DB: findByHash(tokenHash)\n+ expiresAt > now
+    API->>DB: findByHash(tokenHash)<br/>+ expiresAt > now
     alt token 유효
         DB-->>API: 유효 row (userId)
-        API->>DB: UPDATE users SET email_verified=true\nWHERE id=userId
+        API->>DB: UPDATE users SET email_verified=true<br/>WHERE id=userId
         API->>DB: markUsed(tokenId, usedAt)  ← 삭제 대신 used 마킹 (usedAt 설정)
     else 만료 또는 미존재
         Note over API: 아무 처리 없음

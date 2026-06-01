@@ -17,22 +17,22 @@ tags: [service-foundry, explainer, auth, session]
 
 ```mermaid
 flowchart TD
-    A[POST /auth/signin] --> B{isLocked?\naccountKey}
-    B -- locked --> C[429 + retryAfter\nenumeration-safe]
-    B -- unlocked --> D{checkRateLimit\nIP + account}
+    A[POST /auth/signin] --> B{isLocked?<br/>accountKey}
+    B -- locked --> C[429 + retryAfter<br/>enumeration-safe]
+    B -- unlocked --> D{checkRateLimit<br/>IP + account}
     D -- blocked --> C
     D -- allowed --> E[verifyPassword]
-    E -- fail --> F[recordFailure\nIP + account]
-    F --> G[evaluateLockout\naccountKey]
+    E -- fail --> F[recordFailure<br/>IP + account]
+    F --> G[evaluateLockout<br/>accountKey]
     G --> H{streak >= threshold?}
-    H -- yes --> I["lockouts row\nunlock_at = base × 2^(streak-1)"]
+    H -- yes --> I["lockouts row<br/>unlock_at = base × 2^(streak-1)"]
     H -- no --> J[실패 카운트만 증가]
-    E -- success --> K[recordSuccess\n→ lockout row 삭제]
+    E -- success --> K[recordSuccess<br/>→ lockout row 삭제]
     K --> L[세션 발급]
 
     subgraph DB Tables
-        M[(failed_logins\nip / account_key / created_at)]
-        N[(lockouts\naccount_key / unlock_at / streak)]
+        M[(failed_logins<br/>ip / account_key / created_at)]
+        N[(lockouts<br/>account_key / unlock_at / streak)]
     end
     F --> M
     G --> N

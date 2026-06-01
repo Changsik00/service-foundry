@@ -23,11 +23,11 @@ sequenceDiagram
     participant Email as Email (stub)
 
     Note over U,Email: 재설정 요청
-    U->>API: POST /auth/password/reset\n{ email }
+    U->>API: POST /auth/password/reset<br/>{ email }
     API->>DB: findUserByEmail(email)
     alt 이메일 존재
         DB-->>API: user row
-        API->>API: token = randomBytes(32).base64url\ntokenHash = SHA-256(token)
+        API->>API: token = randomBytes(32).base64url<br/>tokenHash = SHA-256(token)
         API->>DB: INSERT { userId, tokenHash, expiresAt=+15min }
         API->>Email: console.info("[password-reset] token=...")
     else 이메일 없음
@@ -36,9 +36,9 @@ sequenceDiagram
     API-->>U: 200 { status:"ok" }  ← 항상 동일
 
     Note over U,DB: 확인 & 비밀번호 변경
-    U->>API: POST /auth/password/reset/confirm\n{ token, newPassword }
+    U->>API: POST /auth/password/reset/confirm<br/>{ token, newPassword }
     API->>API: tokenHash = SHA-256(token)
-    API->>DB: findByHash(tokenHash)\n+ expiresAt > now 조건
+    API->>DB: findByHash(tokenHash)<br/>+ expiresAt > now 조건
     alt token 유효
         DB-->>API: 유효 row
         API->>API: hashPassword(newPassword) [argon2id]

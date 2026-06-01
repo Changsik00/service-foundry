@@ -26,13 +26,13 @@ flowchart LR
     KY -->|HTTP 응답| JSON["raw .json()"]
     JSON --> Schema{"schema 있음?"}
     Schema -->|yes| Zod["zod.safeParse()"]
-    Zod -->|fail| VALIDATION["AppError VALIDATION\nstatusCode:502"]
+    Zod -->|fail| VALIDATION["AppError VALIDATION<br/>statusCode:502"]
     Zod -->|ok| Return["T 반환"]
     Schema -->|no| Return
-    KY -->|TimeoutError| TIMEOUT["AppError TIMEOUT\nstatusCode:504"]
-    KY -->|HTTPError 4xx| BAD["AppError BAD_REQUEST\nstatusCode: 원본"]
-    KY -->|HTTPError 5xx| UPSTREAM["AppError UPSTREAM\nstatusCode: 원본"]
-    KY -->|NetworkError 등| NETWORK["AppError NETWORK\nstatusCode:0"]
+    KY -->|TimeoutError| TIMEOUT["AppError TIMEOUT<br/>statusCode:504"]
+    KY -->|HTTPError 4xx| BAD["AppError BAD_REQUEST<br/>statusCode: 원본"]
+    KY -->|HTTPError 5xx| UPSTREAM["AppError UPSTREAM<br/>statusCode: 원본"]
+    KY -->|NetworkError 등| NETWORK["AppError NETWORK<br/>statusCode:0"]
 ```
 
 ### retry 정책

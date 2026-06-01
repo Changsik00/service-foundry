@@ -20,18 +20,18 @@ ADR-0016은 어댑터 패키지에서 객체 리터럴 DynamicModule 대신 `@Mo
 ```mermaid
 flowchart LR
     subgraph "packages/backend/ (framework-agnostic)"
-        Core["@repo/backend-settings\n@repo/backend-logger\n@repo/backend-database\n@repo/backend-http-client"]
+        Core["@repo/backend-settings<br/>@repo/backend-logger<br/>@repo/backend-database<br/>@repo/backend-http-client"]
     end
 
     subgraph "packages/nestjs/ (NestJS DI 어댑터)"
-        NS["@repo/nestjs-settings\nBackendSettingsModule.forRoot()"]
-        NL["@repo/nestjs-logger\nBackendLoggerModule.forRoot()"]
-        ND["@repo/nestjs-database\nDatabaseModule.forRoot()\nimplements OnModuleDestroy"]
-        NH["@repo/nestjs-http-client\nHttpClientModule.forRoot()"]
+        NS["@repo/nestjs-settings<br/>BackendSettingsModule.forRoot()"]
+        NL["@repo/nestjs-logger<br/>BackendLoggerModule.forRoot()"]
+        ND["@repo/nestjs-database<br/>DatabaseModule.forRoot()<br/>implements OnModuleDestroy"]
+        NH["@repo/nestjs-http-client<br/>HttpClientModule.forRoot()"]
     end
 
     Core -->|pure 로직 import| NS & NL & ND & NH
-    NS & NL & ND & NH -->|DynamicModule| App["AppModule\n(apps/api)"]
+    NS & NL & ND & NH -->|DynamicModule| App["AppModule<br/>(apps/api)"]
 ```
 
 ### @Module forRoot 패턴

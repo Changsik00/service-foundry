@@ -17,26 +17,26 @@ tags: [service-foundry, explainer, platform, turbo]
 
 ```mermaid
 flowchart TD
-    User["pnpm new package\n(turbo gen package)"]
-    User2["pnpm new app\n(turbo gen app)"]
+    User["pnpm new package<br/>(turbo gen package)"]
+    User2["pnpm new app<br/>(turbo gen app)"]
 
-    User -->|category + name| RPT["resolvePackageTarget(category, name)\n순수함수 — 5 카테고리"]
-    User2 -->|type + name + port| RAT["resolveAppTarget(type, name, port)\n순수함수 — api/next/vite"]
+    User -->|category + name| RPT["resolvePackageTarget(category, name)<br/>순수함수 — 5 카테고리"]
+    User2 -->|type + name + port| RAT["resolveAppTarget(type, name, port)<br/>순수함수 — api/next/vite"]
 
-    RPT -->|PackageTarget| PKGGen["패키지 파일 생성\npackage.json / tsconfig / vitest.config / src/index.ts"]
-    RAT -->|AppTarget| AppGen["앱 파일 생성\npackage.json / tsconfig / src/main.ts 등"]
+    RPT -->|PackageTarget| PKGGen["패키지 파일 생성<br/>package.json / tsconfig / vitest.config / src/index.ts"]
+    RAT -->|AppTarget| AppGen["앱 파일 생성<br/>package.json / tsconfig / src/main.ts 등"]
 
-    PKGGen --> Format["biome check --write\n(JSON.stringify 배열 줄바꿈 정규화)"]
+    PKGGen --> Format["biome check --write<br/>(JSON.stringify 배열 줄바꿈 정규화)"]
     AppGen --> Format
 
-    Format --> PNPMInstall["pnpm install\n(workspace 등록)"]
+    Format --> PNPMInstall["pnpm install<br/>(workspace 등록)"]
 
     subgraph "5 패키지 카테고리"
-        Sh["shared → packages/shared/<name>\n@repo/<name>"]
-        Be["backend → packages/backend/<name>\n@repo/backend-<name>"]
-        Fe["frontend → packages/frontend/<name>\n@repo/frontend-<name>"]
-        Ne["nestjs → packages/nestjs/<name>\n@repo/nestjs-<name>"]
-        Cf["config → packages/config/<name>-config\n@repo/<name>-config"]
+        Sh["shared → packages/shared/<name><br/>@repo/<name>"]
+        Be["backend → packages/backend/<name><br/>@repo/backend-<name>"]
+        Fe["frontend → packages/frontend/<name><br/>@repo/frontend-<name>"]
+        Ne["nestjs → packages/nestjs/<name><br/>@repo/nestjs-<name>"]
+        Cf["config → packages/config/<name>-config<br/>@repo/<name>-config"]
     end
 
     RPT --> Sh & Be & Fe & Ne & Cf

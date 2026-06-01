@@ -18,20 +18,20 @@ tags: [service-foundry, explainer, platform, config]
 ```mermaid
 flowchart TD
     subgraph "packages/config/"
-        TS["@repo/typescript-config\nbase/library/nestjs/node-app/react-app"]
-        VI["@repo/vitest-config\nnode/react"]
-        BI["@repo/biome-config\nbase.json"]
-        TU["@repo/tsup-config\ntsup.base.ts"]
-        TW["@repo/tailwind-config\ntailwind.base.ts"]
-        DC["@repo/depcruise-config\n.dependency-cruiser.cjs"]
-        KN["@repo/knip-config\nknip.ts"]
+        TS["@repo/typescript-config<br/>base/library/nestjs/node-app/react-app"]
+        VI["@repo/vitest-config<br/>node/react"]
+        BI["@repo/biome-config<br/>base.json"]
+        TU["@repo/tsup-config<br/>tsup.base.ts"]
+        TW["@repo/tailwind-config<br/>tailwind.base.ts"]
+        DC["@repo/depcruise-config<br/>.dependency-cruiser.cjs"]
+        KN["@repo/knip-config<br/>knip.ts"]
     end
 
     subgraph "소비 패키지"
-        PKG_TS["tsconfig.json\nextends @repo/typescript-config/library"]
-        PKG_VI["vitest.config.ts\nexport { default } from '@repo/vitest-config/node'"]
-        PKG_BI["biome.json (루트)\nextends packages/config/biome-config/base.json"]
-        PKG_TU["tsup.config.ts\nextends @repo/tsup-config/tsup.base.ts"]
+        PKG_TS["tsconfig.json<br/>extends @repo/typescript-config/library"]
+        PKG_VI["vitest.config.ts<br/>export { default } from '@repo/vitest-config/node'"]
+        PKG_BI["biome.json (루트)<br/>extends packages/config/biome-config/base.json"]
+        PKG_TU["tsup.config.ts<br/>extends @repo/tsup-config/tsup.base.ts"]
     end
 
     TS --> PKG_TS

@@ -17,13 +17,13 @@ ADR-0006의 "Consistent Wrapped SDK" 컨벤션은 런타임 추상화 없이 패
 
 ```mermaid
 flowchart LR
-    Contract["CoreAuthSDK\n(auth-contracts)\nsignIn/signUp/signOut\ngetCurrentUser/refresh"]
+    Contract["CoreAuthSDK<br/>(auth-contracts)<br/>signIn/signUp/signOut<br/>getCurrentUser/refresh"]
 
     subgraph 어댑터 패키지
-        FB["createFirebaseAuthSDK(app)\n@repo/frontend-auth-firebase\nfirebase/auth 래핑"]
-        SB["createSupabaseAuthSDK(config)\n@repo/frontend-auth-supabase\nsupabase-js 래핑"]
-        MOCK["createMockAuthSDK(state?)\n@repo/frontend-auth-testing\nstate 제어 테스트용"]
-        HTTP["createAuthSDK(baseUrl)\nweb-next 인라인\nNestJS REST 래핑"]
+        FB["createFirebaseAuthSDK(app)<br/>@repo/frontend-auth-firebase<br/>firebase/auth 래핑"]
+        SB["createSupabaseAuthSDK(config)<br/>@repo/frontend-auth-supabase<br/>supabase-js 래핑"]
+        MOCK["createMockAuthSDK(state?)<br/>@repo/frontend-auth-testing<br/>state 제어 테스트용"]
+        HTTP["createAuthSDK(baseUrl)<br/>web-next 인라인<br/>NestJS REST 래핑"]
     end
 
     FB -->|구현| Contract
@@ -31,7 +31,7 @@ flowchart LR
     MOCK -->|구현 (+ AuthSDK 전체)| Contract
     HTTP -->|구현| Contract
 
-    Contract -->|sdk prop| AP["AuthProvider\n(auth-react)"]
+    Contract -->|sdk prop| AP["AuthProvider<br/>(auth-react)"]
 
     FB -.->|확장| FBExt["firebase.getIdTokenResult()"]
     SB -.->|확장| SBExt["supabase.rls"]

@@ -20,19 +20,19 @@ flowchart TD
     Main["main 브랜치 push"]
 
     subgraph "version job"
-        CI1["actions/checkout@v4\npnpm install --frozen-lockfile"]
-        CS["changesets/action@v1\nversion: pnpm run version\ntitle: 'chore: version packages'"]
+        CI1["actions/checkout@v4<br/>pnpm install --frozen-lockfile"]
+        CS["changesets/action@v1<br/>version: pnpm run version<br/>title: 'chore: version packages'"]
         CI1 --> CS
-        CS -->|changeset 있음| VPR["'Version Packages' PR 생성/갱신\n버전 bump + CHANGELOG.md"]
+        CS -->|changeset 있음| VPR["'Version Packages' PR 생성/갱신<br/>버전 bump + CHANGELOG.md"]
         CS -->|changeset 없음| NOOP["no-op"]
     end
 
     subgraph "docker job (matrix: api, worker)"
         CI2["actions/checkout@v4"]
         OWN["Lowercase owner id"]
-        LOGIN["docker/login-action@v3\nghcr.io / GITHUB_TOKEN"]
-        BUILD["docker/build-push-action@v6\ncontext: . (모노레포 루트)\nfile: apps/<service>/Dockerfile"]
-        PUSH["ghcr.io/<owner>/service-foundry-<service>:<sha>\nghcr.io/<owner>/service-foundry-<service>:latest"]
+        LOGIN["docker/login-action@v3<br/>ghcr.io / GITHUB_TOKEN"]
+        BUILD["docker/build-push-action@v6<br/>context: . (모노레포 루트)<br/>file: apps/<service>/Dockerfile"]
+        PUSH["ghcr.io/<owner>/service-foundry-<service>:<sha><br/>ghcr.io/<owner>/service-foundry-<service>:latest"]
         CI2 --> OWN --> LOGIN --> BUILD --> PUSH
     end
 

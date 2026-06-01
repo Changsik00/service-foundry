@@ -17,12 +17,12 @@ Next.js App Router에서 `useState` / `useRouter` 같은 클라이언트 훅을 
 
 ```mermaid
 flowchart TD
-    Route["app/login/page.tsx\n(RSC — 서버 컴포넌트)"]
-    Route -->|import + render| LF["LoginForm\n('use client')"]
+    Route["app/login/page.tsx<br/>(RSC — 서버 컴포넌트)"]
+    Route -->|import + render| LF["LoginForm<br/>('use client')"]
 
-    LF -->|useAuth()| Ctx["AuthContext\n(signIn action)"]
+    LF -->|useAuth()| Ctx["AuthContext<br/>(signIn action)"]
     LF -->|useRouter()| Router["next/navigation"]
-    LF --> State["useState\nemail / password / error / isPending"]
+    LF --> State["useState<br/>email / password / error / isPending"]
 
     State --> Form["<form onSubmit={handleSubmit}>"]
     Form -->|submit| HS["handleSubmit()"]
@@ -30,7 +30,7 @@ flowchart TD
     HS -->|2. signIn({email,password})| SDK["CoreAuthSDK"]
     SDK -->|result.success| Router
     Router -->|push('/')| Home["홈 리다이렉트"]
-    SDK -->|!result.success| ErrorMsg["에러 메시지 렌더\n'이메일 또는 비밀번호가 올바르지 않습니다.'"]
+    SDK -->|!result.success| ErrorMsg["에러 메시지 렌더<br/>'이메일 또는 비밀번호가 올바르지 않습니다.'"]
     HS -->|3. setIsPending(false)| Pending
 ```
 

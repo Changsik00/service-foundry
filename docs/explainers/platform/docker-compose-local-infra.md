@@ -17,18 +17,18 @@ tags: [service-foundry, explainer, platform, docker]
 
 ```mermaid
 flowchart TD
-    UP["pnpm infra:up\ndocker compose up -d"]
+    UP["pnpm infra:up<br/>docker compose up -d"]
 
     subgraph "코어 서비스"
-        PG["postgres:16-alpine\n:5432\nhealthcheck: pg_isready"]
-        RD["redis:7-alpine\n:6379\nhealthcheck: redis-cli ping"]
+        PG["postgres:16-alpine<br/>:5432<br/>healthcheck: pg_isready"]
+        RD["redis:7-alpine<br/>:6379<br/>healthcheck: redis-cli ping"]
     end
 
     subgraph "관측 스택 (Observability)"
-        PR["prom/prometheus:v2.54.1\n:9090\nhealthcheck: /-/healthy"]
-        GF["grafana/grafana:11.2.0\n:3000\nhealthcheck: /api/health"]
-        TP["grafana/tempo:2.6.0\n:3200\nhealthcheck: /ready"]
-        LK["grafana/loki:3.2.0\n:3100\nhealthcheck: /ready"]
+        PR["prom/prometheus:v2.54.1<br/>:9090<br/>healthcheck: /-/healthy"]
+        GF["grafana/grafana:11.2.0<br/>:3000<br/>healthcheck: /api/health"]
+        TP["grafana/tempo:2.6.0<br/>:3200<br/>healthcheck: /ready"]
+        LK["grafana/loki:3.2.0<br/>:3100<br/>healthcheck: /ready"]
     end
 
     UP --> PG & RD & PR & GF & TP & LK

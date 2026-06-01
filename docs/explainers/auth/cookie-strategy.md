@@ -28,26 +28,26 @@ sequenceDiagram
     SS-->>API: { session, refreshToken }
     API->>KS: signAccessToken({ sub, role })
     KS-->>API: accessToken (EdDSA JWT)
-    API-->>C: 200 { accessToken }\nSet-Cookie: refresh_token=<raw>; httpOnly; SameSite=Lax
+    API-->>C: 200 { accessToken }<br/>Set-Cookie: refresh_token=<raw>; httpOnly; SameSite=Lax
 
     Note over C,KS: 보호 API 접근
-    C->>API: GET /auth/me\nAuthorization: Bearer <accessToken>
+    C->>API: GET /auth/me<br/>Authorization: Bearer <accessToken>
     API->>KS: verifyAccessToken(token)
     KS-->>API: Result<Claims>
     API-->>C: 200 { user }
 
     Note over C,KS: Access token 만료 → Refresh
-    C->>API: POST /auth/refresh\nCookie: refresh_token=<T1>
+    C->>API: POST /auth/refresh<br/>Cookie: refresh_token=<T1>
     API->>SS: rotateSession(T1)
     SS-->>API: { type:"rotated", refreshToken:T2 }
     API->>KS: signAccessToken({ sub, role })
     KS-->>API: newAccessToken
-    API-->>C: 200 { accessToken }\nSet-Cookie: refresh_token=<T2>; httpOnly
+    API-->>C: 200 { accessToken }<br/>Set-Cookie: refresh_token=<T2>; httpOnly
 
     Note over C,API: 로그아웃
-    C->>API: POST /auth/signout\nCookie: refresh_token=<T>
+    C->>API: POST /auth/signout<br/>Cookie: refresh_token=<T>
     API->>SS: revokeSession(sessionId)
-    API-->>C: 200\nSet-Cookie: refresh_token=; Max-Age=0
+    API-->>C: 200<br/>Set-Cookie: refresh_token=; Max-Age=0
 ```
 
 ### 5 인증 엔드포인트

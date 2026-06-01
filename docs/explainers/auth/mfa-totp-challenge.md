@@ -23,7 +23,7 @@ sequenceDiagram
     participant DB as DB (mfa_configs)
 
     Note over U,DB: 등록 (enroll)
-    U->>API: POST /auth/mfa/totp/enroll\nAuthorization: Bearer <accessToken>
+    U->>API: POST /auth/mfa/totp/enroll<br/>Authorization: Bearer <accessToken>
     API->>MFA: generateEnrollOptions(userId)
     MFA->>MFA: generateSecret() → totpUri
     MFA->>DB: UPSERT mfa_configs { userId, secret, enabled:false, backupCodeHashes:[] }
@@ -37,28 +37,28 @@ sequenceDiagram
     alt 코드 불일치
         API-->>U: 401
     end
-    MFA->>DB: UPDATE mfa_configs SET enabled=true\n+ backupCodeHashes (bcrypt hash × 10)
+    MFA->>DB: UPDATE mfa_configs SET enabled=true<br/>+ backupCodeHashes (bcrypt hash × 10)
     API-->>U: { backupCodes: [10개] } ← 최초 1회만 노출
 
     Note over U,API: 로그인 — MFA 분기
     U->>API: POST /auth/signin { email, password }
     API->>API: isMfaEnabled(userId) → mfa_configs WHERE userId + enabled=true
     alt MFA 활성
-        API->>API: signMfaChallengeToken(userId)\n(단기 JWT, 역할 없음)
+        API->>API: signMfaChallengeToken(userId)<br/>(단기 JWT, 역할 없음)
         API-->>U: { mfa_required:true, mfaChallengeToken }
     else MFA 비활성
         API-->>U: { accessToken } (일반 세션)
     end
 
     Note over U,API: TOTP 검증 → 최종 세션
-    U->>API: POST /auth/mfa/totp/verify\n{ mfaChallengeToken, code }
-    API->>API: verifyAccessToken(mfaChallengeToken)\n(audience="mfa_challenge" 전용)
+    U->>API: POST /auth/mfa/totp/verify<br/>{ mfaChallengeToken, code }
+    API->>API: verifyAccessToken(mfaChallengeToken)<br/>(audience="mfa_challenge" 전용)
     API->>MFA: verifyMfa(userId, code)
     MFA->>DB: SELECT mfa_configs WHERE userId + enabled=true
     MFA->>MFA: verifyTotp(secret, code)
     alt 코드 일치
         API->>API: createSession + signAccessToken
-        API-->>U: { accessToken }\nSet-Cookie: refresh_token=<T>
+        API-->>U: { accessToken }<br/>Set-Cookie: refresh_token=<T>
     else 불일치
         API-->>U: 401
     end

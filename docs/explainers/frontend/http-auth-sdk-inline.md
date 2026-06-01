@@ -21,11 +21,11 @@ Firebase/Supabase SDK는 여러 앱에서 재사용 가능하지만, NestJS 백�
 
 ```mermaid
 flowchart LR
-    AP["AuthProvider\nCoreAuthSDK 소비"]
-    SDK["createAuthSDK(baseUrl)\nauth-sdk.ts"]
-    API["createAuthApi(http)\nauth-api.ts"]
-    HC["createHttpClient\n@repo/frontend-http-client"]
-    NS["NestJS API\n/auth/signin 등"]
+    AP["AuthProvider<br/>CoreAuthSDK 소비"]
+    SDK["createAuthSDK(baseUrl)<br/>auth-sdk.ts"]
+    API["createAuthApi(http)<br/>auth-api.ts"]
+    HC["createHttpClient<br/>@repo/frontend-http-client"]
+    NS["NestJS API<br/>/auth/signin 등"]
 
     AP -->|signIn(input)| SDK
     SDK -->|fromPromise(api.signIn)| API

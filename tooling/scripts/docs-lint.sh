@@ -45,6 +45,16 @@ while IFS= read -r f; do
 done < <(find "$ROOT" -name '*.md')
 [ "$fc" -eq 0 ] && echo "  OK"
 
+echo "=== 4) mermaid 리터럴 \\n (→ <br/> 써야 함; GitHub 렌더 깨짐) ==="
+# mermaid 블록 내부의 literal \n 은 GitHub/Obsidian 에서 "Error parsing" 유발.
+# awk 로 ```mermaid ~ ``` 사이만 추출해 \n 매치.
+mm=0
+while IFS= read -r f; do
+  hits="$(awk '/^```mermaid/{m=1;next} /^```/{m=0} m' "$f" | grep -c '\\n')"
+  [ "$hits" -gt 0 ] && { echo "  NL($hits): $f"; mm=1; fail=1; }
+done < <(find "$ROOT" -name '*.md')
+[ "$mm" -eq 0 ] && echo "  OK"
+
 rm -f "$bases" "$bases.links"
 echo "=== md 파일: $(find "$ROOT" -name '*.md' | wc -l | tr -d ' ') ==="
 [ "$fail" -eq 0 ] && echo "✓ docs-lint PASS" || { echo "✗ docs-lint FAIL"; exit 1; }

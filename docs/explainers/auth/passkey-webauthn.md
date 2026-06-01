@@ -24,18 +24,18 @@ sequenceDiagram
     participant DB as DB (passkey_credentials / challenges)
 
     Note over B,DB: 등록 (Registration Ceremony)
-    B->>API: POST /auth/passkey/register/options\nAuthorization: Bearer <accessToken>
+    B->>API: POST /auth/passkey/register/options<br/>Authorization: Bearer <accessToken>
     API->>PKS: generateRegisterOptions(userId, email)
     PKS->>SWA: generateRegistrationOptions(...)
     PKS->>DB: INSERT passkey_challenges { userId, challenge, expiresAt=+5min }
     API-->>B: { challengeToken, options }
 
-    B->>B: navigator.credentials.create(options)\n(디바이스 생체인증 / PIN)
-    B->>API: POST /auth/passkey/register/verify\n{ challengeToken, credential }
+    B->>B: navigator.credentials.create(options)<br/>(디바이스 생체인증 / PIN)
+    B->>API: POST /auth/passkey/register/verify<br/>{ challengeToken, credential }
     API->>PKS: verifyRegister(userId, challengeToken, credential)
-    PKS->>DB: findChallenge(challengeToken)\n(expiresAt > now 조건)
+    PKS->>DB: findChallenge(challengeToken)<br/>(expiresAt > now 조건)
     PKS->>SWA: verifyRegistrationResponse(credential, challenge, rpID)
-    PKS->>DB: INSERT passkey_credentials\n{ userId, credentialId, publicKey(base64url), counter }
+    PKS->>DB: INSERT passkey_credentials<br/>{ userId, credentialId, publicKey(base64url), counter }
     PKS->>DB: DELETE passkey_challenges
     API-->>B: 200 OK
 
@@ -45,14 +45,14 @@ sequenceDiagram
     PKS->>DB: INSERT passkey_challenges { userId=null, challenge, expiresAt=+5min }
     API-->>B: { challengeToken, options }
 
-    B->>B: navigator.credentials.get(options)\n(디바이스 인증)
-    B->>API: POST /auth/passkey/authenticate/verify\n{ challengeToken, credentialId, response }
+    B->>B: navigator.credentials.get(options)<br/>(디바이스 인증)
+    B->>API: POST /auth/passkey/authenticate/verify<br/>{ challengeToken, credentialId, response }
     API->>PKS: verifyAuth(challengeToken, credentialId, response)
     PKS->>DB: findChallenge + findCredential(credentialId)
     PKS->>SWA: verifyAuthenticationResponse(response, credential, challenge)
     PKS->>DB: UPDATE passkey_credentials SET counter=newCounter
     PKS->>PKS: createSession(userId) + signAccessToken
-    API-->>B: { accessToken }\nSet-Cookie: refresh_token=<T>; httpOnly
+    API-->>B: { accessToken }<br/>Set-Cookie: refresh_token=<T>; httpOnly
 ```
 
 ### 핵심 설계 결정

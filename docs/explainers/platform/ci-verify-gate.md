@@ -17,26 +17,26 @@ tags: [service-foundry, explainer, platform, ci]
 
 ```mermaid
 flowchart TD
-    PR["PR 오픈 / main push"] -->|on: pull_request / push| WF["verify 워크플로\nubuntu-latest"]
+    PR["PR 오픈 / main push"] -->|on: pull_request / push| WF["verify 워크플로<br/>ubuntu-latest"]
 
     WF --> CHECKOUT["actions/checkout@v4"]
-    CHECKOUT --> PNPM["pnpm/action-setup@v4\n(packageManager 필드 자동 사용)"]
-    PNPM --> NODE["actions/setup-node@v4\nnode-version: 24, cache: pnpm"]
+    CHECKOUT --> PNPM["pnpm/action-setup@v4<br/>(packageManager 필드 자동 사용)"]
+    PNPM --> NODE["actions/setup-node@v4<br/>node-version: 24, cache: pnpm"]
 
-    NODE --> PG["postgres:16-alpine 서비스 컨테이너\n:5434 / POSTGRES_DB=test\nhealthcheck 10회 대기"]
+    NODE --> PG["postgres:16-alpine 서비스 컨테이너<br/>:5434 / POSTGRES_DB=test<br/>healthcheck 10회 대기"]
 
-    NODE --> INSTALL["pnpm install --frozen-lockfile\n(lockfile drift 즉시 차단)"]
-    INSTALL --> MIGRATE["pnpm --filter @apps/api db:migrate\n(e2e 테이블 준비)"]
-    MIGRATE --> TURBO["pnpm turbo run lint typecheck test build\n(129 task 병렬 실행)"]
+    NODE --> INSTALL["pnpm install --frozen-lockfile<br/>(lockfile drift 즉시 차단)"]
+    INSTALL --> MIGRATE["pnpm --filter @apps/api db:migrate<br/>(e2e 테이블 준비)"]
+    MIGRATE --> TURBO["pnpm turbo run lint typecheck test build<br/>(129 task 병렬 실행)"]
 
     TURBO -->|all pass| GREEN["✅ 게이트 통과"]
     TURBO -->|any fail| BLOCK["❌ PR 차단"]
 
     subgraph "CI가 잡은 결함 (spec-14-01)"
-        E1["ERR_PNPM_IGNORED_BUILDS\n미승인 build script → allowBuilds: false"]
-        E2["NOTIFIER 단위버그\nmock 누락 → 테스트 8개 실패"]
-        E3["crypto 타임아웃\nbcrypt/argon2 2-core 러너 5s 초과\n→ vitest testTimeout 30s"]
-        E4["routeTree.gen.ts 부재\nweb-vite gitignored 생성파일\n→ typecheck→build 의존 추가"]
+        E1["ERR_PNPM_IGNORED_BUILDS<br/>미승인 build script → allowBuilds: false"]
+        E2["NOTIFIER 단위버그<br/>mock 누락 → 테스트 8개 실패"]
+        E3["crypto 타임아웃<br/>bcrypt/argon2 2-core 러너 5s 초과<br/>→ vitest testTimeout 30s"]
+        E4["routeTree.gen.ts 부재<br/>web-vite gitignored 생성파일<br/>→ typecheck→build 의존 추가"]
     end
 ```
 

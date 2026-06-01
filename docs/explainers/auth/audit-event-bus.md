@@ -17,15 +17,15 @@ tags: [service-foundry, explainer, auth, session]
 
 ```mermaid
 flowchart TD
-    A[AuthController\nHTTP context 접근 가능] --> B["emit(AuthEvent)"]
-    B --> C[AuthEventBus\n동기 pub/sub]
+    A[AuthController<br/>HTTP context 접근 가능] --> B["emit(AuthEvent)"]
+    B --> C[AuthEventBus<br/>동기 pub/sub]
     C --> D[AuditService.onEvent]
-    D --> E[AuditStore.append\nDB INSERT]
-    E --> F[(audit_logs\nappend-only)]
+    D --> E[AuditStore.append<br/>DB INSERT]
+    E --> F[(audit_logs<br/>append-only)]
 
     subgraph 이벤트 종류
-        G[SIGNED_IN\nLOGIN_FAILED\nSIGNED_OUT\nTOKEN_REFRESHED\nSESSION_REVOKED]
-        H[PASSWORD_CHANGED\nMFA_ENROLLED]
+        G[SIGNED_IN<br/>LOGIN_FAILED<br/>SIGNED_OUT<br/>TOKEN_REFRESHED<br/>SESSION_REVOKED]
+        H[PASSWORD_CHANGED<br/>MFA_ENROLLED]
         I[SUSPICIOUS_ACTIVITY]
     end
     B -.->|현재 구현| G

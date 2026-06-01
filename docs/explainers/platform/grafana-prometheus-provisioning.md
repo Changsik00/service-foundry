@@ -18,23 +18,23 @@ Grafana UI에서 수동으로 datasource와 dashboard를 설정하면 컨테이�
 ```mermaid
 flowchart TD
     subgraph "tooling/docker/observability/"
-        PY["prometheus.yml\n스크레이프 설정"]
-        PR["prometheus-rules.yml\nAuthBruteForce alert rule"]
-        GDS["grafana/provisioning/datasources/\ndatasources.yml"]
-        GDB["grafana/provisioning/dashboards/\nprovider.yml"]
-        DJSON["grafana/dashboards/\nauth-overview.json"]
+        PY["prometheus.yml<br/>스크레이프 설정"]
+        PR["prometheus-rules.yml<br/>AuthBruteForce alert rule"]
+        GDS["grafana/provisioning/datasources/<br/>datasources.yml"]
+        GDB["grafana/provisioning/dashboards/<br/>provider.yml"]
+        DJSON["grafana/dashboards/<br/>auth-overview.json"]
     end
 
     subgraph "compose.yaml volume 마운트"
-        PY -->|:ro| Prom["prometheus 컨테이너\n/etc/prometheus/prometheus.yml"]
+        PY -->|:ro| Prom["prometheus 컨테이너<br/>/etc/prometheus/prometheus.yml"]
         PR -->|:ro| Prom
-        GDS -->|:ro| Graf["grafana 컨테이너\n/etc/grafana/provisioning/datasources"]
+        GDS -->|:ro| Graf["grafana 컨테이너<br/>/etc/grafana/provisioning/datasources"]
         GDB -->|:ro| Graf
         DJSON -->|:ro| Graf
     end
 
-    Prom -->|scrape| API["apps/api :3000/metrics\n(Prometheus exporter)"]
-    Prom -->|rule 평가| Alert["AuthBruteForce\nrate(auth_login_failure_total[1m]) > 0.2"]
+    Prom -->|scrape| API["apps/api :3000/metrics<br/>(Prometheus exporter)"]
+    Prom -->|rule 평가| Alert["AuthBruteForce<br/>rate(auth_login_failure_total[1m]) > 0.2"]
     Alert -->|firing| PromAPI["GET /api/v1/alerts"]
     Graf -->|datasource uid = Prometheus| GrafDash["Auth Overview 대시보드"]
 ```

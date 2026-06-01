@@ -18,10 +18,10 @@ tags: [service-foundry, explainer, platform, turbo, tsup, ci]
 ```mermaid
 flowchart LR
     subgraph "turbo 파이프라인 (의존 순서)"
-        L["lint\n(^lint)"]
-        TC["typecheck\n(^build → 빌드 먼저)"]
-        T["test\n(^build)"]
-        B["build\n(^build)"]
+        L["lint<br/>(^lint)"]
+        TC["typecheck<br/>(^build → 빌드 먼저)"]
+        T["test<br/>(^build)"]
+        B["build<br/>(^build)"]
     end
 
     L --> TC
@@ -30,14 +30,14 @@ flowchart LR
     B -->|dist/ 아티팩트| Consumer["소비 패키지"]
 
     subgraph "tsup dual-format"
-        SRC["src/index.ts"] --> ESM["dist/index.mjs\n(ESM)"]
-        SRC --> CJS["dist/index.cjs\n(CJS)"]
-        SRC --> DTS["dist/index.d.ts\n(타입 선언)"]
+        SRC["src/index.ts"] --> ESM["dist/index.mjs<br/>(ESM)"]
+        SRC --> CJS["dist/index.cjs<br/>(CJS)"]
+        SRC --> DTS["dist/index.d.ts<br/>(타입 선언)"]
     end
 
     subgraph "turbo cache"
-        Hit1["1차 miss → 빌드 실행\n해시 저장"]
-        Hit2["2차 hit → 로그 재생\n~29ms FULL TURBO"]
+        Hit1["1차 miss → 빌드 실행<br/>해시 저장"]
+        Hit2["2차 hit → 로그 재생<br/>~29ms FULL TURBO"]
     end
 
     B --> Hit1
