@@ -6,7 +6,7 @@ tags: [service-foundry, reference, frontend, app]
 
 # web-vite — Vite SPA 프론트엔드 데모
 
-> 💡 **한 줄 요약**: Vite 7 + React + TanStack Router/Query 기반 SPA 앱. 파일 기반 라우팅과 클라이언트 사이드 헬스체크 쿼리를 시연하는 개발 레퍼런스 앱이다.
+> 💡 **한 줄 요약**: Vite 8 + React + TanStack Router/Query 기반 SPA 앱. 파일 기반 라우팅과 클라이언트 사이드 헬스체크 쿼리를 시연하는 개발 레퍼런스 앱이다.
 > **위치**: `apps/web-vite` · **상위**: [[architecture]]
 
 ## 요약

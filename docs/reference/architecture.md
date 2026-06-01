@@ -64,7 +64,7 @@ flowchart TD
 
 ## 3. Auth 패키지 클러스터 (가장 큰 응집 영역)
 
-Auth 는 "Auth Engine(외부 라이브러리: jose/argon2/otplib/@simplewebauthn) + Auth Platform(자체 구축)" 으로 나뉘는 **Consistent Wrapped SDK** 전략을 따른다 ([[adr/0006-auth-strategy|ADR-0006]], [[explainers/auth/auth-sdk-provider-adapters]]).
+Auth 는 "Auth Engine(외부 라이브러리: jose/argon2/otplib/@simplewebauthn) + Auth Platform(자체 구축)" 으로 나뉘는 **Consistent Wrapped SDK** 전략을 따른다 ([[adr/0006-auth-strategy|ADR-0006]], [[explainers/frontend/auth-sdk-provider-adapters]]).
 
 ```mermaid
 flowchart LR

@@ -19,7 +19,7 @@ tags: [service-foundry, reference, frontend, auth, mfa, passkey]
 |---|---|---|
 | `AuthProvider` | component | `sdk: AuthSDK` prop 수신, Context 공급자 |
 | `useAuth` | hook | `{ user, signIn, signUp, signOut, ... }` |
-| `useSession` | hook | 현재 `Session \| null` |
+| `useSession` | hook | `{ user, isLoading }` — `AuthContextValue`에서 `user`·`isLoading` 추출 |
 | `AuthContextValue` | type | Context 값 타입 |
 | `RequireAuth` | component | 미인증 시 redirect/fallback |
 | `RequireRole` | component | 역할 불일치 시 redirect/fallback |
