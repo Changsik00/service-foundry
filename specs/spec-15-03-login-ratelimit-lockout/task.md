@@ -12,15 +12,15 @@
 
 ---
 
-## Task 1: 브랜치 + 문서 커밋
-- [ ] `git checkout -b spec-15-03-login-ratelimit-lockout` (phase base 에서)
-- [ ] Commit: `docs(spec-15-03): add spec/plan/task`
+## Task 1: 브랜치 + 문서 커밋 ✅
+- [x] `git checkout -b spec-15-03-login-ratelimit-lockout`
+- [x] Commit: `docs(spec-15-03): add spec/plan/task`
 
-## Task 2: 스키마 + 마이그레이션
-- [ ] `infra/schema/index.ts`·`local.ts` 에 `failedLogins`/`lockouts` import + appSchema/export 포함
-- [ ] `pnpm db:generate` → `drizzle/000X_*.sql` 생성
-- [ ] 검증: typecheck + 로컬 DB `db:migrate` 적용 성공
-- [ ] Commit: `feat(spec-15-03): include failed_logins/lockouts in appSchema + migration`
+## Task 2: 스키마 + 마이그레이션 ✅
+- [x] `index.ts`·`local.ts` 에 `failedLogins`/`lockouts` (`@repo/backend-auth-rate-limit/schema`) + appSchema 포함
+- [x] `db:generate` → `drizzle/0008_sad_ogun.sql` 생성 (failed_logins 4col/2idx, lockouts 4col)
+- [x] 검증: typecheck PASS + 로컬 DB `db:migrate` 적용 + 테이블 확인
+- [x] Commit: `feat(spec-15-03): include failed_logins/lockouts in appSchema + migration`
 
 ## Task 3: rate-limit store DI
 - [ ] `auth/rate-limit.stores.ts` — `RATE_LIMIT_STORE` 심볼 + `InjectRateLimitStore` + `createDrizzleRateLimitStore`
