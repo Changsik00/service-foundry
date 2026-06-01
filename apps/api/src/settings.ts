@@ -17,6 +17,7 @@ const AppSettingsSchema = BaseBackendSchema.extend({
   JWT_ISSUER: z.string().min(1).default("http://localhost:3000"),
   JWT_AUDIENCE: z.string().min(1).default("http://localhost:3000"),
   OAUTH_STATE_SECRET: z.string().min(1).default("dev-secret-change-in-production"),
+  CSRF_SECRET: z.string().min(1).default("dev-secret-change-in-production"),
   OAUTH_REDIRECT_BASE_URL: z.string().url().default("http://localhost:3000"),
   GOOGLE_CLIENT_ID: z.string().default(""),
   GOOGLE_CLIENT_SECRET: z.string().default(""),

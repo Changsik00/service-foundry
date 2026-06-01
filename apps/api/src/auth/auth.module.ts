@@ -8,6 +8,7 @@ import { JwtService } from "../jwt/jwt.service.js";
 import { type AppSettings, loadSettings } from "../settings.js";
 import { AuditEventListener } from "./audit.event-listener.js";
 import { AuthController } from "./auth.controller.js";
+import { CSRF_SECRET, CsrfGuard } from "./csrf.guard.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import {
   createDrizzleEmailVerifyTokenStore,
@@ -48,6 +49,11 @@ const settings: AppSettings = loadSettings(process.env);
     AuthGuard,
     AuthEventBus,
     AuditEventListener,
+    CsrfGuard,
+    {
+      provide: CSRF_SECRET,
+      useValue: settings.CSRF_SECRET,
+    },
     {
       provide: JWT_SIGN_OPTIONS,
       useValue: { issuer: settings.JWT_ISSUER, audience: settings.JWT_AUDIENCE },

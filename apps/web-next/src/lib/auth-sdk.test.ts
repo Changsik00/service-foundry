@@ -23,7 +23,7 @@ describe("createAuthSDK", () => {
     mockPost = vi.fn();
     vi.mocked(createHttpClient).mockReturnValue({
       post: mockPost,
-      get: vi.fn(),
+      get: vi.fn().mockResolvedValue({ csrfToken: "csrf-test-token" }),
       put: vi.fn(),
       delete: vi.fn(),
       patch: vi.fn(),
