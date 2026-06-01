@@ -34,8 +34,8 @@
   - 검증: `pnpm turbo run knip depcruise` 2 successful, exit 0.
   - 완료: `build(spec-15-01): add knip/depcruise turbo tasks + scripts`
 
-- [ ] **task-06**: verify.yml 게이트 step
-  - `.github/workflows/verify.yml` 에 knip + depcruise step 추가.
+- [x] **task-06**: verify.yml 게이트 step
+  - `.github/workflows/verify.yml` install 직후 `pnpm turbo run knip depcruise` step 추가 (DB·build 불필요 → test 앞 fail-fast).
   - 완료: `ci(spec-15-01): add knip + depcruise to verify gate`
 
 - [ ] **task-07**: 위반 주입 검증 (시나리오 3)
