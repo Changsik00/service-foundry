@@ -28,8 +28,10 @@
   - 검증: `pnpm depcruise` 경계 위반 0 (383 modules, 825 deps, exit 0).
   - 완료: `build(spec-15-01): wire dependency-cruiser at root`
 
-- [ ] **task-05**: turbo task + root scripts
-  - `turbo.json` 에 `knip`/`depcruise` task, `package.json` scripts.
+- [x] **task-05**: turbo task + root scripts
+  - `turbo.json` 에 root task `//#knip`·`//#depcruise` (전역 분석기라 per-package 아님, 소스 전체 input 으로 stale-pass 방지), `package.json` 에 `knip` script.
+  - 부수: depcruise 배선 후 redundant 해진 tooling ignore 3개(@repo/depcruise-config·dependency-cruiser·@turbo/gen) 제거 — knip depcruise plugin·turbo entry 가 추적.
+  - 검증: `pnpm turbo run knip depcruise` 2 successful, exit 0.
   - 완료: `build(spec-15-01): add knip/depcruise turbo tasks + scripts`
 
 - [ ] **task-06**: verify.yml 게이트 step

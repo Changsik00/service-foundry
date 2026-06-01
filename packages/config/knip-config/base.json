@@ -7,9 +7,6 @@
   },
   "ignoreDependencies": [
     "@repo/biome-config",
-    "@repo/depcruise-config",
-    "dependency-cruiser",
-    "@turbo/gen",
     "tsup",
     "drizzle-kit",
     "tailwindcss",
