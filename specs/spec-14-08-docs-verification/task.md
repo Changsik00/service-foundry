@@ -20,9 +20,9 @@
 - [-] **task-08**: docs-lint 회귀 — PASS (각 커밋서 확인, 별도 수정 불요 → 스킵)
 
 ## Ship
-- [ ] walkthrough.md 작성
-- [ ] pr_description.md 작성
-- [ ] push + PR (base: `phase-14-quality-cicd`)
+- [x] walkthrough.md 작성
+- [x] pr_description.md 작성
+- [x] push + PR (base: `phase-14-quality-cicd`)
 
 ## 진행 요약
 | 항목 | 값 |
