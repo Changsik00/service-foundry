@@ -22,11 +22,11 @@
 - [x] 검증: `pnpm --filter @apps/api typecheck` PASS
 - [x] Commit: `feat(spec-15-02): add CSRF_SECRET to app settings`
 
-## Task 3: CSRF 쿠키 헬퍼 (TDD)
-- [ ] Red: `apps/api/src/auth/csrf.cookie.test.ts` — `setCsrfCookies`(csrf_id+csrf_token Set-Cookie, body 토큰 반환)·`readCsrfId` 기대. Fail 확인.
-- [ ] Green: `apps/api/src/auth/csrf.cookie.ts` 구현 (랜덤 csrf_id, `issueCsrfToken` 재사용, 쿠키 옵션은 cookie.helper 정책 일관)
-- [ ] 검증: `pnpm --filter @apps/api test -- csrf.cookie`
-- [ ] Commit: `feat(spec-15-02): add CSRF cookie helper (issue/rotate/read)`
+## Task 3: CSRF 쿠키 헬퍼 (TDD) ✅
+- [x] `csrf.cookie.test.ts` — setCsrfCookies(httpOnly 정책·반환 토큰 일치·rotate)·readCsrfId 4 케이스
+- [x] `csrf.cookie.ts` 구현 (랜덤 csrf_id, `issueCsrfToken` 재사용, cookie.helper 옵션 일관)
+- [x] 검증: vitest 4 passed + `pnpm --filter @apps/api typecheck` PASS
+- [x] Commit: `feat(spec-15-02): add CSRF cookie helper (issue/rotate/read)`
 
 ## Task 4: CsrfGuard (TDD)
 - [ ] Red: `apps/api/src/auth/csrf.guard.test.ts` — 정상 통과 / 헤더 누락 / 위조 / csrf_id 쿠키 부재 → 각 기대(통과 or Forbidden). Fail 확인.
