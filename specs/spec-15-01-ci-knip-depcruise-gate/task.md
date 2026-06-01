@@ -23,9 +23,9 @@
   - 검증: `pnpm knip` exit 0 (catalog 1건 warn=비차단).
   - 완료: `refactor(spec-15-01): preserve scaffolding via knip @public tags`
 
-- [ ] **task-04**: depcruise root 배선
+- [x] **task-04**: depcruise root 배선
   - root `.dependency-cruiser.cjs` (preset require) + `pnpm depcruise` script.
-  - 검증: `pnpm depcruise` 경계 위반 0.
+  - 검증: `pnpm depcruise` 경계 위반 0 (383 modules, 825 deps, exit 0).
   - 완료: `build(spec-15-01): wire dependency-cruiser at root`
 
 - [ ] **task-05**: turbo task + root scripts
