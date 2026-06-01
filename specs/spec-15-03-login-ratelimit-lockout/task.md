@@ -22,11 +22,11 @@
 - [x] 검증: typecheck PASS + 로컬 DB `db:migrate` 적용 + 테이블 확인
 - [x] Commit: `feat(spec-15-03): include failed_logins/lockouts in appSchema + migration`
 
-## Task 3: rate-limit store DI
-- [ ] `auth/rate-limit.stores.ts` — `RATE_LIMIT_STORE` 심볼 + `InjectRateLimitStore` + `createDrizzleRateLimitStore`
-- [ ] `auth.module.ts` provider 등록
-- [ ] 검증: typecheck (앱 부팅 시 DI 해결)
-- [ ] Commit: `feat(spec-15-03): wire drizzle RateLimitStore provider`
+## Task 3: rate-limit store DI ✅
+- [x] `auth/rate-limit.stores.ts` — `RATE_LIMIT_STORE` 심볼 + `InjectRateLimitStore` + `createDrizzleRateLimitStore` (session.stores 패턴)
+- [x] `auth.module.ts` provider 등록 (inject:[DATABASE])
+- [x] 검증: typecheck PASS
+- [x] Commit: `feat(spec-15-03): wire drizzle RateLimitStore provider`
 
 ## Task 4: SigninService 배선 (TDD)
 - [ ] Red: `signin.service.test.ts` 에 fake store 주입 + 시나리오(5회 실패→429 lock, 성공→reset, 잠긴 계정→429). Fail 확인.

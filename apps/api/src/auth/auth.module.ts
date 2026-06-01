@@ -31,6 +31,7 @@ import {
   PASSWORD_RESET_TOKEN_STORE,
   USER_STORE,
 } from "./password-reset.stores.js";
+import { createDrizzleRateLimitStore, RATE_LIMIT_STORE } from "./rate-limit.stores.js";
 import { createDrizzleSessionStore, SESSION_STORE } from "./session.stores.js";
 import { SigninService } from "./signin.service.js";
 import { SignupService } from "./signup.service.js";
@@ -82,6 +83,11 @@ const settings: AppSettings = loadSettings(process.env);
       provide: SESSION_STORE,
       inject: [DATABASE],
       useFactory: (db: Database<Record<string, unknown>>) => createDrizzleSessionStore(db.db),
+    },
+    {
+      provide: RATE_LIMIT_STORE,
+      inject: [DATABASE],
+      useFactory: (db: Database<Record<string, unknown>>) => createDrizzleRateLimitStore(db.db),
     },
     {
       provide: PASSWORD_RESET_TOKEN_STORE,
