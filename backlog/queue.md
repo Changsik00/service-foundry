@@ -28,7 +28,8 @@
 - [ ] Hono apps/edge-api scope: 같은 `/api` 모방 / 다른 엔드포인트 / Cloudflare Workers 전용 데모 (phase-09)
 - [ ] commit-time hook 명령 set (Biome only / + typecheck / + affected test) (phase-03~10 중 결정)
 - ~~보안 linter (semgrep / socket.dev) 추가 여부~~ **해소**: ADR-0019 No-Go (phase-15 CI 재평가) — spec-10-03 (2026-05-30)
-- [ ] check-secrets 훅 false positive 개선 — compose/env 의 `${VAR:-default}` 보간값을 시크릿으로 오탐 (spec-10-01 에서 2회 warn 우회). `${...}`-only 값 무시 또는 allowlist. spec-x 후보
+- [ ] check-secrets 훅 false positive 개선 — compose/env 의 `${VAR:-default}` 보간값을 시크릿으로 오탐 (spec-10-01 에서 2회 warn 우회). `${...}`-only 값 무시 또는 allowlist. spec-x 후보 — **RCA-002 작성됨** (spec-14-07, docs 예시도 오탐)
+- [ ] 🔒 **CSRF 미배선 (보안)** — `packages/backend/auth-rate-limit/src/csrf.ts` 에 `issueCsrfToken`/`verifyCsrfToken` 구현됐으나 `apps/api` refresh endpoint 에 **배선 안 됨**. SameSite=Lax 단독은 서브도메인 공격 시 refresh rotation 이 CSRF 에 노출. spec-14-08 문서 검증 중 발견(cookie-strategy explainer 가 배선된 것처럼 과장 → 수정함). **별도 fix spec 후보** (코드 변경 — 본 docs spec 범위 외)
 - [ ] **생성기(spec-10-02) backend/nestjs 패키지 tsconfig 에 `types:["node"]` 누락** — node 전역(console/process) 쓰면 typecheck TS2584. spec-12-01 에서 notification tsconfig 직접 보정. 생성기 템플릿 수정 spec-x 후보
 - [ ] lat.md Phase 2 도입 평가 (지식 그래프 도구)
 - [ ] ARCHITECTURE.md 본체 재작성 (Phase 3 직전, ADR-0005 결정 후)
