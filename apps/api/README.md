@@ -1,79 +1,66 @@
-# @apps/api
+# api
 
-phase-03 의 *health-check 스켈레톤* NestJS app. 5 어댑터 (`nestjs-settings/logger/http-client/database/security`) 통합 wire-up + `GET /health` 1개.
+> NestJS 11 + Drizzle + PostgreSQL 기반 REST API 서버. 전체 인증 플로우(세션·JWT·OAuth·MFA·Passkey)와 관측성(OTel·prom-client)을 제공한다.
 
-> **scope 제한**: 본 app 은 *통합 검증용 스켈레톤*. 실 도메인 (User / Tenant 등) 과 Repository 패턴 실 구현은 phase-04+ 영역.
-
-## 부트 방법
+## 실행
 
 ```bash
-# 1. env 파일 준비
-cp apps/api/env.example apps/api/.env
+# 개발 (tsx watch)
+pnpm dev
 
-# 2. dev 부트 (tsx watch)
-pnpm --filter @apps/api start
+# 프로덕션
+pnpm start:prod
+
+# DB 마이그레이션
+pnpm db:generate
+pnpm db:migrate
 ```
 
-부트 후 `http://localhost:2026/health` 호출 시 200 응답:
+기본 포트: `2026` (`$PORT` 환경변수로 변경 가능)
 
-```json
-{ "status": "ok", "uptime": 1.234, "version": "0.0.0" }
-```
+## 구성
 
-> ⚠️ `.env.example` 이 아닌 `env.example` 로 commit 되어있습니다 (도구 권한 제약). 로컬 사용 시 `.env` 로 rename 또는 복사.
+조립하는 핵심 `@repo` 패키지:
 
-## env 변수
+- `@repo/nestjs-auth` — JWT 검증 NestJS 모듈
+- `@repo/nestjs-database` — Drizzle + PostgreSQL NestJS 모듈
+- `@repo/nestjs-logger` — pino 구조화 로거 NestJS 모듈
+- `@repo/nestjs-security` — helmet · throttler 보안 NestJS 모듈
+- `@repo/nestjs-settings` — 환경변수 검증 NestJS 모듈
+- `@repo/backend-auth-jwt` — EdDSA JWT 서명·검증
+- `@repo/backend-auth-session` — 세션 저장·회전·패밀리 격리
+- `@repo/backend-auth-password` — argon2id 해싱·검증
+- `@repo/backend-auth-oauth` — OAuth 2.0 PKCE 플로우
+- `@repo/backend-auth-mfa` — TOTP MFA 등록·검증
+- `@repo/backend-auth-passkey` — WebAuthn Passkey 등록·인증
+- `@repo/backend-observability` — OTel 트레이싱·메트릭 프로바이더
+- `@repo/auth-contracts` — 공유 인증 계약 타입
 
-| 변수 | 타입 | 기본값 | 설명 |
-|---|---|---|---|
-| `NODE_ENV` | `development` \| `test` \| `staging` \| `production` | (필수) | 환경 구분 |
-| `PORT` | number (1~65535) | `2026` | listen 포트 |
-| `LOG_LEVEL` | pino level | `info` | logger level |
-| `DATABASE_URL` | string | (필수) | PostgreSQL connection URL |
-| `HTTP_CLIENT_BASE_URL` | URL | (필수) | 외부 API base URL |
+## 주요 엔드포인트
 
-## 어댑터 wire-up 구조
+| 메서드 | 경로 | 설명 |
+|---|---|---|
+| GET | `/health` | 헬스체크 (상태·업타임·버전) |
+| GET | `/health/live` | liveness probe |
+| GET | `/health/ready` | readiness probe |
+| POST | `/auth/signin` | 로그인 (이메일+비밀번호) |
+| POST | `/auth/signup` | 회원가입 |
+| POST | `/auth/signout` | 로그아웃 (세션 폐기) |
+| POST | `/auth/refresh` | 액세스 토큰 갱신 |
+| GET | `/auth/me` | 현재 사용자 정보 |
+| POST | `/auth/password/reset` | 비밀번호 재설정 요청 |
+| POST | `/auth/password/reset/confirm` | 비밀번호 재설정 확인 |
+| POST | `/auth/email/verify/request` | 이메일 인증 요청 |
+| POST | `/auth/email/verify/confirm` | 이메일 인증 확인 |
+| GET | `/auth/oauth/:provider` | OAuth 인가 리다이렉트 |
+| GET | `/auth/oauth/:provider/callback` | OAuth 콜백 처리 |
+| POST | `/auth/mfa/totp/enroll` | TOTP 등록 시작 |
+| POST | `/auth/mfa/totp/verify` | TOTP 검증 |
+| POST | `/auth/passkey/register/options` | Passkey 등록 옵션 |
+| POST | `/auth/passkey/authenticate/verify` | Passkey 인증 검증 |
+| GET | `/metrics` | Prometheus 메트릭 스크레이프 |
 
-```ts
-@Module({
-  imports: [
-    BackendSettingsModule.forRoot(loadSettings),
-    BackendLoggerModule.forRoot({ level }),
-    HttpClientModule.forRoot({ baseUrl }),
-    DatabaseModule.forRoot({ connectionUrl, schema: {} }),
-    BackendThrottlerModule.forRoot(),  // APP_GUARD 자동 — 100req/60s default
-  ],
-  controllers: [HealthController],
-})
-export class AppModule {}
-```
+## 자세히
 
-- `BackendThrottlerModule` 가 `APP_GUARD` 자동 등록 — 모든 라우트 자동 rate-limit
-- `HealthController` 는 `@SkipThrottle()` 박혀 k8s probe 빈도 제한 안 받음
-- `DatabaseModule.forRoot({ schema: {} })` — 빈 schema. 실 schema 정의는 phase-04+
-- `pg.Pool` 은 lazy connection — 부트 시점 실 DB 검증 안 함
-
-## Repository 패턴 가이드 (phase-04+ 예고)
-
-실 도메인 진입 시 *Persistence Ignorance* 컨벤션 따름. application/domain layer 는 *Repository interface* 만 의존, infra layer 만 Drizzle (or 향후 다른 ORM) 직접 사용:
-
-```text
-apps/api/src/
-  domain/<entity>/
-    entity.ts                 # 도메인 POJO (ORM 모름)
-    repository.ts             # interface SomeRepository
-  infra/persistence/
-    drizzle/
-      schema/                 # Drizzle table defs
-      <entity>-repository.ts  # class DrizzleSomeRepository implements SomeRepository
-  application/
-    <use-case>.ts             # @Inject(SomeRepository) — ORM 모름
-```
-
-`DATABASE` symbol (from `@repo/nestjs-database`) 은 *infra layer 안에서만* 사용. application/domain layer 는 repository interface 만 의존 → 향후 ORM 교체 시 *infra layer 만 변경*.
-
-## 테스트
-
-```bash
-pnpm --filter @apps/api test    # E2E supertest GET /health
-```
+- 레퍼런스: [`docs/reference/apps/api.md`](../../docs/reference/apps/api.md)
+- 동작 원리: [`docs/explainers/auth/cookie-strategy.md`](../../docs/explainers/auth/cookie-strategy.md)
