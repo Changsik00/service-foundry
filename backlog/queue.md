@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
+- **phase-15** — Security & Wiring Hardening — 0/0 spec — (다음: 첫 spec 생성 대기)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -29,8 +29,9 @@
 - [ ] commit-time hook 명령 set (Biome only / + typecheck / + affected test) (phase-03~10 중 결정)
 - ~~보안 linter (semgrep / socket.dev) 추가 여부~~ **해소**: ADR-0019 No-Go (phase-15 CI 재평가) — spec-10-03 (2026-05-30)
 - [ ] check-secrets 훅 false positive 개선 — compose/env 의 `${VAR:-default}` 보간값을 시크릿으로 오탐 (spec-10-01 에서 2회 warn 우회). `${...}`-only 값 무시 또는 allowlist. spec-x 후보 — **RCA-002 작성됨** (spec-14-07, docs 예시도 오탐)
-- [ ] 🔒 **CSRF 미배선 (보안)** — `packages/backend/auth-rate-limit/src/csrf.ts` 에 `issueCsrfToken`/`verifyCsrfToken` 구현됐으나 `apps/api` refresh endpoint 에 **배선 안 됨**. SameSite=Lax 단독은 서브도메인 공격 시 refresh rotation 이 CSRF 에 노출. spec-14-08 문서 검증 중 발견(cookie-strategy explainer 가 배선된 것처럼 과장 → 수정함). **별도 fix spec 후보** (코드 변경 — 본 docs spec 범위 외)
-- [ ] **생성기(spec-10-02) backend/nestjs 패키지 tsconfig 에 `types:["node"]` 누락** — node 전역(console/process) 쓰면 typecheck TS2584. spec-12-01 에서 notification tsconfig 직접 보정. 생성기 템플릿 수정 spec-x 후보
+- ~~🔒 **CSRF 미배선**~~ **→ phase-15-01 로 승격** (2026-06-01, wiring audit §A)
+- ~~**생성기 backend tsconfig `types:["node"]` 누락**~~ **→ phase-15-05 로 승격** (2026-06-01, wiring audit §E)
+- [ ] **wiring audit 🟡 의도적 미배선 항목들** (passkey env · HttpClient/Settings DI · web-vite theme · 프론트 MFA/Passkey UI · RequireAuth · provider 교체) — 보일러플레이트 의도적, 필요 시 개별 승격. `docs/review/2026-06-01-wiring-audit.md` §🟡
 - [ ] lat.md Phase 2 도입 평가 (지식 그래프 도구)
 - [ ] ARCHITECTURE.md 본체 재작성 (Phase 3 직전, ADR-0005 결정 후)
 
@@ -63,7 +64,8 @@
 - **phase-12** — Service Foundations I · Runtime (**Tier 1**): `worker` 앱 + job queue (BullMQ/pg-boss) · **email/notification 포트**(Resend/SES 어댑터 — token-logging 결함의 근본 해소) · caching 추상화(Redis cache-aside/TTL) · graceful shutdown / lifecycle (SIGTERM drain, readiness≠liveness)
 - **phase-13** — Service Foundations II · API & Data (**Tier 2**): idempotency-key 미들웨어 · pagination/cursor 표준 계약(`contracts`) · typed client codegen(`contracts`→프론트 클라이언트) · object storage 포트(S3/R2) · outbox/도메인 이벤트 신뢰성 발행 · DB seeding + 테스트 팩토리 + 마이그레이션 통합 러너
 - **phase-14** — Quality Hardening (**평점 상향**): 에러 규약 통일(Result/throw/boolean → ADR + 리팩터, 에러 A-→A) · `auth.guard` role 을 verified claims(`result.value`)에서 읽기(footgun 제거) · 비-auth 패키지(http-client/logger/utils) 경계 테스트 보강 · general rate-limit / secrets provider 포트(보안 B+→A) · knip/depcruise CI gate(phase-15 연계)
-- **phase-15** — CI / CD (GitHub Actions + changesets release PR + docker publish + 선택 k8s manifest) — **후순위** (당장 불급, 2026-05-30 phase-11 → phase-15 재배치)
+- **phase-15** — Security & Wiring Hardening: 구현됐으나 미배선된 보안·검증 기능 배선(CSRF · 로그인 rate-limit/lockout · CI knip/depcruise 게이트 · request-id · 생성기 tsconfig). 근거 `docs/review/2026-06-01-wiring-audit.md` — **2026-06-01 신설** (CSRF 미배선 발견 → 전수조사)
+- **phase-16** — Deploy (k8s manifest): 구 phase-15 잔류분 (CI/CD 는 phase-14 흡수). k8s sample manifest — **후순위**
 
 > **완료 (spec-x)**: 보안 결함 reset/verify raw 토큰 평문 로깅 → NODE_ENV 가드 (PR #67, 2026-05-30). 근본 해소(notification 포트)는 phase-12.
 
