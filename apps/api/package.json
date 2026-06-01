@@ -28,6 +28,7 @@
     "@repo/backend-auth-rate-limit": "workspace:*",
     "@repo/backend-auth-session": "workspace:*",
     "@repo/backend-lifecycle": "workspace:*",
+    "@repo/backend-logger": "workspace:*",
     "@repo/backend-notification": "workspace:*",
     "@repo/backend-observability": "workspace:*",
     "@repo/backend-settings": "workspace:*",

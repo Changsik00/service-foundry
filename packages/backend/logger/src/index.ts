@@ -74,12 +74,18 @@ interface MinimalRequest {
   headers: Record<string, unknown>;
 }
 
+interface MinimalResponse {
+  setHeader(name: string, value: string): void;
+}
+
 export const requestIdMiddleware = (options: RequestIdMiddlewareOptions = {}) => {
   const headerName = (options.header ?? "X-Request-Id").toLowerCase();
-  return (req: MinimalRequest, _res: unknown, next: () => void): void => {
+  return (req: MinimalRequest, res: MinimalResponse, next: () => void): void => {
     const incoming = req.headers[headerName];
     const requestId =
       typeof incoming === "string" && incoming.length > 0 ? incoming : generateRequestId();
+    // 다운스트림(클라/LB) 추적용으로 응답에 reqId 노출 (Stripe/Heroku 관례).
+    res.setHeader("x-request-id", requestId);
     requestStore.run({ requestId }, next);
   };
 };

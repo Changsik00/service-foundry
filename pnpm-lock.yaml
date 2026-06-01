@@ -347,6 +347,9 @@ importers:
       '@repo/backend-lifecycle':
         specifier: workspace:*
         version: link:../../packages/backend/lifecycle
+      '@repo/backend-logger':
+        specifier: workspace:*
+        version: link:../../packages/backend/logger
       '@repo/backend-notification':
         specifier: workspace:*
         version: link:../../packages/backend/notification

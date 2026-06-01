@@ -2,6 +2,7 @@ import "./tracing.js"; // OTEL 자동계측 — 다른 import 보다 먼저 (env
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
 import type { Lifecycle } from "@repo/backend-lifecycle";
+import { requestIdMiddleware } from "@repo/backend-logger";
 import { maskConfig } from "@repo/backend-settings";
 import { PinoLoggerService } from "@repo/nestjs-logger";
 import { applySecurity } from "@repo/nestjs-security";
@@ -15,6 +16,8 @@ async function bootstrap(): Promise<void> {
   const settings = loadSettings(process.env);
 
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  // 가장 앞단 — 이후 모든 핸들러/로그/아웃바운드가 reqId(AsyncLocalStorage) 컨텍스트 공유 (spec-15-04)
+  app.use(requestIdMiddleware());
   app.use(cookieParser());
   const logger = app.get(PinoLoggerService);
   app.useLogger(logger);
