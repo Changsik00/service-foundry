@@ -36,15 +36,15 @@ tags: [service-foundry, reference, backend, queue]
 ```ts
 import { createBullProducer, startBullConsumer, resolveQueueConfig } from "@repo/backend-queue";
 
-const config = resolveQueueConfig({ redisUrl: process.env.REDIS_URL! });
-const producer = createBullProducer({ queueName: "emails", connection: config.connection });
-await producer.add({ type: "welcome", userId: "u1" });
+const config = resolveQueueConfig(process.env);
+const producer = createBullProducer("emails", config.connection);
+await producer.enqueue("welcome", { userId: "u1" });
 
-const consumer = startBullConsumer({
-  queueName: "emails",
-  connection: config.connection,
-  handler: async (job) => { await sendEmail(job.data); },
-});
+const consumer = startBullConsumer(
+  "emails",
+  { welcome: async (data) => { await sendEmail(data); } },
+  config.connection,
+);
 ```
 
 ## 연결된 개념

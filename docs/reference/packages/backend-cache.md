@@ -17,7 +17,7 @@ tags: [service-foundry, reference, backend, cache]
 
 | export | 종류 | 설명 |
 |---|---|---|
-| `Cache` | type | 캐시 포트 인터페이스 (get/set/del) |
+| `Cache` | type | 캐시 포트 인터페이스 (get/set/del/getOrSet) |
 | `createMemoryCache` | fn | 인메모리 캐시 어댑터 팩토리 |
 | `createRedisCache` | fn | ioredis 기반 Redis 캐시 어댑터 팩토리 |
 | `RedisCache` | type | Redis 어댑터 인터페이스 |

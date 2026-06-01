@@ -22,7 +22,7 @@ tags: [service-foundry, reference, auth, mfa]
 | `verifyTotp` | fn | TOTP 코드 검증 (boolean 반환) |
 | `generateBackupCodes` | fn | 일회용 백업 코드 배열 생성 |
 | `hashBackupCodes` | fn | 백업 코드 배열 bcrypt 해싱 |
-| `verifyBackupCode` | fn | 입력 코드와 해시 배열 대조 검증 |
+| `verifyBackupCode` | fn | 입력 코드와 해시 배열 대조 검증 — 일치 인덱스 반환, 불일치 시 -1 |
 
 ## 의존
 
@@ -36,10 +36,10 @@ import { generateSecret, generateTotpUri, verifyTotp } from "@repo/backend-auth-
 import { generateBackupCodes, hashBackupCodes } from "@repo/backend-auth-mfa";
 
 const secret = generateSecret();
-const uri = generateTotpUri({ secret, account: "user@example.com", issuer: "MyApp" });
-const ok = verifyTotp({ secret, token: "123456" });
+const uri = generateTotpUri(secret, "user@example.com", "MyApp");
+const ok = verifyTotp(secret, "123456");
 
-const codes = generateBackupCodes(10);
+const codes = generateBackupCodes(); // 인자 없음 — 내부 상수(BACKUP_CODE_COUNT) 사용
 const hashes = await hashBackupCodes(codes);
 ```
 

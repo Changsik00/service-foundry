@@ -31,7 +31,7 @@ tags: [service-foundry, reference, backend, logger]
 ## 의존
 
 - 내부: 없음
-- 외부: `pino` (고성능 구조화 JSON 로거), `pino-pretty` (optional peer, 개발 환경)
+- 외부: `pino` (고성능 구조화 JSON 로거), `pino-pretty` (devDependency, 개발 환경 출력)
 
 ## 사용 예
 
