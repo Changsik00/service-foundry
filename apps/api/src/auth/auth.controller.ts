@@ -28,6 +28,8 @@ import { ZodError, type z } from "zod";
 import type { UserRow } from "../infra/schema/index.js";
 import { AUTH_METRICS } from "../metrics/auth-metrics.provider.js";
 import { clearRefreshTokenCookie, setRefreshTokenCookie } from "./cookie.helper.js";
+import { setCsrfCookies } from "./csrf.cookie.js";
+import { CSRF_SECRET, CsrfGuard } from "./csrf.guard.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import { MfaService } from "./mfa.service.js";
 import { PasswordResetService } from "./password-reset.service.js";
@@ -57,6 +59,7 @@ function getContext(req: Request): { ip: string; userAgent: string } {
 type SignResponse = {
   accessToken: string;
   user: Pick<UserRow, "id" | "email" | "role" | "createdAt">;
+  csrfToken: string;
 };
 type SignInResponse = SignResponse | { status: "mfa_required"; mfaChallengeToken: string };
 
@@ -70,9 +73,18 @@ export class AuthController {
     @Inject(AuthEventBus) private readonly eventBus: AuthEventBus,
     @Inject(AUTH_METRICS) private readonly metrics: AuthMetrics,
     @Optional() @Inject(MfaService) private readonly mfaService: MfaService | undefined,
+    @Inject(CSRF_SECRET) private readonly csrfSecret: string,
   ) {}
 
+  /** CSRF 부트스트랩 — safe(GET) 요청에서 csrf_id+csrf_token 쿠키 발급, body 로 토큰 전달. */
+  @Get("csrf")
+  issueCsrf(@Res({ passthrough: true }) res: Response): { csrfToken: string } {
+    const { csrfToken } = setCsrfCookies(res, this.csrfSecret);
+    return { csrfToken };
+  }
+
   @Post("signin")
+  @UseGuards(CsrfGuard)
   @HttpCode(200)
   async signIn(
     @Body() body: unknown,
@@ -104,6 +116,7 @@ export class AuthController {
     }
 
     setRefreshTokenCookie(res, refreshToken);
+    const { csrfToken } = setCsrfCookies(res, this.csrfSecret);
     this.eventBus.emit({
       type: "SIGNED_IN",
       userId: user.id,
@@ -119,10 +132,12 @@ export class AuthController {
         role: user.role,
         createdAt: user.createdAt,
       },
+      csrfToken,
     };
   }
 
   @Post("signup")
+  @UseGuards(CsrfGuard)
   @HttpCode(201)
   async signUp(
     @Body() body: unknown,
@@ -133,6 +148,7 @@ export class AuthController {
     const ctx = getContext(req);
     const { accessToken, user, refreshToken } = await this.signupService.signUp(email, password);
     setRefreshTokenCookie(res, refreshToken);
+    const { csrfToken } = setCsrfCookies(res, this.csrfSecret);
     this.eventBus.emit({
       type: "SIGNED_IN",
       userId: user.id,
@@ -148,10 +164,12 @@ export class AuthController {
         role: user.role,
         createdAt: user.createdAt,
       },
+      csrfToken,
     };
   }
 
   @Post("signout")
+  @UseGuards(CsrfGuard)
   @HttpCode(200)
   async signOut(
     @Req() req: Request,
@@ -168,6 +186,7 @@ export class AuthController {
   }
 
   @Post("refresh")
+  @UseGuards(CsrfGuard)
   @HttpCode(200)
   async refresh(
     @Req() req: Request,
@@ -176,6 +195,7 @@ export class AuthController {
     const token = req.cookies?.refresh_token as string | undefined;
     const { accessToken, user, refreshToken } = await this.signinService.refresh(token ?? "");
     setRefreshTokenCookie(res, refreshToken);
+    const { csrfToken } = setCsrfCookies(res, this.csrfSecret);
     this.eventBus.emit({ type: "TOKEN_REFRESHED", sessionId: refreshToken });
     return {
       accessToken,
@@ -185,6 +205,7 @@ export class AuthController {
         role: user.role,
         createdAt: user.createdAt,
       },
+      csrfToken,
     };
   }
 
@@ -197,6 +218,7 @@ export class AuthController {
   // --- existing endpoints ---
 
   @Post("password/reset")
+  @UseGuards(CsrfGuard)
   @HttpCode(200)
   async requestReset(@Body() body: unknown): Promise<{ status: "ok" }> {
     const { email } = zodPipe(PasswordResetRequest).transform(body);
@@ -205,6 +227,7 @@ export class AuthController {
   }
 
   @Post("password/reset/confirm")
+  @UseGuards(CsrfGuard)
   @HttpCode(200)
   async confirmReset(@Body() body: unknown): Promise<{ status: "ok" }> {
     const { token, newPassword } = zodPipe(PasswordResetConfirm).transform(body);
@@ -213,6 +236,7 @@ export class AuthController {
   }
 
   @Post("email/verify/request")
+  @UseGuards(CsrfGuard)
   @HttpCode(200)
   async requestEmailVerify(@Body() body: unknown): Promise<{ status: "ok" }> {
     const { email } = zodPipe(EmailVerifyRequest).transform(body);
@@ -221,6 +245,7 @@ export class AuthController {
   }
 
   @Post("email/verify/confirm")
+  @UseGuards(CsrfGuard)
   @HttpCode(200)
   async confirmEmailVerify(@Body() body: unknown): Promise<{ status: "ok" }> {
     const { token } = zodPipe(EmailVerifyConfirm).transform(body);

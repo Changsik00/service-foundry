@@ -34,19 +34,16 @@
 - [x] 검증: vitest 4 passed + typecheck PASS
 - [x] Commit: `feat(spec-15-02): add CsrfGuard (double-submit verify)`
 
-## Task 5: 컨트롤러 배선
-- [ ] `GET /auth/csrf` 부트스트랩 endpoint 추가 (body `{ csrfToken }`)
-- [ ] 8개 POST(signin/signup/signout/refresh + password reset·confirm, email verify·confirm)에 `@UseGuards(CsrfGuard)` 적용
-- [ ] signin/signup 성공 분기에 `setCsrfCookies` rotate + 응답 body `csrfToken` 추가
-- [ ] `auth.module.ts` provider 정합 (필요 시)
-- [ ] 검증: `pnpm --filter @apps/api typecheck && pnpm --filter @apps/api test`
-- [ ] Commit: `feat(spec-15-02): wire CsrfGuard + bootstrap into auth controller`
-
-## Task 6: e2e 통합 검증
-- [ ] `auth.e2e.test.ts`: 기존 signin/refresh/signout 케이스에 부트스트랩+`X-Csrf-Token` 동반(보정)
-- [ ] CSRF 누락/위조 → 403 케이스 추가 (refresh + 미인증 password/reset 각 1)
-- [ ] 검증: `pnpm --filter @apps/api test` (e2e 포함 PASS)
-- [ ] Commit: `test(spec-15-02): e2e CSRF bypass blocked + happy path`
+## Task 5+6: 컨트롤러 배선 + e2e ✅ (상호의존 → 1 commit)
+> 가드 배선은 기존 e2e 를 깨므로 테스트 정합과 분리 불가 → green 유지 위해 한 commit.
+- [x] `GET /auth/csrf` 부트스트랩 endpoint (body `{ csrfToken }`, 비가드)
+- [x] 8개 POST 에 `@UseGuards(CsrfGuard)` (signin/signup/signout/refresh + password reset·confirm, email verify·confirm)
+- [x] signin/signup/refresh 성공 시 `setCsrfCookies` rotate + body `csrfToken` (`SignResponse` 타입 확장)
+- [x] `auth.module.ts`: `CsrfGuard` provider + `{ provide: CSRF_SECRET, useValue: settings.CSRF_SECRET }`
+- [x] `auth.e2e.test.ts`: fresh-bootstrap CSRF 헬퍼(`postCsrf`)로 보호 POST 보정 + "CSRF 게이트" describe(누락/쿠키부재/위조 → 403, GET /auth/csrf 200)
+- [x] `auth.controller.test.ts`: 테스트 모듈에 `CSRF_SECRET` provider 추가
+- [x] 검증(로컬 Postgres 5434): `pnpm --filter @apps/api test` **97/97 PASS** (e2e 39 포함) + typecheck + knip/depcruise exit 0
+- [x] Commit: `feat(spec-15-02): wire CsrfGuard into auth controller + e2e`
 
 ## Task 7: web-next 헤더 첨부
 - [ ] `apps/web-next/src/lib/auth-api.ts`(+`auth-sdk.ts`): `fetchCsrf()` 로 토큰 확보·보관, 보호 POST 에 `X-Csrf-Token` 첨부, 응답 새 토큰 반영
