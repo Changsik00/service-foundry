@@ -56,8 +56,8 @@
 - [x] walkthrough.md 작성
 - [x] pr_description.md 작성
 - [x] Ship commit: `docs(spec-15-02): ship walkthrough and pr description`
-- [ ] Push + PR (base: `phase-15-security-wiring`)
-- [ ] 사용자 알림 (PR URL)
+- [x] Push + PR (base: `phase-15-security-wiring`) → PR #95
+- [x] 사용자 알림 (PR URL)
 
 ---
 
