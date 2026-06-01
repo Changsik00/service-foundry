@@ -8,7 +8,7 @@ import { NestjsAuthModule, AuthGuard, RolesGuard, Roles, CurrentUser } from "@re
 ```
 
 ## 핵심 API
-- `NestjsAuthModule.forRoot(opts)` / `forRootAsync(opts)` — DI 설정 DynamicModule 팩토리
+- `NestjsAuthModule.forRoot({ keyStore, issuer, audience })` / `forRootAsync(opts)` — DI 설정 DynamicModule 팩토리
 - `AuthGuard` — Authorization 헤더 Bearer 토큰 검증 → `AuthenticatedUser` request 부착
 - `RolesGuard` — `@Roles()` 메타데이터 기반 RBAC Guard
 - `Roles("admin")` — 핸들러/컨트롤러 역할 데코레이터

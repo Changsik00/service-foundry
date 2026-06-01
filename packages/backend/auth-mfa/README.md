@@ -9,9 +9,10 @@ import { generateSecret, generateTotpUri, verifyTotp, generateBackupCodes, hashB
 
 ## 핵심 API
 - `generateSecret()` — TOTP 시크릿 문자열 생성
-- `generateTotpUri({ secret, account, issuer })` — QR코드용 `otpauth://` URI 생성
-- `verifyTotp({ secret, token })` — TOTP 6자리 코드 검증
-- `generateBackupCodes(count)` / `hashBackupCodes(codes)` — 일회용 백업 코드 생성 및 bcrypt 해싱
+- `generateTotpUri(secret, email, issuer)` — QR코드용 `otpauth://` URI 생성 (positional args)
+- `verifyTotp(secret, token)` — TOTP 6자리 코드 검증 (boolean 반환, positional args)
+- `generateBackupCodes()` — 일회용 백업 코드 배열 생성 (인자 없음 — 내부 상수 BACKUP_CODE_COUNT 사용)
+- `hashBackupCodes(codes)` — 백업 코드 배열 bcrypt 해싱
 
 ## 자세히
 - 레퍼런스: [`docs/reference/packages/backend-auth-mfa.md`](../../../docs/reference/packages/backend-auth-mfa.md)
