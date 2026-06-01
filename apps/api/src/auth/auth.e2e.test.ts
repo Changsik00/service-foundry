@@ -1,7 +1,5 @@
 import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
-import { requestIdMiddleware } from "@repo/backend-logger";
-import cookieParser from "cookie-parser";
 import { authenticator } from "otplib";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -11,6 +9,7 @@ process.env.DATABASE_URL ??= "postgres://postgres:test@localhost:5434/test";
 process.env.HTTP_CLIENT_BASE_URL ??= "http://localhost:9999";
 
 const { AppModule } = await import("../app.module.js");
+const { configureApp } = await import("../app.setup.js");
 
 function extractCookie(setCookieHeader: string | string[] | undefined, name: string): string {
   const headers = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader ?? ""];
@@ -50,8 +49,8 @@ describe("Auth E2E (real PG)", () => {
       imports: [AppModule],
     }).compile();
     app = moduleRef.createNestApplication({ logger: false });
-    app.use(requestIdMiddleware());
-    app.use(cookieParser());
+    // prod 부트스트랩(main.ts)과 동일한 미들웨어 배선을 공유 — 배선 회귀 차단 (phase-15 review C1)
+    configureApp(app);
     await app.init();
     server = app.getHttpServer();
   });
