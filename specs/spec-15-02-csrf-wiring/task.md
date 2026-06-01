@@ -45,10 +45,11 @@
 - [x] 검증(로컬 Postgres 5434): `pnpm --filter @apps/api test` **97/97 PASS** (e2e 39 포함) + typecheck + knip/depcruise exit 0
 - [x] Commit: `feat(spec-15-02): wire CsrfGuard into auth controller + e2e`
 
-## Task 7: web-next 헤더 첨부
-- [ ] `apps/web-next/src/lib/auth-api.ts`(+`auth-sdk.ts`): `fetchCsrf()` 로 토큰 확보·보관, 보호 POST 에 `X-Csrf-Token` 첨부, 응답 새 토큰 반영
-- [ ] 검증: `pnpm --filter @apps/web-next typecheck test`
-- [ ] Commit: `feat(spec-15-02): attach X-Csrf-Token in web-next auth client`
+## Task 7: web-next 헤더 첨부 ✅
+- [x] `auth-api.ts`: 클로저에 csrfToken 보관, `fetchCsrf()`(GET /auth/csrf)+`ensureCsrf`, 보호 POST 에 `X-Csrf-Token` 헤더, 응답 csrfToken 으로 rotate 반영. `SignResponseSchema` 에 csrfToken 추가.
+- [x] `auth-sdk.test.ts`: mock http-client `get` 이 `{ csrfToken }` 반환하도록 보정 (auth-sdk.ts 자체는 시그니처 불변이라 무수정)
+- [x] 검증: `pnpm --filter @apps/web-next typecheck` + test 21/21 PASS
+- [x] Commit: `feat(spec-15-02): attach X-Csrf-Token in web-next auth client`
 
 ## Task 8: Ship
 - [ ] 게이트: `pnpm turbo run lint typecheck test knip depcruise` PASS
