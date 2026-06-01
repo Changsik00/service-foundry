@@ -35,10 +35,10 @@
 - [x] 검증: signin.service 5/5 + apps/api 전체 99/99 (e2e 39 회귀 없음) + typecheck
 - [x] Commit: `feat(spec-15-03): enforce rate-limit + lockout in SigninService`
 
-## Task 5: e2e 통합 검증
-- [ ] `auth.e2e.test.ts`: "rate-limit/lockout" describe — 전용 계정 5회 오답(postCsrf)→ 이후 429. 정상 흐름 회귀 확인.
-- [ ] 검증(로컬 Postgres 5434): `pnpm --filter @apps/api test` 전체 PASS
-- [ ] Commit: `test(spec-15-03): e2e login lockout after N failures`
+## Task 5: e2e 통합 검증 ✅
+- [x] `auth.e2e.test.ts`: "로그인 rate-limit + lockout" describe — 전용 계정(미가입) 5회 오답→각 401→6회차 429. IP 누적 최소화(전용 계정·정확히 5회).
+- [x] 검증(로컬 Postgres 5434): `pnpm --filter @apps/api test` **100/100 PASS** (e2e 40)
+- [x] Commit: `test(spec-15-03): e2e login lockout after N failures`
 
 ## Task 6: Ship
 - [ ] 게이트: `pnpm turbo run lint typecheck test knip depcruise` (로컬 DB) PASS
