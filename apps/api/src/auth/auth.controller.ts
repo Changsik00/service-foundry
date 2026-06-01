@@ -96,7 +96,7 @@ export class AuthController {
     this.metrics.recordLoginAttempt();
     let result: Awaited<ReturnType<SigninService["signIn"]>>;
     try {
-      result = await this.signinService.signIn(email, password);
+      result = await this.signinService.signIn(email, password, ctx.ip);
     } catch (err) {
       this.metrics.recordLoginFailure();
       this.eventBus.emit({

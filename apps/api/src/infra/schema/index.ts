@@ -1,4 +1,5 @@
 import { type AuditLogRow, authAuditLogs } from "@repo/backend-auth-audit";
+import { failedLogins, lockouts } from "@repo/backend-auth-rate-limit/schema";
 import { type SessionInsert, type SessionRow, sessions } from "@repo/backend-auth-session";
 import {
   type EmailVerifyTokenInsert,
@@ -46,6 +47,8 @@ export type {
 export {
   authAuditLogs,
   emailVerifyTokens,
+  failedLogins,
+  lockouts,
   mfaConfigs,
   oauthAccounts,
   passkeyChallenges,
@@ -65,4 +68,6 @@ export const appSchema = {
   mfaConfigs,
   passkeyCredentials,
   passkeyChallenges,
+  failedLogins,
+  lockouts,
 };

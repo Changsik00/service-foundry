@@ -94,6 +94,21 @@ describe("Auth E2E (real PG)", () => {
     });
   });
 
+  describe("로그인 rate-limit + lockout", () => {
+    // 전용 계정(미가입) — IP 누적 최소화 위해 정확히 5회 실패 후 잠금만 확인.
+    const email = `lockout-${Date.now()}@example.com`;
+    const password = "WrongPass123!";
+
+    it("동일 계정 5회 실패(각 401) → 이후 429 (lockout)", async () => {
+      for (let i = 0; i < 5; i++) {
+        const res = await postCsrf("/auth/signin", { body: { email, password } });
+        expect(res.status).toBe(401);
+      }
+      const locked = await postCsrf("/auth/signin", { body: { email, password } });
+      expect(locked.status).toBe(429);
+    });
+  });
+
   describe("POST /auth/password/reset", () => {
     it("존재하지 않는 email → 200 (enumeration-safe)", async () => {
       const res = await postCsrf("/auth/password/reset", { body: { email: "ghost@example.com" } });
