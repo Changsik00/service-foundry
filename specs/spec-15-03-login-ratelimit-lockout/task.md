@@ -41,9 +41,9 @@
 - [x] Commit: `test(spec-15-03): e2e login lockout after N failures`
 
 ## Task 6: Ship
-- [ ] 게이트: `pnpm turbo run lint typecheck test knip depcruise` (로컬 DB) PASS
-- [ ] walkthrough.md / pr_description.md 작성
-- [ ] Ship commit: `docs(spec-15-03): ship walkthrough and pr description`
+- [x] 게이트: `pnpm turbo run lint typecheck test knip depcruise` (로컬 DB) → 136/136 PASS
+- [x] walkthrough.md / pr_description.md 작성
+- [x] Ship commit: `docs(spec-15-03): ship walkthrough and pr description`
 - [ ] Push + PR (base: `phase-15-security-wiring`)
 - [ ] 사용자 알림 (PR URL)
 
