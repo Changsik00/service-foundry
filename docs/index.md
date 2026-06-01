@@ -171,5 +171,6 @@ tags: [service-foundry, index, meta]
 ## 기타 문서
 - `docs/notes/auth-foundation-architecture.md` — Auth Platform 설계 배경
 - `docs/notes/error-handling-paradigms.md` — 에러 패러다임 비교
-- `docs/rca/RCA-001-lefthook-typecheck-non-blocking.md` — lefthook typecheck RCA
+- [[RCA-001-lefthook-typecheck-non-blocking|RCA-001]] — lefthook typecheck 비차단 RCA
+- [[RCA-002-check-secrets-false-positive|RCA-002]] — check-secrets 오탐 RCA
 - `docs/turborepo-rules.md` — turbo 사용 룰 요약
