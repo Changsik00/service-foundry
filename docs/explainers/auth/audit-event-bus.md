@@ -24,9 +24,9 @@ flowchart TD
     E --> F[(audit_logs\nappend-only)]
 
     subgraph 이벤트 종류
-        G[LOGIN_SUCCESS\nLOGIN_FAILURE\nLOGOUT]
-        H[PASSWORD_CHANGED\nEMAIL_VERIFIED]
-        I[MFA_ENROLLED\nSUSPICIOUS_ACTIVITY]
+        G[SIGNED_IN\nLOGIN_FAILED\nSIGNED_OUT\nTOKEN_REFRESHED\nSESSION_REVOKED]
+        H[PASSWORD_CHANGED\nMFA_ENROLLED]
+        I[SUSPICIOUS_ACTIVITY]
     end
     B -.->|현재 구현| G
     B -.->|이월| H
@@ -37,7 +37,7 @@ flowchart TD
 
 | 컴포넌트 | 위치 | 책임 |
 |---|---|---|
-| `AuthEventBus` | `@repo/backend-auth-audit` | 동기 pub/sub — `emit(event)` + `subscribe(handler)` |
+| `AuthEventBus` | `@repo/backend-auth-audit` | 동기 pub/sub — `emit(event)` + `on(handler)` / `off(handler)` |
 | `AuditService` | `@repo/backend-auth-audit` | 이벤트 수신 → `AuditStore.append` 호출 |
 | `AuditStore` | interface + Drizzle 구현 | `audit_logs` 테이블에 append-only INSERT |
 | `AuthController` | `apps/api` | HTTP request context + emit — 서비스는 순수 도메인 로직 유지 |
@@ -49,7 +49,7 @@ WHY: 서비스 계층은 IP / User-Agent 를 모른다.
       컨트롤러는 req.ip / req.headers 에 직접 접근 가능.
 ```
 
-> ⚠️ `PASSWORD_CHANGED` emit 은 confirm() 이 userId 를 반환하지 않아 현재 이월 상태. 후속 spec 에서 confirm() 반환값 확장 또는 서비스 내 emit 으로 해결 예정.
+> ⚠️ `PASSWORD_CHANGED` / `MFA_ENROLLED` emit 은 현재 이월 상태. 현재 controller 에서는 `SIGNED_IN`, `LOGIN_FAILED`, `SIGNED_OUT`, `TOKEN_REFRESHED`, `SESSION_REVOKED` 만 emit 된다. `AuthEventBus` 의 구독 API 는 `on(handler)` / `off(handler)` (`subscribe` 가 아님).
 
 ## 용어 정리
 
@@ -69,8 +69,8 @@ pub/sub 분리 덕분에 `AuditService` 를 다른 subscriber 로 교체하거�
 
 ## 연결된 개념
 
-- [[cookie-strategy]] — LOGIN_SUCCESS / LOGOUT emit 발생 지점
-- [[auth-rate-limit-lockout]] — LOGIN_FAILURE + SUSPICIOUS_ACTIVITY 연동
+- [[cookie-strategy]] — SIGNED_IN / SIGNED_OUT emit 발생 지점
+- [[auth-rate-limit-lockout]] — LOGIN_FAILED + SUSPICIOUS_ACTIVITY 연동
 - [[session-rotation-chain]] — reuse_detected 시 SUSPICIOUS_ACTIVITY emit 후보
 - [[mfa-totp-challenge]] — MFA_ENROLLED 이벤트 phase-07 이월
 

@@ -24,7 +24,7 @@ sequenceDiagram
 
     Note over B,P: 1. 로그인 시작
     B->>API: GET /auth/oauth/google
-    API->>API: code_verifier = randomBytes(32)\ncode_challenge = S256(verifier)\nstate = randomBytes(16)
+    API->>API: code_verifier = randomBytes(32)\ncode_challenge = S256(verifier)\nstate = randomBytes(32)
     API-->>B: 302 Location: provider?response_type=code\n  &code_challenge=...&state=...\nSet-Cookie: oauth_state=<state>; httpOnly\nSet-Cookie: oauth_pkce=<verifier>; httpOnly
 
     Note over B,P: 2. Provider 인증

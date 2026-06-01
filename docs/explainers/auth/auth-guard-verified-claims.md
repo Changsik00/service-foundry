@@ -64,7 +64,7 @@ verify 가 role 을 버려서 guard 가 decodeJwt 로 우회할 수밖에 없었
 
 ## 동작/테스트 방법
 
-> 🧪 `pnpm --filter @repo/backend-auth-jwt test` — 26/26 (검증된 result 의 role 보존 단언 신규). `pnpm --filter @repo/nestjs-auth test` — 10/10 (guard 가 verified role 사용, decodeJwt 제거 확인).
+> 🧪 `pnpm --filter @repo/backend-auth-jwt test` — 26개 (검증된 result 의 role 보존 단언 신규). `pnpm --filter @repo/nestjs-auth test` — auth.guard 5개 포함 (guard 가 verified role 사용, decodeJwt 제거 확인).
 
 ## 마치며
 

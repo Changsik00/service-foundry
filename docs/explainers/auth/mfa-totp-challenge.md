@@ -26,23 +26,23 @@ sequenceDiagram
     U->>API: POST /auth/mfa/totp/enroll\nAuthorization: Bearer <accessToken>
     API->>MFA: generateEnrollOptions(userId)
     MFA->>MFA: generateSecret() → totpUri
-    MFA->>DB: INSERT mfa_configs { userId, secret, pending:true }
+    MFA->>DB: UPSERT mfa_configs { userId, secret, enabled:false, backupCodeHashes:[] }
     API-->>U: { totpUri } ← QR 코드 표시
 
     Note over U,DB: 등록 확인 (confirm)
     U->>API: POST /auth/mfa/totp/enroll/confirm { code }
     API->>MFA: confirmEnroll(userId, code)
-    MFA->>DB: SELECT mfa_configs WHERE userId + pending=true
+    MFA->>DB: SELECT mfa_configs WHERE userId
     MFA->>MFA: verifyTotp(secret, code)
     alt 코드 불일치
         API-->>U: 401
     end
-    MFA->>DB: UPDATE mfa_configs SET pending=false\nINSERT backup_codes (bcrypt hash × 10)
+    MFA->>DB: UPDATE mfa_configs SET enabled=true\n+ backupCodeHashes (bcrypt hash × 10)
     API-->>U: { backupCodes: [10개] } ← 최초 1회만 노출
 
     Note over U,API: 로그인 — MFA 분기
     U->>API: POST /auth/signin { email, password }
-    API->>DB: SELECT mfa_configs WHERE userId + active=true
+    API->>API: isMfaEnabled(userId) → mfa_configs WHERE userId + enabled=true
     alt MFA 활성
         API->>API: signMfaChallengeToken(userId)\n(단기 JWT, 역할 없음)
         API-->>U: { mfa_required:true, mfaChallengeToken }
@@ -52,9 +52,9 @@ sequenceDiagram
 
     Note over U,API: TOTP 검증 → 최종 세션
     U->>API: POST /auth/mfa/totp/verify\n{ mfaChallengeToken, code }
-    API->>API: verifyMfaChallengeToken(mfaChallengeToken)
+    API->>API: verifyAccessToken(mfaChallengeToken)\n(audience="mfa_challenge" 전용)
     API->>MFA: verifyMfa(userId, code)
-    MFA->>DB: SELECT secret WHERE userId + active
+    MFA->>DB: SELECT mfa_configs WHERE userId + enabled=true
     MFA->>MFA: verifyTotp(secret, code)
     alt 코드 일치
         API->>API: createSession + signAccessToken
@@ -73,8 +73,8 @@ sequenceDiagram
 | 용어 | 설명 |
 |---|---|
 | TOTP | Time-based OTP — 30초 주기 6자리 코드, RFC 6238 |
-| `mfaChallengeToken` | 비밀번호 검증 후 발급되는 단기 JWT — TOTP 검증 전까지만 유효 |
-| `pending:true` | enroll 시작 후 confirm 전 상태 — confirm 없이 MFA 미활성 |
+| `mfaChallengeToken` | 비밀번호 검증 후 발급되는 단기 JWT (audience=`mfa_challenge`) — TOTP 검증 전까지만 유효 |
+| `enabled:false` | enroll 시작 후 confirm 전 상태 — `confirmEnroll` 성공 시 `enabled:true` 로 전환 |
 | Backup Code | 인증기 분실 대비 1회용 복구 코드 (bcrypt 저장) |
 
 ## 동작/테스트 방법

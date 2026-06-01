@@ -70,7 +70,7 @@ sequenceDiagram
 
 ## 동작/테스트 방법
 
-> 🧪 `pnpm --filter @repo/backend-auth-jwt test` — 25/25 단위 테스트. `createFakeKeyStore` 로 crypto 비용 없이 interface 검증 + `createInMemoryKeyStore` 로 실제 Ed25519 round-trip 검증.
+> 🧪 `pnpm --filter @repo/backend-auth-jwt test` — 26 단위 테스트. `createFakeKeyStore` 로 crypto 비용 없이 interface 검증 + `createInMemoryKeyStore` 로 실제 Ed25519 round-trip 검증.
 
 ## 마치며
 

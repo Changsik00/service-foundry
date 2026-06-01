@@ -11,7 +11,7 @@ tags: [service-foundry, explainer, auth, session]
 
 ## 왜 필요한가
 
-Access token 을 localStorage 에 저장하면 XSS 로 탈취된다. `httpOnly` 쿠키로 refresh token 을 전달하면 JavaScript 가 접근할 수 없어 XSS 방어가 가능하다. `SameSite=Lax` 는 CSRF 를 1차 방어하고, HMAC-SHA256 double-submit cookie 가 2차 방어한다. Access token 은 response body 로 전달해 메모리에만 유지한다.
+Access token 을 localStorage 에 저장하면 XSS 로 탈취된다. `httpOnly` 쿠키로 refresh token 을 전달하면 JavaScript 가 접근할 수 없어 XSS 방어가 가능하다. `SameSite=Lax` 는 CSRF 를 1차 방어한다. `@repo/backend-auth-rate-limit` 패키지에 HMAC-SHA256 double-submit cookie 구현(`issueCsrfToken` / `verifyCsrfToken`)이 준비되어 있으나, 현재 `apps/api` 에 아직 배선되지 않았다. Access token 은 response body 로 전달해 메모리에만 유지한다.
 
 ## 어떻게 동작하나
 
@@ -28,7 +28,7 @@ sequenceDiagram
     SS-->>API: { session, refreshToken }
     API->>KS: signAccessToken({ sub, role })
     KS-->>API: accessToken (EdDSA JWT)
-    API-->>C: 200 { accessToken }\nSet-Cookie: refresh_token=<raw>; httpOnly; SameSite=Lax\nSet-Cookie: csrf=<hmac>; SameSite=Lax
+    API-->>C: 200 { accessToken }\nSet-Cookie: refresh_token=<raw>; httpOnly; SameSite=Lax
 
     Note over C,KS: 보호 API 접근
     C->>API: GET /auth/me\nAuthorization: Bearer <accessToken>
@@ -37,8 +37,7 @@ sequenceDiagram
     API-->>C: 200 { user }
 
     Note over C,KS: Access token 만료 → Refresh
-    C->>API: POST /auth/refresh\nCookie: refresh_token=<T1>\nX-Csrf-Token: <csrf>
-    API->>API: verifyCsrfToken(secret, sessionId, csrfHeader)
+    C->>API: POST /auth/refresh\nCookie: refresh_token=<T1>
     API->>SS: rotateSession(T1)
     SS-->>API: { type:"rotated", refreshToken:T2 }
     API->>KS: signAccessToken({ sub, role })
@@ -48,16 +47,16 @@ sequenceDiagram
     Note over C,API: 로그아웃
     C->>API: POST /auth/signout\nCookie: refresh_token=<T>
     API->>SS: revokeSession(sessionId)
-    API-->>C: 200\nSet-Cookie: refresh_token=; Max-Age=0\nSet-Cookie: csrf=; Max-Age=0
+    API-->>C: 200\nSet-Cookie: refresh_token=; Max-Age=0
 ```
 
 ### 5 인증 엔드포인트
 
 | 엔드포인트 | 목적 | 쿠키 변화 |
 |---|---|---|
-| `POST /auth/signup` | 회원가입 + 세션 즉시 발급 | refresh + csrf set |
-| `POST /auth/signin` | 로그인 + 세션 발급 | refresh + csrf set |
-| `POST /auth/signout` | 로그아웃 + 세션 revoke | refresh + csrf clear |
+| `POST /auth/signup` | 회원가입 + 세션 즉시 발급 | refresh set |
+| `POST /auth/signin` | 로그인 + 세션 발급 | refresh set |
+| `POST /auth/signout` | 로그아웃 + 세션 revoke | refresh clear |
 | `POST /auth/refresh` | access token 갱신 + rotation | refresh 교체 |
 | `GET /auth/me` | 현재 사용자 조회 | 변화 없음 |
 
@@ -69,7 +68,7 @@ sequenceDiagram
 |---|---|
 | httpOnly | JavaScript 에서 접근 불가 — XSS 탈취 방어 |
 | SameSite=Lax | 타 사이트 POST 요청에 쿠키 미전송 — CSRF 1차 방어 |
-| Double-Submit Cookie | csrf 쿠키 + X-Csrf-Token header 일치 검증 — CSRF 2차 방어 |
+| Double-Submit Cookie | csrf 쿠키 + X-Csrf-Token header 일치 검증 — CSRF 2차 방어 (`@repo/backend-auth-rate-limit` 구현 존재, `apps/api` 미배선) |
 | Sliding TTL | refresh token 갱신 시마다 만료 시간 연장 |
 
 ## 동작/테스트 방법
@@ -78,7 +77,7 @@ sequenceDiagram
 
 ## 마치며
 
-refresh token 은 httpOnly 쿠키로 JS 에서 감춰지고, access token 은 메모리에만 유지된다. CSRF 이중 방어와 SameSite=Lax 조합이 웹 보안 기본 베이스라인을 형성한다.
+refresh token 은 httpOnly 쿠키로 JS 에서 감춰지고, access token 은 메모리에만 유지된다. SameSite=Lax 가 CSRF 1차 방어를 담당한다. HMAC double-submit cookie(2차 방어)는 패키지 구현은 완료됐으나 `apps/api` 배선은 미완 상태다.
 
 ## 연결된 개념
 
