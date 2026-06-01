@@ -28,11 +28,11 @@
 - [x] 검증: vitest 4 passed + `pnpm --filter @apps/api typecheck` PASS
 - [x] Commit: `feat(spec-15-02): add CSRF cookie helper (issue/rotate/read)`
 
-## Task 4: CsrfGuard (TDD)
-- [ ] Red: `apps/api/src/auth/csrf.guard.test.ts` — 정상 통과 / 헤더 누락 / 위조 / csrf_id 쿠키 부재 → 각 기대(통과 or Forbidden). Fail 확인.
-- [ ] Green: `apps/api/src/auth/csrf.guard.ts` 구현 (`verifyCsrfToken` 재사용, secret DI, 실패 시 `ForbiddenException`)
-- [ ] 검증: `pnpm --filter @apps/api test -- csrf.guard`
-- [ ] Commit: `feat(spec-15-02): add CsrfGuard (double-submit verify)`
+## Task 4: CsrfGuard (TDD) ✅
+- [x] `csrf.guard.test.ts` — 정상 / 헤더 누락 / 위조 / csrf_id 부재 4 케이스 (Forbidden 검증)
+- [x] `csrf.guard.ts` — `verifyCsrfToken` 재사용, `CSRF_SECRET` Symbol DI 토큰, 실패 시 `ForbiddenException`(403)
+- [x] 검증: vitest 4 passed + typecheck PASS
+- [x] Commit: `feat(spec-15-02): add CsrfGuard (double-submit verify)`
 
 ## Task 5: 컨트롤러 배선
 - [ ] `GET /auth/csrf` 부트스트랩 endpoint 추가 (body `{ csrfToken }`)
