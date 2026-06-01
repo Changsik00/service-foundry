@@ -50,7 +50,7 @@
 ## Ship
 - [x] walkthrough.md 작성
 - [x] pr_description.md 작성
-- [ ] push + PR (base: `phase-15-security-wiring`)
+- [x] push + PR (base: `phase-15-security-wiring`) → PR #94
 
 ## 진행 요약
 | 항목 | 값 |
