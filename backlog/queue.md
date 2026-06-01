@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-15** — Security & Wiring Hardening — 2 spec — 다음: (spec 없음)
+- **phase-15** — Security & Wiring Hardening — 3 spec — 다음: spec-15-03-login-ratelimit-lockout
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
