@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-14** — Quality Hardening + CI/CD — 8 spec — 다음: spec-14-08-docs-verification
+- **phase-14** — Quality Hardening + CI/CD — 8 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기

@@ -40,7 +40,7 @@
 | `spec-14-05` | security-ports | P? | Merged | `specs/spec-14-05-security-ports/` |
 | `spec-14-06` | ci-release-docker | P? | Merged | `specs/spec-14-06-ci-release-docker/` |
 | `spec-14-07` | docs-knowledge-base | P? | Merged | `specs/spec-14-07-docs-knowledge-base/` |
-| `spec-14-08` | docs-verification | P? | Active | `specs/spec-14-08-docs-verification/` |
+| `spec-14-08` | docs-verification | P? | Merged | `specs/spec-14-08-docs-verification/` |
 <!-- sdd:specs:end -->
 
 ### spec-14-01 — ci-verify-gate (우선)
