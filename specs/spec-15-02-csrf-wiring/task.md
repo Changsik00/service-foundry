@@ -13,14 +13,14 @@
 
 ---
 
-## Task 1: 브랜치 + 문서 커밋
-- [ ] `git checkout -b spec-15-02-csrf-wiring` (phase base 에서)
-- [ ] Commit: `docs(spec-15-02): add spec/plan/task` (spec/plan/task + phase.md/queue.md sdd 갱신 포함)
+## Task 1: 브랜치 + 문서 커밋 ✅
+- [x] `git checkout -b spec-15-02-csrf-wiring` (phase base 에서)
+- [x] Commit: `docs(spec-15-02): add spec/plan/task` (751f359; 시크릿 가드 오탐 warn 우회)
 
-## Task 2: settings CSRF_SECRET
-- [ ] `apps/api/src/settings.ts` 에 `CSRF_SECRET: z.string().min(1)` 추가 (+ 테스트/예제 기본값 정합)
-- [ ] 검증: `pnpm --filter @apps/api typecheck`
-- [ ] Commit: `feat(spec-15-02): add CSRF_SECRET to app settings`
+## Task 2: settings CSRF_SECRET ✅
+- [x] `apps/api/src/settings.ts` 에 `CSRF_SECRET: z.string().min(1).default(...)` 추가 (OAUTH_STATE_SECRET 패턴)
+- [x] 검증: `pnpm --filter @apps/api typecheck` PASS
+- [x] Commit: `feat(spec-15-02): add CSRF_SECRET to app settings`
 
 ## Task 3: CSRF 쿠키 헬퍼 (TDD)
 - [ ] Red: `apps/api/src/auth/csrf.cookie.test.ts` — `setCsrfCookies`(csrf_id+csrf_token Set-Cookie, body 토큰 반환)·`readCsrfId` 기대. Fail 확인.
