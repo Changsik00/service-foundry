@@ -32,11 +32,11 @@ flowchart TD
     Format --> PNPMInstall["pnpm install<br/>(workspace 등록)"]
 
     subgraph "5 패키지 카테고리"
-        Sh["shared → packages/shared/<name><br/>@repo/<name>"]
-        Be["backend → packages/backend/<name><br/>@repo/backend-<name>"]
-        Fe["frontend → packages/frontend/<name><br/>@repo/frontend-<name>"]
-        Ne["nestjs → packages/nestjs/<name><br/>@repo/nestjs-<name>"]
-        Cf["config → packages/config/<name>-config<br/>@repo/<name>-config"]
+        Sh["shared → packages/shared/{name}<br/>@repo/{name}"]
+        Be["backend → packages/backend/{name}<br/>@repo/backend-{name}"]
+        Fe["frontend → packages/frontend/{name}<br/>@repo/frontend-{name}"]
+        Ne["nestjs → packages/nestjs/{name}<br/>@repo/nestjs-{name}"]
+        Cf["config → packages/config/{name}-config<br/>@repo/{name}-config"]
     end
 
     RPT --> Sh & Be & Fe & Ne & Cf

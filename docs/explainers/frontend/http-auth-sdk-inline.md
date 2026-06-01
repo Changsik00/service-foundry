@@ -36,12 +36,12 @@ flowchart LR
     API -->|AuthResult| SDK
     SDK -->|storeAndSucceed(user) 또는 failure| AP
 
-    subgraph auth-api.ts
+    subgraph authapi["auth-api.ts"]
         API
         HC
     end
 
-    subgraph auth-sdk.ts
+    subgraph authsdk["auth-sdk.ts"]
         SDK
     end
 ```

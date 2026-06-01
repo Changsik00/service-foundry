@@ -25,14 +25,14 @@ sequenceDiagram
     Note over B,P: 1. 로그인 시작
     B->>API: GET /auth/oauth/google
     API->>API: code_verifier = randomBytes(32)<br/>code_challenge = S256(verifier)<br/>state = randomBytes(32)
-    API-->>B: 302 Location: provider?response_type=code<br/>  &code_challenge=...&state=...<br/>Set-Cookie: oauth_state=<state>; httpOnly<br/>Set-Cookie: oauth_pkce=<verifier>; httpOnly
+    API-->>B: 302 Location: provider?response_type=code<br/>  &code_challenge=...&state=...<br/>Set-Cookie: oauth_state=stateVal; httpOnly<br/>Set-Cookie: oauth_pkce=verifier; httpOnly
 
     Note over B,P: 2. Provider 인증
     B->>P: (사용자 로그인 + 동의)
-    P-->>B: 302 /auth/oauth/google/callback?code=<code>&state=<state>
+    P-->>B: 302 /auth/oauth/google/callback?code=code&state=stateVal
 
     Note over B,API: 3. Callback 처리
-    B->>API: GET /auth/oauth/google/callback<br/>  ?code=<code>&state=<state><br/>Cookie: oauth_state=<stored>; oauth_pkce=<verifier>
+    B->>API: GET /auth/oauth/google/callback<br/>  ?code=code&state=stateVal<br/>Cookie: oauth_state=storedState; oauth_pkce=verifier
     API->>API: timingSafeEqual(state, oauth_state cookie)
     alt state mismatch
         API-->>B: 401 Unauthorized
@@ -43,7 +43,7 @@ sequenceDiagram
     API->>DB: findOrCreate oauth_accounts<br/>{ provider, providerAccountId, userId }
     DB-->>API: userId (기존 연결 또는 신규 생성)
     API->>API: createSession(userId)<br/>signAccessToken({ sub:userId, role })
-    API-->>B: 200 { accessToken }<br/>Set-Cookie: refresh_token=<T>; httpOnly
+    API-->>B: 200 { accessToken }<br/>Set-Cookie: refresh_token=T; httpOnly
 ```
 
 ### PKCE S256 계산

@@ -23,7 +23,7 @@ sequenceDiagram
     participant DB as DB (mfa_configs)
 
     Note over U,DB: 등록 (enroll)
-    U->>API: POST /auth/mfa/totp/enroll<br/>Authorization: Bearer <accessToken>
+    U->>API: POST /auth/mfa/totp/enroll<br/>Authorization: Bearer {accessToken}
     API->>MFA: generateEnrollOptions(userId)
     MFA->>MFA: generateSecret() → totpUri
     MFA->>DB: UPSERT mfa_configs { userId, secret, enabled:false, backupCodeHashes:[] }
@@ -58,7 +58,7 @@ sequenceDiagram
     MFA->>MFA: verifyTotp(secret, code)
     alt 코드 일치
         API->>API: createSession + signAccessToken
-        API-->>U: { accessToken }<br/>Set-Cookie: refresh_token=<T>
+        API-->>U: { accessToken }<br/>Set-Cookie: refresh_token=T
     else 불일치
         API-->>U: 401
     end

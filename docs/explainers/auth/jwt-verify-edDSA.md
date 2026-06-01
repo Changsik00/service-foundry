@@ -34,11 +34,11 @@ sequenceDiagram
     A-->>C: { accessToken }
 
     Note over G,KS: 보호 엔드포인트 — 검증
-    C->>G: Authorization: Bearer <token>
+    C->>G: Authorization: Bearer {token}
     G->>KS: verifyAccessToken(token, keystore, {iss, aud})
     KS->>KS: getKey(kid) → publicKey
     KS->>KS: jose.jwtVerify(token, publicKey)
-    KS-->>G: Result<JwtClaims, AppError>
+    KS-->>G: Result(JwtClaims, AppError)
     G->>G: isOk(result) → req.user = result.value
 
     Note over A: JWKS endpoint

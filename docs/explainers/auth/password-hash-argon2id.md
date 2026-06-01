@@ -19,16 +19,16 @@ tags: [service-foundry, explainer, auth, session]
 
 ```mermaid
 flowchart TD
-    A[POST /auth/signup<br/>평문 비밀번호] --> B[hashPassword(plain)]
+    A[POST /auth/signup<br/>평문 비밀번호] --> B["hashPassword(plain)"]
     B --> C[argon2id<br/>m=19456 MiB<br/>t=2 iter<br/>p=1 thread]
-    C --> D["PHC string 저장<br/>$argon2id$v=19$m=19456,t=2,p=1$<salt>$<hash>"]
+    C --> D["PHC string 저장<br/>$argon2id$v=19$m=19456,t=2,p=1$&lt;salt&gt;$&lt;hash&gt;"]
     D --> E[(users.passwordHash)]
 
-    F[POST /auth/signin<br/>평문 비밀번호] --> G[verifyPassword(plain, hash)]
+    F[POST /auth/signin<br/>평문 비밀번호] --> G["verifyPassword(plain, hash)"]
     G --> H{일치?}
     H -- false --> I[false 반환<br/>→ 401]
-    H -- true --> J[needsRehash(hash, opts)?]
-    J -- yes --> K[hashPassword(plain, newOpts)<br/>fire-and-forget]
+    H -- true --> J["needsRehash(hash, opts)?"]
+    J -- yes --> K["hashPassword(plain, newOpts)<br/>fire-and-forget"]
     K --> L[updatePasswordHash]
     J -- no --> M[세션 발급 계속]
     L --> M

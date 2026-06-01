@@ -19,16 +19,16 @@ JWT header 를 `decodeJwt` (서명 검증 없음) 로 파싱하면, 공격자가
 flowchart TD
     A["Authorization: Bearer token"] --> B[AuthGuard.canActivate]
 
-    subgraph Before — footgun
-        B --> C1["verifyAccessToken(token)<br/>→ Result<NarrowClaims>"]
+    subgraph "Before — footgun"
+        B --> C1["verifyAccessToken(token)<br/>→ Result&lt;NarrowClaims&gt;"]
         C1 --> D1["narrowClaims = {sub,iss,aud,jti,iat,exp}<br/>role 손실"]
         D1 --> E1["decodeJwt(token)<br/>미검증 파싱으로 role 보충"]
         E1 --> F1["req.user = {sub, role from 미검증 payload}"]
         F1 --> G1["⚠️ 권한 상승 가능"]
     end
 
-    subgraph After — 정공법
-        B --> C2["verifyAccessToken(token)<br/>→ Result<JwtClaims + index signature>"]
+    subgraph "After — 정공법"
+        B --> C2["verifyAccessToken(token)<br/>→ Result&lt;JwtClaims + index signature&gt;"]
         C2 --> D2["result.value = {sub,iss,aud,jti,iat,exp, role, ...커스텀}"]
         D2 --> E2["req.user = result.value"]
         E2 --> F2["✅ 서명 검증된 payload 만 사용"]

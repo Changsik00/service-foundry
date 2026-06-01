@@ -25,7 +25,7 @@ flowchart LR
     subgraph core ["@repo/backend-secrets"]
         P["SecretsProvider 포트<br/>get(key) / require(key)"]
         ENV["createEnvSecrets(env)<br/>process.env 조회"]
-        MEM["createMemorySecrets(map)<br/>Record<string,string> 조회"]
+        MEM["createMemorySecrets(map)<br/>Record&lt;string,string&gt; 조회"]
         P --> ENV
         P --> MEM
     end

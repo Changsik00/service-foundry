@@ -31,8 +31,8 @@ flowchart TD
         CI2["actions/checkout@v4"]
         OWN["Lowercase owner id"]
         LOGIN["docker/login-action@v3<br/>ghcr.io / GITHUB_TOKEN"]
-        BUILD["docker/build-push-action@v6<br/>context: . (모노레포 루트)<br/>file: apps/<service>/Dockerfile"]
-        PUSH["ghcr.io/<owner>/service-foundry-<service>:<sha><br/>ghcr.io/<owner>/service-foundry-<service>:latest"]
+        BUILD["docker/build-push-action@v6<br/>context: . (모노레포 루트)<br/>file: apps/{service}/Dockerfile"]
+        PUSH["ghcr.io/{owner}/service-foundry-{service}:{sha}<br/>ghcr.io/{owner}/service-foundry-{service}:latest"]
         CI2 --> OWN --> LOGIN --> BUILD --> PUSH
     end
 

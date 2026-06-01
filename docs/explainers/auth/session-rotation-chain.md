@@ -25,14 +25,14 @@ sequenceDiagram
     C->>API: POST /auth/signin
     API->>S: createSession(userId)<br/>family=UUID, tokenHash=SHA256(rawToken)
     S-->>API: session row
-    API-->>C: Set-Cookie: refresh=<rawToken> (httpOnly)
+    API-->>C: Set-Cookie: refresh=rawToken (httpOnly)
 
     Note over C,S: 정상 갱신 (rotated)
     C->>API: POST /auth/refresh (Cookie: refresh=T1)
     API->>S: rotateSession(T1)
     S->>S: hashToken(T1) 조회 → active 확인<br/>기존 row revoked_at 설정<br/>새 row (T2, 같은 family) INSERT
     S-->>API: { type:"rotated", refreshToken:T2 }
-    API-->>C: Set-Cookie: refresh=<T2>
+    API-->>C: Set-Cookie: refresh=T2
 
     Note over C,S: Reuse 감지 (공격자가 T1 재시도)
     C->>API: POST /auth/refresh (Cookie: refresh=T1)

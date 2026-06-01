@@ -24,7 +24,7 @@ sequenceDiagram
     participant DB as DB (passkey_credentials / challenges)
 
     Note over B,DB: 등록 (Registration Ceremony)
-    B->>API: POST /auth/passkey/register/options<br/>Authorization: Bearer <accessToken>
+    B->>API: POST /auth/passkey/register/options<br/>Authorization: Bearer {accessToken}
     API->>PKS: generateRegisterOptions(userId, email)
     PKS->>SWA: generateRegistrationOptions(...)
     PKS->>DB: INSERT passkey_challenges { userId, challenge, expiresAt=+5min }
@@ -52,7 +52,7 @@ sequenceDiagram
     PKS->>SWA: verifyAuthenticationResponse(response, credential, challenge)
     PKS->>DB: UPDATE passkey_credentials SET counter=newCounter
     PKS->>PKS: createSession(userId) + signAccessToken
-    API-->>B: { accessToken }<br/>Set-Cookie: refresh_token=<T>; httpOnly
+    API-->>B: { accessToken }<br/>Set-Cookie: refresh_token=T; httpOnly
 ```
 
 ### 핵심 설계 결정

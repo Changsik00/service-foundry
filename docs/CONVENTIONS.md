@@ -162,7 +162,7 @@ tags: [service-foundry, explainer, <domain>, <concept>]
 ## 어떻게 동작하나 (메커니즘)
 ```mermaid
 flowchart TD
-  ...
+    A[시작] --> B[끝]
 ```
 ## 용어 정리
 ## 동작/테스트 방법

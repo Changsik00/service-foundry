@@ -24,7 +24,7 @@ flowchart TD
     LF -->|useRouter()| Router["next/navigation"]
     LF --> State["useState<br/>email / password / error / isPending"]
 
-    State --> Form["<form onSubmit={handleSubmit}>"]
+    State --> Form["form onSubmit=handleSubmit"]
     Form -->|submit| HS["handleSubmit()"]
     HS -->|1. setIsPending(true)| Pending["버튼 비활성"]
     HS -->|2. signIn({email,password})| SDK["CoreAuthSDK"]
