@@ -16,11 +16,11 @@
 - [ ] `git checkout -b spec-15-04-request-id-wiring` (phase base 에서)
 - [ ] Commit: `docs(spec-15-04): add spec/plan/task`
 
-## Task 2: 미들웨어 응답 헤더 (TDD)
-- [ ] Red: `packages/backend/logger/src/index.test.ts` 에 "응답 헤더 x-request-id 설정(생성/재사용)" 케이스. Fail 확인.
-- [ ] Green: `requestIdMiddleware` 에 `MinimalResponse { setHeader }` + `res.setHeader("x-request-id", requestId)`.
-- [ ] 검증: `pnpm --filter @repo/backend-logger test` PASS
-- [ ] Commit: `feat(spec-15-04): expose x-request-id response header in requestIdMiddleware`
+## Task 2: 미들웨어 응답 헤더 (TDD) ✅
+- [x] `index.test.ts`: 응답 헤더 생성/에코 케이스 추가 + 기존 res mock(`{setHeader}`) 보강
+- [x] `requestIdMiddleware`: `MinimalResponse { setHeader }` + `res.setHeader("x-request-id", requestId)`
+- [x] 검증: `pnpm --filter @repo/backend-logger test` 12/12 + typecheck PASS
+- [x] Commit: `feat(spec-15-04): expose x-request-id response header in requestIdMiddleware`
 
 ## Task 3: main.ts + e2e 배선
 - [ ] `apps/api/src/main.ts`: `requestIdMiddleware()` 적용 (cookieParser 다음).
