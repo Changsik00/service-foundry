@@ -18,7 +18,7 @@ tags: [service-foundry, explainer, backend, drizzle]
 ```mermaid
 sequenceDiagram
     participant Dev as 개발자
-    participant Schema as apps/api/src/db/schema/
+    participant Schema as apps/api/src/infra/schema/
     participant Kit as drizzle-kit CLI
     participant Migrator as migrate() helper
     participant Pool as pg.Pool
@@ -38,11 +38,11 @@ sequenceDiagram
     Pool->>DB: pool.end() — 모든 커넥션 정상 종료
 ```
 
-`createDatabase<TSchema>(options)` 는 `pg.Pool` 을 생성하고 `drizzle(pool, { schema })` 로 감싼다. 스키마 정의는 **앱 레벨**(`apps/<app>/src/db/schema/`)에서 가지며, 패키지는 generic `TSchema` 인자로만 받는다. 이 덕분에 서비스별로 다른 schema 를 쓰면서 타입 안전 쿼리 API 를 유지할 수 있다.
+`createDatabase<TSchema>(options)` 는 `pg.Pool` 을 생성하고 `drizzle(pool, { schema })` 로 감싼다. 스키마 정의는 **앱 레벨**(`apps/<app>/src/infra/schema/`)에서 가지며, 패키지는 generic `TSchema` 인자로만 받는다. 이 덕분에 서비스별로 다른 schema 를 쓰면서 타입 안전 쿼리 API 를 유지할 수 있다.
 
 `migrate(db, options)` 는 `drizzle-orm/node-postgres/migrator` 의 `migrate` 를 얇게 감싸 에러를 `AppError(MIGRATION_FAILED)` 로 변환한다. drizzle-kit 이 생성한 SQL 파일 디렉터리를 인자로 받아 pending 마이그레이션만 순서대로 적용한다.
 
-**NestJS 배선**: `@repo/nestjs-database` 의 `DatabaseShutdownService` 가 `OnModuleDestroy` 를 구현해 `shutdown(pool)` 을 호출한다. `useFactory: () => new DatabaseShutdownService(database)` 패턴을 써야 하는 이유는 NestJS lifecycle hook 이 클래스 인스턴스에서만 동작하기 때문이다(`useValue` 객체에는 훅이 실행되지 않는다).
+**NestJS 배선**: `@repo/nestjs-database` 의 `DatabaseModule` 이 `OnModuleDestroy` 를 직접 구현해 `shutdown(pool)` 을 호출한다 (ADR-0016). `DatabaseShutdownService` 같은 별도 클래스 없이 Module 클래스 자체가 lifecycle 훅을 담당한다.
 
 ## 용어 정리
 

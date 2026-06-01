@@ -30,7 +30,13 @@ tags: [service-foundry, reference, auth, jwt]
 | `Alg` | type | 지원 알고리즘 유니언 |
 | `Jwks` | type | JWKS 응답 타입 |
 | `SignAccessTokenOptions` | type | 서명 옵션 |
+| `SignAccessTokenPayload` | type | 서명 페이로드 입력 타입 |
 | `SignedClaims` | type | 서명 결과 타입 |
+| `VerifyAccessTokenOptions` | type | 검증 옵션 타입 |
+| `FakeKeyStore` | type | 테스트용 결정적 키스토어 인터페이스 |
+| `FakeKeyStoreInit` | type | FakeKeyStore 초기화 옵션 |
+| `InMemoryKeyStore` | type | 인메모리 키스토어 인터페이스 |
+| `CreateInMemoryKeyStoreOptions` | type | 인메모리 키스토어 생성 옵션 |
 
 ## 의존
 

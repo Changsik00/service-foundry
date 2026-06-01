@@ -17,7 +17,7 @@ tags: [service-foundry, reference, backend, idempotency]
 
 | export | 종류 | 설명 |
 |---|---|---|
-| `withIdempotency` | fn | 멱등 실행 래퍼 (key, ttlSeconds, fn) |
+| `withIdempotency` | fn | 멱등 실행 래퍼 (cache, key, ttlSeconds, fn) |
 
 ## 의존
 

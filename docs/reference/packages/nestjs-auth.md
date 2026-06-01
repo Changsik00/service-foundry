@@ -18,9 +18,9 @@ tags: [service-foundry, reference, nestjs, auth, jwt]
 | export | 종류 | 설명 |
 |---|---|---|
 | `AuthGuard` | class (Guard) | Bearer JWT 검증 → `AuthenticatedUser` request 부착 |
-| `AuthenticatedUser` | type | `{ sub, role, iat, exp }` (JwtPayload 기반) |
+| `AuthenticatedUser` | type | `{ sub, role }` (검증된 claim에서만 추출) |
 | `NESTJS_AUTH_OPTIONS` | symbol | DI token |
-| `NestjsAuthOptions` | type | `{ secret, ... }` 옵션 인터페이스 |
+| `NestjsAuthOptions` | type | `{ keyStore, issuer, audience }` 옵션 인터페이스 |
 | `RolesGuard` | class (Guard) | `@Roles()` 메타데이터 기반 RBAC Guard |
 | `ROLES_KEY` | const | Reflect 메타데이터 키 |
 | `Roles` | decorator | `@Roles("admin")` 핸들러 데코레이터 |
@@ -30,7 +30,7 @@ tags: [service-foundry, reference, nestjs, auth, jwt]
 
 ## 의존
 
-- 내부: [[shared-auth-contracts]] (`JwtPayload`), `@repo/backend-auth-jwt`
+- 내부: [[shared-auth-contracts]] (`@repo/auth-contracts`, `Role` 등), `@repo/backend-auth-jwt`
 - 외부: `@nestjs/common`, `@nestjs/core`, `jose`, `reflect-metadata`
 
 ## 사용 예
@@ -38,7 +38,7 @@ tags: [service-foundry, reference, nestjs, auth, jwt]
 ```ts
 import { NestjsAuthModule, AuthGuard, RolesGuard, Roles, CurrentUser } from "@repo/nestjs-auth";
 
-@Module({ imports: [NestjsAuthModule.forRoot({ secret: process.env.JWT_SECRET })] })
+@Module({ imports: [NestjsAuthModule.forRoot({ keyStore, issuer: "myapp", audience: "myapp" })] })
 export class AppModule {}
 
 @UseGuards(AuthGuard, RolesGuard)

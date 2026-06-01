@@ -8,8 +8,8 @@ import { createBullProducer, startBullConsumer, resolveQueueConfig } from "@repo
 ```
 
 ## 핵심 API
-- `createBullProducer({ queueName, connection })` — BullMQ 기반 잡 발행 팩토리
-- `startBullConsumer({ queueName, connection, handler })` — BullMQ 기반 잡 소비 워커 시작
+- `createBullProducer(queueName, connection)` — BullMQ 기반 잡 발행 팩토리 (positional args)
+- `startBullConsumer(queueName, handlers, connection)` — BullMQ 기반 잡 소비 워커 시작 (positional args; handlers는 `Record<string, JobHandler>`)
 - `resolveQueueConfig({ redisUrl })` — 환경 변수에서 큐 설정 정규화
 
 ## 자세히

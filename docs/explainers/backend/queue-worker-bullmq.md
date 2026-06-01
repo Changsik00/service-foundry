@@ -26,7 +26,7 @@ sequenceDiagram
     participant Consumer as startBullConsumer
     participant Handler as JobHandler
 
-    API->>Producer: enqueue("default", "email.send", { to, body })
+    API->>Producer: enqueue("email.send", { to, body })
     Producer->>Redis: Queue.add("email.send", data)
     Redis-->>Producer: jobId
 
@@ -48,7 +48,7 @@ sequenceDiagram
 
 ```ts
 interface Producer {
-  enqueue<T>(jobName: string, data: T): Promise<void>;
+  enqueue<T>(jobName: string, data: T): Promise<void>; // queueName 은 createBullProducer("default", conn) 생성 시 고정
   close(): Promise<void>;
 }
 

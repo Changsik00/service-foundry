@@ -1,6 +1,6 @@
 # web-vite
 
-> Vite 7 + React + TanStack Router/Query 기반 SPA 앱. 파일 기반 라우팅과 클라이언트 사이드 헬스체크 쿼리를 시연하는 개발 레퍼런스 앱.
+> Vite 8 + React + TanStack Router/Query 기반 SPA 앱. 파일 기반 라우팅과 클라이언트 사이드 헬스체크 쿼리를 시연하는 개발 레퍼런스 앱.
 
 ## 실행
 

@@ -43,7 +43,7 @@ sequenceDiagram
         DB-->>API: 유효 row
         API->>API: hashPassword(newPassword) [argon2id]
         API->>DB: updatePasswordHash(userId, hash)
-        API->>DB: deleteToken(tokenHash)
+        API->>DB: markUsed(tokenId, usedAt)  ← 삭제 대신 used 마킹 (usedAt 설정)
     else token 무효 / 만료
         Note over API: 아무 처리 없음
     end
@@ -57,7 +57,7 @@ sequenceDiagram
 | Enumeration-safe | 이메일 존재 여부 무관 항상 `200 { status:"ok" }` 반환 |
 | Token hash 저장 | `SHA-256(rawToken)` hex 만 DB 저장 — `auth-session` 패턴 동일 (ADR-0014) |
 | 짧은 TTL | `expiresAt = now + 15min` — 보안 민감 작업 |
-| 단일 사용 | confirm 성공 시 token row 즉시 삭제 |
+| 단일 사용 | confirm 성공 시 `markUsed(id, usedAt)` 로 재사용 차단 (삭제 대신 `usedAt` 마킹) |
 
 ## 용어 정리
 

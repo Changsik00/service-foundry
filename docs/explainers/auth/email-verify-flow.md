@@ -42,7 +42,7 @@ sequenceDiagram
     alt token 유효
         DB-->>API: 유효 row (userId)
         API->>DB: UPDATE users SET email_verified=true\nWHERE id=userId
-        API->>DB: DELETE email_verify_tokens\nWHERE tokenHash=...
+        API->>DB: markUsed(tokenId, usedAt)  ← 삭제 대신 used 마킹 (usedAt 설정)
     else 만료 또는 미존재
         Note over API: 아무 처리 없음
     end

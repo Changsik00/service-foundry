@@ -10,7 +10,7 @@ import { AuthProvider, useAuth, RequireAuth, RequireRole, useMfaChallenge, usePa
 ## 핵심 API
 - `AuthProvider` — `sdk: AuthSDK` prop 수신, React Context 공급자
 - `useAuth` — `{ user, signIn, signUp, signOut, ... }` 훅
-- `useSession` — 현재 `Session | null` 반환 훅
+- `useSession` — `{ user, isLoading }` 반환 훅 (`AuthContextValue`에서 추출)
 - `RequireAuth` — 미인증 시 redirect/fallback Guard 컴포넌트
 - `RequireRole` — 역할 불일치 시 redirect/fallback Guard 컴포넌트
 - `useMfaChallenge` — MFA TOTP 챌린지 흐름 제어 훅
