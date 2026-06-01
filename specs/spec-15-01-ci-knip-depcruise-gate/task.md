@@ -38,22 +38,23 @@
   - `.github/workflows/verify.yml` install 직후 `pnpm turbo run knip depcruise` step 추가 (DB·build 불필요 → test 앞 fail-fast).
   - 완료: `ci(spec-15-01): add knip + depcruise to verify gate`
 
-- [ ] **task-07**: 위반 주입 검증 (시나리오 3)
-  - unused export / frontend→backend import 주입 → red 확인 → 제거. 증거는 walkthrough 에.
-  - 완료: 코드 변경 없음(검증만) — walkthrough 기록. (커밋 불요 시 [-] 스킵)
+- [x] **task-07**: 위반 주입 검증 (시나리오) — 검증 전용, 커밋 없음
+  - 시나리오1: `__knipCanary` 미사용 export 주입 → `pnpm knip` exit 1 (red) 확인 → 복원, exit 0.
+  - 시나리오2: frontend/ui 에 backend 상대 import 주입 → `pnpm depcruise` `frontend-no-backend-imports` error, exit 1 (red) 확인 → 삭제, exit 0.
+  - 증거: walkthrough 기록.
 
-- [ ] **task-08**: factory tsconfig lib 불일치 정리 (작으면 동반)
-  - `packages/shared/factory/tsconfig.json` 정합. 범위 크면 spec-15-05 로 이관([-]).
-  - 완료: `chore(spec-15-01): align factory tsconfig lib`
+- [-] **task-08**: factory tsconfig lib 불일치 — spec-15-05 이관
+  - `packages/shared/factory/tsconfig.json` 은 `@repo/typescript-config/base` extends 최소 설정, `lib` 필드 없음, `pnpm --filter @repo/factory typecheck` 통과 → 패키지 자체엔 실제 불일치 없음.
+  - 플랜이 가리킨 "lib 불일치"는 factory 가 **생성하는** 템플릿 tsconfig 쪽 → spec-15-05(생성기 tsconfig, 본 spec out-of-scope) 에서 처리. (queue 신규 항목 불요 — 이미 phase-15 계획에 존재)
 
 ## Ship
-- [ ] walkthrough.md 작성
-- [ ] pr_description.md 작성
+- [x] walkthrough.md 작성
+- [x] pr_description.md 작성
 - [ ] push + PR (base: `phase-15-security-wiring`)
 
 ## 진행 요약
 | 항목 | 값 |
 |---|---|
-| 총 Task 수 | 8 (+ ship) |
-| 현재 단계 | Planning |
+| 총 Task 수 | 8 (task-08 [-] 이관, + ship) |
+| 현재 단계 | Ship |
 | 마지막 업데이트 | 2026-06-01 |
