@@ -29,9 +29,9 @@
 - [x] Commit: `feat(spec-15-04): apply requestIdMiddleware in apps/api bootstrap`
 
 ## Task 4: Ship
-- [ ] 게이트: `pnpm turbo run lint typecheck test knip depcruise` (로컬 DB) PASS
-- [ ] walkthrough.md / pr_description.md 작성
-- [ ] Ship commit: `docs(spec-15-04): ship walkthrough and pr description`
+- [x] 게이트: `pnpm turbo run lint typecheck test knip depcruise` (로컬 DB) → 136/136 PASS
+- [x] walkthrough.md / pr_description.md 작성
+- [x] Ship commit: `docs(spec-15-04): ship walkthrough and pr description`
 - [ ] Push + PR (base: `phase-15-security-wiring`)
 - [ ] 사용자 알림 (PR URL)
 
