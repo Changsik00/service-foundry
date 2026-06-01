@@ -35,7 +35,7 @@ UI 부재·RBAC 미사용·provider 교체점 등은 보일러플레이트의 *�
 
 <!-- sdd:specs:start -->
 | `spec-15-01` | ci-knip-depcruise-gate | P? | Merged | `specs/spec-15-01-ci-knip-depcruise-gate/` |
-| `spec-15-02` | csrf-wiring | P? | Active | `specs/spec-15-02-csrf-wiring/` |
+| `spec-15-02` | csrf-wiring | P? | Merged | `specs/spec-15-02-csrf-wiring/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
