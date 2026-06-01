@@ -111,7 +111,12 @@ export const packageJson = (target: PackageTarget, category: PackageCategory): s
 
 /** tsconfig.json 콘텐츠 (config 카테고리는 생성 안 함) */
 export const tsconfig = (target: PackageTarget, category: PackageCategory): string => {
-  const compilerOptions = category === "shared" ? { lib: ["ES2023", "DOM"] } : undefined;
+  const compilerOptions =
+    category === "shared"
+      ? { lib: ["ES2023", "DOM"] }
+      : category === "backend"
+        ? { types: ["node"] }
+        : undefined;
   const include = category === "frontend" ? ["src/**/*.ts", "src/**/*.tsx"] : ["src/**/*.ts"];
   const obj: Record<string, unknown> = { extends: target.tsconfigExtends };
   if (compilerOptions) obj.compilerOptions = compilerOptions;

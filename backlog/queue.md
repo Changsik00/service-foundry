@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-15** — Security & Wiring Hardening — 4 spec — 다음: (spec 없음)
+- **phase-15** — Security & Wiring Hardening — 5 spec — 다음: spec-15-05-generator-tsconfig
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
