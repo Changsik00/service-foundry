@@ -1,5 +1,6 @@
 import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
+import { requestIdMiddleware } from "@repo/backend-logger";
 import cookieParser from "cookie-parser";
 import { authenticator } from "otplib";
 import request from "supertest";
@@ -49,6 +50,7 @@ describe("Auth E2E (real PG)", () => {
       imports: [AppModule],
     }).compile();
     app = moduleRef.createNestApplication({ logger: false });
+    app.use(requestIdMiddleware());
     app.use(cookieParser());
     await app.init();
     server = app.getHttpServer();
@@ -91,6 +93,19 @@ describe("Auth E2E (real PG)", () => {
       const cookies = (res.headers["set-cookie"] ?? []) as unknown as string[];
       expect(cookies.some((c) => c.startsWith("csrf_id="))).toBe(true);
       expect(cookies.some((c) => c.startsWith("csrf_token="))).toBe(true);
+    });
+  });
+
+  describe("request-id (reqId)", () => {
+    it("헤더 없는 요청 → 응답 x-request-id = 새 UUID", async () => {
+      const res = await request(server).get("/auth/csrf");
+      const reqId = res.headers["x-request-id"];
+      expect(reqId).toMatch(/^[0-9a-f-]{36}$/i);
+    });
+
+    it("X-Request-Id 제공 → 응답에 동일 값 에코", async () => {
+      const res = await request(server).get("/auth/csrf").set("X-Request-Id", "trace-e2e-001");
+      expect(res.headers["x-request-id"]).toBe("trace-e2e-001");
     });
   });
 

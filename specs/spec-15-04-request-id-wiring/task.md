@@ -22,11 +22,11 @@
 - [x] 검증: `pnpm --filter @repo/backend-logger test` 12/12 + typecheck PASS
 - [x] Commit: `feat(spec-15-04): expose x-request-id response header in requestIdMiddleware`
 
-## Task 3: main.ts + e2e 배선
-- [ ] `apps/api/src/main.ts`: `requestIdMiddleware()` 적용 (cookieParser 다음).
-- [ ] `auth.e2e.test.ts`: 부트스트랩 미들웨어 추가 + "request-id" describe (생성 UUID / 제공 헤더 에코).
-- [ ] 검증(로컬 Postgres 5434): `pnpm --filter @apps/api test` 전체 PASS + typecheck
-- [ ] Commit: `feat(spec-15-04): apply requestIdMiddleware in apps/api bootstrap`
+## Task 3: main.ts + e2e 배선 ✅
+- [x] `main.ts`: `requestIdMiddleware()` 가장 앞단 적용. apps/api 에 `@repo/backend-logger` 직접 의존 추가(lockfile).
+- [x] `auth.e2e.test.ts`: 부트스트랩 미들웨어 + "request-id" describe (생성 UUID / 제공 헤더 에코).
+- [x] 검증(로컬 Postgres 5434): apps/api **102/102** (+2 reqId) + typecheck PASS
+- [x] Commit: `feat(spec-15-04): apply requestIdMiddleware in apps/api bootstrap`
 
 ## Task 4: Ship
 - [ ] 게이트: `pnpm turbo run lint typecheck test knip depcruise` (로컬 DB) PASS
