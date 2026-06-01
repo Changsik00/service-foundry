@@ -32,8 +32,8 @@
 - [x] 게이트: `pnpm turbo run lint typecheck test knip depcruise` (로컬 DB) → 136/136 PASS
 - [x] walkthrough.md / pr_description.md 작성
 - [x] Ship commit: `docs(spec-15-04): ship walkthrough and pr description`
-- [ ] Push + PR (base: `phase-15-security-wiring`)
-- [ ] 사용자 알림 (PR URL)
+- [x] Push + PR (base: `phase-15-security-wiring`) → PR #97
+- [x] 사용자 알림 (PR URL)
 
 ---
 
