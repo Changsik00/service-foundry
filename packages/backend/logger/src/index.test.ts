@@ -70,7 +70,7 @@ describe("requestId context", () => {
   it("requestIdMiddleware — uses X-Request-Id header when present", () => {
     const middleware = requestIdMiddleware();
     let captured: string | undefined;
-    middleware({ headers: { "x-request-id": "incoming-id-42" } }, {}, () => {
+    middleware({ headers: { "x-request-id": "incoming-id-42" } }, { setHeader() {} }, () => {
       captured = getCurrentRequestId();
     });
     expect(captured).toBe("incoming-id-42");
@@ -79,7 +79,7 @@ describe("requestId context", () => {
   it("requestIdMiddleware — generates new id when header missing", () => {
     const middleware = requestIdMiddleware();
     let captured: string | undefined;
-    middleware({ headers: {} }, {}, () => {
+    middleware({ headers: {} }, { setHeader() {} }, () => {
       captured = getCurrentRequestId();
     });
     expect(captured).toBeTypeOf("string");
@@ -96,7 +96,7 @@ describe("requestId context", () => {
   it("requestIdMiddleware — custom header 옵션 사용", () => {
     const middleware = requestIdMiddleware({ header: "X-Trace-Id" });
     let captured: string | undefined;
-    middleware({ headers: { "x-trace-id": "trace-77" } }, {}, () => {
+    middleware({ headers: { "x-trace-id": "trace-77" } }, { setHeader() {} }, () => {
       captured = getCurrentRequestId();
     });
     expect(captured).toBe("trace-77");
@@ -105,7 +105,25 @@ describe("requestId context", () => {
   it("requestIdMiddleware — next 를 1회 호출", () => {
     const middleware = requestIdMiddleware();
     const next = vi.fn();
-    middleware({ headers: {} }, {}, next);
+    middleware({ headers: {} }, { setHeader() {} }, next);
     expect(next).toHaveBeenCalledOnce();
+  });
+
+  it("requestIdMiddleware — 응답 헤더 x-request-id 를 생성 reqId 로 설정", () => {
+    const middleware = requestIdMiddleware();
+    const setHeader = vi.fn();
+    let captured: string | undefined;
+    middleware({ headers: {} }, { setHeader }, () => {
+      captured = getCurrentRequestId();
+    });
+    expect(setHeader).toHaveBeenCalledWith("x-request-id", captured);
+    expect(captured).toMatch(/^[0-9a-f-]{36}$/i);
+  });
+
+  it("requestIdMiddleware — 응답 헤더에 수신 reqId 를 에코", () => {
+    const middleware = requestIdMiddleware();
+    const setHeader = vi.fn();
+    middleware({ headers: { "x-request-id": "incoming-id-99" } }, { setHeader }, () => {});
+    expect(setHeader).toHaveBeenCalledWith("x-request-id", "incoming-id-99");
   });
 });

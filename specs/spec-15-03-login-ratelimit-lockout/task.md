@@ -1,0 +1,57 @@
+# Task List: spec-15-03
+
+> One Task = One Commit. 매 commit 직후 체크박스 갱신.
+
+## Pre-flight
+- [x] Spec ID 확정 및 디렉토리 생성 (sdd spec new)
+- [x] spec.md 작성
+- [x] plan.md 작성
+- [x] task.md 작성
+- [x] phase.md SPEC 표 갱신 (sdd 자동)
+- [x] 사용자 Plan Accept
+
+---
+
+## Task 1: 브랜치 + 문서 커밋 ✅
+- [x] `git checkout -b spec-15-03-login-ratelimit-lockout`
+- [x] Commit: `docs(spec-15-03): add spec/plan/task`
+
+## Task 2: 스키마 + 마이그레이션 ✅
+- [x] `index.ts`·`local.ts` 에 `failedLogins`/`lockouts` (`@repo/backend-auth-rate-limit/schema`) + appSchema 포함
+- [x] `db:generate` → `drizzle/0008_sad_ogun.sql` 생성 (failed_logins 4col/2idx, lockouts 4col)
+- [x] 검증: typecheck PASS + 로컬 DB `db:migrate` 적용 + 테이블 확인
+- [x] Commit: `feat(spec-15-03): include failed_logins/lockouts in appSchema + migration`
+
+## Task 3: rate-limit store DI ✅
+- [x] `auth/rate-limit.stores.ts` — `RATE_LIMIT_STORE` 심볼 + `InjectRateLimitStore` + `createDrizzleRateLimitStore` (session.stores 패턴)
+- [x] `auth.module.ts` provider 등록 (inject:[DATABASE])
+- [x] 검증: typecheck PASS
+- [x] Commit: `feat(spec-15-03): wire drizzle RateLimitStore provider`
+
+## Task 4: SigninService 배선 (TDD) ✅
+- [x] `signin.service.test.ts`: `createFakeRateLimitStore` 주입 + 5회 실패→6회차 429, 성공→reset 시나리오 (5 tests)
+- [x] `signin.service.ts`: `signIn(email,password,ip)`, isLocked→checkRateLimit→verify→(실패)recordFailure+evaluateLockout/(성공)recordSuccess. 차단 `HttpException` 429.
+- [x] `auth.controller.ts`: `signIn(email, password, ctx.ip)` 전달.
+- [x] 검증: signin.service 5/5 + apps/api 전체 99/99 (e2e 39 회귀 없음) + typecheck
+- [x] Commit: `feat(spec-15-03): enforce rate-limit + lockout in SigninService`
+
+## Task 5: e2e 통합 검증 ✅
+- [x] `auth.e2e.test.ts`: "로그인 rate-limit + lockout" describe — 전용 계정(미가입) 5회 오답→각 401→6회차 429. IP 누적 최소화(전용 계정·정확히 5회).
+- [x] 검증(로컬 Postgres 5434): `pnpm --filter @apps/api test` **100/100 PASS** (e2e 40)
+- [x] Commit: `test(spec-15-03): e2e login lockout after N failures`
+
+## Task 6: Ship
+- [x] 게이트: `pnpm turbo run lint typecheck test knip depcruise` (로컬 DB) → 136/136 PASS
+- [x] walkthrough.md / pr_description.md 작성
+- [x] Ship commit: `docs(spec-15-03): ship walkthrough and pr description`
+- [x] Push + PR (base: `phase-15-security-wiring`) → PR #96
+- [x] 사용자 알림 (PR URL)
+
+---
+
+## 진행 요약
+| 항목 | 값 |
+|---|---|
+| **총 Task 수** | 6 (+ ship 포함) |
+| **현재 단계** | Planning |
+| **마지막 업데이트** | 2026-06-01 |

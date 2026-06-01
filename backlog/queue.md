@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
+- **phase-15** — Security & Wiring Hardening — 5 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -29,8 +29,15 @@
 - [ ] commit-time hook 명령 set (Biome only / + typecheck / + affected test) (phase-03~10 중 결정)
 - ~~보안 linter (semgrep / socket.dev) 추가 여부~~ **해소**: ADR-0019 No-Go (phase-15 CI 재평가) — spec-10-03 (2026-05-30)
 - [ ] check-secrets 훅 false positive 개선 — compose/env 의 `${VAR:-default}` 보간값을 시크릿으로 오탐 (spec-10-01 에서 2회 warn 우회). `${...}`-only 값 무시 또는 allowlist. spec-x 후보 — **RCA-002 작성됨** (spec-14-07, docs 예시도 오탐)
-- [ ] 🔒 **CSRF 미배선 (보안)** — `packages/backend/auth-rate-limit/src/csrf.ts` 에 `issueCsrfToken`/`verifyCsrfToken` 구현됐으나 `apps/api` refresh endpoint 에 **배선 안 됨**. SameSite=Lax 단독은 서브도메인 공격 시 refresh rotation 이 CSRF 에 노출. spec-14-08 문서 검증 중 발견(cookie-strategy explainer 가 배선된 것처럼 과장 → 수정함). **별도 fix spec 후보** (코드 변경 — 본 docs spec 범위 외)
-- [ ] **생성기(spec-10-02) backend/nestjs 패키지 tsconfig 에 `types:["node"]` 누락** — node 전역(console/process) 쓰면 typecheck TS2584. spec-12-01 에서 notification tsconfig 직접 보정. 생성기 템플릿 수정 spec-x 후보
+- ~~🔒 **CSRF 미배선**~~ **→ phase-15-01 로 승격** (2026-06-01, wiring audit §A)
+- ~~**생성기 backend tsconfig `types:["node"]` 누락**~~ **→ phase-15-05 로 승격** (2026-06-01, wiring audit §E)
+- [ ] **wiring audit 🟡 의도적 미배선 항목들** (passkey env · HttpClient/Settings DI · web-vite theme · 프론트 MFA/Passkey UI · RequireAuth · provider 교체) — 보일러플레이트 의도적, 필요 시 개별 승격. `docs/review/2026-06-01-wiring-audit.md` §🟡
+- [ ] **MFA/passkey 상태변경 POST 8개 CSRF 보호** (phase-15 회고 W5) — `mfa/totp/{enroll,enroll/confirm,verify,disable}`·`passkey/{register,authenticate}/{options,verify}`. ADR-0021 메커니즘(csrf_id) 동일 적용 가능, 배선만 후속. 특히 `mfa/totp/verify`·`passkey/authenticate/verify` 는 미인증 로그인 완료 endpoint. spec-x/phase-16 후보
+- [ ] **CSRF/OAuth secret production 가드** (phase-15 회고 W3) — `CSRF_SECRET`·`OAUTH_STATE_SECRET` 이 `NODE_ENV=production` 에서도 dev 기본값 통과. production 기동 시 기본값 거부 가드 추가. spec-x 후보
+- [ ] **web-next CSRF 403 자가복구 + web-vite/SDK 헤더 동반** (phase-15 회고 W6) — 403(토큰 만료/불일치) 시 재부트스트랩+재시도. password-reset/email-verify 흐름 클라이언트 부재분. web-vite·`packages/frontend/auth-*` SDK CSRF 헤더. 후속
+- [ ] **knip-config ignoreDependency 정리** (phase-15 회고 W4) — spec-15-02 가 `@repo/backend-auth-rate-limit` 실배선 후 spec-15-01 등록 ignore 잔존 → knip 40 redundant hint. 배선 완료 dep 의 ignore 제거. 비차단, 정리 항목
+- [ ] **configureApp SoT 에 applySecurity 흡수** (phase-15 2차회고 V1) — `app.setup.ts` 의 `configureApp` 가 requestId+cookieParser 만 캡슐화 → `main.ts` 의 `applySecurity`(helmet/CORS) 배선은 e2e 미검증(제거해도 GREEN, C1 과 동일 계열 갭). applySecurity 를 configureApp 에 흡수 + e2e 보안헤더 검증 추가. phase-16/spec-x 후보
+- [ ] **csrf.ts 주석 drift 정정** (phase-15 2차회고 V2) — `packages/backend/auth-rate-limit/src/csrf.ts:12,16` 주석이 폐기된 session-binding 전략을 설명. ADR-0021(csrf_id, session 비의존) 결정과 모순 → 주석 동기화. V1 과 함께 처리 응집적
 - [ ] lat.md Phase 2 도입 평가 (지식 그래프 도구)
 - [ ] ARCHITECTURE.md 본체 재작성 (Phase 3 직전, ADR-0005 결정 후)
 
@@ -63,7 +70,8 @@
 - **phase-12** — Service Foundations I · Runtime (**Tier 1**): `worker` 앱 + job queue (BullMQ/pg-boss) · **email/notification 포트**(Resend/SES 어댑터 — token-logging 결함의 근본 해소) · caching 추상화(Redis cache-aside/TTL) · graceful shutdown / lifecycle (SIGTERM drain, readiness≠liveness)
 - **phase-13** — Service Foundations II · API & Data (**Tier 2**): idempotency-key 미들웨어 · pagination/cursor 표준 계약(`contracts`) · typed client codegen(`contracts`→프론트 클라이언트) · object storage 포트(S3/R2) · outbox/도메인 이벤트 신뢰성 발행 · DB seeding + 테스트 팩토리 + 마이그레이션 통합 러너
 - **phase-14** — Quality Hardening (**평점 상향**): 에러 규약 통일(Result/throw/boolean → ADR + 리팩터, 에러 A-→A) · `auth.guard` role 을 verified claims(`result.value`)에서 읽기(footgun 제거) · 비-auth 패키지(http-client/logger/utils) 경계 테스트 보강 · general rate-limit / secrets provider 포트(보안 B+→A) · knip/depcruise CI gate(phase-15 연계)
-- **phase-15** — CI / CD (GitHub Actions + changesets release PR + docker publish + 선택 k8s manifest) — **후순위** (당장 불급, 2026-05-30 phase-11 → phase-15 재배치)
+- **phase-15** — Security & Wiring Hardening: 구현됐으나 미배선된 보안·검증 기능 배선(CSRF · 로그인 rate-limit/lockout · CI knip/depcruise 게이트 · request-id · 생성기 tsconfig). 근거 `docs/review/2026-06-01-wiring-audit.md` — **2026-06-01 신설** (CSRF 미배선 발견 → 전수조사)
+- **phase-16** — Deploy (k8s manifest): 구 phase-15 잔류분 (CI/CD 는 phase-14 흡수). k8s sample manifest — **후순위**
 
 > **완료 (spec-x)**: 보안 결함 reset/verify raw 토큰 평문 로깅 → NODE_ENV 가드 (PR #67, 2026-05-30). 근본 해소(notification 포트)는 phase-12.
 

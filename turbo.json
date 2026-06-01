@@ -29,6 +29,27 @@
       "outputs": ["coverage/**"],
       "inputs": ["$TURBO_DEFAULT$", "../../packages/config/vitest-config/**"]
     },
+    "//#knip": {
+      "inputs": [
+        "knip.config.ts",
+        "packages/config/knip-config/base.json",
+        "apps/**",
+        "packages/**",
+        "tooling/**",
+        "turbo/**",
+        "pnpm-workspace.yaml"
+      ],
+      "outputs": []
+    },
+    "//#depcruise": {
+      "inputs": [
+        ".dependency-cruiser.cjs",
+        "packages/config/depcruise-config/base.cjs",
+        "apps/**",
+        "packages/**"
+      ],
+      "outputs": []
+    },
     "dev": {
       "cache": false,
       "persistent": true

@@ -8,6 +8,7 @@ import { JwtService } from "../jwt/jwt.service.js";
 import { type AppSettings, loadSettings } from "../settings.js";
 import { AuditEventListener } from "./audit.event-listener.js";
 import { AuthController } from "./auth.controller.js";
+import { CSRF_SECRET, CsrfGuard } from "./csrf.guard.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import {
   createDrizzleEmailVerifyTokenStore,
@@ -30,6 +31,7 @@ import {
   PASSWORD_RESET_TOKEN_STORE,
   USER_STORE,
 } from "./password-reset.stores.js";
+import { createDrizzleRateLimitStore, RATE_LIMIT_STORE } from "./rate-limit.stores.js";
 import { createDrizzleSessionStore, SESSION_STORE } from "./session.stores.js";
 import { SigninService } from "./signin.service.js";
 import { SignupService } from "./signup.service.js";
@@ -48,6 +50,11 @@ const settings: AppSettings = loadSettings(process.env);
     AuthGuard,
     AuthEventBus,
     AuditEventListener,
+    CsrfGuard,
+    {
+      provide: CSRF_SECRET,
+      useValue: settings.CSRF_SECRET,
+    },
     {
       provide: JWT_SIGN_OPTIONS,
       useValue: { issuer: settings.JWT_ISSUER, audience: settings.JWT_AUDIENCE },
@@ -76,6 +83,11 @@ const settings: AppSettings = loadSettings(process.env);
       provide: SESSION_STORE,
       inject: [DATABASE],
       useFactory: (db: Database<Record<string, unknown>>) => createDrizzleSessionStore(db.db),
+    },
+    {
+      provide: RATE_LIMIT_STORE,
+      inject: [DATABASE],
+      useFactory: (db: Database<Record<string, unknown>>) => createDrizzleRateLimitStore(db.db),
     },
     {
       provide: PASSWORD_RESET_TOKEN_STORE,

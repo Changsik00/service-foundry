@@ -11,6 +11,7 @@ export const authAuditLogs = pgTable("auth_audit_logs", {
 });
 
 export type AuditLogRow = typeof authAuditLogs.$inferSelect;
+/** @public 감사 로그 insert 타입 — 외부 쓰기 경로 타이핑용 (의도적 scaffolding). */
 export type AuditLogInsert = typeof authAuditLogs.$inferInsert;
 
 export const schema = { authAuditLogs };

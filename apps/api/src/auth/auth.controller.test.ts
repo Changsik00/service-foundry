@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AUTH_METRICS } from "../metrics/auth-metrics.provider.js";
 import { AuthController } from "./auth.controller.js";
+import { CSRF_SECRET } from "./csrf.guard.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import { PasswordResetService } from "./password-reset.service.js";
 import { SigninService } from "./signin.service.js";
@@ -83,6 +84,10 @@ describe("AuthController", () => {
             recordLoginFailure: vi.fn(),
             metricsText: vi.fn(),
           },
+        },
+        {
+          provide: CSRF_SECRET,
+          useValue: "test-csrf-secret",
         },
       ],
     })

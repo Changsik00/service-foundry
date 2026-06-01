@@ -1,15 +1,15 @@
 import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
-import cookieParser from "cookie-parser";
 import { authenticator } from "otplib";
 import request from "supertest";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 process.env.NODE_ENV ??= "test";
 process.env.DATABASE_URL ??= "postgres://postgres:test@localhost:5434/test";
 process.env.HTTP_CLIENT_BASE_URL ??= "http://localhost:9999";
 
 const { AppModule } = await import("../app.module.js");
+const { configureApp } = await import("../app.setup.js");
 
 function extractCookie(setCookieHeader: string | string[] | undefined, name: string): string {
   const headers = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader ?? ""];
@@ -20,33 +20,118 @@ function extractCookie(setCookieHeader: string | string[] | undefined, name: str
 
 describe("Auth E2E (real PG)", () => {
   let app: INestApplication;
+  let server: ReturnType<INestApplication["getHttpServer"]>;
+
+  /** CSRF 부트스트랩: GET /auth/csrf 로 csrf_id 쿠키 + 토큰을 새로 발급받는다. */
+  async function bootstrapCsrf(): Promise<{ token: string; idCookie: string }> {
+    const res = await request(server).get("/auth/csrf");
+    return {
+      token: res.body.csrfToken as string,
+      idCookie: extractCookie(res.headers["set-cookie"], "csrf_id"),
+    };
+  }
+
+  /** CsrfGuard 로 보호된 POST 호출 (매번 fresh 부트스트랩 → csrf_id 쿠키 + X-Csrf-Token 동반). */
+  async function postCsrf(
+    path: string,
+    opts: { body?: object; cookie?: string; bearer?: string } = {},
+  ) {
+    const { token, idCookie } = await bootstrapCsrf();
+    const cookie = [opts.cookie, idCookie].filter(Boolean).join("; ");
+    let r = request(server).post(path).set("X-Csrf-Token", token).set("Cookie", cookie);
+    if (opts.bearer) r = r.set("Authorization", `Bearer ${opts.bearer}`);
+    if (opts.body !== undefined) r = r.send(opts.body);
+    return r;
+  }
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
     app = moduleRef.createNestApplication({ logger: false });
-    app.use(cookieParser());
+    // prod 부트스트랩(main.ts)과 동일한 미들웨어 배선을 공유 — 배선 회귀 차단 (phase-15 review C1)
+    configureApp(app);
     await app.init();
+    server = app.getHttpServer();
   });
 
   afterAll(async () => {
     if (app) await app.close();
   });
 
-  describe("POST /auth/password/reset", () => {
-    it("존재하지 않는 email → 200 (enumeration-safe)", async () => {
-      const res = await request(app.getHttpServer())
+  describe("CSRF 게이트", () => {
+    it("보호 POST: X-Csrf-Token 누락 → 403", async () => {
+      const res = await request(server)
         .post("/auth/password/reset")
         .send({ email: "ghost@example.com" });
+      expect(res.status).toBe(403);
+    });
+
+    it("보호 POST: csrf_id 쿠키 없이 헤더만 → 403", async () => {
+      const { token } = await bootstrapCsrf();
+      const res = await request(server)
+        .post("/auth/password/reset")
+        .set("X-Csrf-Token", token)
+        .send({ email: "ghost@example.com" });
+      expect(res.status).toBe(403);
+    });
+
+    it("보호 POST: 위조 토큰 → 403", async () => {
+      const { idCookie } = await bootstrapCsrf();
+      const res = await request(server)
+        .post("/auth/refresh")
+        .set("X-Csrf-Token", "forged-token")
+        .set("Cookie", idCookie);
+      expect(res.status).toBe(403);
+    });
+
+    it("GET /auth/csrf → 200 + csrfToken + csrf_id/csrf_token 쿠키", async () => {
+      const res = await request(server).get("/auth/csrf");
+      expect(res.status).toBe(200);
+      expect(typeof res.body.csrfToken).toBe("string");
+      const cookies = (res.headers["set-cookie"] ?? []) as unknown as string[];
+      expect(cookies.some((c) => c.startsWith("csrf_id="))).toBe(true);
+      expect(cookies.some((c) => c.startsWith("csrf_token="))).toBe(true);
+    });
+  });
+
+  describe("request-id (reqId)", () => {
+    it("헤더 없는 요청 → 응답 x-request-id = 새 UUID", async () => {
+      const res = await request(server).get("/auth/csrf");
+      const reqId = res.headers["x-request-id"];
+      expect(reqId).toMatch(/^[0-9a-f-]{36}$/i);
+    });
+
+    it("X-Request-Id 제공 → 응답에 동일 값 에코", async () => {
+      const res = await request(server).get("/auth/csrf").set("X-Request-Id", "trace-e2e-001");
+      expect(res.headers["x-request-id"]).toBe("trace-e2e-001");
+    });
+  });
+
+  describe("로그인 rate-limit + lockout", () => {
+    // 전용 계정(미가입) — IP 누적 최소화 위해 정확히 5회 실패 후 잠금만 확인.
+    const email = `lockout-${Date.now()}@example.com`;
+    const password = "WrongPass123!";
+
+    it("동일 계정 5회 실패(각 401) → 이후 429 (lockout)", async () => {
+      for (let i = 0; i < 5; i++) {
+        const res = await postCsrf("/auth/signin", { body: { email, password } });
+        expect(res.status).toBe(401);
+      }
+      const locked = await postCsrf("/auth/signin", { body: { email, password } });
+      expect(locked.status).toBe(429);
+    });
+  });
+
+  describe("POST /auth/password/reset", () => {
+    it("존재하지 않는 email → 200 (enumeration-safe)", async () => {
+      const res = await postCsrf("/auth/password/reset", { body: { email: "ghost@example.com" } });
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ status: "ok" });
     });
 
     it("잘못된 payload → 400 (validation error)", async () => {
-      const res = await request(app.getHttpServer())
-        .post("/auth/password/reset")
-        .send({ email: "not-an-email" });
+      const res = await postCsrf("/auth/password/reset", { body: { email: "not-an-email" } });
       expect(res.status).toBe(400);
       expect(res.body.message).toBeDefined();
     });
@@ -54,17 +139,17 @@ describe("Auth E2E (real PG)", () => {
 
   describe("POST /auth/password/reset/confirm", () => {
     it("미존재 token → 200 (enumeration-safe)", async () => {
-      const res = await request(app.getHttpServer())
-        .post("/auth/password/reset/confirm")
-        .send({ token: "nonexistent-token-aaaabbbbccccddddeeee", newPassword: "newPass123!" });
+      const res = await postCsrf("/auth/password/reset/confirm", {
+        body: { token: "nonexistent-token-aaaabbbbccccddddeeee", newPassword: "newPass123!" },
+      });
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ status: "ok" });
     });
 
     it("잘못된 payload (짧은 token) → 400 (validation error)", async () => {
-      const res = await request(app.getHttpServer())
-        .post("/auth/password/reset/confirm")
-        .send({ token: "short", newPassword: "newPass123!" });
+      const res = await postCsrf("/auth/password/reset/confirm", {
+        body: { token: "short", newPassword: "newPass123!" },
+      });
       expect(res.status).toBe(400);
       expect(res.body.message).toBeDefined();
     });
@@ -72,17 +157,15 @@ describe("Auth E2E (real PG)", () => {
 
   describe("POST /auth/email/verify/request", () => {
     it("미존재 email → 200 (enumeration-safe)", async () => {
-      const res = await request(app.getHttpServer())
-        .post("/auth/email/verify/request")
-        .send({ email: "ghost@example.com" });
+      const res = await postCsrf("/auth/email/verify/request", {
+        body: { email: "ghost@example.com" },
+      });
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ status: "ok" });
     });
 
     it("잘못된 payload → 400 (validation error)", async () => {
-      const res = await request(app.getHttpServer())
-        .post("/auth/email/verify/request")
-        .send({ email: "not-an-email" });
+      const res = await postCsrf("/auth/email/verify/request", { body: { email: "not-an-email" } });
       expect(res.status).toBe(400);
       expect(res.body.message).toBeDefined();
     });
@@ -90,17 +173,15 @@ describe("Auth E2E (real PG)", () => {
 
   describe("POST /auth/email/verify/confirm", () => {
     it("미존재 token → 200 (enumeration-safe)", async () => {
-      const res = await request(app.getHttpServer())
-        .post("/auth/email/verify/confirm")
-        .send({ token: "nonexistent-token-aaaabbbbccccddddeeee" });
+      const res = await postCsrf("/auth/email/verify/confirm", {
+        body: { token: "nonexistent-token-aaaabbbbccccddddeeee" },
+      });
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ status: "ok" });
     });
 
     it("잘못된 payload (짧은 token) → 400 (validation error)", async () => {
-      const res = await request(app.getHttpServer())
-        .post("/auth/email/verify/confirm")
-        .send({ token: "short" });
+      const res = await postCsrf("/auth/email/verify/confirm", { body: { token: "short" } });
       expect(res.status).toBe(400);
       expect(res.body.message).toBeDefined();
     });
@@ -108,7 +189,7 @@ describe("Auth E2E (real PG)", () => {
 
   describe("GET /.well-known/jwks.json", () => {
     it("JWKS 구조 반환 (keys 배열, OKP/Ed25519/EdDSA)", async () => {
-      const res = await request(app.getHttpServer()).get("/.well-known/jwks.json");
+      const res = await request(server).get("/.well-known/jwks.json");
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty("keys");
       expect(Array.isArray(res.body.keys)).toBe(true);
@@ -118,7 +199,7 @@ describe("Auth E2E (real PG)", () => {
     });
 
     it("비공개키 'd' 미포함", async () => {
-      const res = await request(app.getHttpServer()).get("/.well-known/jwks.json");
+      const res = await request(server).get("/.well-known/jwks.json");
       for (const key of res.body.keys) {
         expect(key).not.toHaveProperty("d");
       }
@@ -132,10 +213,11 @@ describe("Auth E2E (real PG)", () => {
     let refreshCookie: string;
     let userId: string;
 
-    it("POST /auth/signup → 201 + accessToken + refresh_token cookie", async () => {
-      const res = await request(app.getHttpServer()).post("/auth/signup").send({ email, password });
+    it("POST /auth/signup → 201 + accessToken + refresh_token cookie + csrfToken", async () => {
+      const res = await postCsrf("/auth/signup", { body: { email, password } });
       expect(res.status).toBe(201);
       expect(res.body).toHaveProperty("accessToken");
+      expect(res.body).toHaveProperty("csrfToken");
       expect(res.body.user.email).toBe(email);
       userId = res.body.user.id as string;
       refreshCookie = extractCookie(res.headers["set-cookie"], "refresh_token");
@@ -143,7 +225,7 @@ describe("Auth E2E (real PG)", () => {
     });
 
     it("GET /auth/me (Bearer accessToken) → 200, sub + role 반환", async () => {
-      const res = await request(app.getHttpServer())
+      const res = await request(server)
         .get("/auth/me")
         .set("Authorization", `Bearer ${accessToken}`);
       expect(res.status).toBe(200);
@@ -152,22 +234,18 @@ describe("Auth E2E (real PG)", () => {
     });
 
     it("POST /auth/signout → 200", async () => {
-      const res = await request(app.getHttpServer())
-        .post("/auth/signout")
-        .set("Cookie", refreshCookie);
+      const res = await postCsrf("/auth/signout", { cookie: refreshCookie });
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ status: "ok" });
     });
 
     it("POST /auth/refresh (revoked cookie) → 401 (세션 취소 검증)", async () => {
-      const res = await request(app.getHttpServer())
-        .post("/auth/refresh")
-        .set("Cookie", refreshCookie);
+      const res = await postCsrf("/auth/refresh", { cookie: refreshCookie });
       expect(res.status).toBe(401);
     });
 
     it("POST /auth/signin → 200 + 새 accessToken + 새 cookie", async () => {
-      const res = await request(app.getHttpServer()).post("/auth/signin").send({ email, password });
+      const res = await postCsrf("/auth/signin", { body: { email, password } });
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty("accessToken");
       refreshCookie = extractCookie(res.headers["set-cookie"], "refresh_token");
@@ -175,9 +253,7 @@ describe("Auth E2E (real PG)", () => {
     });
 
     it("POST /auth/refresh (유효한 cookie) → 200 + 새 accessToken", async () => {
-      const res = await request(app.getHttpServer())
-        .post("/auth/refresh")
-        .set("Cookie", refreshCookie);
+      const res = await postCsrf("/auth/refresh", { cookie: refreshCookie });
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty("accessToken");
       refreshCookie = extractCookie(res.headers["set-cookie"], "refresh_token");
@@ -185,7 +261,7 @@ describe("Auth E2E (real PG)", () => {
     });
 
     it("GET /auth/me (refresh 후 새 accessToken) → 200", async () => {
-      const res = await request(app.getHttpServer())
+      const res = await request(server)
         .get("/auth/me")
         .set("Authorization", `Bearer ${accessToken}`);
       expect(res.status).toBe(200);
@@ -196,7 +272,7 @@ describe("Auth E2E (real PG)", () => {
 
   describe("OAuth — GET /auth/oauth/:provider", () => {
     it("GET /auth/oauth/google → 302 + state/pkce 쿠키 + Location에 accounts.google.com 포함", async () => {
-      const res = await request(app.getHttpServer()).get("/auth/oauth/google").redirects(0);
+      const res = await request(server).get("/auth/oauth/google").redirects(0);
 
       expect(res.status).toBe(302);
       const location = res.headers["location"] as string;
@@ -210,7 +286,7 @@ describe("Auth E2E (real PG)", () => {
     });
 
     it("GET /auth/oauth/kakao → 302 + Location에 kauth.kakao.com 포함", async () => {
-      const res = await request(app.getHttpServer()).get("/auth/oauth/kakao").redirects(0);
+      const res = await request(server).get("/auth/oauth/kakao").redirects(0);
 
       expect(res.status).toBe(302);
       const location = res.headers["location"] as string;
@@ -220,7 +296,7 @@ describe("Auth E2E (real PG)", () => {
 
   describe("OAuth — GET /auth/oauth/google/callback", () => {
     it("state 불일치 → 401", async () => {
-      const res = await request(app.getHttpServer())
+      const res = await request(server)
         .get("/auth/oauth/google/callback")
         .query({ code: "any-code", state: "wrong-state" })
         .set("Cookie", "oauth_state=correct-state; oauth_pkce=verifier");
@@ -237,13 +313,13 @@ describe("Auth E2E (real PG)", () => {
     let mfaChallengeToken: string;
 
     it("POST /auth/signup → 201 (MFA 미등록 상태)", async () => {
-      const res = await request(app.getHttpServer()).post("/auth/signup").send({ email, password });
+      const res = await postCsrf("/auth/signup", { body: { email, password } });
       expect(res.status).toBe(201);
       accessToken = res.body.accessToken as string;
     });
 
     it("POST /auth/mfa/totp/enroll (Bearer) → 200 + totpUri", async () => {
-      const res = await request(app.getHttpServer())
+      const res = await request(server)
         .post("/auth/mfa/totp/enroll")
         .set("Authorization", `Bearer ${accessToken}`);
       expect(res.status).toBe(200);
@@ -255,7 +331,7 @@ describe("Auth E2E (real PG)", () => {
     });
 
     it("POST /auth/mfa/totp/enroll/confirm (잘못된 코드) → 401", async () => {
-      const res = await request(app.getHttpServer())
+      const res = await request(server)
         .post("/auth/mfa/totp/enroll/confirm")
         .set("Authorization", `Bearer ${accessToken}`)
         .send({ code: "000000" });
@@ -264,7 +340,7 @@ describe("Auth E2E (real PG)", () => {
 
     it("POST /auth/mfa/totp/enroll/confirm (유효 코드) → 200 + backupCodes", async () => {
       const code = authenticator.generate(totpSecret);
-      const res = await request(app.getHttpServer())
+      const res = await request(server)
         .post("/auth/mfa/totp/enroll/confirm")
         .set("Authorization", `Bearer ${accessToken}`)
         .send({ code });
@@ -274,7 +350,7 @@ describe("Auth E2E (real PG)", () => {
     });
 
     it("POST /auth/signin (MFA 활성화) → 200 + mfa_required", async () => {
-      const res = await request(app.getHttpServer()).post("/auth/signin").send({ email, password });
+      const res = await postCsrf("/auth/signin", { body: { email, password } });
       expect(res.status).toBe(200);
       expect(res.body.status).toBe("mfa_required");
       expect(res.body).toHaveProperty("mfaChallengeToken");
@@ -282,7 +358,7 @@ describe("Auth E2E (real PG)", () => {
     });
 
     it("POST /auth/mfa/totp/verify (잘못된 코드) → 401", async () => {
-      const res = await request(app.getHttpServer())
+      const res = await request(server)
         .post("/auth/mfa/totp/verify")
         .send({ mfaChallengeToken, code: "000000" });
       expect(res.status).toBe(401);
@@ -290,7 +366,7 @@ describe("Auth E2E (real PG)", () => {
 
     it("POST /auth/mfa/totp/verify (유효 코드) → 200 + accessToken + refresh cookie", async () => {
       const code = authenticator.generate(totpSecret);
-      const res = await request(app.getHttpServer())
+      const res = await request(server)
         .post("/auth/mfa/totp/verify")
         .send({ mfaChallengeToken, code });
       expect(res.status).toBe(200);
@@ -300,7 +376,7 @@ describe("Auth E2E (real PG)", () => {
 
     it("POST /auth/mfa/totp/disable (유효 코드) → 200", async () => {
       const code = authenticator.generate(totpSecret);
-      const res = await request(app.getHttpServer())
+      const res = await request(server)
         .post("/auth/mfa/totp/disable")
         .set("Authorization", `Bearer ${accessToken}`)
         .send({ code });
@@ -309,7 +385,7 @@ describe("Auth E2E (real PG)", () => {
     });
 
     it("POST /auth/signin (MFA 비활성화 후) → 200 + accessToken (정상 세션)", async () => {
-      const res = await request(app.getHttpServer()).post("/auth/signin").send({ email, password });
+      const res = await postCsrf("/auth/signin", { body: { email, password } });
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty("accessToken");
       expect(res.body.status).toBeUndefined();
@@ -322,13 +398,13 @@ describe("Auth E2E (real PG)", () => {
     let accessToken: string;
 
     it("POST /auth/signup → 201 (passkey 등록 전 계정 생성)", async () => {
-      const res = await request(app.getHttpServer()).post("/auth/signup").send({ email, password });
+      const res = await postCsrf("/auth/signup", { body: { email, password } });
       expect(res.status).toBe(201);
       accessToken = res.body.accessToken as string;
     });
 
     it("POST /auth/passkey/register/options (Bearer) → 200 + challengeToken + options", async () => {
-      const res = await request(app.getHttpServer())
+      const res = await request(server)
         .post("/auth/passkey/register/options")
         .set("Authorization", `Bearer ${accessToken}`);
       expect(res.status).toBe(200);
@@ -338,19 +414,19 @@ describe("Auth E2E (real PG)", () => {
     });
 
     it("POST /auth/passkey/register/options (인증 없음) → 401", async () => {
-      const res = await request(app.getHttpServer()).post("/auth/passkey/register/options");
+      const res = await request(server).post("/auth/passkey/register/options");
       expect(res.status).toBe(401);
     });
 
     it("POST /auth/passkey/authenticate/options → 200 + challengeToken + options", async () => {
-      const res = await request(app.getHttpServer()).post("/auth/passkey/authenticate/options");
+      const res = await request(server).post("/auth/passkey/authenticate/options");
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty("challengeToken");
       expect(res.body).toHaveProperty("options");
     });
 
     it("POST /auth/passkey/register/verify (잘못된 payload) → 400", async () => {
-      const res = await request(app.getHttpServer())
+      const res = await request(server)
         .post("/auth/passkey/register/verify")
         .set("Authorization", `Bearer ${accessToken}`)
         .send({ bad: "payload" });
@@ -358,7 +434,7 @@ describe("Auth E2E (real PG)", () => {
     });
 
     it("POST /auth/passkey/authenticate/verify (잘못된 payload) → 400", async () => {
-      const res = await request(app.getHttpServer())
+      const res = await request(server)
         .post("/auth/passkey/authenticate/verify")
         .send({ bad: "payload" });
       expect(res.status).toBe(400);
