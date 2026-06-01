@@ -44,8 +44,8 @@
 - [x] compose config + 통합 스모크 PASS
 - [x] walkthrough / pr_description
 - [x] Ship Commit: `docs(spec-11-04): ship walkthrough and pr description`
-- [ ] Push + PR (base `phase-11-observability`)
-- [ ] 사용자 알림
+- [x] Push + PR (base `phase-11-observability`)
+- [x] 사용자 알림
 
 ---
 

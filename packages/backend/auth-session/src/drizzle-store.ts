@@ -1,4 +1,5 @@
 import type { NodePgDatabase } from "@repo/backend-database";
+import { AppError } from "@repo/errors";
 import { and, eq, isNull } from "drizzle-orm";
 
 import { type schema, sessions } from "./schema.js";
@@ -14,7 +15,13 @@ export function drizzleSessionStore(db: NodePgDatabase<typeof schema>): SessionS
   return {
     async insert(row) {
       const [inserted] = await db.insert(sessions).values(row).returning();
-      if (!inserted) throw new Error("drizzleSessionStore: insert returned no row");
+      if (!inserted) {
+        throw new AppError({
+          code: "INTERNAL",
+          message: "drizzleSessionStore: insert returned no row",
+          statusCode: 500,
+        });
+      }
       return inserted;
     },
     async findByHash(hash) {

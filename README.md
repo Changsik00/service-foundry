@@ -1,69 +1,78 @@
 # service-foundry
 
-> 새 서비스(api / web / worker)를 **30분 안에** 띄울 수 있는, **운영 가능한** Node/TS 모노레포 보일러플레이트.
+> 새 서비스(api / web / worker)를 빠르게 띄울 수 있는, **운영 가능한** Node/TS 모노레포 보일러플레이트.
 
-개인용 보일러플레이트. "기술 데모"가 아니라 "운영 가능한 기본 시스템"이 목표. 실무에서 결국 다 쓰게 되는 것들(env validation, observability, auth, tracing, startup report, service manifest 등)을 미리 깔아둔다 — **YAGNI 면제**.
+개인용 보일러플레이트. "기술 데모"가 아니라 "운영 가능한 기본 시스템"이 목표. 실무에서 결국 다 쓰게 되는 것들(env validation, observability, auth, tracing, queue, graceful shutdown 등)을 미리 깔아둔다 — **YAGNI 면제**.
 
-향후 Python(RAG / ML 추론) 워크로드가 합류할 가능성을 인지하지만 현재 스코프는 Node/TS 단독. 폴리글랏 전략은 [ADR-0007](./docs/adr/0007-polyglot-strategy.md) 참조.
+폴리글랏(Python RAG/ML) 합류 가능성은 인지하되 현재 스코프는 Node/TS 단독 ([ADR-0007](./docs/adr/0007-polyglot-strategy.md)).
 
 ---
 
-## Status
+## 📚 지식베이스 (먼저 여기)
 
-**Phase 1 진행 중** — 모노레포 골격 작성 중. 자세한 상태는 [`backlog/queue.md`](./backlog/queue.md) 참조.
+이 레포의 설계 의도·동작 원리·결정 근거는 **Obsidian 친화 지식베이스**로 정리되어 있다. 단일 진입점:
 
-| Phase | 목표 | 상태 |
+### → [`docs/index.md`](./docs/index.md) — 전체 카탈로그(MOC)
+
+- **[아키텍처](./docs/reference/architecture.md)** — 시스템 구조 + 패키지 의존 그래프
+- **[reference/](./docs/reference/)** — "무엇인가": 패키지 48개 + 앱 4개 + [의존성 도입 근거](./docs/reference/stack.md)
+- **[explainers/](./docs/explainers/)** — "어떻게 동작하나": auth / backend / frontend / platform 메커니즘
+- **[adr/](./docs/adr/)** — "왜 그렇게 정했나": 결정 기록 20개
+- 작성 규약은 [`docs/CONVENTIONS.md`](./docs/CONVENTIONS.md)
+
+---
+
+## 무엇이 들어있나
+
+**앱 4개**
+
+| app | 역할 | 스택 |
 |---|---|---|
-| 1 | 모노레포 골격 (root files, `packages/config/*` 6종) | 진행 중 |
-| 2 | shared primitives (`packages/shared/*`) | 대기 |
-| 3 | backend (ADR-005 / ADR-006 결정 후) | 블록됨 |
-| 4 | apps (api / web-next / web-vite / admin / worker / edge-api) | 대기 |
-| 5 | 운영 / 도구 (docker, generators, service manifest) | 대기 |
-| 6 | CI / CD | 대기 |
+| [`apps/api`](./apps/api) | 인증/도메인 REST 백엔드 | NestJS 11 + Drizzle + PostgreSQL |
+| [`apps/web-next`](./apps/web-next) | SSR 웹 (메인) | Next.js 16 + React 19 |
+| [`apps/web-vite`](./apps/web-vite) | SPA 데모 | Vite + TanStack Router/Query |
+| [`apps/worker`](./apps/worker) | 비동기 작업 소비자 | BullMQ consumer |
 
----
+**패키지 48개** (`packages/<category>/<pkg>`, import 는 `@repo/*` flat)
 
-## 결정 (ADRs)
+| 카테고리 | 수 | 내용 |
+|---|---|---|
+| `backend/` | 22 | auth-* (session·jwt·oauth·mfa·passkey·password·rate-limit·audit) + database·queue·cache·outbox·idempotency·lifecycle·notification·observability·secrets·storage·… |
+| `nestjs/` | 6 | backend core 를 감싼 NestJS `@Module` 어댑터 |
+| `frontend/` | 7 | ui · http-client · auth-react · auth-firebase · auth-supabase · auth-testing |
+| `shared/` | 6 | errors · utils(Result) · validation · contracts · auth-contracts · factory |
+| `config/` | 7 | typescript · vitest · biome · tsup · tailwind · depcruise · knip preset |
 
-확정된 결정은 모두 [`docs/adr/`](./docs/adr/)에 있다. (ADR 본문은 영어로 작성됨 — AI 에이전트 컨텍스트 친화 목적.)
-
-* [ADR-0001](./docs/adr/0001-linting-formatting-strategy.md) — Lint / Format / Dead code / Boundary (Biome, Knip, dependency-cruiser)
-* [ADR-0002](./docs/adr/0002-monorepo-foundations.md) — pnpm 11 + catalogs / turborepo / Node 22 LTS / lefthook / changesets / tsx
-* [ADR-0003](./docs/adr/0003-package-layout-and-naming.md) — `packages/<category>/<pkg>` + `@repo/*` flat import + `*-config` suffix
-* [ADR-0004](./docs/adr/0004-typescript-and-compilation-strategy.md) — TS strict / no project references / tsup(backend) + JIT(shared, frontend)
-* [ADR-0005](./docs/adr/0005-backend-framework-and-orm-strategy.md) — Backend framework + ORM (**보류** — Phase 3 spike 후 결정)
-* [ADR-0006](./docs/adr/0006-auth-strategy.md) — Auth (**보류** — ADR-0005와 동시 결정)
-* [ADR-0007](./docs/adr/0007-polyglot-strategy.md) — Python sibling tree 전략
-
-설계 개요는 [`ARCHITECTURE.md`](./ARCHITECTURE.md). turborepo 사용 룰 요약은 [`docs/turborepo-rules.md`](./docs/turborepo-rules.md).
+**핵심 역량**: 인증 파운데이션(세션 rotation·JWT·OAuth·MFA·Passkey) · 관측성(OTel·Prometheus·Grafana) · 백엔드 포트(Queue·Cache·Outbox·Idempotency·Lifecycle) · CI/CD(검증 게이트 + changesets 릴리스 + GHCR docker).
 
 ---
 
 ## Quickstart
 
 ```bash
-# 전제: Node 22 LTS, pnpm 11.1.2 (corepack로 자동 활성화)
-fnm use      # .nvmrc 기준 Node 22 자동 활성화 (nvm 쓰면 `nvm use`)
+# 전제: Node 24 LTS, pnpm 11.1.2 (corepack 자동 활성화)
+fnm use            # .nvmrc 기준 Node 24 (nvm 쓰면 nvm use)
 corepack enable
-
-# 설치
 pnpm install
 
 # 검사
 pnpm lint
 pnpm typecheck
 pnpm test
+pnpm build
 ```
 
-Turbo 기준 동등:
+로컬 인프라(postgres·redis·prometheus·grafana·tempo·loki) + 개발 서버:
 
 ```bash
-pnpm turbo run lint typecheck test
+pnpm infra:up      # docker compose 인프라 기동
+pnpm dev           # 전체 앱 dev (또는 dev:api / dev:web-next / dev:web-vite)
+pnpm infra:down
 ```
 
-> Phase 1 acceptance가 끝나기 전까지 위 명령들은 "골격이 일관되게 그린"임을 증명하는 용도. 실제 사용 가능한 서비스 패키지는 Phase 3 이후 등장.
+새 패키지/앱 스캐폴딩: `pnpm new` (turbo gen) — [generators 설명](./docs/explainers/platform/turbo-gen-scaffolding.md).
 
-> ⚠️ `engines.node`는 `>=22.0.0 <23`로 잠겨 있다 (ADR-0002 §3). Node 24+로 `pnpm install`을 돌리면 unsupported engine 경고. `.nvmrc`에 맞춰 fnm/nvm으로 22 활성화할 것.
+> ⚠️ `engines.node` 는 `>=24.0.0 <25` 로 잠겨 있다. `.nvmrc`(24)에 맞춰 활성화할 것.
 
 ---
 
@@ -71,15 +80,38 @@ pnpm turbo run lint typecheck test
 
 ```
 service-foundry/
-├─ apps/                # (Phase 4) api / web-next / web-vite / admin / worker / edge-api
+├─ apps/          # api · web-next · web-vite · worker
 ├─ packages/
-│  ├─ config/           # *-config 6종 (Phase 1)
-│  ├─ shared/           # FE/BE 공유 primitives (Phase 2)
-│  ├─ backend/          # node 전용 인프라 (Phase 3)
-│  ├─ frontend/         # ui / sdk / auth (Phase 4)
-│  └─ testing/          # vitest setup + testcontainers
-├─ tooling/             # docker / scripts / generators (Phase 5)
-└─ docs/                # ADR + 운영 가이드
+│  ├─ backend/    # node 전용 인프라/도메인 core (framework-agnostic)
+│  ├─ nestjs/     # NestJS @Module 어댑터 (backend core wrap)
+│  ├─ frontend/   # ui · http-client · auth SDK
+│  ├─ shared/     # FE/BE 공유 primitive (errors · utils · validation · contracts)
+│  └─ config/     # 빌드/린트/테스트 preset
+├─ tooling/       # docker compose · generators · scripts
+├─ docs/          # 지식베이스 (index.md = 진입점) + adr
+├─ backlog/       # phase 계획 (harness-kit SDD)
+└─ specs/         # spec 작업 로그
 ```
 
-폴더 그룹은 단순 디렉토리(`package.json` 없음). 패키지 이름은 항상 `@repo/<name>` flat import. 자세한 룰은 [ADR-0003](./docs/adr/0003-package-layout-and-naming.md) 참조.
+의존 방향은 단방향(`frontend ↛ backend`, `core ↛ adapter`)이며 dependency-cruiser 로 정적 강제된다 ([ADR-0015](./docs/adr/0015-framework-adapter-naming-and-layout.md)).
+
+---
+
+## 결정 (ADRs)
+
+확정된 결정은 [`docs/adr/`](./docs/adr/) 20개에 있다 (본문 영어 — AI 컨텍스트 친화). 핵심:
+
+- [ADR-0002](./docs/adr/0002-monorepo-foundations.md) — pnpm 11 + turborepo + Node 24
+- [ADR-0003](./docs/adr/0003-package-layout-and-naming.md) — `packages/<category>/<pkg>` + `@repo/*`
+- [ADR-0005](./docs/adr/0005-backend-framework-and-orm-strategy.md) — NestJS + Drizzle + PostgreSQL
+- [ADR-0006](./docs/adr/0006-auth-strategy.md) — Consistent Wrapped SDK
+- [ADR-0008](./docs/adr/0008-result-type.md) · [ADR-0009](./docs/adr/0009-app-error-design.md) · [ADR-0020](./docs/adr/0020-error-handling-convention.md) — 에러 처리
+- [ADR-0013](./docs/adr/0013-session-lifecycle.md) · [ADR-0014](./docs/adr/0014-auth-security-baseline.md) — auth 보안
+
+전체 목록은 [`docs/index.md`](./docs/index.md#decisions-adr).
+
+---
+
+## 개발 규약
+
+이 레포는 [harness-kit](./.harness-kit/) SDD 거버넌스를 따른다 (phase → spec → plan → task → ship). 작업 단위는 `backlog/`(계획)와 `specs/`(로그)에 기록된다.

@@ -51,8 +51,8 @@
 - [x] typecheck + compose config 통과
 - [x] walkthrough / pr_description
 - [x] Ship Commit: `docs(spec-11-03): ship walkthrough and pr description`
-- [ ] Push + PR (base `phase-11-observability`)
-- [ ] 사용자 알림
+- [x] Push + PR (PR #70, base `phase-11-observability`)
+- [x] 사용자 알림
 
 ---
 

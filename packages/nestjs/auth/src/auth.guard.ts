@@ -8,7 +8,6 @@ import {
 import { Role } from "@repo/auth-contracts";
 import type { KeyStore } from "@repo/backend-auth-jwt";
 import { verifyAccessToken } from "@repo/backend-auth-jwt";
-import { decodeJwt } from "jose";
 
 export const NESTJS_AUTH_OPTIONS = Symbol("NESTJS_AUTH_OPTIONS");
 
@@ -52,8 +51,8 @@ export class AuthGuard implements CanActivate {
     });
     if (!result.ok) throw new UnauthorizedException(result.error.message);
 
-    const decoded = decodeJwt(token);
-    const roleResult = Role.safeParse(decoded.role);
+    // role 은 *검증된 claim*(result.value)에서만 읽는다 — decodeJwt(미검증) 우회 금지.
+    const roleResult = Role.safeParse(result.value.role);
     if (!roleResult.success) throw new UnauthorizedException("missing or invalid role claim");
 
     req.user = { sub: result.value.sub, role: roleResult.data };

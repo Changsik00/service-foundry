@@ -1,6 +1,7 @@
-# phase-15: CI / CD
+# phase-15: Deploy (k8s manifest)
 
-> 보일러플레이트의 마지막 단계 — 반복 가능한 빌드 파이프라인 + 릴리스 자동화. 본래 phase-06 본문 이전.
+> 보일러플레이트의 마지막 단계 — 배포 예제(컨테이너 오케스트레이션).
+> ⚠️ 2026-05-31 재배치: **CI/CD(PR 게이트·changesets·docker publish)는 phase-14 로 이동**(#80 사고 근거). phase-15 는 **deploy/k8s manifest 잔류분만**. 성공 기준 1~4 는 phase-14 에서 충족, 본 phase 는 기준 5(k8s)만.
 
 ## 📋 메타
 

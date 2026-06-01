@@ -56,4 +56,9 @@ export interface JwtClaims {
   readonly iss: string;
   readonly aud: string;
   readonly jti: string;
+  /**
+   * 검증된 커스텀 claim (role 등). 서명·iss·aud·exp 검증을 통과한 payload 에서만 보존된다.
+   * 호출자는 이 값을 *검증된 소스* 로 신뢰할 수 있다 (decodeJwt 등 미검증 우회 금지).
+   */
+  readonly [key: string]: unknown;
 }

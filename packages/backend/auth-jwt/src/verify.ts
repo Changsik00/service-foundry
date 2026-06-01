@@ -48,7 +48,9 @@ const narrowClaims = (payload: JWTPayload): JwtClaims | null => {
   ) {
     return null;
   }
+  // 검증된 payload 의 커스텀 claim(role 등)을 보존 — 6개 필수는 narrow 한 타입으로 덮어쓴다.
   return {
+    ...payload,
     sub: payload.sub,
     iss: payload.iss,
     aud: payload.aud,

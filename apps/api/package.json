@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx watch --env-file-if-exists=.env --tsconfig ../../tsconfig.json src/main.ts",
     "start": "tsx watch --env-file-if-exists=.env --tsconfig ../../tsconfig.json src/main.ts",
+    "start:prod": "tsx --tsconfig ../../tsconfig.json src/main.ts",
     "lint": "biome check .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

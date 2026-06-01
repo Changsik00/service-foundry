@@ -1,3 +1,5 @@
+import { AppError } from "@repo/errors";
+
 import type { OAuthUserInfo } from "./token.js";
 
 export interface OAuthUserRow {
@@ -28,7 +30,13 @@ export async function findOrCreateOAuthUser(
 
   if (existingAccount) {
     const user = await store.findUserByEmail(userInfo.email);
-    if (!user) throw new Error("OAuth account exists but user not found");
+    if (!user) {
+      throw new AppError({
+        code: "INTERNAL",
+        message: "OAuth account exists but user not found",
+        statusCode: 500,
+      });
+    }
     return { user, isNew: false };
   }
 

@@ -1,5 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
+import { AppError } from "@repo/errors";
+
 const TOKEN_LENGTH = 32;
 
 /**
@@ -16,10 +18,18 @@ const TOKEN_LENGTH = 32;
  */
 export const issueCsrfToken = (secret: string, sessionId: string): string => {
   if (secret.length === 0) {
-    throw new Error("issueCsrfToken: secret must be non-empty");
+    throw new AppError({
+      code: "INTERNAL",
+      message: "issueCsrfToken: secret must be non-empty",
+      statusCode: 500,
+    });
   }
   if (sessionId.length === 0) {
-    throw new Error("issueCsrfToken: sessionId must be non-empty");
+    throw new AppError({
+      code: "INTERNAL",
+      message: "issueCsrfToken: sessionId must be non-empty",
+      statusCode: 500,
+    });
   }
   const mac = createHmac("sha256", secret).update(sessionId).digest();
   return mac.subarray(0, TOKEN_LENGTH).toString("base64url");

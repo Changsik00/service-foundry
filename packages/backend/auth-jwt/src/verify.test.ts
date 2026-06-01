@@ -30,6 +30,19 @@ describe("verifyAccessToken", () => {
     expect(result.value.exp).toBeGreaterThan(result.value.iat);
   });
 
+  it("verified result preserves custom claims (role) from signed payload", async () => {
+    const store = await createInMemoryKeyStore();
+    const token = await signAccessToken({ sub: "user-42", role: "admin" }, store, {
+      issuer: ISS,
+      audience: AUD,
+    });
+    const result = await verifyAccessToken(token, store, { issuer: ISS, audience: AUD });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) throw new Error("unreachable");
+    // 커스텀 claim 은 검증된 result.value 에서 읽을 수 있어야 한다 (decodeJwt 우회 불필요).
+    expect(result.value.role).toBe("admin");
+  });
+
   it("returns TOKEN_EXPIRED when exp is past", async () => {
     const store = await createInMemoryKeyStore();
     const token = await signAccessToken({ sub: "user-42" }, store, {

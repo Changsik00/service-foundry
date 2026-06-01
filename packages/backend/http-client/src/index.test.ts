@@ -113,6 +113,58 @@ describe("retry policy", () => {
   });
 });
 
+describe("4xx mapping + POST retry policy", () => {
+  it("404 → AppError BAD_REQUEST, retry 안 함", async () => {
+    const pool = mockAgent.get("https://api.example.com");
+    // 단일 intercept — retry 하면 두 번째 호출에서 interceptor 없어 다른 에러가 났을 것.
+    pool.intercept({ path: "/missing", method: "GET" }).reply(404, { error: "nope" });
+
+    const client = createHttpClient({
+      baseUrl: "https://api.example.com",
+      retries: 3,
+      retryBackoffMs: 1,
+    });
+    try {
+      await client.get("/missing");
+      expect.fail("should have thrown");
+    } catch (e) {
+      expect(isAppError(e)).toBe(true);
+      if (isAppError(e)) {
+        expect(e.code).toBe("BAD_REQUEST");
+        expect(e.statusCode).toBe(404);
+      }
+    }
+  });
+
+  it("POST 기본 — 5xx 라도 retry 안 함 (1회 시도 후 UPSTREAM)", async () => {
+    const pool = mockAgent.get("https://api.example.com");
+    pool.intercept({ path: "/create", method: "POST" }).reply(503, { error: "down" });
+
+    const client = createHttpClient({
+      baseUrl: "https://api.example.com",
+      retries: 3,
+      retryBackoffMs: 1,
+    });
+    try {
+      await client.post("/create", { name: "x" });
+      expect.fail("should have thrown");
+    } catch (e) {
+      expect(isAppError(e)).toBe(true);
+      if (isAppError(e)) expect(e.code).toBe("UPSTREAM");
+    }
+  });
+
+  it("POST + 명시 retries → retry 동작", async () => {
+    const pool = mockAgent.get("https://api.example.com");
+    pool.intercept({ path: "/create", method: "POST" }).reply(503, { error: "down" }).times(2);
+    pool.intercept({ path: "/create", method: "POST" }).reply(200, { ok: true });
+
+    const client = createHttpClient({ baseUrl: "https://api.example.com", retryBackoffMs: 1 });
+    const result = await client.post<{ ok: boolean }>("/create", { name: "x" }, { retries: 3 });
+    expect(result.ok).toBe(true);
+  });
+});
+
 describe("timeout", () => {
   it("정상 응답 — timeout 안 걸림", async () => {
     const pool = mockAgent.get("https://api.example.com");

@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 
+import { AppError } from "@repo/errors";
 import { SignJWT } from "jose";
 
 import type { JwtClaims, KeyStore } from "./keystore.js";
@@ -40,7 +41,11 @@ export const signAccessToken = async (
   opts: SignAccessTokenOptions,
 ): Promise<string> => {
   if (!payload.sub || payload.sub.length === 0) {
-    throw new Error("signAccessToken: payload.sub must be a non-empty string");
+    throw new AppError({
+      code: "INTERNAL",
+      message: "signAccessToken: payload.sub must be a non-empty string",
+      statusCode: 500,
+    });
   }
   const active = await store.getActiveSigningKey();
   const jti = opts.jti ?? randomUUID();

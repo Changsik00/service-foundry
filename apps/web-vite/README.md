@@ -1,70 +1,39 @@
-# @apps/web-vite
+# web-vite
 
-phase-04 의 Vite 7 SPA scaffold. **client query** 패턴 시연 — `useHealthQuery()` 가 `apps/api` 의 `/health` 호출 + Card 표시.
+> Vite 8 + React + TanStack Router/Query 기반 SPA 앱. 파일 기반 라우팅과 클라이언트 사이드 헬스체크 쿼리를 시연하는 개발 레퍼런스 앱.
 
-> **web-next 와 의도적 비대칭**:
-> - **`@apps/web-next`** → RSC (server fetch) — *public site* / SSR 영역
-> - **`@apps/web-vite`** → SPA (client query) — *internal tool* / admin prototype 영역 (phase-09 `apps/admin` 의 prototype)
-
-## 부트 방법
+## 실행
 
 ```bash
-# Terminal 1: apps/api (port 2026)
-NODE_ENV=development PORT=2026 LOG_LEVEL=info \
-  DATABASE_URL=postgres://localhost:5432/test \
-  HTTP_CLIENT_BASE_URL=http://localhost:9999 \
-  npx tsx apps/api/src/main.ts
+# 개발 (포트 2028)
+pnpm dev
 
-# Terminal 2: apps/web-vite (port 2028)
-VITE_API_BASE_URL=http://localhost:2026 \
-  pnpm --filter @apps/web-vite dev
+# 프로덕션 빌드
+pnpm build
+
+# 빌드 결과 미리보기
+pnpm preview
 ```
 
-브라우저: `http://localhost:2028` — `<HealthCard>` 가 `useHealthQuery` 의 *loading → success / error* 상태 분기 표시.
+환경변수: `VITE_API_BASE_URL` (클라이언트 번들 공개 — public API base)
 
-> ⚠️ `.env.example` 이 아닌 `env.example` 로 commit 됨 (Claude Code 차단 우회). 사용 시 `.env` 로 rename 또는 export.
+## 구성
 
-## env 변수
+조립하는 핵심 `@repo` 패키지:
 
-| 변수 | 타입 | 기본값 | 범위 |
-|---|---|---|---|
-| `VITE_API_BASE_URL` | URL | (필수) | **client bundle 노출 OK** (`VITE_` prefix — public API base) |
+- `@repo/frontend-http-client` — ky 기반 HTTP 클라이언트
+- `@repo/frontend-ui` — 공유 UI 컴포넌트 (HealthCard·ThemeToggle 등)
+- `@repo/errors` — AppError 타입
+- `@repo/tailwind-config` — Tailwind v4 글로벌 스타일
 
-## 아키텍처
+## 주요 라우트
 
-```tsx
-// src/main.tsx (entry)
-<QueryClientProvider client={queryClient}>
-  <RouterProvider router={router} />
-</QueryClientProvider>
+| 경로 | 파일 | 설명 |
+|---|---|---|
+| `/` | `src/routes/index.tsx` | 홈 — `useHealthQuery` 로 api 헬스체크 표시 |
 
-// src/routes/index.tsx
-function Home() {
-  const { data, error, isLoading } = useHealthQuery();
-  return <HealthCard data={data} error={error?.message} loading={isLoading} />;
-}
-```
+TanStack Router 파일 기반 라우팅: `src/routes/` → `routeTree.gen.ts` 자동 생성
 
-- **Vite 7 SPA**: static HTML + JS bundle. `dist/` 출력 — S3 / Netlify / Cloudflare Pages 호환
-- **tanstack-router file-based**: `src/routes/__root.tsx` + `src/routes/index.tsx` — `@tanstack/router-plugin/vite` 가 `routeTree.gen.ts` 자동 생성 (gitignore)
-- **TanStack Query v5**: `useQuery({ queryKey: ['health'], queryFn })` — client cache + refetch + retry
-- **`createHttpClient` singleton** (`src/lib/http-client.ts`): module-level 인스턴스 — 매 query 마다 인스턴스화 회피
+## 자세히
 
-## scope 밖
-
-| 항목 | 시점 |
-|---|---|
-| nuqs (URL state) | 별 spec |
-| Vite SSR | 별 spec |
-| dark mode toggle | 별 spec |
-| Playwright E2E | 별 spec |
-| route 다수 (nested / dynamic param) | 별 spec |
-| apps/admin 분리 정책 | phase-09 (Icebox 이슈) |
-| HealthCard 공통 패키지 추출 | 별 spec |
-
-## 테스트
-
-```bash
-pnpm --filter @apps/web-vite test       # useHealthQuery + HealthCard (jsdom)
-pnpm --filter @apps/web-vite build      # tsc + vite build → dist/
-```
+- 레퍼런스: [`docs/reference/apps/web-vite.md`](../../docs/reference/apps/web-vite.md)
