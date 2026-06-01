@@ -19,6 +19,8 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "build": "turbo run build",
+    "knip": "knip",
+    "depcruise": "depcruise apps packages --config .dependency-cruiser.cjs",
     "clean": "turbo run clean && rm -rf node_modules .turbo",
     "new": "turbo gen",
     "tooling:manifest": "tsx tooling/scripts/manifest/run.ts",

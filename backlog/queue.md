@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-15** — Security & Wiring Hardening — 0/0 spec — (다음: 첫 spec 생성 대기)
+- **phase-15** — Security & Wiring Hardening — 1 spec — 다음: spec-15-01-ci-knip-depcruise-gate
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기

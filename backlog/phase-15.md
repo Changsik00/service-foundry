@@ -34,27 +34,30 @@ UI 부재·RBAC 미사용·provider 교체점 등은 보일러플레이트의 *�
 ## 🧩 작업 단위 (SPECs)
 
 <!-- sdd:specs:start -->
+| `spec-15-01` | ci-knip-depcruise-gate | P? | Active | `specs/spec-15-01-ci-knip-depcruise-gate/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
 
-### spec-15-01 — csrf-wiring
+> **실행 순서 = 번호** (CI 게이트 먼저 = 안전망, phase-14 의 14-01 과 동일 논리).
+
+### spec-15-01 — ci-knip-depcruise-gate (우선 — 안전망)
+- **요점**: `verify.yml` 에 knip + depcruise 실행 추가 (phase-14 성공기준5 완성). turbo task / root script 정비 + 기존 dead export 정리.
+- **방향성**: `pnpm knip`, `pnpm depcruise` script → turbo task → verify.yml step. audit ⚪ 목록(RolesGuard·needsRehash·createApiClient·tsup-config·node-app.json·factory tsconfig 등) 표면화 → 정리 또는 ignore 등록. **나머지 spec 의 dead-code/경계 안전망이라 먼저.**
+- **참조**: `docs/review/2026-06-01-wiring-audit.md` §C+⚪ · ADR-0001(boundary)
+- **연관 모듈**: `.github/workflows/verify.yml`, `turbo.json`, `package.json`, knip/depcruise config
+
+### spec-15-02 — csrf-wiring
 - **요점**: `apps/api` refresh(+상태변경) endpoint 에 CSRF double-submit 검증 배선. signin 성공 시 CSRF 토큰을 cookie+body 발급, 검증 미들웨어/가드 추가.
 - **방향성**: `csrf.ts` 의 `issueCsrfToken`/`verifyCsrfToken` 활용. secret 출처는 settings. cookie helper 확장. e2e 로 우회 차단 확인. 프론트(web-next) auth-sdk 동반 갱신 검토.
 - **참조**: `docs/review/2026-06-01-wiring-audit.md` §A · `docs/explainers/auth/cookie-strategy.md`
 - **연관 모듈**: `apps/api/src/auth/auth.controller.ts`, `cookie.helper.ts`, `packages/backend/auth-rate-limit/src/csrf.ts`
 
-### spec-15-02 — login-ratelimit-lockout
+### spec-15-03 — login-ratelimit-lockout
 - **요점**: 로그인 brute-force 방어 배선 — `failed_logins`/`lockouts` 테이블 appSchema + 마이그레이션, SigninService 에 rate-limit/lockout 호출.
 - **방향성**: `checkRateLimit` → 차단 시 거부, 성공 시 `recordSuccess`, 실패 시 `recordFailure` + `evaluateLockout`. drizzle store 주입. 회귀 테스트(N회 실패 → lock).
 - **참조**: `docs/review/2026-06-01-wiring-audit.md` §B · `docs/explainers/auth/auth-rate-limit-lockout.md`
 - **연관 모듈**: `apps/api/src/auth/signin.service.ts`, `apps/api/src/infra/schema/`, `packages/backend/auth-rate-limit`
-
-### spec-15-03 — ci-knip-depcruise-gate
-- **요점**: `verify.yml` 에 knip + depcruise 실행 추가 (phase-14 성공기준5 완성). turbo task / root script 정비 + 기존 dead export 정리.
-- **방향성**: `pnpm knip`, `pnpm depcruise` script → turbo task → verify.yml step. audit ⚪ 목록(RolesGuard·needsRehash·createApiClient·tsup-config·node-app.json·factory tsconfig 등) 표면화 → 정리 또는 ignore 등록.
-- **참조**: `docs/review/2026-06-01-wiring-audit.md` §C+⚪ · ADR-0001(boundary)
-- **연관 모듈**: `.github/workflows/verify.yml`, `turbo.json`, `package.json`, knip/depcruise config
 
 ### spec-15-04 — request-id-wiring
 - **요점**: `apps/api/main.ts` 에 `requestIdMiddleware` 적용 → 로그 `reqId` 채워짐, http-client `X-Request-Id` 전파 활성.
@@ -83,19 +86,19 @@ UI 부재·RBAC 미사용·provider 교체점 등은 보일러플레이트의 *�
 - **Given**: signin 으로 세션 + CSRF 토큰 발급.
 - **When**: CSRF 헤더 없이 `POST /auth/refresh`.
 - **Then**: 거부(403). 올바른 토큰 동반 시 200.
-- **연관 SPEC**: spec-15-01
+- **연관 SPEC**: spec-15-02
 
 ### 시나리오 2: 로그인 brute-force lockout
 - **Given**: 동일 계정 연속 로그인 실패.
 - **When**: 임계치 초과.
 - **Then**: lockout → 이후 시도 거부(올바른 비번이어도).
-- **연관 SPEC**: spec-15-02
+- **연관 SPEC**: spec-15-03
 
 ### 시나리오 3: CI 게이트가 dead-code/경계 위반 차단
 - **Given**: knip/depcruise 위반 의도 주입한 PR.
 - **When**: verify CI.
 - **Then**: red → 머지 차단.
-- **연관 SPEC**: spec-15-03
+- **연관 SPEC**: spec-15-01
 
 ## 🔗 의존성
 - **선행 phase**: phase-14 (보안 포트·CI 게이트 기반).

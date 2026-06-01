@@ -1,32 +1,62 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignoreExportsUsedInFile": true,
+  "ignoreUnresolved": ["routeTree\\.gen"],
+  "rules": {
+    "duplicates": "off",
+    "catalog": "warn"
+  },
+  "ignoreDependencies": [
+    "@repo/biome-config",
+    "tsup",
+    "drizzle-kit",
+    "tailwindcss",
+    "@nestjs/core",
+    "@nestjs/testing",
+    "@types/bcryptjs"
+  ],
   "workspaces": {
     ".": {
-      "entry": ["packages/config/**/*.{ts,json}", "tooling/scripts/**/*.ts"],
-      "project": ["**/*.{ts,tsx}"],
-      "ignoreDependencies": []
-    },
-    "packages/config/*": {
-      "entry": ["**/*.{ts,json}"],
-      "project": ["**/*.{ts,json}"]
+      "entry": ["turbo/generators/config.ts", "tooling/scripts/**/run.ts"]
     },
     "packages/shared/*": {
-      "entry": ["src/index.ts"],
-      "project": ["src/**/*.ts"]
+      "entry": ["src/**/*.test.{ts,tsx}"]
     },
     "packages/backend/*": {
-      "entry": ["src/index.ts"],
-      "project": ["src/**/*.ts"]
+      "entry": ["src/**/*.test.ts", "roundtrip.ts", "emit-span.ts"]
+    },
+    "packages/backend/settings": {
+      "entry": ["src/**/*.test.ts"],
+      "ignoreDependencies": ["@repo/errors", "@repo/utils"]
+    },
+    "packages/backend/auth-oauth": {
+      "entry": ["src/**/*.test.ts"],
+      "ignoreDependencies": ["@repo/backend-database"]
+    },
+    "packages/nestjs/*": {
+      "entry": ["src/**/*.test.ts"]
     },
     "packages/frontend/*": {
-      "entry": ["src/index.ts", "src/index.tsx"],
-      "project": ["src/**/*.{ts,tsx}"]
+      "entry": ["src/**/*.test.{ts,tsx}"]
+    },
+    "packages/frontend/ui": {
+      "entry": ["src/**/*.test.{ts,tsx}"],
+      "ignoreDependencies": ["@repo/validation", "next-themes"]
     },
     "apps/*": {
-      "entry": ["src/main.ts", "src/main.tsx", "src/server.ts"],
-      "project": ["src/**/*.{ts,tsx}"]
+      "entry": ["src/**/*.test.{ts,tsx}", "src/**/*.e2e.test.ts"]
+    },
+    "apps/api": {
+      "entry": ["src/**/*.test.ts", "src/**/*.e2e.test.ts"],
+      "ignoreDependencies": ["@repo/backend-auth-rate-limit", "undici"]
+    },
+    "apps/web-next": {
+      "entry": ["src/**/*.test.{ts,tsx}"],
+      "ignoreDependencies": ["@repo/tailwind-config"]
+    },
+    "apps/web-vite": {
+      "entry": ["src/routes/**/*.tsx", "src/**/*.test.{ts,tsx}"],
+      "ignoreDependencies": ["@repo/tailwind-config", "@repo/errors"]
     }
-  },
-  "ignore": ["**/dist/**", "**/.turbo/**", "**/.next/**", "**/coverage/**"],
-  "ignoreBinaries": ["lefthook"]
+  }
 }
