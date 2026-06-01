@@ -6,6 +6,7 @@ import { and, eq } from "drizzle-orm";
 import { oauthAccounts, users } from "../infra/schema/index.js";
 
 export const OAUTH_ACCOUNT_STORE = Symbol("OAUTH_ACCOUNT_STORE");
+/** @public OAuth 계정 스토어 주입 데코레이터 — 소비자 서비스 배선 시 사용 (의도적 scaffolding). */
 export const InjectOAuthAccountStore = () => Inject(OAUTH_ACCOUNT_STORE);
 export type { OAuthAccountStore };
 
