@@ -70,11 +70,11 @@ phase-15 가 연 보안 배선의 **잔여 공격면을 닫고**, 배선 회귀 
 
 > 작고 가역적인 항목 — phase base 브랜치 직접 커밋(phase-FF, → ADR-004). 착수 시 크기 재확인, 커지면 SPEC 승격.
 
-| 항목 | 요점 | 예상 commit |
+| 항목 | 요점 | 상태 |
 |---|---|:---:|
-| W3 prod 시크릿 가드 | settings.ts: `NODE_ENV=production` + dev 기본 시크릿 → 기동 거부(zod superRefine 등) + 단위 테스트 | 1~2 |
-| V2 csrf.ts 주석 정정 | `csrf.ts:12,16` session-binding 설명 → csrf_id(ADR-0021) 로 동기화 | 1 |
-| W4 knip ignore 정리 | 배선 완료된 `@repo/backend-auth-rate-limit` ignoreDependency 제거 → redundant hint 0 | 1 |
+| W3 prod 시크릿 가드 | settings.ts build: prod + dev 기본 CSRF/OAUTH 시크릿 → 기동 거부 + 단위 4 PASS | ✅ a748359 |
+| V2 csrf.ts 주석 정정 | session-binding 설명 → csrf_id(ADR-0021) 동기화 | ✅ 1b681e1 |
+| W4 knip ignore 정리 | 배선 완료 `@repo/backend-auth-rate-limit` ignore 제거 (undici 유지) | ✅ 8a16ce5 |
 
 > W3 는 가드 로직 + 테스트라 1~2 commit 이나 단일 파일(settings)·가역적이라 phase-FF. 착수 시 e2e 영향 크면 SPEC 승격 재고.
 
