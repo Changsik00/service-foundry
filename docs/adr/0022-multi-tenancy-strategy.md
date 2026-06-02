@@ -24,6 +24,8 @@ service-foundry 는 "실제 서비스 제품의 대부분을 담는 대형 보�
 
 요청 처리 시 active org_id 를 AsyncLocalStorage 컨텍스트에 주입하고, DB 세션 변수(`app.current_org`)로 set → RLS 정책이 이를 읽어 자동 스코프.
 
+**유저 프로비저닝 seam (중요 — provider 모드 대비)**: "신규 유저 → 개인 org + owner 멤버십 생성" 로직은 **단일 공용 함수(seam)** 로 만든다. native signup(`POST /auth/signup`) 과 provider-first-login(Firebase/Supabase 에서 가입한 유저를 백엔드가 처음 본 순간 — → [[ADR-0023]]) 가 **같은 seam 을 호출**한다. 이 seam 을 phase-18(spine)에서 native 전용으로만 만들면 phase-19(provider 모드)에서 별도 경로를 또 만들어야 하므로(재작업), 처음부터 "유저가 어디서 왔든" 호출 가능한 형태로 설계한다.
+
 ## 📊 Consequences
 
 - **긍정**: 모든 후속(도메인·RBAC·빌링·어드민)이 일관된 org 스코프 위에 쌓인다. RLS 가 앱 레벨 실수의 안전망. 멀티조직/개인워크스페이스로 B2C·B2B·solo 다 커버.

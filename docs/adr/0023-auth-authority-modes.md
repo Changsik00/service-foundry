@@ -26,6 +26,7 @@ status: accepted
 - **AuthGuard 를 verifier-pluggable** 로 만든다 — 설정된 모드의 검증기를 끼우는 인터페이스(`AccessTokenVerifier`). native 모드는 기존 동작 불변.
 - **app 클레임 운반의 단일 규약**: active org_id·org-role 은 *access token 클레임*으로 전달된다(권위가 무엇이든). native=우리 JWT, provider=provider custom-claim. → [[ADR-0022]] 의 "active org in token" 결정과 정합.
 - **org 전환·가입 시** 백엔드가 클레임을 갱신: native=토큰 재발급, provider=custom-claims 갱신 후 provider 토큰 refresh.
+- **provider-user → org 프로비저닝**: provider 모드에선 가입이 provider(Firebase/Supabase)에서 일어나므로, 백엔드는 그 유저를 **처음 본 순간(first authenticated request 또는 provider webhook)** 에 [[ADR-0022]] 의 *공용 프로비저닝 seam* 을 호출해 개인 org + owner 멤버십을 생성한다. native signup 과 동일 seam → 경로 중복 없음.
 - provider 모드를 쓰면 native 전용 endpoint(password/oauth/mfa/passkey)는 provider 가 대체하므로 *삭제* 대상(보일러플레이트 정리).
 
 ## 📊 Consequences
@@ -42,7 +43,7 @@ status: accepted
 
 ## 📌 Status
 
-Accepted (2026-06-02). 이슈 #108 해소 방향. 구현은 멀티테넌시 foundation 이후 인가 phase 에서 — AuthGuard verifier 인터페이스 + provider별 클레임 주입기. native 모드는 현 상태로 이미 동작(클레임에 active_org_id 추가만 필요).
+Accepted (2026-06-02). 이슈 #108 해소 방향. 구현은 **phase-19(인증 권위 모드)** — 멀티테넌시 spine(phase-18) 직후로 배치해, org 프로비저닝 seam 이 fresh 할 때 native·provider 를 동시에 배선(재작업 회피). AuthGuard verifier 인터페이스 + provider별 클레임 주입기 + provider→org 프로비저닝. native 모드는 현 상태로 이미 동작(클레임에 active_org_id 추가만 필요). 인증 권위(본 ADR)와 인가 규칙(RBAC, phase-21)은 phase 분리.
 
 ## 🔗 Related
 
