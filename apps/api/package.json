@@ -58,7 +58,6 @@
     "otplib": "catalog:",
     "supertest": "catalog:",
     "tsx": "catalog:",
-    "undici": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }
