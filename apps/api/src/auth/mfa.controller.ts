@@ -4,6 +4,7 @@ import type { Response } from "express";
 import { z } from "zod";
 
 import { setRefreshTokenCookie } from "./cookie.helper.js";
+import { CsrfGuard } from "./csrf.guard.js";
 import { MfaService } from "./mfa.service.js";
 
 const ConfirmEnrollInput = z.object({ code: z.string().min(6).max(8) });
@@ -19,14 +20,14 @@ export class MfaController {
 
   @Post("enroll")
   @HttpCode(200)
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, CsrfGuard)
   async enroll(@CurrentUser() user: AuthenticatedUser): Promise<{ totpUri: string }> {
     return this.mfaService.enroll(user.sub);
   }
 
   @Post("enroll/confirm")
   @HttpCode(200)
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, CsrfGuard)
   async confirmEnroll(
     @CurrentUser() user: AuthenticatedUser,
     @Body() body: unknown,
@@ -37,6 +38,7 @@ export class MfaController {
 
   @Post("verify")
   @HttpCode(200)
+  @UseGuards(CsrfGuard)
   async verify(
     @Body() body: unknown,
     @Res({ passthrough: true }) res: Response,
@@ -49,7 +51,7 @@ export class MfaController {
 
   @Post("disable")
   @HttpCode(200)
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, CsrfGuard)
   async disable(
     @CurrentUser() user: AuthenticatedUser,
     @Body() body: unknown,
