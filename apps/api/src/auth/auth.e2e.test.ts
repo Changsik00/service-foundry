@@ -49,8 +49,9 @@ describe("Auth E2E (real PG)", () => {
       imports: [AppModule],
     }).compile();
     app = moduleRef.createNestApplication({ logger: false });
-    // prod 부트스트랩(main.ts)과 동일한 미들웨어 배선을 공유 — 배선 회귀 차단 (phase-15 review C1)
-    configureApp(app);
+    // prod 부트스트랩(main.ts)과 동일한 미들웨어 배선을 공유 — 배선 회귀 차단 (phase-15 C1 / spec-16-02).
+    // corsOrigin 명시 → CORS 회귀 가드(ACAO echo) 결정적 검증 가능 (W-1).
+    configureApp(app, { corsOrigin: "http://localhost:2027" });
     await app.init();
     server = app.getHttpServer();
   });
@@ -113,10 +114,18 @@ describe("Auth E2E (real PG)", () => {
     });
   });
 
-  describe("보안 헤더 (helmet)", () => {
+  describe("보안 헤더 (helmet/CORS)", () => {
     it("응답에 helmet 헤더 x-content-type-options=nosniff 존재", async () => {
       const res = await request(server).get("/auth/csrf");
       expect(res.headers["x-content-type-options"]).toBe("nosniff");
+    });
+
+    it("허용 Origin 요청에 CORS 헤더(ACAO echo + credentials) 존재", async () => {
+      // enableCors({ origin, credentials:true }) 가 배선됐으면 매칭 Origin 을 ACAO 로 echo + ACAC=true.
+      // configureApp 에서 applySecurity 제거 시 두 헤더 부재 → FAIL (W-1 회귀 가드).
+      const res = await request(server).get("/auth/csrf").set("Origin", "http://localhost:2027");
+      expect(res.headers["access-control-allow-origin"]).toBe("http://localhost:2027");
+      expect(res.headers["access-control-allow-credentials"]).toBe("true");
     });
   });
 
