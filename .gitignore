@@ -51,3 +51,5 @@ Thumbs.db
 .obsidian/workspace-mobile.json
 .obsidian/graph.json
 .obsidian/cache
+.env.telegram
+.env.discord
