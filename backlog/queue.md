@@ -87,10 +87,10 @@
 - **phase-04** — Frontend Foundation — completed 2026-05-20
 - [x] spec-x-frontend-dev-fixes (완료)
 - [x] spec-x-frontend-foundation-followup (완료)
-- **phase-5** — ? — completed 2026-05-21
-- **phase-6** — ? — completed 2026-05-22
+- **phase-05** — Auth Foundation · Core (contracts/session/jwt/password/rate-limit/reset/verify) — completed 2026-05-21
+- **phase-06** — Auth Foundation · Adapters + Login Slice (nestjs/react/cookie/audit/e2e) — completed 2026-05-22
 - **phase-07** — Auth Extension — OAuth + MFA + Passkey — completed 2026-05-22
-- **phase-8** — ? — completed 2026-05-22
+- **phase-08** — Auth Foundation · Provider SDKs (firebase/supabase/testing/sdk-swap) — completed 2026-05-22
 - **phase-09** — 로그인 UI + 수직 통합 슬라이스 — completed 2026-05-23
 - [x] spec-x-governance-reset-package-layout (완료)
 - [x] spec-x-nestjs-adapter-standard-module (완료)
