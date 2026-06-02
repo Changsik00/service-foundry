@@ -113,6 +113,13 @@ describe("Auth E2E (real PG)", () => {
     });
   });
 
+  describe("보안 헤더 (helmet)", () => {
+    it("응답에 helmet 헤더 x-content-type-options=nosniff 존재", async () => {
+      const res = await request(server).get("/auth/csrf");
+      expect(res.headers["x-content-type-options"]).toBe("nosniff");
+    });
+  });
+
   describe("request-id (reqId)", () => {
     it("헤더 없는 요청 → 응답 x-request-id = 새 UUID", async () => {
       const res = await request(server).get("/auth/csrf");
