@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-16** — Security Hardening II — 1 spec — 다음: spec-16-01-mfa-passkey-csrf
+(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -102,6 +102,7 @@
 - **phase-13** — Service Foundations II · API & Data — completed 2026-05-31
 - **phase-14** — Quality Hardening + CI/CD — completed 2026-06-01
 - **phase-15** — Security & Wiring Hardening — completed 2026-06-02
+- **phase-16** — Security Hardening II — completed 2026-06-02
 <!-- sdd:done:end -->
 
 ---
