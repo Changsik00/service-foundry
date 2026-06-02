@@ -54,26 +54,47 @@
 > 다음에 진행할 phase 를 자유롭게 메모합니다 (사람이 직접 편집).
 > 자동 갱신되지 않습니다 — Icebox 와 동일한 정책.
 
-> **2026-06-02 멀티테넌트 SaaS 로드맵 확정** (ADR-0022 멀티테넌시 + ADR-0023 인증 권위 모드).
-> phase-03~16 완료 (done 섹션 참조). 이후는 "조직 기반 SaaS 의 대부분을 담는" 트랙 — 멀티테넌시를 spine 으로, infra 는 맨 뒤. 단계적 구현이되 빠짐없이 기록(까먹지 않기).
+> **2026-06-02 멀티테넌트 SaaS 로드맵 확정·재조정** (ADR-0022/0023). 9 → **6 phase** 로 묶음.
+> phase-03~16 완료 (done 섹션 참조). 단계적 구현이되 빠짐없이 기록(까먹지 않기).
 
-- **phase-17** — 이메일/notification 어댑터: **실 이메일 어댑터**(Resend/SES — notification 포트 stub 해소, password-reset/email-verify **실발송**). org 무관 + 이미 깨진 기능 수리 + **phase-18 초대(invitation) 메일의 전제** → 맨 앞.
-- **phase-18** — 멀티테넌시 foundation (**spine, ADR-0022**): `organizations`·`memberships`(user×org×role)·`invitations` 엔티티 + 기존 테이블 `org_id` retrofit + **Postgres RLS** 정책 + 토큰 active_org 클레임 + org 전환/초대 endpoint + 가입 시 개인 워크스페이스 자동 생성 + AsyncLocalStorage→DB 세션변수 org 주입. 전역 `role`→org 멤버십 role 이동. **유저 프로비저닝(→개인 org 생성)을 native signup·provider-first-login 공용 seam 으로 설계** (ADR-0022/0023). **이후 모든 phase 의 기반.**
-- **phase-19** — 인증 권위 모드 (**ADR-0023 / 이슈 #108**): **AuthGuard verifier-pluggable**(native/firebase/supabase) + provider 토큰 검증(Firebase JWKS / Supabase JWT) + **provider-user → org 프로비저닝**(phase-18 공용 seam 활용) + custom-claims 주입(Firebase `setCustomUserClaims` / Supabase hook 으로 active_org_id·org_role). spine 직후 = org 프로비저닝 fresh 할 때 native·provider 동시 배선(재작업 0).
-- **phase-20** — 계정 완성: 비밀번호 변경 · 이메일 변경(+재검증) · **회원 탈퇴(GDPR — org owner 처리 포함)** · 프로필(이름/아바타) · 세션/기기 관리(목록·취소·전체 로그아웃) · **OpenAPI/Swagger**
-- **phase-21** — 인가 (**이슈 #20**): org-role 기반 **RBAC** RolesGuard 배선 + ABAC/ReBAC policy guard 패턴 예시(`canXxx(user,resource)`) · API Key(org 스코프). (인증 권위 = phase-19, 인가 규칙 = 본 phase 로 분리.)
-- **phase-22** — 데이터 UX: 파일/아바타 업로드(storage 포트 배선) · 전문검색·필터 · 페이지네이션(pagination-contracts 배선) · CSV export/import · soft-delete/데이터 보존(org 스코프)
-- **phase-23** — 어드민 + 운영: 어드민 패널(유저/조직 관리·임퍼소네이션·감사로그 뷰어) · 피처플래그 · (선택) 인앱 알림·아웃바운드 웹훅(outbox 활용)
-- **phase-24** — (선택) 빌링: org당 구독/플랜(Stripe) · 결제수단·인보이스 · 플랜별 entitlement/기능 게이팅
-- **phase-25** — Deploy (k8s manifest): `tooling/k8s/` sample manifest — infra, 맨 뒤 (`backlog/phase-25.md`)
+- **phase-17** — 멀티테넌시 foundation + 이메일 어댑터 (**spine, ADR-0022**):
+  - [이메일 먼저] **실 이메일 어댑터**(Resend/SES) — notification 포트 stub 해소, password-reset/email-verify 실발송. 초대 메일의 전제이므로 phase 첫 spec.
+  - `organizations`·`memberships`(user×org×role)·`invitations` 엔티티
+  - 기존 테이블 `org_id` retrofit + **Postgres RLS** 정책
+  - 토큰 `active_org` 클레임 + org 전환/초대 endpoint
+  - 가입 시 개인 워크스페이스 자동 생성 + AsyncLocalStorage→DB 세션변수 org 주입
+  - 전역 `role` → org 멤버십 role 이동
+  - **유저 프로비저닝 공용 seam** (native signup·provider-first-login 동일 경로, ADR-0022/0023)
+  - **이후 모든 phase 의 기반.**
+
+- **phase-18** — 인증 권위 모드 (**ADR-0023 / 이슈 #108**):
+  - **AuthGuard verifier-pluggable** (native / firebase / supabase)
+  - provider 토큰 검증 (Firebase JWKS / Supabase JWT)
+  - **provider-user → org 프로비저닝** (phase-17 공용 seam 활용, 재작업 0)
+  - custom-claims 주입 (Firebase `setCustomUserClaims` / Supabase hook → active_org_id·org_role)
+  - provider 모드 시 native 전용 endpoint 정리(삭제)
+
+- **phase-19** — 계정 완성 + 인가 (**이슈 #20**):
+  - 비밀번호 변경 · 이메일 변경(+재검증) · **회원 탈퇴(GDPR — org owner 처리)** · 프로필(이름/아바타) · 세션/기기 관리(목록·취소·전체 로그아웃) · **OpenAPI/Swagger**
+  - org-role 기반 **RBAC** RolesGuard 배선 + ABAC/ReBAC policy guard(`canXxx(user,resource)`) · API Key(org 스코프)
+
+- **phase-20** — 데이터 UX:
+  - 파일/아바타 업로드(storage 포트 배선) · 전문검색·필터 · 페이지네이션(pagination-contracts 배선) · CSV export/import · soft-delete/데이터 보존(org 스코프)
+
+- **phase-21** — 어드민 + 빌링:
+  - 어드민 패널(유저/조직 관리·임퍼소네이션·감사로그 뷰어) · 피처플래그 · 인앱 알림·아웃바운드 웹훅
+  - (선택) org당 구독/플랜(Stripe) · 결제수단·인보이스 · 플랜별 entitlement/기능 게이팅
+
+- **phase-22** — Deploy (k8s manifest): `tooling/k8s/` sample manifest — infra, 맨 뒤 (`backlog/phase-22.md`)
 
 > **이슈 처리 매핑** (까먹지 않기):
-> - #108 (provider 토큰 브리지) → **ADR-0023** 결정(권위 교체 모드) → 구현 **phase-19**(인증 권위 모드)
-> - #20 (RBAC/ABAC/ReBAC 예시) → **phase-21**(인가 — org 스코프 policy guard)
-> - #21 (인증/인가/ORM/검증 라이브러리 discussion) → 대부분 확정(NestJS/Drizzle/native+provider). 멀티테넌시 결정으로 해소 → 코멘트 정리
+> - #108 → ADR-0023 결정 → 구현 **phase-18**
+> - #20 (RBAC/ABAC/ReBAC) → **phase-19**
+> - #21 (라이브러리 discussion) → 대부분 확정(NestJS/Drizzle/native+provider) → 코멘트 정리
 > - #19 (phase별 라이브러리 후보) → 본 로드맵에 반영
 
-> **순서 근거**: 이메일(전제·수리) → spine(토대) → 인증 권위 모드(provider→org 재작업 회피 위해 spine 직후) → 계정/인가/데이터/어드민/빌링 → infra(맨 뒤). 인증 권위(누가 세션 발급)와 인가(무엇을 할 수 있나)를 phase 분리.
+> **순서 근거**: 이메일(전제)+spine → 인증 권위 모드(provider→org, spine 직후) → 계정+인가 → 데이터 → 어드민+빌링 → infra.
+> **묶음 근거**: 이메일=spine 첫 spec(전제 관계), 계정+인가=org 컨텍스트 위 동일 크기, 어드민+빌링=운영 관심사 동일. 9→6 phase.
 
 > **완료 (spec-x)**: 보안 결함 reset/verify raw 토큰 평문 로깅 → NODE_ENV 가드 (PR #67, 2026-05-30). 근본 해소(notification 실 어댑터)는 phase-17.
 
