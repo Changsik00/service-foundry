@@ -48,7 +48,7 @@
     },
     "apps/api": {
       "entry": ["src/**/*.test.ts", "src/**/*.e2e.test.ts"],
-      "ignoreDependencies": ["@repo/backend-auth-rate-limit", "undici"]
+      "ignoreDependencies": ["undici"]
     },
     "apps/web-next": {
       "entry": ["src/**/*.test.{ts,tsx}"],
