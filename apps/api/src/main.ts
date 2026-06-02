@@ -4,7 +4,6 @@ import { NestFactory } from "@nestjs/core";
 import type { Lifecycle } from "@repo/backend-lifecycle";
 import { maskConfig } from "@repo/backend-settings";
 import { PinoLoggerService } from "@repo/nestjs-logger";
-import { applySecurity } from "@repo/nestjs-security";
 
 import { AppModule } from "./app.module.js";
 import { configureApp } from "./app.setup.js";
@@ -15,17 +14,13 @@ async function bootstrap(): Promise<void> {
   const settings = loadSettings(process.env);
 
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
-  // 미들웨어 배선(requestIdMiddleware + cookieParser)은 app.setup 의 configureApp 가 SoT (phase-15 review C1)
-  configureApp(app);
+  // 미들웨어 배선(requestId + cookieParser + helmet/CORS)은 app.setup 의 configureApp 가 SoT (C1 / spec-16-02)
+  configureApp(app, { corsOrigin: settings.CORS_ORIGIN });
   const logger = app.get(PinoLoggerService);
   app.useLogger(logger);
 
   // startup report — 로드된 config 를 시크릿 마스킹하여 1회 출력 (spec-10-03)
   logger.log(`startup config: ${JSON.stringify(maskConfig(settings))}`, "Bootstrap");
-
-  applySecurity(app, {
-    cors: { origin: settings.CORS_ORIGIN, credentials: true },
-  });
 
   // graceful shutdown — SIGTERM 시 readiness=false(LB 차단) 후 app.close 드레인 (spec-12-04)
   const lifecycle = app.get<Lifecycle>(LIFECYCLE);

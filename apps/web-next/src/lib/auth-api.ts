@@ -49,42 +49,44 @@ export const createAuthApi = (http: HttpClient) => {
     return res;
   };
 
+  // CSRF 403 식별 — http-client 가 비-2xx 를 AppError(statusCode 포함)로 throw (결합 회피 위해 덕타이핑).
+  const is403 = (e: unknown): boolean =>
+    !!e && typeof e === "object" && (e as { statusCode?: number }).statusCode === 403;
+
+  /**
+   * 보호 POST 자가복구 (spec-16-03 W6): 403(토큰 만료/불일치)이면 csrf 재발급 후 **1회만** 재시도.
+   * 재시도는 recursion 없이 1회 — 재시도도 403 이면 원 에러를 throw (무한 재발급 방지).
+   */
+  const withCsrfRetry = async <T>(run: () => Promise<T>): Promise<T> => {
+    await ensureCsrf();
+    try {
+      return remember(await run());
+    } catch (e) {
+      if (!is403(e)) throw e;
+      await fetchCsrf();
+      return remember(await run());
+    }
+  };
+
   return {
     fetchCsrf,
-    signIn: async (input: unknown): Promise<SignInResponse> => {
-      await ensureCsrf();
-      return remember(
-        await http.post<SignInResponse>(
-          "auth/signin",
-          input,
-          csrfOpts({ schema: SignInResponseSchema }),
-        ),
-      );
-    },
-    signUp: async (input: unknown): Promise<SignResponse> => {
-      await ensureCsrf();
-      return remember(
-        await http.post<SignResponse>(
-          "auth/signup",
-          input,
-          csrfOpts({ schema: SignResponseSchema }),
-        ),
-      );
-    },
-    signOut: async () => {
-      await ensureCsrf();
-      return http.post("auth/signout", undefined, csrfOpts());
-    },
-    refresh: async (): Promise<SignResponse> => {
-      await ensureCsrf();
-      return remember(
-        await http.post<SignResponse>(
+    signIn: (input: unknown): Promise<SignInResponse> =>
+      withCsrfRetry(() =>
+        http.post<SignInResponse>("auth/signin", input, csrfOpts({ schema: SignInResponseSchema })),
+      ),
+    signUp: (input: unknown): Promise<SignResponse> =>
+      withCsrfRetry(() =>
+        http.post<SignResponse>("auth/signup", input, csrfOpts({ schema: SignResponseSchema })),
+      ),
+    signOut: () => withCsrfRetry(() => http.post("auth/signout", undefined, csrfOpts())),
+    refresh: (): Promise<SignResponse> =>
+      withCsrfRetry(() =>
+        http.post<SignResponse>(
           "auth/refresh",
           undefined,
           csrfOpts({ schema: SignResponseSchema }),
         ),
-      );
-    },
+      ),
   };
 };
 

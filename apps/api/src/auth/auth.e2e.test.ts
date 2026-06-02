@@ -49,8 +49,9 @@ describe("Auth E2E (real PG)", () => {
       imports: [AppModule],
     }).compile();
     app = moduleRef.createNestApplication({ logger: false });
-    // prod 부트스트랩(main.ts)과 동일한 미들웨어 배선을 공유 — 배선 회귀 차단 (phase-15 review C1)
-    configureApp(app);
+    // prod 부트스트랩(main.ts)과 동일한 미들웨어 배선을 공유 — 배선 회귀 차단 (phase-15 C1 / spec-16-02).
+    // corsOrigin 명시 → CORS 회귀 가드(ACAO echo) 결정적 검증 가능 (W-1).
+    configureApp(app, { corsOrigin: "http://localhost:2027" });
     await app.init();
     server = app.getHttpServer();
   });
@@ -92,6 +93,39 @@ describe("Auth E2E (real PG)", () => {
       const cookies = (res.headers["set-cookie"] ?? []) as unknown as string[];
       expect(cookies.some((c) => c.startsWith("csrf_id="))).toBe(true);
       expect(cookies.some((c) => c.startsWith("csrf_token="))).toBe(true);
+    });
+  });
+
+  describe("MFA/passkey CSRF 게이트", () => {
+    it("CSRF 없는 POST /auth/mfa/totp/verify → 403", async () => {
+      const res = await request(server)
+        .post("/auth/mfa/totp/verify")
+        .send({ mfaChallengeToken: "x".repeat(20), code: "123456" });
+      expect(res.status).toBe(403);
+    });
+
+    it("CSRF 없는 POST /auth/passkey/authenticate/verify → 403", async () => {
+      const res = await request(server).post("/auth/passkey/authenticate/verify").send({
+        challengeToken: "00000000-0000-0000-0000-000000000000",
+        credentialId: "cred-1",
+        credential: {},
+      });
+      expect(res.status).toBe(403);
+    });
+  });
+
+  describe("보안 헤더 (helmet/CORS)", () => {
+    it("응답에 helmet 헤더 x-content-type-options=nosniff 존재", async () => {
+      const res = await request(server).get("/auth/csrf");
+      expect(res.headers["x-content-type-options"]).toBe("nosniff");
+    });
+
+    it("허용 Origin 요청에 CORS 헤더(ACAO echo + credentials) 존재", async () => {
+      // enableCors({ origin, credentials:true }) 가 배선됐으면 매칭 Origin 을 ACAO 로 echo + ACAC=true.
+      // configureApp 에서 applySecurity 제거 시 두 헤더 부재 → FAIL (W-1 회귀 가드).
+      const res = await request(server).get("/auth/csrf").set("Origin", "http://localhost:2027");
+      expect(res.headers["access-control-allow-origin"]).toBe("http://localhost:2027");
+      expect(res.headers["access-control-allow-credentials"]).toBe("true");
     });
   });
 
@@ -319,9 +353,7 @@ describe("Auth E2E (real PG)", () => {
     });
 
     it("POST /auth/mfa/totp/enroll (Bearer) → 200 + totpUri", async () => {
-      const res = await request(server)
-        .post("/auth/mfa/totp/enroll")
-        .set("Authorization", `Bearer ${accessToken}`);
+      const res = await postCsrf("/auth/mfa/totp/enroll", { bearer: accessToken });
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty("totpUri");
       expect(res.body.totpUri as string).toMatch(/^otpauth:\/\/totp\//);
@@ -331,19 +363,19 @@ describe("Auth E2E (real PG)", () => {
     });
 
     it("POST /auth/mfa/totp/enroll/confirm (잘못된 코드) → 401", async () => {
-      const res = await request(server)
-        .post("/auth/mfa/totp/enroll/confirm")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({ code: "000000" });
+      const res = await postCsrf("/auth/mfa/totp/enroll/confirm", {
+        bearer: accessToken,
+        body: { code: "000000" },
+      });
       expect(res.status).toBe(401);
     });
 
     it("POST /auth/mfa/totp/enroll/confirm (유효 코드) → 200 + backupCodes", async () => {
       const code = authenticator.generate(totpSecret);
-      const res = await request(server)
-        .post("/auth/mfa/totp/enroll/confirm")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({ code });
+      const res = await postCsrf("/auth/mfa/totp/enroll/confirm", {
+        bearer: accessToken,
+        body: { code },
+      });
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.backupCodes)).toBe(true);
       expect((res.body.backupCodes as string[]).length).toBe(10);
@@ -358,17 +390,17 @@ describe("Auth E2E (real PG)", () => {
     });
 
     it("POST /auth/mfa/totp/verify (잘못된 코드) → 401", async () => {
-      const res = await request(server)
-        .post("/auth/mfa/totp/verify")
-        .send({ mfaChallengeToken, code: "000000" });
+      const res = await postCsrf("/auth/mfa/totp/verify", {
+        body: { mfaChallengeToken, code: "000000" },
+      });
       expect(res.status).toBe(401);
     });
 
     it("POST /auth/mfa/totp/verify (유효 코드) → 200 + accessToken + refresh cookie", async () => {
       const code = authenticator.generate(totpSecret);
-      const res = await request(server)
-        .post("/auth/mfa/totp/verify")
-        .send({ mfaChallengeToken, code });
+      const res = await postCsrf("/auth/mfa/totp/verify", {
+        body: { mfaChallengeToken, code },
+      });
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty("accessToken");
       accessToken = res.body.accessToken as string;
@@ -376,10 +408,10 @@ describe("Auth E2E (real PG)", () => {
 
     it("POST /auth/mfa/totp/disable (유효 코드) → 200", async () => {
       const code = authenticator.generate(totpSecret);
-      const res = await request(server)
-        .post("/auth/mfa/totp/disable")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({ code });
+      const res = await postCsrf("/auth/mfa/totp/disable", {
+        bearer: accessToken,
+        body: { code },
+      });
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ status: "ok" });
     });
@@ -404,9 +436,7 @@ describe("Auth E2E (real PG)", () => {
     });
 
     it("POST /auth/passkey/register/options (Bearer) → 200 + challengeToken + options", async () => {
-      const res = await request(server)
-        .post("/auth/passkey/register/options")
-        .set("Authorization", `Bearer ${accessToken}`);
+      const res = await postCsrf("/auth/passkey/register/options", { bearer: accessToken });
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty("challengeToken");
       expect(res.body).toHaveProperty("options");
@@ -419,24 +449,24 @@ describe("Auth E2E (real PG)", () => {
     });
 
     it("POST /auth/passkey/authenticate/options → 200 + challengeToken + options", async () => {
-      const res = await request(server).post("/auth/passkey/authenticate/options");
+      const res = await postCsrf("/auth/passkey/authenticate/options");
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty("challengeToken");
       expect(res.body).toHaveProperty("options");
     });
 
     it("POST /auth/passkey/register/verify (잘못된 payload) → 400", async () => {
-      const res = await request(server)
-        .post("/auth/passkey/register/verify")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({ bad: "payload" });
+      const res = await postCsrf("/auth/passkey/register/verify", {
+        bearer: accessToken,
+        body: { bad: "payload" },
+      });
       expect(res.status).toBe(400);
     });
 
     it("POST /auth/passkey/authenticate/verify (잘못된 payload) → 400", async () => {
-      const res = await request(server)
-        .post("/auth/passkey/authenticate/verify")
-        .send({ bad: "payload" });
+      const res = await postCsrf("/auth/passkey/authenticate/verify", {
+        body: { bad: "payload" },
+      });
       expect(res.status).toBe(400);
     });
   });

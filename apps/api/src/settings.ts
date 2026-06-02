@@ -30,6 +30,9 @@ const AppSettingsSchema = BaseBackendSchema.extend({
 
 export type AppSettings = z.output<typeof AppSettingsSchema>;
 
+/** dev 기본 시크릿 — production 에서 이 값이면 기동 거부 (spec-16-02 phase-FF W3). */
+const DEV_DEFAULT_SECRET = "dev-secret-change-in-production";
+
 export const loadSettings = defineSettings({
   envSchema: AppSettingsSchema,
   envKey: "NODE_ENV",
@@ -40,5 +43,18 @@ export const loadSettings = defineSettings({
     staging: {},
     production: {},
   },
-  build: (env, _layered) => env,
+  build: (env, _layered) => {
+    // production 기동 시 dev 기본 시크릿 거부 — 약한 시크릿로의 운영 기동 차단.
+    if (env.NODE_ENV === "production") {
+      const weak = (["CSRF_SECRET", "OAUTH_STATE_SECRET"] as const).filter(
+        (key) => env[key] === DEV_DEFAULT_SECRET,
+      );
+      if (weak.length > 0) {
+        throw new Error(
+          `production 기동 거부: ${weak.join(", ")} 가 dev 기본값입니다. 강한 시크릿을 설정하세요.`,
+        );
+      }
+    }
+    return env;
+  },
 });

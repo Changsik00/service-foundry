@@ -13,6 +13,7 @@ import type { Response } from "express";
 import { ZodError, z } from "zod";
 
 import { setRefreshTokenCookie } from "./cookie.helper.js";
+import { CsrfGuard } from "./csrf.guard.js";
 import { PasskeyService } from "./passkey.service.js";
 
 const RegisterVerifyInput = z.object({
@@ -32,7 +33,7 @@ export class PasskeyController {
 
   @Post("register/options")
   @HttpCode(200)
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, CsrfGuard)
   async registerOptions(
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ challengeToken: string; options: object }> {
@@ -41,7 +42,7 @@ export class PasskeyController {
 
   @Post("register/verify")
   @HttpCode(200)
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, CsrfGuard)
   async registerVerify(
     @CurrentUser() user: AuthenticatedUser,
     @Body() body: unknown,
@@ -58,12 +59,14 @@ export class PasskeyController {
 
   @Post("authenticate/options")
   @HttpCode(200)
+  @UseGuards(CsrfGuard)
   async authenticateOptions(): Promise<{ challengeToken: string; options: object }> {
     return this.passkeyService.generateAuthOptions();
   }
 
   @Post("authenticate/verify")
   @HttpCode(200)
+  @UseGuards(CsrfGuard)
   async authenticateVerify(
     @Body() body: unknown,
     @Res({ passthrough: true }) res: Response,
