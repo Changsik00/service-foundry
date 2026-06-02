@@ -40,6 +40,7 @@ phase-15 가 연 보안 배선의 **잔여 공격면을 닫고**, 배선 회귀 
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
+| `spec-16-01` | mfa-passkey-csrf | P? | Merged | `specs/spec-16-01-mfa-passkey-csrf/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
