@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-15** — Security & Wiring Hardening — 5 spec — 다음: (spec 없음)
+(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -100,6 +100,7 @@
 - **phase-12** — Service Foundations I · Runtime — completed 2026-05-30
 - **phase-13** — Service Foundations II · API & Data — completed 2026-05-31
 - **phase-14** — Quality Hardening + CI/CD — completed 2026-06-01
+- **phase-15** — Security & Wiring Hardening — completed 2026-06-02
 <!-- sdd:done:end -->
 
 ---
