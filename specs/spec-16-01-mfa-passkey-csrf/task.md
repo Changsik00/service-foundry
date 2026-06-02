@@ -29,8 +29,8 @@
 - [x] 게이트: `pnpm turbo run lint typecheck test knip depcruise` PASS (136/136)
 - [x] walkthrough.md / pr_description.md 작성
 - [x] Ship commit: `docs(spec-16-01): ship walkthrough and pr description`
-- [ ] Push + PR (base: `phase-16-security-hardening`)
-- [ ] 사용자 알림 (PR URL)
+- [x] Push + PR (base: `phase-16-security-hardening`) — #103
+- [x] 사용자 알림 (PR URL)
 
 ---
 
