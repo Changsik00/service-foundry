@@ -13,22 +13,22 @@
 ---
 
 ## Task 1: 브랜치 + 문서 커밋
-- [ ] `git checkout -b spec-16-01-mfa-passkey-csrf` (phase base 에서)
-- [ ] Commit: `docs(spec-16-01): add spec/plan/task`
+- [x] `git checkout -b spec-16-01-mfa-passkey-csrf` (phase base 에서)
+- [x] Commit: `docs(spec-16-01): add spec/plan/task`
 
 ## Task 2: MFA/passkey CsrfGuard 배선 + e2e (TDD)
-- [ ] Red: `auth.e2e.test.ts` 에 "MFA/passkey CSRF 게이트" describe 추가 — csrf 없이 `POST /auth/mfa/totp/verify` → 403, `passkey/authenticate/verify` → 403. 현재 배선 전이라 Fail(현재 401/400) 확인.
-- [ ] Green: `mfa.controller.ts` 4개 + `passkey.controller.ts` 4개에 `CsrfGuard` 배선 (AuthGuard 있는 곳은 스택). `CsrfGuard` import.
-- [ ] 기존 "MFA TOTP 수직 슬라이스"·"Passkey 수직 슬라이스" 호출을 `postCsrf` 동반으로 갱신 (회귀 GREEN).
-- [ ] 검증: `DATABASE_URL=... pnpm --filter @apps/api test` PASS
-- [ ] Commit: `fix(spec-16-01): guard MFA/passkey state-changing endpoints with CsrfGuard`
+- [x] Red: "MFA/passkey CSRF 게이트" describe 추가 — csrf 없는 verify → 403. 배선 전 401 로 Fail 확인.
+- [x] Green: `mfa.controller.ts` 4개 + `passkey.controller.ts` 4개 `CsrfGuard` 배선 (AuthGuard 있는 곳 스택).
+- [x] 기존 MFA/passkey 슬라이스 `postCsrf` 동반 갱신 (register/options 인증없음→401 은 AuthGuard 우선이라 유지).
+- [x] 검증: `pnpm --filter @apps/api test` → 104/104 PASS
+- [x] Commit: `fix(spec-16-01): guard MFA/passkey ...` (6559a12)
 
 > 배선+e2e갱신을 한 commit 으로 결합 (가드가 기존 e2e 를 깨므로 분리 시 중간 red — spec-15-02 선례, No-Test-No-Commit).
 
 ## Task 3: Ship
-- [ ] 게이트: `pnpm turbo run lint typecheck test knip depcruise` PASS (test 는 PG 필요 → DATABASE_URL)
-- [ ] walkthrough.md / pr_description.md 작성
-- [ ] Ship commit: `docs(spec-16-01): ship walkthrough and pr description`
+- [x] 게이트: `pnpm turbo run lint typecheck test knip depcruise` PASS (136/136)
+- [x] walkthrough.md / pr_description.md 작성
+- [x] Ship commit: `docs(spec-16-01): ship walkthrough and pr description`
 - [ ] Push + PR (base: `phase-16-security-hardening`)
 - [ ] 사용자 알림 (PR URL)
 
