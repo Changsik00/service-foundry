@@ -108,9 +108,9 @@
 
 ### 🚀 Push & PR
 
-- [ ] **Push**: `git push -u origin spec-17-01-email-adapter`
-- [ ] **PR 생성**: `/hk-pr-gh` 또는 `gh pr create`
-- [ ] **사용자 알림**: PR URL 보고
+- [x] **Push**: `git push -u origin spec-17-01-email-adapter`
+- [x] **PR 생성**: https://github.com/Changsik00/service-foundry/pull/111
+- [x] **사용자 알림**: PR URL 보고
 
 ---
 
@@ -120,5 +120,5 @@
 |---|---|
 | **총 Task 수** | 4 (+ Ship) |
 | **예상 commit 수** | 4 (T2~T4 각 1 + Ship 1) |
-| **현재 단계** | Planning |
+| **현재 단계** | Shipped |
 | **마지막 업데이트** | 2026-06-06 |
