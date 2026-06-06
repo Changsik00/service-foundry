@@ -9,6 +9,7 @@ import { AUTH_METRICS } from "../metrics/auth-metrics.provider.js";
 import { AuthController } from "./auth.controller.js";
 import { CSRF_SECRET } from "./csrf.guard.js";
 import { EmailVerifyService } from "./email-verify.service.js";
+import { OrgSwitchService } from "./org-switch.service.js";
 import { PasswordResetService } from "./password-reset.service.js";
 import { SigninService } from "./signin.service.js";
 import { SignupService } from "./signup.service.js";
@@ -63,6 +64,10 @@ describe("AuthController", () => {
           useValue: {
             signUp: vi.fn().mockResolvedValue(mockSigninResult),
           },
+        },
+        {
+          provide: OrgSwitchService,
+          useValue: { switch: vi.fn() },
         },
         {
           provide: PasswordResetService,
