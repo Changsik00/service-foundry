@@ -9,6 +9,8 @@ pre-commit:
     typecheck:
       glob: "*.{ts,tsx,cts,mts}"
       run: pnpm turbo run typecheck --output-logs=errors-only
+    harness:
+      run: bash .harness-kit/hooks/pre-commit.sh
 
 commit-msg:
   commands:
