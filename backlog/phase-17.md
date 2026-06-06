@@ -14,7 +14,7 @@
 | **시작일** | 2026-06-06 |
 | **목표 종료일** | 미정 |
 | **소유자** | changsik |
-| **Base Branch** | 없음 (각 spec → main) |
+| **Base Branch** | `phase-17` (spec-17-02~ 부터 적용; spec-17-01 은 main 직접 머지됨) |
 
 ## 🎯 배경 및 목표
 
@@ -51,6 +51,7 @@ phase-03~16 에서 인증(native/OAuth/MFA/passkey)·보안·CI/CD·서비스 �
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
 | `spec-17-01` | email-adapter | P? | Merged | `specs/spec-17-01-email-adapter/` |
+| `spec-17-02` | multi-tenancy-entity-schema | P? | Active | `specs/spec-17-02-multi-tenancy-entity-schema/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`

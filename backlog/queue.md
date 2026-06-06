@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-17** — 멀티테넌시 Foundation + 이메일 어댑터 (Spine) — 1 spec — 다음: (spec 없음)
+- **phase-17** — 멀티테넌시 Foundation + 이메일 어댑터 (Spine) — 2 spec — 다음: spec-17-02-multi-tenancy-entity-schema
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
