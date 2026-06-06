@@ -52,6 +52,7 @@ phase-03~16 에서 인증(native/OAuth/MFA/passkey)·보안·CI/CD·서비스 �
 |---|---|:---:|---|---|
 | `spec-17-01` | email-adapter | P? | Merged | `specs/spec-17-01-email-adapter/` |
 | `spec-17-02` | multi-tenancy-entity-schema | P? | Active | `specs/spec-17-02-multi-tenancy-entity-schema/` |
+| `spec-17-03` | org-id-retrofit-rls | P? | Merged | `specs/spec-17-03-org-id-retrofit-rls/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
