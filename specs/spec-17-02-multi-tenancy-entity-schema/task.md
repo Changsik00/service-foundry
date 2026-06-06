@@ -66,20 +66,20 @@
 
 ### 🚦 Pre-Push Quality Gate
 
-- [ ] **typecheck**: `pnpm turbo run typecheck --filter=@repo/auth-contracts --filter=@apps/api`
-- [ ] **lint**: `pnpm turbo run lint --filter=@repo/auth-contracts --filter=@apps/api`
+- [x] **typecheck**: `pnpm turbo run typecheck --filter=@repo/auth-contracts --filter=@apps/api`
+- [x] **lint**: `pnpm turbo run lint --filter=@repo/auth-contracts --filter=@apps/api`
 
 ### 📝 산출물 작성
 
-- [ ] **walkthrough.md 작성** (템플릿 준수)
-- [ ] **pr_description.md 작성** (템플릿 준수)
-- [ ] **Ship Commit**: `docs(spec-17-02): ship walkthrough and pr description`
+- [x] **walkthrough.md 작성** (템플릿 준수)
+- [x] **pr_description.md 작성** (템플릿 준수)
+- [x] **Ship Commit**: `docs(spec-17-02): ship walkthrough and pr description`
 
 ### 🚀 Push & PR
 
-- [ ] **Push**: `git push -u origin spec-17-02-multi-tenancy-entity-schema`
-- [ ] **PR 생성**: `gh pr create --base phase-17`
-- [ ] **사용자 알림**: PR URL 보고
+- [x] **Push**: `git push -u origin spec-17-02-multi-tenancy-entity-schema`
+- [x] **PR 생성**: `gh pr create --base phase-17`
+- [x] **사용자 알림**: PR URL 보고
 
 ---
 
