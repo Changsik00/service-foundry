@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-17** — 멀티테넌시 Foundation + 이메일 어댑터 (Spine) — 0/6 spec — (다음: 첫 spec 생성 대기)
+- **phase-17** — 멀티테넌시 Foundation + 이메일 어댑터 (Spine) — 1 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
