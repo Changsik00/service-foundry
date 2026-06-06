@@ -14,6 +14,8 @@ import {
 import {
   EmailVerifyConfirm,
   EmailVerifyRequest,
+  OrgInviteAcceptInput,
+  OrgInviteInput,
   OrgSwitchInput,
   PasswordResetConfirm,
   PasswordResetRequest,
@@ -33,6 +35,7 @@ import { setCsrfCookies } from "./csrf.cookie.js";
 import { CSRF_SECRET, CsrfGuard } from "./csrf.guard.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import { MfaService } from "./mfa.service.js";
+import { OrgInviteService } from "./org-invite.service.js";
 import { OrgSwitchService } from "./org-switch.service.js";
 import { PasswordResetService } from "./password-reset.service.js";
 import { SigninService } from "./signin.service.js";
@@ -73,6 +76,7 @@ export class AuthController {
     @Inject(SigninService) private readonly signinService: SigninService,
     @Inject(SignupService) private readonly signupService: SignupService,
     @Inject(OrgSwitchService) private readonly orgSwitchService: OrgSwitchService,
+    @Inject(OrgInviteService) private readonly orgInviteService: OrgInviteService,
     @Inject(AuthEventBus) private readonly eventBus: AuthEventBus,
     @Inject(AUTH_METRICS) private readonly metrics: AuthMetrics,
     @Optional() @Inject(MfaService) private readonly mfaService: MfaService | undefined,
@@ -265,5 +269,29 @@ export class AuthController {
   ): Promise<{ accessToken: string }> {
     const { orgId } = zodPipe(OrgSwitchInput).transform(body);
     return this.orgSwitchService.switch(user.sub, orgId);
+  }
+
+  @Post("org/invite")
+  @UseGuards(AuthGuard)
+  @HttpCode(200)
+  async orgInvite(
+    @Body() body: unknown,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<{ status: string }> {
+    const { email, role } = zodPipe(OrgInviteInput).transform(body);
+    if (!user.orgId) throw new BadRequestException("no active org");
+    await this.orgInviteService.invite(user.sub, user.orgId, email, role);
+    return { status: "ok" };
+  }
+
+  @Post("org/invite/accept")
+  @UseGuards(AuthGuard)
+  @HttpCode(200)
+  async orgInviteAccept(
+    @Body() body: unknown,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<{ accessToken: string }> {
+    const { token } = zodPipe(OrgInviteAcceptInput).transform(body);
+    return this.orgInviteService.accept(user.sub, token);
   }
 }
