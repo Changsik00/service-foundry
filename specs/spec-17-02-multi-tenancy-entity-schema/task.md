@@ -54,11 +54,11 @@
 **대상 파일**: `packages/shared/auth-contracts/src/index.ts`
 
 ### 3-1. Zod 타입 추가
-- [ ] `OrgRole = z.enum(["owner", "admin", "member"])` 추가
-- [ ] `InviteRole = z.enum(["admin", "member"])` 추가
-- [ ] `Organization`, `Membership`, `InvitationRow` Zod 스키마 추가
-- [ ] `pnpm turbo run typecheck --filter=@repo/auth-contracts` PASS
-- [ ] Commit: `feat(spec-17-02): add OrgRole/Organization/Membership/InvitationRow contracts`
+- [x] `OrgRole = z.enum(["owner", "admin", "member"])` 추가
+- [x] `InviteRole = z.enum(["admin", "member"])` 추가
+- [x] `Organization`, `Membership`, `InvitationRow` Zod 스키마 추가
+- [x] `pnpm turbo run typecheck --filter=@repo/auth-contracts` PASS
+- [x] Commit: `feat(spec-17-02): add OrgRole/Organization/Membership/InvitationRow contracts`
 
 ---
 
