@@ -10,15 +10,15 @@ import { users } from "../infra/schema/users.js";
 export const PROVISION_SERVICE = Symbol("PROVISION_SERVICE");
 
 export interface IProvisionService {
-  provisionUser(userId: string, email: string): Promise<void>;
+  provisionUser(userId: string, email: string): Promise<{ orgId: string; orgRole: string }>;
 }
 
 @Injectable()
 export class ProvisionService implements IProvisionService {
   constructor(@Inject(DATABASE) private readonly database: Database<Record<string, unknown>>) {}
 
-  async provisionUser(userId: string, email: string): Promise<void> {
-    await this.database.db.transaction(async (tx) => {
+  async provisionUser(userId: string, email: string): Promise<{ orgId: string; orgRole: string }> {
+    return this.database.db.transaction(async (tx) => {
       const [org] = await tx
         .insert(organizations)
         .values({
@@ -37,6 +37,8 @@ export class ProvisionService implements IProvisionService {
       });
 
       await tx.update(users).set({ orgId: org!.id }).where(eq(users.id, userId));
+
+      return { orgId: org!.id, orgRole: "owner" };
     });
   }
 }

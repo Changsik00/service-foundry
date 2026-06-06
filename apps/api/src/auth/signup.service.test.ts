@@ -61,8 +61,12 @@ function makeSessionStore(): SessionStore {
   };
 }
 
+const MOCK_ORG_ID = "00000000-0000-0000-0000-000000000099";
+
 function makeProvisionService(): IProvisionService {
-  return { provisionUser: vi.fn().mockResolvedValue(undefined) };
+  return {
+    provisionUser: vi.fn().mockResolvedValue({ orgId: MOCK_ORG_ID, orgRole: "owner" }),
+  };
 }
 
 describe("SignupService", () => {

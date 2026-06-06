@@ -31,9 +31,9 @@ export class SignupService {
     const user = await this.userStore.insert({ email, passwordHash, role: "user" });
 
     const { refreshToken } = await createSession(this.sessionStore, { userId: user.id });
-    await this.provisionService.provisionUser(user.id, email);
+    const { orgId, orgRole } = await this.provisionService.provisionUser(user.id, email);
     const accessToken = await signAccessToken(
-      { sub: user.id, role: user.role },
+      { sub: user.id, role: user.role, activeOrgId: orgId, orgRole },
       this.jwtService.getKeyStore(),
       { issuer: this.jwtOpts.issuer, audience: this.jwtOpts.audience },
     );

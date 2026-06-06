@@ -23,7 +23,9 @@ function makeDatabase() {
   const mockTx = { insert: mockInsert, update: mockUpdate };
   const mockTransaction = vi
     .fn()
-    .mockImplementation((cb: (tx: typeof mockTx) => Promise<void>) => cb(mockTx));
+    .mockImplementation((cb: (tx: typeof mockTx) => Promise<{ orgId: string; orgRole: string }>) =>
+      cb(mockTx),
+    );
 
   return {
     database: { db: { transaction: mockTransaction } },
@@ -44,8 +46,9 @@ describe("ProvisionService", () => {
     const { database, mocks } = makeDatabase();
     const service = new ProvisionService(database as never);
 
-    await service.provisionUser(USER_ID, EMAIL);
+    const result = await service.provisionUser(USER_ID, EMAIL);
 
+    expect(result).toEqual({ orgId: ORG_ID, orgRole: "owner" });
     expect(mocks.mockTransaction).toHaveBeenCalledOnce();
     expect(mocks.mockInsert).toHaveBeenCalledTimes(2);
     expect(mocks.mockOrgValues).toHaveBeenCalledWith(

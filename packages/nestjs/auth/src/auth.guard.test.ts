@@ -53,7 +53,7 @@ describe("AuthGuard", () => {
     // biome-ignore lint/suspicious/noExplicitAny: ExecutionContext mock
     const result = await guard.canActivate(ctx as any);
     expect(result).toBe(true);
-    expect(req.user).toEqual({ sub: "user-123", role: "user" });
+    expect(req.user).toEqual({ sub: "user-123", role: "user", orgId: null });
   });
 
   it("만료 token → UnauthorizedException", async () => {
