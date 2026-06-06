@@ -40,6 +40,7 @@ export const createFakeRateLimitStore = (): FakeRateLimitStore => {
         ip: row.ip,
         accountKey: row.accountKey,
         attemptedAt: row.attemptedAt ?? new Date(),
+        orgId: row.orgId ?? null,
       };
       failedLogins.set(inserted.id, inserted);
     },
@@ -57,6 +58,7 @@ export const createFakeRateLimitStore = (): FakeRateLimitStore => {
         lockedAt: row.lockedAt ?? new Date(),
         unlockAt: row.unlockAt,
         streak: row.streak ?? 1,
+        orgId: row.orgId ?? null,
       };
       lockouts.set(merged.accountKey, merged);
     },

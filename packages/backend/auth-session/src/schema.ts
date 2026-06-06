@@ -15,6 +15,7 @@ export const sessions = pgTable("sessions", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  orgId: uuid("org_id"),
 });
 
 export type SessionRow = typeof sessions.$inferSelect;

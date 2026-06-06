@@ -39,6 +39,7 @@ const mockSessionResult = {
     createdAt: new Date(),
     expiresAt: new Date(Date.now() + 30 * 24 * 3600_000),
     revokedAt: null,
+    orgId: null,
   },
   refreshToken: "raw-refresh-token",
 };
