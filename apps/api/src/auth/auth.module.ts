@@ -14,6 +14,7 @@ import {
   createDrizzleEmailVerifyTokenStore,
   EMAIL_VERIFY_TOKEN_STORE,
 } from "./email-verify.stores.js";
+import { FRONTEND_URL } from "./frontend-url.token.js";
 import { JWT_SIGN_OPTIONS, type JwtSignOptions } from "./jwt-sign.options.js";
 import { MfaController } from "./mfa.controller.js";
 import { MfaService } from "./mfa.service.js";
@@ -54,6 +55,10 @@ const settings: AppSettings = loadSettings(process.env);
     {
       provide: CSRF_SECRET,
       useValue: settings.CSRF_SECRET,
+    },
+    {
+      provide: FRONTEND_URL,
+      useValue: settings.FRONTEND_URL,
     },
     {
       provide: JWT_SIGN_OPTIONS,

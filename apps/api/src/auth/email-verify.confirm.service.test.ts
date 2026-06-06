@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NOTIFIER } from "../notification/notifier.provider.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import { EMAIL_VERIFY_TOKEN_STORE } from "./email-verify.stores.js";
+import { FRONTEND_URL } from "./frontend-url.token.js";
 import { USER_STORE } from "./password-reset.stores.js";
 
 const makeToken = (overrides: Record<string, unknown> = {}) => ({
@@ -32,6 +33,7 @@ describe("EmailVerifyService.confirm", () => {
         { provide: USER_STORE, useValue: userStore },
         { provide: EMAIL_VERIFY_TOKEN_STORE, useValue: tokenStore },
         { provide: NOTIFIER, useValue: { sendEmail: vi.fn() } },
+        { provide: FRONTEND_URL, useValue: "http://localhost:3000" },
       ],
     }).compile();
     service = module.get(EmailVerifyService);

@@ -1,10 +1,11 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { generateRefreshToken, hashToken } from "@repo/backend-auth-session";
-import type { Notifier } from "@repo/backend-notification";
+import { buildEmailVerifyEmail, type Notifier } from "@repo/backend-notification";
 
 import { NOTIFIER } from "../notification/notifier.provider.js";
 import type { ConfirmOutcome } from "./confirm-outcome.js";
 import { type EmailVerifyTokenStore, InjectEmailVerifyTokenStore } from "./email-verify.stores.js";
+import { FRONTEND_URL } from "./frontend-url.token.js";
 import { InjectUserStore, type UserStore } from "./password-reset.stores.js";
 
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
@@ -15,6 +16,7 @@ export class EmailVerifyService {
     @InjectUserStore() private readonly userStore: UserStore,
     @InjectEmailVerifyTokenStore() private readonly tokenStore: EmailVerifyTokenStore,
     @Inject(NOTIFIER) private readonly notifier: Notifier,
+    @Inject(FRONTEND_URL) private readonly frontendUrl: string,
   ) {}
 
   async request(email: string): Promise<void> {
@@ -28,12 +30,8 @@ export class EmailVerifyService {
 
     await this.tokenStore.insert({ userId: user.id, tokenHash, expiresAt });
 
-    // 전송은 notification 포트로 위임 — dev 어댑터는 로그(가시성), 비-dev noop(토큰 미로깅).
-    await this.notifier.sendEmail({
-      to: email,
-      subject: "이메일 인증",
-      body: `이메일 인증 토큰: ${token}`,
-    });
+    const emailMsg = buildEmailVerifyEmail(token, this.frontendUrl);
+    await this.notifier.sendEmail({ ...emailMsg, to: email });
   }
 
   async confirm(token: string): Promise<ConfirmOutcome> {

@@ -41,6 +41,7 @@
     "cookie-parser": "catalog:",
     "drizzle-orm": "catalog:",
     "reflect-metadata": "catalog:",
+    "resend": "^4.0.0",
     "rxjs": "catalog:",
     "zod": "catalog:"
   },

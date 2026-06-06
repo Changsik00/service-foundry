@@ -77,18 +77,18 @@
 - `apps/api/src/auth/email-verify.service.test.ts`
 
 ### 4-1. 테스트 업데이트 (TDD Red)
-- [ ] `password-reset.service.test.ts` 에 `FRONTEND_URL` mock 프로바이더 추가
-- [ ] `email-verify.service.test.ts` 에 `FRONTEND_URL` mock 프로바이더 추가
-- [ ] `pnpm turbo run test --filter=api` → 실패 확인 (FRONTEND_URL 미주입)
+- [x] `password-reset.service.test.ts` 에 `FRONTEND_URL` mock 프로바이더 추가
+- [x] `email-verify.service.test.ts` 에 `FRONTEND_URL` mock 프로바이더 추가
+- [x] `pnpm turbo run test --filter=api` → 실패 확인 (FRONTEND_URL 미주입)
 
 ### 4-2. 구현 (TDD Green)
-- [ ] `apps/api/src/auth/frontend-url.token.ts` — `FRONTEND_URL` 심볼 정의
-- [ ] `apps/api/src/auth/auth.module.ts` — `FRONTEND_URL` 프로바이더 추가 (`settings.FRONTEND_URL`)
-- [ ] `apps/api/src/auth/password-reset.service.ts` — `@Inject(FRONTEND_URL)` 주입, `buildPasswordResetEmail` 사용
-- [ ] `apps/api/src/auth/email-verify.service.ts` — `@Inject(FRONTEND_URL)` 주입, `buildEmailVerifyEmail` 사용
-- [ ] `apps/api/src/notification/notifier.provider.ts` — settings 기반 Resend 선택 로직 추가
-- [ ] `pnpm turbo run test --filter=api` → 모두 PASS 확인
-- [ ] Commit: `feat(spec-17-01): wire ResendNotifier in NestJS + link-format email bodies`
+- [x] `apps/api/src/auth/frontend-url.token.ts` — `FRONTEND_URL` 심볼 정의
+- [x] `apps/api/src/auth/auth.module.ts` — `FRONTEND_URL` 프로바이더 추가 (`settings.FRONTEND_URL`)
+- [x] `apps/api/src/auth/password-reset.service.ts` — `@Inject(FRONTEND_URL)` 주입, `buildPasswordResetEmail` 사용
+- [x] `apps/api/src/auth/email-verify.service.ts` — `@Inject(FRONTEND_URL)` 주입, `buildEmailVerifyEmail` 사용
+- [x] `apps/api/src/notification/notifier.provider.ts` — settings 기반 Resend 선택 로직 추가
+- [x] `pnpm turbo run test --filter=api` → 모두 PASS 확인
+- [x] Commit: `feat(spec-17-01): wire ResendNotifier in NestJS + link-format email bodies`
 
 ---
 
