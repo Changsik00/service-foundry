@@ -101,3 +101,41 @@ export type CoreAuthSDK = Pick<
   AuthSDK,
   "signIn" | "signOut" | "getCurrentUser" | "signUp" | "refresh"
 >;
+
+// === Multi-tenancy contracts (spec-17-02) === //
+export const OrgRole = z.enum(["owner", "admin", "member"]);
+export type OrgRole = z.output<typeof OrgRole>;
+
+export const InviteRole = z.enum(["admin", "member"]);
+export type InviteRole = z.output<typeof InviteRole>;
+
+export const Organization = z.object({
+  id: Uuid,
+  name: z.string(),
+  slug: z.string(),
+  isPersonal: z.boolean(),
+  ownerId: Uuid,
+  createdAt: z.iso.datetime(),
+});
+export type Organization = z.output<typeof Organization>;
+
+export const Membership = z.object({
+  id: Uuid,
+  userId: Uuid,
+  orgId: Uuid,
+  role: OrgRole,
+  createdAt: z.iso.datetime(),
+});
+export type Membership = z.output<typeof Membership>;
+
+export const InvitationRow = z.object({
+  id: Uuid,
+  orgId: Uuid,
+  email: Email,
+  role: InviteRole,
+  invitedBy: Uuid,
+  expiresAt: z.iso.datetime(),
+  acceptedAt: z.iso.datetime().nullable(),
+  createdAt: z.iso.datetime(),
+});
+export type InvitationRow = z.output<typeof InvitationRow>;
