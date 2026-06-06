@@ -207,7 +207,7 @@ describe("AuthController", () => {
 
   describe("GET /auth/me", () => {
     it("currentUser → { user } 반환", () => {
-      const currentUser = { sub: mockUserRow.id, role: "user" as const };
+      const currentUser = { sub: mockUserRow.id, role: "user" as const, orgId: null };
       const result = controller.me(currentUser);
       expect(result).toEqual({ user: currentUser });
     });

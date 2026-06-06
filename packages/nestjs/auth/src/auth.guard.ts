@@ -21,6 +21,7 @@ export interface NestjsAuthOptions {
 export type AuthenticatedUser = {
   sub: string;
   role: Role;
+  orgId: string | null;
 };
 
 function extractBearer(headers: Record<string, string | undefined>): string | null {
@@ -51,11 +52,12 @@ export class AuthGuard implements CanActivate {
     });
     if (!result.ok) throw new UnauthorizedException(result.error.message);
 
-    // role 은 *검증된 claim*(result.value)에서만 읽는다 — decodeJwt(미검증) 우회 금지.
+    // role / orgId 는 *검증된 claim*(result.value)에서만 읽는다 — decodeJwt(미검증) 우회 금지.
     const roleResult = Role.safeParse(result.value.role);
     if (!roleResult.success) throw new UnauthorizedException("missing or invalid role claim");
 
-    req.user = { sub: result.value.sub, role: roleResult.data };
+    const orgId = typeof result.value.orgId === "string" ? result.value.orgId : null;
+    req.user = { sub: result.value.sub, role: roleResult.data, orgId };
     return true;
   }
 }
