@@ -12,6 +12,7 @@ vi.mock("@repo/backend-auth-session", async (importOriginal) => {
 import { NOTIFIER } from "../notification/notifier.provider.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import { EMAIL_VERIFY_TOKEN_STORE } from "./email-verify.stores.js";
+import { FRONTEND_URL } from "./frontend-url.token.js";
 import { PasswordResetService } from "./password-reset.service.js";
 import { PASSWORD_RESET_TOKEN_STORE, USER_STORE } from "./password-reset.stores.js";
 
@@ -47,6 +48,7 @@ async function runReset(): Promise<void> {
       { provide: USER_STORE, useValue: userStore },
       { provide: PASSWORD_RESET_TOKEN_STORE, useValue: tokenStore },
       { provide: NOTIFIER, useValue: notifier },
+      { provide: FRONTEND_URL, useValue: "http://localhost:3000" },
     ],
   }).compile();
   await m.get(PasswordResetService).request("alice@example.com");
@@ -59,6 +61,7 @@ async function runVerify(): Promise<void> {
       { provide: USER_STORE, useValue: userStore },
       { provide: EMAIL_VERIFY_TOKEN_STORE, useValue: tokenStore },
       { provide: NOTIFIER, useValue: notifier },
+      { provide: FRONTEND_URL, useValue: "http://localhost:3000" },
     ],
   }).compile();
   await m.get(EmailVerifyService).request("alice@example.com");

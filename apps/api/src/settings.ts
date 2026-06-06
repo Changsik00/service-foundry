@@ -26,6 +26,9 @@ const AppSettingsSchema = BaseBackendSchema.extend({
   PASSKEY_RP_ID: z.string().min(1).default("localhost"),
   PASSKEY_RP_NAME: z.string().min(1).default("service-foundry"),
   PASSKEY_ORIGIN: z.string().url().default("http://localhost:3000"),
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().email().default("noreply@localhost"),
+  FRONTEND_URL: z.string().url().default("http://localhost:3000"),
 });
 
 export type AppSettings = z.output<typeof AppSettingsSchema>;
@@ -52,6 +55,11 @@ export const loadSettings = defineSettings({
       if (weak.length > 0) {
         throw new Error(
           `production 기동 거부: ${weak.join(", ")} 가 dev 기본값입니다. 강한 시크릿을 설정하세요.`,
+        );
+      }
+      if (!env.RESEND_API_KEY) {
+        throw new Error(
+          "production 기동 거부: RESEND_API_KEY 가 설정되지 않았습니다. 이메일 발송을 위해 Resend API 키를 설정하세요.",
         );
       }
     }
