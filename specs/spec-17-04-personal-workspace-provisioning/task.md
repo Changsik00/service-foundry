@@ -53,15 +53,15 @@
 
 ### 3-1. 구현
 
-- [ ] `signup.service.ts` — `ProvisionService` inject, `signUp()` 마지막에 `provisionUser()` 호출
-- [ ] `signup.service.test.ts` — `ProvisionService` mock 추가, `provisionUser` 호출 검증
-- [ ] `auth.module.ts` — `ProvisionService` provider 등록
-- [ ] `users.ts` — `role` 필드에 `@deprecated` 주석 추가
+- [x] `signup.service.ts` — `ProvisionService` inject, `signUp()` 마지막에 `provisionUser()` 호출
+- [x] `signup.service.test.ts` — `ProvisionService` mock 추가, `provisionUser` 호출 검증
+- [x] `auth.module.ts` — `ProvisionService` provider 등록
+- [x] `users.ts` — `role` 필드에 `@deprecated` 주석 추가
 
 ### 3-2. 검증
 
-- [ ] `pnpm turbo run typecheck --filter=@apps/api` PASS
-- [ ] Commit: `feat(spec-17-04): wire ProvisionService into SignupService + auth.module`
+- [x] `pnpm turbo run typecheck --filter=@apps/api` PASS
+- [x] Commit: `feat(spec-17-04): wire ProvisionService into SignupService + auth.module`
 
 ---
 
@@ -69,13 +69,13 @@
 
 ### 🚦 Pre-Push Quality Gate
 
-- [ ] **typecheck**: `pnpm turbo run typecheck --filter=@apps/api`
-- [ ] **lint**: `pnpm turbo run lint --filter=@apps/api`
+- [x] **typecheck**: `pnpm turbo run typecheck --filter=@apps/api`
+- [x] **lint**: `pnpm turbo run lint --filter=@apps/api`
 
 ### 📝 산출물 작성
 
-- [ ] **walkthrough.md 작성**
-- [ ] **pr_description.md 작성**
+- [x] **walkthrough.md 작성**
+- [x] **pr_description.md 작성**
 - [ ] **Ship Commit**: `docs(spec-17-04): ship walkthrough and pr description`
 
 ### 🚀 Push & PR
@@ -92,5 +92,5 @@
 |---|---|
 | **총 Task 수** | 3 (+ Ship) |
 | **예상 commit 수** | 2 (T2+T3) + Ship |
-| **현재 단계** | Planning |
+| **현재 단계** | Ship |
 | **마지막 업데이트** | 2026-06-06 |
