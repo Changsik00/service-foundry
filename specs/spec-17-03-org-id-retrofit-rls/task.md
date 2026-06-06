@@ -59,10 +59,10 @@
 
 ### 3-1. RLS SQL 작성
 
-- [ ] `0011_rls_policies.sql` 작성 — 8개 테이블 `ENABLE ROW LEVEL SECURITY` + `CREATE POLICY tenant_isolation`
-- [ ] `_journal.json`에 `0011_rls_policies` 엔트리 수동 추가
-- [ ] 수동 검증: SQL 문법 검토 (organizations는 `id` 기준, 나머지는 `org_id` 기준)
-- [ ] Commit: `feat(spec-17-03): add permissive RLS policies on tenant-scoped tables`
+- [x] `0011_rls_policies.sql` 작성 — 8개 테이블 `ENABLE ROW LEVEL SECURITY` + `CREATE POLICY tenant_isolation`
+- [x] `_journal.json`에 `0011_rls_policies` 엔트리 수동 추가
+- [x] 수동 검증: SQL 문법 검토 (organizations는 `id` 기준, 나머지는 `org_id` 기준)
+- [x] Commit: `feat(spec-17-03): add permissive RLS policies on tenant-scoped tables`
 
 ---
 
