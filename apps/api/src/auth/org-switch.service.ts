@@ -7,8 +7,6 @@ import { memberships } from "../infra/schema/memberships.js";
 import { JwtService } from "../jwt/jwt.service.js";
 import { JWT_SIGN_OPTIONS, type JwtSignOptions } from "./jwt-sign.options.js";
 
-export const ORG_SWITCH_SERVICE = Symbol("ORG_SWITCH_SERVICE");
-
 export interface IOrgSwitchService {
   switch(userId: string, newOrgId: string): Promise<{ accessToken: string }>;
 }
