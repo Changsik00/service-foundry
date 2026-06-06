@@ -3,8 +3,8 @@ import { createInMemoryKeyStore } from "@repo/backend-auth-jwt";
 import * as authPassword from "@repo/backend-auth-password";
 import * as authSession from "@repo/backend-auth-session";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
 import type { JwtService } from "../jwt/jwt.service.js";
+import type { IProvisionService } from "../provision/provision.service.js";
 import type { UserStore } from "./password-reset.stores.js";
 import type { SessionStore } from "./session.stores.js";
 import { SignupService } from "./signup.service.js";
@@ -61,6 +61,10 @@ function makeSessionStore(): SessionStore {
   };
 }
 
+function makeProvisionService(): IProvisionService {
+  return { provisionUser: vi.fn().mockResolvedValue(undefined) };
+}
+
 describe("SignupService", () => {
   let jwtService: JwtService;
 
@@ -74,7 +78,13 @@ describe("SignupService", () => {
   const jwtOpts = { issuer: "http://localhost:3000", audience: "http://localhost:3000" };
 
   it("성공 — 신규 이메일 → accessToken + user + refreshToken 반환", async () => {
-    const service = new SignupService(makeUserStore(), makeSessionStore(), jwtService, jwtOpts);
+    const service = new SignupService(
+      makeUserStore(),
+      makeSessionStore(),
+      jwtService,
+      jwtOpts,
+      makeProvisionService(),
+    );
 
     const result = await service.signUp("new@example.com", "password123");
 
@@ -89,6 +99,7 @@ describe("SignupService", () => {
       makeSessionStore(),
       jwtService,
       jwtOpts,
+      makeProvisionService(),
     );
 
     await expect(service.signUp("new@example.com", "password123")).rejects.toThrow(
@@ -98,7 +109,13 @@ describe("SignupService", () => {
 
   it("password 해싱 후 insert 호출됨", async () => {
     const userStore = makeUserStore();
-    const service = new SignupService(userStore, makeSessionStore(), jwtService, jwtOpts);
+    const service = new SignupService(
+      userStore,
+      makeSessionStore(),
+      jwtService,
+      jwtOpts,
+      makeProvisionService(),
+    );
 
     await service.signUp("new@example.com", "password123");
 
@@ -106,5 +123,20 @@ describe("SignupService", () => {
     expect(userStore.insert).toHaveBeenCalledWith(
       expect.objectContaining({ email: "new@example.com", passwordHash: "$argon2id$hashed" }),
     );
+  });
+
+  it("회원가입 성공 시 provisionUser 호출됨", async () => {
+    const provisionService = makeProvisionService();
+    const service = new SignupService(
+      makeUserStore(),
+      makeSessionStore(),
+      jwtService,
+      jwtOpts,
+      provisionService,
+    );
+
+    await service.signUp("new@example.com", "password123");
+
+    expect(provisionService.provisionUser).toHaveBeenCalledWith(mockUserRow.id, "new@example.com");
   });
 });

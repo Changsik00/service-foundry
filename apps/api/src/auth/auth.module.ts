@@ -5,6 +5,7 @@ import { DATABASE, type Database } from "@repo/nestjs-database";
 
 import { JwtModule } from "../jwt/jwt.module.js";
 import { JwtService } from "../jwt/jwt.service.js";
+import { PROVISION_SERVICE, ProvisionService } from "../provision/provision.service.js";
 import { type AppSettings, loadSettings } from "../settings.js";
 import { AuditEventListener } from "./audit.event-listener.js";
 import { AuthController } from "./auth.controller.js";
@@ -46,6 +47,8 @@ const settings: AppSettings = loadSettings(process.env);
     EmailVerifyService,
     SigninService,
     SignupService,
+    ProvisionService,
+    { provide: PROVISION_SERVICE, useExisting: ProvisionService },
     OAuthService,
     MfaService,
     AuthGuard,

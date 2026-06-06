@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-17** — 멀티테넌시 Foundation + 이메일 어댑터 (Spine) — 3 spec — 다음: (spec 없음)
+- **phase-17** — 멀티테넌시 Foundation + 이메일 어댑터 (Spine) — 4 spec — 다음: spec-17-04-personal-workspace-provisioning
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
