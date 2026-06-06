@@ -36,7 +36,7 @@
 - [x] `apps/api/src/settings.ts` 에 `RESEND_API_KEY` (optional), `EMAIL_FROM` (default), `FRONTEND_URL` (default) 추가
 - [x] `build()` 에 production 가드 추가 (`RESEND_API_KEY` 미설정 시 throw)
 - [x] `pnpm turbo run test --filter=api` → 모두 PASS 확인
-- [ ] Commit: `feat(spec-17-01): add RESEND_API_KEY/EMAIL_FROM/FRONTEND_URL settings + prod guard`
+- [x] Commit: `feat(spec-17-01): add RESEND_API_KEY/EMAIL_FROM/FRONTEND_URL settings + prod guard`
 
 ---
 
@@ -45,24 +45,23 @@
 **대상 파일**: `packages/backend/notification/package.json`, `packages/backend/notification/src/index.ts`, `packages/backend/notification/src/index.test.ts`
 
 ### 3-1. 테스트 작성 (TDD Red)
-- [ ] `packages/backend/notification/src/index.test.ts` 에 테스트 추가
+- [x] `packages/backend/notification/src/index.test.ts` 에 테스트 추가
   - `createResendNotifier`: mock client 주입 → `sendEmail` 호출 시 `client.emails.send` 가 올바른 payload 로 호출됨
   - `createResendNotifier`: `client.emails.send` 가 error 반환 시 throw
   - `buildPasswordResetEmail`: 링크에 token 포함, frontendUrl base 포함
   - `buildEmailVerifyEmail`: 링크에 token 포함
   - `buildInvitationEmail`: orgName, token 포함
-- [ ] `pnpm turbo run test --filter=@repo/backend-notification` → 새 테스트 Fail 확인
+- [x] `pnpm turbo run test --filter=@repo/backend-notification` → 새 테스트 Fail 확인
 
 ### 3-2. 구현 (TDD Green)
-- [ ] `packages/backend/notification/package.json` 에 `resend` 패키지 추가
-- [ ] `packages/backend/notification/src/index.ts` 에 구현:
+- [x] `packages/backend/notification/src/index.ts` 에 구현:
   - `ResendClient` 타입 정의
   - `createResendNotifier(client, from)` 팩토리
   - `buildPasswordResetEmail(token, frontendUrl)` 템플릿
   - `buildEmailVerifyEmail(token, frontendUrl)` 템플릿
   - `buildInvitationEmail(orgName, token, frontendUrl)` 템플릿
-- [ ] `pnpm turbo run test --filter=@repo/backend-notification` → 모두 PASS 확인
-- [ ] Commit: `feat(spec-17-01): implement createResendNotifier + email templates`
+- [x] `pnpm turbo run test --filter=@repo/backend-notification` → 모두 PASS 확인
+- [x] Commit: `feat(spec-17-01): implement createResendNotifier + email templates`
 
 ---
 
