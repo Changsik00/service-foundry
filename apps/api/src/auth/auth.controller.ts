@@ -14,6 +14,7 @@ import {
 import {
   EmailVerifyConfirm,
   EmailVerifyRequest,
+  OrgSwitchInput,
   PasswordResetConfirm,
   PasswordResetRequest,
   SignInInput,
@@ -32,6 +33,7 @@ import { setCsrfCookies } from "./csrf.cookie.js";
 import { CSRF_SECRET, CsrfGuard } from "./csrf.guard.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import { MfaService } from "./mfa.service.js";
+import { OrgSwitchService } from "./org-switch.service.js";
 import { PasswordResetService } from "./password-reset.service.js";
 import { SigninService } from "./signin.service.js";
 import { SignupService } from "./signup.service.js";
@@ -70,6 +72,7 @@ export class AuthController {
     @Inject(EmailVerifyService) private readonly emailVerifyService: EmailVerifyService,
     @Inject(SigninService) private readonly signinService: SigninService,
     @Inject(SignupService) private readonly signupService: SignupService,
+    @Inject(OrgSwitchService) private readonly orgSwitchService: OrgSwitchService,
     @Inject(AuthEventBus) private readonly eventBus: AuthEventBus,
     @Inject(AUTH_METRICS) private readonly metrics: AuthMetrics,
     @Optional() @Inject(MfaService) private readonly mfaService: MfaService | undefined,
@@ -251,5 +254,16 @@ export class AuthController {
     const { token } = zodPipe(EmailVerifyConfirm).transform(body);
     await this.emailVerifyService.confirm(token);
     return { status: "ok" };
+  }
+
+  @Post("org/switch")
+  @UseGuards(AuthGuard)
+  @HttpCode(200)
+  async orgSwitch(
+    @Body() body: unknown,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<{ accessToken: string }> {
+    const { orgId } = zodPipe(OrgSwitchInput).transform(body);
+    return this.orgSwitchService.switch(user.sub, orgId);
   }
 }

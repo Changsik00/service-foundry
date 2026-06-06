@@ -139,3 +139,6 @@ export const InvitationRow = z.object({
   createdAt: z.iso.datetime(),
 });
 export type InvitationRow = z.output<typeof InvitationRow>;
+
+export const OrgSwitchInput = z.object({ orgId: Uuid });
+export type OrgSwitchInput = z.output<typeof OrgSwitchInput>;
