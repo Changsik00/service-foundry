@@ -15,6 +15,7 @@ export const failedLogins = pgTable(
     ip: text("ip").notNull(),
     accountKey: text("account_key").notNull(),
     attemptedAt: timestamp("attempted_at", { withTimezone: true }).defaultNow().notNull(),
+    orgId: uuid("org_id"),
   },
   (t) => [
     index("failed_logins_ip_at_idx").on(t.ip, t.attemptedAt),
@@ -35,6 +36,7 @@ export const lockouts = pgTable("lockouts", {
   lockedAt: timestamp("locked_at", { withTimezone: true }).defaultNow().notNull(),
   unlockAt: timestamp("unlock_at", { withTimezone: true }).notNull(),
   streak: integer("streak").default(1).notNull(),
+  orgId: uuid("org_id"),
 });
 
 export type FailedLoginRow = typeof failedLogins.$inferSelect;

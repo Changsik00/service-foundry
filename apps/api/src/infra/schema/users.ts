@@ -8,6 +8,7 @@ export const users = pgTable("users", {
     .default("user")
     .notNull(),
   emailVerified: boolean("email_verified").default(false).notNull(),
+  orgId: uuid("org_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
