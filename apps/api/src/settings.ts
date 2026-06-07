@@ -11,7 +11,10 @@ import { BaseBackendSchema, defineSettings } from "@repo/backend-settings";
 import { z } from "zod";
 
 const AppSettingsSchema = BaseBackendSchema.extend({
+  // 런타임 접속 URL — 비-슈퍼유저 role(app_runtime)을 사용해야 RLS 테넌트 격리가 적용된다 (spec-17-07).
   DATABASE_URL: z.string().min(1),
+  // 마이그레이션 전용 URL — owner/superuser. 미설정 시 drizzle.config 가 DATABASE_URL 로 폴백(로컬 단일 role).
+  DATABASE_MIGRATE_URL: z.string().optional(),
   HTTP_CLIENT_BASE_URL: z.string().url(),
   CORS_ORIGIN: z.string().url().default("http://localhost:2027"),
   JWT_ISSUER: z.string().min(1).default("http://localhost:3000"),
@@ -60,6 +63,19 @@ export const loadSettings = defineSettings({
       if (!env.RESEND_API_KEY) {
         throw new Error(
           "production 기동 거부: RESEND_API_KEY 가 설정되지 않았습니다. 이메일 발송을 위해 Resend API 키를 설정하세요.",
+        );
+      }
+      // 런타임 접속이 슈퍼유저면 RLS 가 우회되어 테넌트 격리가 무력화된다 (spec-17-07 불변식).
+      // postgres 는 관례적 슈퍼유저 — 운영에서 런타임 role 로 쓰지 못하게 막는다.
+      let runtimeUser = "";
+      try {
+        runtimeUser = new URL(env.DATABASE_URL).username;
+      } catch {
+        // URL 파싱 실패는 별도 검증(min(1))에 위임 — 여기선 무시.
+      }
+      if (runtimeUser === "postgres") {
+        throw new Error(
+          "production 기동 거부: DATABASE_URL 런타임 접속이 슈퍼유저(postgres)입니다. RLS 테넌트 격리가 우회됩니다. 비-슈퍼유저 role(app_runtime 등)을 사용하세요.",
         );
       }
     }
