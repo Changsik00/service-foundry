@@ -1,64 +1,57 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import { withTenantContext } from "./tenant.js";
+import { createTenantDb, TenantAls } from "./tenant.js";
 
-const ORG_ID = "00000000-0000-0000-0000-000000000099";
-
-function makeTx() {
-  const mockWhere = vi.fn().mockResolvedValue([{ id: "row-1" }]);
-  const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
-  const mockSelect = vi.fn().mockReturnValue({ from: mockFrom });
-  const mockExecute = vi.fn().mockResolvedValue([]);
-
-  const mockTx = { select: mockSelect, execute: mockExecute };
-  const mockTransaction = vi
-    .fn()
-    .mockImplementation((cb: (tx: typeof mockTx) => Promise<unknown>) => cb(mockTx));
-
+/** select().from().where() 체인을 흉내내는 최소 mock db. label 로 base/tx 를 구분. */
+function makeDb(label: string) {
   return {
-    db: { transaction: mockTransaction },
-    mocks: { mockTransaction, mockExecute, mockSelect },
+    label,
+    select() {
+      return { from: () => ({ where: async () => [{ from: label }] }) };
+    },
   };
 }
 
-describe("withTenantContext", () => {
-  it("orgId 있으면 set_config 실행 후 fn 호출", async () => {
-    const { db, mocks } = makeTx();
+describe("createTenantDb (ALS tx 라우팅 proxy)", () => {
+  it("ALS 에 tx 없으면 base db 로 위임", async () => {
+    const als = new TenantAls();
+    const base = makeDb("base");
+    const proxy = createTenantDb(base as never, als);
 
-    await withTenantContext(db as never, ORG_ID, async (_tx) => {
-      return undefined;
+    const rows = await (proxy as never as ReturnType<typeof makeDb>).select().from().where();
+    expect(rows).toEqual([{ from: "base" }]);
+  });
+
+  it("ALS 에 tx 있으면 tx 로 라우팅", async () => {
+    const als = new TenantAls();
+    const base = makeDb("base");
+    const tx = makeDb("tx");
+    const proxy = createTenantDb(base as never, als);
+
+    await als.run({ orgId: "org-a", tx: tx as never }, async () => {
+      const rows = await (proxy as never as ReturnType<typeof makeDb>).select().from().where();
+      expect(rows).toEqual([{ from: "tx" }]);
     });
-
-    expect(mocks.mockTransaction).toHaveBeenCalledOnce();
-    expect(mocks.mockExecute).toHaveBeenCalledOnce();
-    const [sqlArg] = mocks.mockExecute.mock.calls[0] as [{ queryChunks?: unknown[] }];
-    expect(JSON.stringify(sqlArg)).toContain("set_config");
   });
 
-  it("orgId null 이면 set_config 미실행", async () => {
-    const { db, mocks } = makeTx();
+  it("라우팅은 호출 시점 ALS 상태로 동적 결정", async () => {
+    const als = new TenantAls();
+    const base = makeDb("base");
+    const tx = makeDb("tx");
+    const proxy = createTenantDb(base as never, als) as never as ReturnType<typeof makeDb>;
 
-    await withTenantContext(db as never, null, async () => "ok");
-
-    expect(mocks.mockTransaction).toHaveBeenCalledOnce();
-    expect(mocks.mockExecute).not.toHaveBeenCalled();
-  });
-
-  it("fn 리턴값을 그대로 반환", async () => {
-    const { db } = makeTx();
-
-    const result = await withTenantContext(db as never, ORG_ID, async () => ({ data: 42 }));
-
-    expect(result).toEqual({ data: 42 });
+    // 컨텍스트 밖: base
+    expect(await proxy.select().from().where()).toEqual([{ from: "base" }]);
+    // 컨텍스트 안: tx
+    await als.run({ orgId: "org-a", tx: tx as never }, async () => {
+      expect(await proxy.select().from().where()).toEqual([{ from: "tx" }]);
+    });
   });
 });
 
 describe("TenantAls", () => {
-  it("AsyncLocalStorage 인스턴스", async () => {
-    const { TenantAls } = await import("./tenant.js");
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { AsyncLocalStorage: ALS } = await import("node:async_hooks");
-    expect(new TenantAls()).toBeInstanceOf(ALS);
+  it("AsyncLocalStorage 인스턴스", () => {
+    expect(new TenantAls()).toBeInstanceOf(AsyncLocalStorage);
   });
 });

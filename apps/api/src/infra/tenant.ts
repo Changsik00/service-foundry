@@ -1,28 +1,36 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { NodePgDatabase } from "@repo/nestjs-database";
-import { sql } from "drizzle-orm";
 
 export const TENANT_ALS = Symbol("TENANT_ALS");
 
+/** 요청 스코프 테넌트 컨텍스트. `tx` 가 있으면 해당 요청의 모든 쿼리가 그 트랜잭션으로 라우팅된다. */
 export interface TenantContext {
   orgId: string | null;
+  /** 요청 스코프 트랜잭션(= SET LOCAL app.current_org 가 적용된 커넥션). 없으면 pool 기본 경로. */
+  tx?: NodePgDatabase<Record<string, unknown>>;
 }
 
 export class TenantAls extends AsyncLocalStorage<TenantContext> {}
 
 /**
- * Drizzle 트랜잭션 내에서 SET LOCAL app.current_org 를 실행한 뒤 fn 을 호출한다.
- * 트랜잭션 종료 시 SET LOCAL 은 자동 해제 — 커넥션 풀 오염 없음.
+ * `db` 를 ALS 인지(tenant-aware) Proxy 로 감싼다.
+ *
+ * 요청 처리 중 ALS store 에 `tx` 가 있으면(= TenantContextInterceptor 가 org 컨텍스트로 연 트랜잭션)
+ * 모든 쿼리(select/insert/update/delete/execute/transaction…)를 그 `tx` 로 라우팅한다.
+ * 없으면 원본 pool `db` 로 위임한다. → 서비스 코드 수정 없이 "모든 쿼리에 RLS 컨텍스트 자동 적용".
  */
-export async function withTenantContext<T>(
-  db: NodePgDatabase<Record<string, unknown>>,
-  orgId: string | null,
-  fn: (tx: NodePgDatabase<Record<string, unknown>>) => Promise<T>,
-): Promise<T> {
-  return db.transaction(async (tx) => {
-    if (orgId) {
-      await tx.execute(sql`SELECT set_config('app.current_org', ${orgId}, true)`);
-    }
-    return fn(tx);
+export function createTenantDb<TSchema extends Record<string, unknown>>(
+  baseDb: NodePgDatabase<TSchema>,
+  als: TenantAls,
+): NodePgDatabase<TSchema> {
+  return new Proxy(baseDb, {
+    get(target, prop, _receiver) {
+      const tx = als.getStore()?.tx as NodePgDatabase<TSchema> | undefined;
+      const active: NodePgDatabase<TSchema> = tx ?? target;
+      const value = Reflect.get(active as object, prop, active);
+      return typeof value === "function"
+        ? (value as (...args: unknown[]) => unknown).bind(active)
+        : value;
+    },
   });
 }
