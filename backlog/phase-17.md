@@ -56,7 +56,7 @@ phase-03~16 에서 인증(native/OAuth/MFA/passkey)·보안·CI/CD·서비스 �
 | `spec-17-04` | personal-workspace-provisioning | P? | Merged | `specs/spec-17-04-personal-workspace-provisioning/` |
 | `spec-17-05` | active-org-token-claims-and-switch | P? | Merged | `specs/spec-17-05-active-org-token-claims-and-switch/` |
 | `spec-17-06` | org-invite-accept-flow | P? | Merged | `specs/spec-17-06-org-invite-accept-flow/` |
-| `spec-17-07` | tenant-isolation-enforcement | P? | Active | `specs/spec-17-07-tenant-isolation-enforcement/` |
+| `spec-17-07` | tenant-isolation-enforcement | P? | Merged | `specs/spec-17-07-tenant-isolation-enforcement/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
