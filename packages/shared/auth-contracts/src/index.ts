@@ -142,3 +142,9 @@ export type InvitationRow = z.output<typeof InvitationRow>;
 
 export const OrgSwitchInput = z.object({ orgId: Uuid });
 export type OrgSwitchInput = z.output<typeof OrgSwitchInput>;
+
+export const OrgInviteInput = z.object({ email: Email, role: InviteRole });
+export type OrgInviteInput = z.output<typeof OrgInviteInput>;
+
+export const OrgInviteAcceptInput = z.object({ token: Token });
+export type OrgInviteAcceptInput = z.output<typeof OrgInviteAcceptInput>;
