@@ -16,10 +16,14 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-service_foundry_dev}
+      # 비-슈퍼유저 런타임 role 비밀번호 (spec-17-07, initdb 스크립트가 사용).
+      APP_RUNTIME_PASSWORD: ${APP_RUNTIME_PASSWORD:-app_runtime_dev}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      # 최초 init 시 app_runtime role 생성 (GRANT 는 db:migrate 가 적용).
+      - ./initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-service_foundry_dev}"]
       interval: 5s

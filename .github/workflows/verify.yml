@@ -17,8 +17,10 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     env:
-      # apps/api e2e('real PG') + drizzle migrate 용. 테스트 기본 DATABASE_URL 과 일치.
-      DATABASE_URL: postgres://postgres:test@localhost:5434/test
+      # 런타임 접속 = 비-슈퍼유저 app_runtime (RLS 테넌트 격리 적용 대상, spec-17-07).
+      DATABASE_URL: postgres://app_runtime:test@localhost:5434/test
+      # 마이그레이션/시드 = owner postgres (RLS 우회 필요).
+      DATABASE_MIGRATE_URL: postgres://postgres:test@localhost:5434/test
     services:
       postgres:
         image: postgres:16-alpine
@@ -52,6 +54,11 @@ jobs:
       # 무거운 test 앞에서 구조 결함을 빠르게 차단 (spec-15-01, phase-14 성공기준5 보강).
       - name: Dead code + boundary gate (knip + depcruise)
         run: pnpm turbo run knip depcruise
+
+      # 런타임 role 을 LOGIN+비밀번호로 사전 생성 — migrate 의 0012(CREATE ROLE IF NOT EXISTS)는
+      # 이미 존재하므로 NOLOGIN 으로 덮지 않고 GRANT 만 적용한다. CI DB 는 매 실행 fresh.
+      - name: Provision app_runtime role (login)
+        run: psql "$DATABASE_MIGRATE_URL" -c "CREATE ROLE app_runtime LOGIN PASSWORD 'test'"
 
       - name: DB migrate (apps/api)
         run: pnpm --filter @apps/api db:migrate
