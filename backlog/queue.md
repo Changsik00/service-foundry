@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-17** — 멀티테넌시 Foundation + 이메일 어댑터 (Spine) — 4 spec — 다음: spec-17-04-personal-workspace-provisioning
+- **phase-17** — 멀티테넌시 Foundation + 이메일 어댑터 (Spine) — 7 spec — 다음: spec-17-07-tenant-isolation-enforcement
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -39,6 +39,9 @@
 - [ ] **configureApp SoT 에 applySecurity 흡수** (phase-15 2차회고 V1) — `app.setup.ts` 의 `configureApp` 가 requestId+cookieParser 만 캡슐화 → `main.ts` 의 `applySecurity`(helmet/CORS) 배선은 e2e 미검증(제거해도 GREEN, C1 과 동일 계열 갭). applySecurity 를 configureApp 에 흡수 + e2e 보안헤더 검증 추가. phase-16/spec-x 후보
 - [ ] **csrf.ts 주석 drift 정정** (phase-15 2차회고 V2) — `packages/backend/auth-rate-limit/src/csrf.ts:12,16` 주석이 폐기된 session-binding 전략을 설명. ADR-0021(csrf_id, session 비의존) 결정과 모순 → 주석 동기화. V1 과 함께 처리 응집적
 - [ ] **MFA 추가 factor: SMS/이메일 OTP** (2026-06-02) — 현재 MFA 는 TOTP(인증앱)+백업코드+passkey 만. `auth/mfa/totp` 네임스페이스는 다른 factor 여지를 둔 설계이나 미구현. SMS(twilio 등)/email OTP factor 는 **기능 추가**(보안 하드닝 phase-16 과 별개) → 별도 phase/spec 후보. 외부 의존(SMS provider)+비용·검증 흐름 설계 필요
+- [ ] **테넌트 쓰기 경로 RLS 강제 (spec-17-08 후보, 2026-06-07)** — spec-17-07 은 읽기 격리까지. 정책이 `WITH CHECK(true)` 라 INSERT/UPDATE 의 org_id 변조 미차단. invite-accept/provision 의 정당한 cross-org 쓰기 seam(context 승격) 설계 동반 필요. phase-19(인가) 전 처리 권장
+- [ ] **ADR `tenant-isolation-runtime-role-and-als-tx` 작성** (type: invariant, 2026-06-07) — phase-17 ship 시점. "앱은 비-슈퍼유저 role 접속 + RLS+요청스코프 SET 으로 격리 강제"
+- [ ] **운영 DB 풀 사이징 / pgbouncer 가이드** (2026-06-07) — spec-17-07 요청-스코프 tx 는 동시 인증 요청 수를 풀 크기로 제한. 운영 풀 상향 + 커넥션 풀러(tx 모드) 권장. infra phase(22) 후보
 - [ ] lat.md Phase 2 도입 평가 (지식 그래프 도구)
 - [ ] ARCHITECTURE.md 본체 재작성 (Phase 3 직전, ADR-0005 결정 후)
 

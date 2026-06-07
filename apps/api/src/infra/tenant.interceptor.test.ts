@@ -1,66 +1,58 @@
-import { AsyncLocalStorage } from "node:async_hooks";
-import { from, lastValueFrom } from "rxjs";
+import type { CallHandler, ExecutionContext } from "@nestjs/common";
+import { lastValueFrom, of } from "rxjs";
 import { describe, expect, it, vi } from "vitest";
-import { TenantContextInterceptor } from "./tenant.interceptor.js";
-import type { TenantContext } from "./tenant.js";
 
-function makeInterceptor(orgId: string | null) {
-  const als = new AsyncLocalStorage<TenantContext>();
-  const interceptor = new TenantContextInterceptor(als);
-  return { als, interceptor };
+import { TenantContextInterceptor } from "./tenant.interceptor.js";
+import { TenantAls, type TenantContext } from "./tenant.js";
+
+function makeCtx(user: { orgId: string | null } | undefined): ExecutionContext {
+  return {
+    switchToHttp: () => ({ getRequest: () => ({ user }) }),
+  } as unknown as ExecutionContext;
 }
 
-function makeCtx(orgId: string | null) {
-  return {
-    switchToHttp: () => ({
-      getRequest: () => ({ user: { sub: "u1", role: "user", orgId } }),
-    }),
-  };
+/** db.transaction(cb) → cb(mockTx). mockTx.execute 는 set_config 호출 기록용. */
+function makeDb() {
+  const execute = vi.fn().mockResolvedValue(undefined);
+  const mockTx = { execute, label: "tx" };
+  const transaction = vi
+    .fn()
+    .mockImplementation((cb: (tx: typeof mockTx) => Promise<unknown>) => cb(mockTx));
+  return { db: { db: { transaction }, pool: {} }, execute, transaction, mockTx };
 }
 
 describe("TenantContextInterceptor", () => {
-  it("orgId 있으면 ALS에 orgId 저장", async () => {
-    const { als, interceptor } = makeInterceptor(null);
-    const ctx = makeCtx("00000000-0000-0000-0000-000000000099");
+  it("orgId 있으면 tx 를 열고 set_config 발행 + 핸들러가 tx 바인딩된 ALS 를 본다", async () => {
+    const als = new TenantAls();
+    const { db, execute, transaction, mockTx } = makeDb();
+    const interceptor = new TenantContextInterceptor(als, db as never);
 
-    let captured: TenantContext | undefined;
-    const next = {
-      handle: () =>
-        from(
-          (async () => {
-            captured = als.getStore();
-            return "result";
-          })(),
-        ),
-    };
+    // 핸들러는 자신이 본 ALS store 를 그대로 방출 → 컨텍스트 주입을 직접 검증.
+    const handler: CallHandler = { handle: () => of(als.getStore()) };
 
-    // biome-ignore lint/suspicious/noExplicitAny: ExecutionContext mock
-    await lastValueFrom(interceptor.intercept(ctx as any, next as any));
+    const seen = (await lastValueFrom(
+      interceptor.intercept(makeCtx({ orgId: "org-a" }), handler),
+    )) as TenantContext;
 
-    expect(captured?.orgId).toBe("00000000-0000-0000-0000-000000000099");
+    expect(transaction).toHaveBeenCalledOnce();
+    expect(execute).toHaveBeenCalledOnce(); // set_config
+    expect(seen.orgId).toBe("org-a");
+    expect(seen.tx).toBe(mockTx);
   });
 
-  it("user 없으면 orgId=null로 ALS 저장", async () => {
-    const als = new AsyncLocalStorage<TenantContext>();
-    const interceptor = new TenantContextInterceptor(als);
-    const ctx = {
-      switchToHttp: () => ({ getRequest: () => ({ user: undefined }) }),
-    };
+  it("orgId 없으면 tx 미개시 + 핸들러는 context NULL 을 본다", async () => {
+    const als = new TenantAls();
+    const { db, transaction } = makeDb();
+    const interceptor = new TenantContextInterceptor(als, db as never);
 
-    let captured: TenantContext | undefined;
-    const next = {
-      handle: () =>
-        from(
-          (async () => {
-            captured = als.getStore();
-            return "result";
-          })(),
-        ),
-    };
+    const handler: CallHandler = { handle: () => of(als.getStore()) };
 
-    // biome-ignore lint/suspicious/noExplicitAny: ExecutionContext mock
-    await lastValueFrom(interceptor.intercept(ctx as any, next as any));
+    const seen = (await lastValueFrom(
+      interceptor.intercept(makeCtx(undefined), handler),
+    )) as TenantContext;
 
-    expect(captured?.orgId).toBeNull();
+    expect(transaction).not.toHaveBeenCalled();
+    expect(seen.orgId).toBeNull();
+    expect(seen.tx).toBeUndefined();
   });
 });

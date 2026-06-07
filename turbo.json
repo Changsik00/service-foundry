@@ -22,7 +22,8 @@
     "test": {
       "dependsOn": ["^build"],
       "outputs": [],
-      "inputs": ["$TURBO_DEFAULT$", "../../packages/config/vitest-config/**"]
+      "inputs": ["$TURBO_DEFAULT$", "../../packages/config/vitest-config/**"],
+      "env": ["DATABASE_URL", "DATABASE_MIGRATE_URL"]
     },
     "test:coverage": {
       "dependsOn": ["^build"],
