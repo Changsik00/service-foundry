@@ -18,6 +18,8 @@ import {
 } from "@repo/backend-database";
 
 export type { CreateDatabaseOptions, Database, NodePgDatabase } from "@repo/backend-database";
+// 값 re-export: infra/테스트가 raw pool/factory 가 필요할 때 backend-database 직접 의존 없이 사용.
+export { createDatabase, shutdown } from "@repo/backend-database";
 
 export const DATABASE = Symbol("DATABASE");
 
