@@ -29,12 +29,15 @@ describe("Tenant isolation (real PG, RLS DB-level)", () => {
   let runtime: Pool; // 앱 런타임 role — RLS 적용 대상
 
   beforeAll(async () => {
-    owner = createDatabase({ connectionUrl: MIGRATE_URL, schema: {} }).pool;
-    runtime = createDatabase({ connectionUrl: RUNTIME_URL, schema: {} }).pool;
+    // 작은 풀 — 병렬 e2e 와 Postgres 커넥션 경합 최소화 (이 파일은 raw SQL 만 사용).
+    owner = createDatabase({ connectionUrl: MIGRATE_URL, schema: {}, poolSize: 2 }).pool;
+    runtime = createDatabase({ connectionUrl: RUNTIME_URL, schema: {}, poolSize: 2 }).pool;
     await owner.query("DELETE FROM failed_logins WHERE account_key = $1", [MARK]);
+    // IP 는 TEST-NET(RFC 5737) — supertest 의 127.0.0.1 과 충돌하지 않게 하여 rate-limit
+    // IP 윈도우 카운트 오염(엉뚱한 lockout)을 방지한다. account_key 도 고유 마커.
     await owner.query(
       "INSERT INTO failed_logins (ip, account_key, org_id) VALUES ($1,$2,$3),($1,$2,$4)",
-      ["127.0.0.1", MARK, ORG_A, ORG_B],
+      ["198.51.100.7", MARK, ORG_A, ORG_B],
     );
   });
 

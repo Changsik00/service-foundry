@@ -33,6 +33,9 @@ const tenantAls = new TenantAls();
     DatabaseModule.forRoot({
       connectionUrl: settings.DATABASE_URL,
       schema: appSchema,
+      // 테스트: 병렬 e2e 파일이 각자 풀을 띄우므로 풀을 작게 잡아 Postgres 커넥션 고갈을 막는다
+      // (요청 스코프 tx 가 커넥션을 점유하므로 더 민감 — spec-17-07). 운영은 기본값 사용.
+      ...(settings.NODE_ENV === "test" ? { poolSize: 3 } : {}),
       wrapDb: (db) => createTenantDb(db, tenantAls),
     }),
     BackendThrottlerModule.forRoot(),
