@@ -92,6 +92,13 @@
       "when": 1780752100000,
       "tag": "0012_app_runtime_role",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1780752200000,
+      "tag": "0013_rls_scope_domain_only",
+      "breakpoints": true
     }
   ]
 }
