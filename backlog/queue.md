@@ -14,6 +14,7 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
+- [ ] spec-x-tenant-isolation-hardening — tenant-isolation-hardening
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
