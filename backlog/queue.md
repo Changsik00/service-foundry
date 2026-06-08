@@ -14,7 +14,6 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
-- [ ] spec-x-tenant-isolation-hardening — tenant-isolation-hardening
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -131,6 +130,7 @@
 - **phase-14** — Quality Hardening + CI/CD — completed 2026-06-01
 - **phase-15** — Security & Wiring Hardening — completed 2026-06-02
 - **phase-16** — Security Hardening II — completed 2026-06-02
+- [x] spec-x-tenant-isolation-hardening (완료)
 <!-- sdd:done:end -->
 
 ---
