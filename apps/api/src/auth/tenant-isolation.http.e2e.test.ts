@@ -1,5 +1,7 @@
 import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
+import { hashToken } from "@repo/backend-auth-session";
+import { createDatabase } from "@repo/nestjs-database";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -30,6 +32,8 @@ function extractCookie(setCookieHeader: string | string[] | undefined, name: str
 describe("Tenant isolation via real HTTP (guard→interceptor→RLS)", () => {
   let app: INestApplication;
   let server: ReturnType<INestApplication["getHttpServer"]>;
+  // 시드/조회용 owner pool (RLS 우회) — invitations 직접 시드.
+  let owner: ReturnType<typeof createDatabase>["pool"];
 
   async function bootstrapCsrf(): Promise<{ token: string; idCookie: string }> {
     const res = await request(server).get("/auth/csrf");
@@ -39,19 +43,38 @@ describe("Tenant isolation via real HTTP (guard→interceptor→RLS)", () => {
     };
   }
 
-  /** signup(고유 email) → { accessToken, userId }. 각 signup 은 개인 org + owner 멤버십 생성. */
-  async function signup(email: string): Promise<{ accessToken: string; userId: string }> {
+  /** CsrfGuard 보호 POST 호출 (fresh CSRF 부트스트랩 + optional Bearer). */
+  async function postCsrf(
+    path: string,
+    opts: { body?: object; bearer?: string } = {},
+  ): Promise<request.Response> {
     const { token, idCookie } = await bootstrapCsrf();
-    const res = await request(server)
-      .post("/auth/signup")
-      .set("X-Csrf-Token", token)
-      .set("Cookie", idCookie)
-      .send({ email, password: "Passw0rd!123" });
+    let r = request(server).post(path).set("X-Csrf-Token", token).set("Cookie", idCookie);
+    if (opts.bearer) r = r.set("Authorization", `Bearer ${opts.bearer}`);
+    return r.send(opts.body ?? {});
+  }
+
+  /** signup(고유 email) → { accessToken, userId, email }. 각 signup 은 개인 org + owner 멤버십 생성. */
+  async function signup(email: string): Promise<{
+    accessToken: string;
+    userId: string;
+    email: string;
+  }> {
+    const res = await postCsrf("/auth/signup", { body: { email, password: "Passw0rd!123" } });
     expect(res.status).toBe(201);
-    return { accessToken: res.body.accessToken as string, userId: res.body.user.id as string };
+    return {
+      accessToken: res.body.accessToken as string,
+      userId: res.body.user.id as string,
+      email,
+    };
   }
 
   beforeAll(async () => {
+    owner = createDatabase({
+      connectionUrl: process.env.DATABASE_MIGRATE_URL ?? process.env.DATABASE_URL ?? "",
+      schema: {},
+      poolSize: 2,
+    }).pool;
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication({ logger: false });
     configureApp(app, { corsOrigin: "http://localhost:2027" });
@@ -61,6 +84,7 @@ describe("Tenant isolation via real HTTP (guard→interceptor→RLS)", () => {
 
   afterAll(async () => {
     if (app) await app.close();
+    if (owner) await owner.end();
   });
 
   it("org A 토큰의 GET /auth/org/members 는 org A 멤버만 보이고 org B 는 차단된다", async () => {
@@ -76,5 +100,44 @@ describe("Tenant isolation via real HTTP (guard→interceptor→RLS)", () => {
     const memberUserIds = (res.body.members as { userId: string }[]).map((m) => m.userId);
     expect(memberUserIds).toContain(a.userId); // 자기 org 는 보임
     expect(memberUserIds).not.toContain(b.userId); // 타 org 는 차단 (현재 RED — 컨텍스트 미설정)
+  });
+
+  it("org A 가 B 를 초대 → B 가 accept → B 가 org A 멤버가 된다 (cross-org, 시스템 컨텍스트 C-4)", async () => {
+    const stamp = Date.now();
+    const a = await signup(`inv-a-${stamp}@example.com`);
+    const b = await signup(`inv-b-${stamp}@example.com`);
+
+    // org A id 조회 (owner — RLS 우회).
+    const orgRes = await owner.query<{ org_id: string }>(
+      "SELECT org_id FROM memberships WHERE user_id = $1 LIMIT 1",
+      [a.userId],
+    );
+    const orgA = orgRes.rows[0]?.org_id;
+    expect(orgA).toBeTruthy();
+
+    // 초대 시드: org A 가 B 의 email 을 초대 (알려진 토큰 — 실행마다 고유).
+    const token = `invtok-${stamp}-${"x".repeat(20)}`;
+    await owner.query(
+      `INSERT INTO invitations (org_id, email, token_hash, role, invited_by, expires_at)
+       VALUES ($1, $2, $3, 'member', $4, now() + interval '1 day')`,
+      [orgA, b.email, hashToken(token), a.userId],
+    );
+
+    // B 가 수락 — B 의 컨텍스트(org B)로는 org A invitation 이 RLS 에 가리지만 시스템 컨텍스트로 처리.
+    const acceptRes = await postCsrf("/auth/org/invite/accept", {
+      bearer: b.accessToken,
+      body: { token },
+    });
+    expect(acceptRes.status).toBe(200);
+    expect(acceptRes.body.accessToken).toBeTruthy();
+
+    // 수락 토큰(activeOrgId=org A)으로 members 조회 → B 가 org A 멤버로 보인다.
+    const members = await request(server)
+      .get("/auth/org/members")
+      .set("Authorization", `Bearer ${acceptRes.body.accessToken}`);
+    expect(members.status).toBe(200);
+    const ids = (members.body.members as { userId: string }[]).map((m) => m.userId);
+    expect(ids).toContain(b.userId);
+    expect(ids).toContain(a.userId); // 같은 org A 의 owner(A)도 함께 보임
   });
 });

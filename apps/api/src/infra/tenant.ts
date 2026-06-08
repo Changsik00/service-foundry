@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { NodePgDatabase } from "@repo/nestjs-database";
+import { sql } from "drizzle-orm";
 
 export const TENANT_ALS = Symbol("TENANT_ALS");
 
@@ -33,4 +34,25 @@ export function createTenantDb<TSchema extends Record<string, unknown>>(
         : value;
     },
   });
+}
+
+/**
+ * 현재 요청의 트랜잭션 안에서 테넌트 컨텍스트를 **일시적으로 비워(system context)** fn 을 실행한다.
+ *
+ * 토큰 기반 invite accept 처럼 *정당한 cross-org* 조회/쓰기에 사용한다 — 수락자의 org 컨텍스트로는
+ * 초대 org 의 invitation 이 RLS 에 가려 보이지 않기 때문(spec-17-08 C-4). 같은 tx 안에서
+ * set_config 만 토글하므로 원자성은 유지된다. 요청 tx 가 없으면(이미 무컨텍스트) 그대로 실행.
+ */
+export async function runWithSystemTenant<T>(als: TenantAls, fn: () => Promise<T>): Promise<T> {
+  const store = als.getStore();
+  const tx = store?.tx;
+  if (!tx) return fn();
+  await tx.execute(sql`SELECT set_config('app.current_org', '', true)`);
+  try {
+    return await fn();
+  } finally {
+    if (store?.orgId) {
+      await tx.execute(sql`SELECT set_config('app.current_org', ${store.orgId}, true)`);
+    }
+  }
 }

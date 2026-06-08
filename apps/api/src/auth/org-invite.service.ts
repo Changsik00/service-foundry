@@ -6,7 +6,7 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { signAccessToken } from "@repo/backend-auth-jwt";
+import { ACTIVE_ORG_CLAIM, ORG_ROLE_CLAIM, signAccessToken } from "@repo/backend-auth-jwt";
 import { generateRefreshToken, hashToken } from "@repo/backend-auth-session";
 import { buildInvitationEmail, type Notifier } from "@repo/backend-notification";
 import { DATABASE, type Database } from "@repo/nestjs-database";
@@ -15,6 +15,8 @@ import { and, eq } from "drizzle-orm";
 import { invitations } from "../infra/schema/invitations.js";
 import { memberships } from "../infra/schema/memberships.js";
 import { organizations } from "../infra/schema/organizations.js";
+import { users } from "../infra/schema/users.js";
+import { runWithSystemTenant, TENANT_ALS, type TenantAls } from "../infra/tenant.js";
 import { JwtService } from "../jwt/jwt.service.js";
 import { NOTIFIER } from "../notification/notifier.provider.js";
 import { FRONTEND_URL } from "./frontend-url.token.js";
@@ -28,6 +30,7 @@ export class OrgInviteService {
     @Inject(JWT_SIGN_OPTIONS) private readonly jwtOpts: JwtSignOptions,
     @Inject(NOTIFIER) private readonly notifier: Notifier,
     @Inject(FRONTEND_URL) private readonly frontendUrl: string,
+    @Inject(TENANT_ALS) private readonly als: TenantAls,
   ) {}
 
   async invite(
@@ -69,28 +72,55 @@ export class OrgInviteService {
 
   async accept(userId: string, token: string): Promise<{ accessToken: string }> {
     const tokenHash = hashToken(token);
-    const [invitation] = await this.database.db
-      .select()
-      .from(invitations)
-      .where(eq(invitations.tokenHash, tokenHash));
 
-    if (!invitation) throw new NotFoundException("invitation not found");
-    if (invitation.expiresAt < new Date()) throw new GoneException("invitation expired");
-    if (invitation.acceptedAt) throw new ConflictException("invitation already accepted");
+    // 초대는 *수락자의* org 가 아닌 *초대한* org 소유 → 수락자 컨텍스트로는 RLS 에 가린다.
+    // 토큰 자체가 인가이므로 시스템 컨텍스트로 조회/쓰기한다 (같은 tx → 원자성 유지, C-4).
+    const accepted = await runWithSystemTenant(this.als, async () => {
+      const [invitation] = await this.database.db
+        .select()
+        .from(invitations)
+        .where(eq(invitations.tokenHash, tokenHash));
 
-    await this.database.db.insert(memberships).values({
-      userId,
-      orgId: invitation.orgId,
-      role: invitation.role,
+      if (!invitation) throw new NotFoundException("invitation not found");
+      if (invitation.expiresAt < new Date()) throw new GoneException("invitation expired");
+      if (invitation.acceptedAt) throw new ConflictException("invitation already accepted");
+
+      // C-5: 토큰-이메일 바인딩 — 초대 대상 이메일과 수락 유저 이메일이 일치해야 한다.
+      const [user] = await this.database.db
+        .select({ email: users.email, role: users.role })
+        .from(users)
+        .where(eq(users.id, userId));
+      if (!user || user.email !== invitation.email) {
+        throw new ForbiddenException("invitation email mismatch");
+      }
+
+      // C-5: 멤버십 중복 거부 (unique idx 보강 — 명확한 409).
+      const [existing] = await this.database.db
+        .select({ id: memberships.id })
+        .from(memberships)
+        .where(and(eq(memberships.userId, userId), eq(memberships.orgId, invitation.orgId)));
+      if (existing) throw new ConflictException("already a member of this org");
+
+      await this.database.db.insert(memberships).values({
+        userId,
+        orgId: invitation.orgId,
+        role: invitation.role,
+      });
+      await this.database.db
+        .update(invitations)
+        .set({ acceptedAt: new Date() })
+        .where(eq(invitations.id, invitation.id));
+
+      return { orgId: invitation.orgId, orgRole: invitation.role, userRole: user.role };
     });
 
-    await this.database.db
-      .update(invitations)
-      .set({ acceptedAt: new Date() })
-      .where(eq(invitations.id, invitation.id));
-
     const accessToken = await signAccessToken(
-      { sub: userId, activeOrgId: invitation.orgId, orgRole: invitation.role },
+      {
+        sub: userId,
+        role: accepted.userRole,
+        [ACTIVE_ORG_CLAIM]: accepted.orgId,
+        [ORG_ROLE_CLAIM]: accepted.orgRole,
+      },
       this.jwtService.getKeyStore(),
       { issuer: this.jwtOpts.issuer, audience: this.jwtOpts.audience },
     );
