@@ -36,6 +36,7 @@ import { CSRF_SECRET, CsrfGuard } from "./csrf.guard.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import { MfaService } from "./mfa.service.js";
 import { OrgInviteService } from "./org-invite.service.js";
+import { type OrgMember, OrgMembersService } from "./org-members.service.js";
 import { OrgSwitchService } from "./org-switch.service.js";
 import { PasswordResetService } from "./password-reset.service.js";
 import { SigninService } from "./signin.service.js";
@@ -77,6 +78,7 @@ export class AuthController {
     @Inject(SignupService) private readonly signupService: SignupService,
     @Inject(OrgSwitchService) private readonly orgSwitchService: OrgSwitchService,
     @Inject(OrgInviteService) private readonly orgInviteService: OrgInviteService,
+    @Inject(OrgMembersService) private readonly orgMembersService: OrgMembersService,
     @Inject(AuthEventBus) private readonly eventBus: AuthEventBus,
     @Inject(AUTH_METRICS) private readonly metrics: AuthMetrics,
     @Optional() @Inject(MfaService) private readonly mfaService: MfaService | undefined,
@@ -293,5 +295,13 @@ export class AuthController {
   ): Promise<{ accessToken: string }> {
     const { token } = zodPipe(OrgInviteAcceptInput).transform(body);
     return this.orgInviteService.accept(user.sub, token);
+  }
+
+  /** active org 의 멤버 목록 — RLS 가 자동 스코프(spec-17-08 격리 검증 표면). */
+  @Get("org/members")
+  @UseGuards(AuthGuard)
+  @HttpCode(200)
+  async orgMembers(@CurrentUser() _user: AuthenticatedUser): Promise<{ members: OrgMember[] }> {
+    return { members: await this.orgMembersService.list() };
   }
 }
