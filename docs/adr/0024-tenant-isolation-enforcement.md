@@ -28,7 +28,7 @@ phase-17 초기 구현은 둘 다 놓쳤다: 앱이 `postgres` 슈퍼유저로 �
 
 - **긍정**: 격리가 운영 경로에서 실제로 강제됨. 클레임 표류·거짓 GREEN 재발 차단. 인증 인프라가 컨텍스트와 무관하게 동작(세션/로그인 회귀 없음).
 - **부정**: 인증 요청이 요청-스코프 tx 로 커넥션을 점유 → 동시 인증요청 수가 풀 크기에 제한(운영은 풀 상향 + pgbouncer tx 모드 권장). 배포 시 `app_runtime` role·비밀번호 프로비저닝 필요.
-- **중립**: 쓰기 경로 강제(`WITH CHECK org_id 일치`)는 본 ADR 범위 밖(읽기 격리까지) — 후속.
+- **쓰기 강제(후속 반영)**: 도메인 테이블 정책에 `WITH CHECK (org_id = 컨텍스트)` 적용(0014) — 컨텍스트 NULL/빈문자열(시스템 컨텍스트)은 허용. 부팅 시 `pg_roles.rolsuper` 확인으로 production 슈퍼유저 런타임 거부(`superuser-guard.provider.ts`). (spec-x-tenant-isolation-hardening)
 
 ## 🔀 Alternatives
 
@@ -38,7 +38,7 @@ phase-17 초기 구현은 둘 다 놓쳤다: 앱이 `postgres` 슈퍼유저로 �
 
 ## 📌 Status
 
-Accepted (2026-06-08, spec-17-08 머지 시점). 첫 사용자: `apps/api` (auth/org 도메인).
+Accepted (2026-06-08, spec-17-08 머지 시점). 첫 사용자: `apps/api` (auth/org 도메인). 쓰기 강제 + 부팅 슈퍼유저 가드는 spec-x-tenant-isolation-hardening 에서 보강.
 
 ## 🔗 Related
 
