@@ -1,91 +1,49 @@
 # Walkthrough: spec-x-tenant-isolation-hardening
 
-> 본 문서는 *작업 기록* 입니다. 결정 과정, 사용자 협의, 검증 결과를 미래의 자신과 리뷰어에게 남깁니다.
-> 작업을 진행하는 동안 *지속적으로* 갱신하세요. 마지막에 한 번에 작성하지 마세요.
+> phase-17 격리 부채(W-2/W-5/W-6) 마무리.
 
 ## 📌 결정 기록
 
-> 작업 중 이슈가 발생했을 때, 어떤 선택지가 있었고 왜 이 방향을 결정했는지 기록합니다.
-
 | 이슈 | 선택지 | 결정 | 이유 |
 |---|---|---|---|
-| <이슈 1> | A 또는 B | A | <이유> |
-
-### ADR 승격 가이드
-
-> 위 결정 중 *cross-spec / long-lived* 인 것이 있다면 ADR 로 승격합니다 (constitution §6.3).
->
-> 승격 기준:
-> - 다른 spec 의 작업이 본 결정에 의존하는가?
-> - 6 개월 이상 유지될 가능성이 높은가?
-> - frontmatter `type:` 어휘 (`decision` / `invariant` / `convention` / `tradeoff`) 중 하나에 해당하는가?
->
-> 셋 중 둘 이상이면 ADR 후보. 비강제 — 미체크여도 ship 차단 없음.
-
-- [ ] ADR 승격 대상 있음 → 작성됨: `docs/decisions/ADR-<NNN>-<slug>.md`
-- [ ] 없음
+| 쓰기 강제(W-2) | 앱 레이어 필터 / **RLS WITH CHECK** | **WITH CHECK** | 읽기(USING)와 대칭, SoT 단일 |
+| 시스템 쓰기 호환 | 정책 분기 / **NULL 컨텍스트 허용** | NULL/빈문자열 허용 | provision/invite accept(runWithSystemTenant) 회귀 0 |
+| 슈퍼유저 가드(W-5) | username 휴리스틱 / **DB rolsuper** | **부팅 시 `SELECT rolsuper`** | DB 사실 기반 정확. BYPASSRLS/타 슈퍼유저 포착 |
+| W-6 | 신규 테스트 추가 / **기존 확인** | **기존 충분 — 추가 안 함** | 어댑터 happy+error 경로 이미 테스트됨 |
 
 ## 💬 사용자 협의
-
-> 사용자와 논의한 내용과 합의 사항을 기록합니다.
-
-- **주제**: <논의 주제>
-  - **사용자 의견**: <사용자가 제시한 방향>
-  - **합의**: <최종 합의 내용>
+- **주제**: phase-17 격리 잔여 마무리 구조
+  - **합의**: B(격리 잔여) 우선, **1개 spec-x 번들**로 3건 한 번에
 
 ## 🧪 검증 결과
 
-### 1. 자동화 테스트
+### 자동화 테스트 (Integration Test Required = yes)
+- **명령**: `DATABASE_URL=<app_runtime> DATABASE_MIGRATE_URL=<owner> pnpm --filter @apps/api test`
+- **결과**: ✅ 146 tests / 23 files (fresh DB)
+- **핵심 신규**: 쓰기 격리 e2e(ctx=A → org_id=B INSERT 거부, org_id=A 허용) · SuperuserGuard(3)
 
-#### 단위 테스트
-- **명령**: `<프로젝트의 단위 테스트 명령>`
-- **결과**: ✅ Passed (X tests in Y.Y s) / ❌ Failed (자세한 내용 아래)
-- **로그 요약**:
-```text
-(핵심 로그 붙여넣기)
-```
+### 전체 게이트 (CI 조건 — fresh DB)
+- `pnpm turbo run knip depcruise lint typecheck test build` → ✅ **137 tasks GREEN**
 
-#### 통합 테스트 (Integration Test Required = yes 인 경우)
-- **명령**: `<프로젝트의 통합 테스트 명령>`
-- **결과**: ✅ Passed / ❌ Failed
-- **로그 요약**:
-```text
-(핵심 로그 붙여넣기)
-```
-
-### 2. 수동 검증
-
-> 에이전트가 실행한 단계와 결과를 시간순으로 기록.
-
-1. **Action**: `<실행한 명령 또는 행동>`
-   - **Result**: <관찰된 결과>
+### 수동 검증 (회고 항목별)
+1. **W-2**: ctx=A INSERT org_id=B → **rejected**(WITH CHECK). org_id=A → ok. provision/invite accept(시스템 컨텍스트) 회귀 0.
+2. **W-5**: production + rolsuper → 기동 거부(단위). non-prod 미검사.
+3. **W-6**: `createResendNotifier` 의 SDK 호출 + error→throw 경로 **이미 테스트됨**(`notification/index.test.ts`). 진짜 live-send 는 실 키·인박스 필요라 자동화 불가 — 한계 명시로 종결.
 
 ## 🔍 발견 사항
+- W-6 은 spec-17-01 시점에 이미 충분히 테스트돼 있어 추가 작업 불필요(중복 회피).
+- 쓰기 강제 후에도 invite accept(cross-org membership 삽입)가 `runWithSystemTenant`(NULL 컨텍스트)로 통과 — 설계가 맞물려 회귀 0.
 
-<!-- 작업 중 발견한 흥미로운 점, 사이드 이슈, 다음 SPEC 후보 -->
+## 🚧 이월 항목
+- 쓰기 강제는 도메인 3테이블까지. provider 모드(phase-18) 쓰기는 그 phase 에서.
 
-- <발견 1>
-- <발견 2>
-
-## 🚧 이월 항목 (Optional)
-
-> 본 SPEC 범위를 벗어나 다음 작업으로 미룬 항목.
-
-- <항목 1> → `backlog/queue.md` 에 추가됨
-
-## 🔗 관련 문서 (Related)
-
-<!-- [[wikilinks]] 로 연결. 실제 파일 경로: docs/wiki/, docs/decisions/, docs/rca/ -->
-<!-- 예: [[wiki/decisions]], [[ADR-001]], [[RCA-001]], [[spec-19-01]] -->
-
-- 관련 wiki:
-- 관련 ADR:
-- 관련 RCA:
+## 🔗 관련 문서
+- ADR: `docs/adr/0024-tenant-isolation-enforcement.md` (쓰기 강제·부팅 가드 보강 반영)
+- 회고: `docs/review/2026-06-08-phase-17-review.md` (W-2/W-5/W-6)
 
 ## 📅 메타
-
 | 항목 | 값 |
 |---|---|
-| **작성자** | Agent + <user> |
-| **작성 기간** | YYYY-MM-DD ~ YYYY-MM-DD |
-| **최종 commit** | `<short hash>` |
+| 작성자 | Agent + dennis |
+| 작성 기간 | 2026-06-08 |
+| 최종 commit | (ship 시 갱신) |
