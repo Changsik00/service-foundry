@@ -11,7 +11,8 @@ import { AuthModule } from "./auth/auth.module.js";
 import { HealthController } from "./health/health.controller.js";
 import { appSchema } from "./infra/schema/index.js";
 import { TenantContextInterceptor } from "./infra/tenant.interceptor.js";
-import { createTenantDb, TENANT_ALS, TenantAls } from "./infra/tenant.js";
+import { createTenantDb } from "./infra/tenant.js";
+import { TenantModule, tenantAls } from "./infra/tenant.module.js";
 import { JwtModule } from "./jwt/jwt.module.js";
 import { JwtService } from "./jwt/jwt.service.js";
 import { LifecycleModule } from "./lifecycle/lifecycle.module.js";
@@ -21,12 +22,9 @@ import { type AppSettings, loadSettings } from "./settings.js";
 
 const settings: AppSettings = loadSettings(process.env);
 
-// 요청 스코프 테넌트 컨텍스트(ALS). DATABASE.db 를 이 ALS 인지 proxy 로 감싸,
-// org 컨텍스트로 열린 트랜잭션이 있으면 모든 쿼리를 거기로 라우팅한다 (spec-17-07).
-const tenantAls = new TenantAls();
-
 @Module({
   imports: [
+    TenantModule,
     BackendSettingsModule.forRoot(loadSettings),
     BackendLoggerModule.forRoot({ level: settings.LOG_LEVEL }),
     HttpClientModule.forRoot({ baseUrl: settings.HTTP_CLIENT_BASE_URL }),
@@ -55,9 +53,6 @@ const tenantAls = new TenantAls();
     AuthModule,
   ],
   controllers: [HealthController],
-  providers: [
-    { provide: TENANT_ALS, useValue: tenantAls },
-    { provide: APP_INTERCEPTOR, useClass: TenantContextInterceptor },
-  ],
+  providers: [{ provide: APP_INTERCEPTOR, useClass: TenantContextInterceptor }],
 })
 export class AppModule {}

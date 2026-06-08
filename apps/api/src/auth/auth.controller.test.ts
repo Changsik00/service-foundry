@@ -10,6 +10,7 @@ import { AuthController } from "./auth.controller.js";
 import { CSRF_SECRET } from "./csrf.guard.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import { OrgInviteService } from "./org-invite.service.js";
+import { OrgMembersService } from "./org-members.service.js";
 import { OrgSwitchService } from "./org-switch.service.js";
 import { PasswordResetService } from "./password-reset.service.js";
 import { SigninService } from "./signin.service.js";
@@ -73,6 +74,10 @@ describe("AuthController", () => {
         {
           provide: OrgInviteService,
           useValue: { invite: vi.fn(), accept: vi.fn() },
+        },
+        {
+          provide: OrgMembersService,
+          useValue: { list: vi.fn() },
         },
         {
           provide: PasswordResetService,

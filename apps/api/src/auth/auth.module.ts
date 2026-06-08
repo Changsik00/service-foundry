@@ -24,6 +24,7 @@ import { OAuthController } from "./oauth.controller.js";
 import { OAuthService } from "./oauth.service.js";
 import { createDrizzleOAuthAccountStore, OAUTH_ACCOUNT_STORE } from "./oauth.stores.js";
 import { OrgInviteService } from "./org-invite.service.js";
+import { OrgMembersService } from "./org-members.service.js";
 import { OrgSwitchService } from "./org-switch.service.js";
 import { PasskeyController } from "./passkey.controller.js";
 import { PasskeyService } from "./passkey.service.js";
@@ -51,6 +52,7 @@ const settings: AppSettings = loadSettings(process.env);
     SignupService,
     OrgSwitchService,
     OrgInviteService,
+    OrgMembersService,
     ProvisionService,
     { provide: PROVISION_SERVICE, useExisting: ProvisionService },
     OAuthService,

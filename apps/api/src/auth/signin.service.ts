@@ -5,7 +5,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
-import { signAccessToken } from "@repo/backend-auth-jwt";
+import { ACTIVE_ORG_CLAIM, ORG_ROLE_CLAIM, signAccessToken } from "@repo/backend-auth-jwt";
 import { verifyPassword } from "@repo/backend-auth-password";
 import {
   checkRateLimit,
@@ -20,8 +20,10 @@ import {
   revokeSession as revokeSessionFn,
   rotateSession,
 } from "@repo/backend-auth-session";
-
+import { DATABASE, type Database } from "@repo/nestjs-database";
+import { and, eq } from "drizzle-orm";
 import type { UserRow } from "../infra/schema/index.js";
+import { memberships } from "../infra/schema/memberships.js";
 import { JwtService } from "../jwt/jwt.service.js";
 import { JWT_SIGN_OPTIONS, type JwtSignOptions } from "./jwt-sign.options.js";
 import { InjectUserStore, type UserStore } from "./password-reset.stores.js";
@@ -36,7 +38,25 @@ export class SigninService {
     @Inject(JwtService) private readonly jwtService: JwtService,
     @Inject(JWT_SIGN_OPTIONS) private readonly jwtOpts: JwtSignOptions,
     @InjectRateLimitStore() private readonly rateLimitStore: RateLimitStore,
+    @Inject(DATABASE) private readonly database: Database<Record<string, unknown>>,
   ) {}
+
+  /**
+   * 사용자의 home org(`users.org_id`) 클레임을 만든다. activeOrgId 는 테넌트 컨텍스트의
+   * SoT 이므로 반드시 포함되어야 한다(없으면 요청이 무컨텍스트가 됨, spec-17-08 C-2).
+   * orgRole 은 home org 멤버십 role(개인 워크스페이스는 owner).
+   */
+  private async orgClaims(user: UserRow): Promise<Record<string, string>> {
+    if (!user.orgId) return {};
+    const [m] = await this.database.db
+      .select({ role: memberships.role })
+      .from(memberships)
+      .where(and(eq(memberships.userId, user.id), eq(memberships.orgId, user.orgId)));
+    return {
+      [ACTIVE_ORG_CLAIM]: user.orgId,
+      ...(m ? { [ORG_ROLE_CLAIM]: m.role } : {}),
+    };
+  }
 
   async signIn(
     email: string,
@@ -70,7 +90,7 @@ export class SigninService {
 
     const { refreshToken } = await createSession(this.sessionStore, { userId: user.id });
     const accessToken = await signAccessToken(
-      { sub: user.id, role: user.role },
+      { sub: user.id, role: user.role, ...(await this.orgClaims(user)) },
       this.jwtService.getKeyStore(),
       { issuer: this.jwtOpts.issuer, audience: this.jwtOpts.audience },
     );
@@ -89,7 +109,7 @@ export class SigninService {
     if (!user) throw new UnauthorizedException("user not found");
 
     const accessToken = await signAccessToken(
-      { sub: user.id, role: user.role },
+      { sub: user.id, role: user.role, ...(await this.orgClaims(user)) },
       this.jwtService.getKeyStore(),
       { issuer: this.jwtOpts.issuer, audience: this.jwtOpts.audience },
     );

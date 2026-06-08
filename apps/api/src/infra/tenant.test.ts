@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { describe, expect, it } from "vitest";
 
-import { createTenantDb, TenantAls } from "./tenant.js";
+import { createTenantDb, runWithSystemTenant, TenantAls } from "./tenant.js";
 
 /** select().from().where() 체인을 흉내내는 최소 mock db. label 로 base/tx 를 구분. */
 function makeDb(label: string) {
@@ -47,6 +47,33 @@ describe("createTenantDb (ALS tx 라우팅 proxy)", () => {
     await als.run({ orgId: "org-a", tx: tx as never }, async () => {
       expect(await proxy.select().from().where()).toEqual([{ from: "tx" }]);
     });
+  });
+});
+
+describe("runWithSystemTenant", () => {
+  it("요청 tx 없으면 fn 그대로 실행", async () => {
+    const als = new TenantAls();
+    const result = await runWithSystemTenant(als, async () => "ok");
+    expect(result).toBe("ok");
+  });
+
+  it("tx 있으면 컨텍스트를 비웠다가 fn 후 원복", async () => {
+    const calls: string[] = [];
+    const tx = {
+      execute: async (q: unknown) => {
+        calls.push(JSON.stringify(q).includes("set_config") ? "set_config" : "other");
+      },
+    } as never;
+    const als = new TenantAls();
+    await als.run({ orgId: "org-a", tx }, async () => {
+      const seen = await runWithSystemTenant(als, async () => {
+        calls.push("fn");
+        return 1;
+      });
+      expect(seen).toBe(1);
+    });
+    // 비우기(set_config '') → fn → 원복(set_config org-a)
+    expect(calls).toEqual(["set_config", "fn", "set_config"]);
   });
 });
 

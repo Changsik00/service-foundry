@@ -17,13 +17,17 @@ const mockMembership = {
 };
 
 function makeDatabase(membership: typeof mockMembership | null = mockMembership) {
-  const mockWhere = vi.fn().mockResolvedValue(membership ? [membership] : []);
-  const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
-  const mockSelect = vi.fn().mockReturnValue({ from: mockFrom });
+  // select 순서: 1) memberships, 2) users(role).
+  let n = 0;
+  const mockSelect = vi.fn().mockImplementation(() => {
+    n++;
+    const rows = n === 1 ? (membership ? [membership] : []) : [{ role: "user" }];
+    return { from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(rows) }) };
+  });
 
   return {
     database: { db: { select: mockSelect } },
-    mocks: { mockSelect, mockFrom, mockWhere },
+    mocks: { mockSelect },
   };
 }
 
@@ -53,14 +57,13 @@ describe("OrgSwitchService", () => {
     await expect(service.switch(USER_ID, ORG_ID)).rejects.toThrow(ForbiddenException);
   });
 
-  it("멤버십 있음 → select WHERE userId + orgId로 조회", async () => {
+  it("멤버십 + 유저 role 조회(select 2회)", async () => {
     const { database, mocks } = makeDatabase();
     const service = new OrgSwitchService(database as never, jwtService, jwtOpts);
 
     await service.switch(USER_ID, ORG_ID);
 
-    expect(mocks.mockSelect).toHaveBeenCalledOnce();
-    expect(mocks.mockFrom).toHaveBeenCalledOnce();
-    expect(mocks.mockWhere).toHaveBeenCalledOnce();
+    // 1) memberships(인가) 2) users(role 클레임) — 가드가 role 을 요구하므로 토큰에 포함.
+    expect(mocks.mockSelect).toHaveBeenCalledTimes(2);
   });
 });

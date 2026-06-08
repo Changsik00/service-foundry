@@ -7,6 +7,7 @@ import {
 import { createInMemoryKeyStore } from "@repo/backend-auth-jwt";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { TenantAls } from "../infra/tenant.js";
 import type { JwtService } from "../jwt/jwt.service.js";
 import { OrgInviteService } from "./org-invite.service.js";
 
@@ -60,6 +61,7 @@ describe("OrgInviteService.invite", () => {
       jwtOpts,
       notifier as never,
       "https://app.test",
+      new TenantAls(),
     );
 
     return { service, mocks: { mockInsert, mockSendEmail } };
@@ -93,23 +95,45 @@ describe("OrgInviteService.accept", () => {
   type InvitationFixture = {
     id: string;
     orgId: string;
+    email: string;
     role: "admin" | "member";
     expiresAt: Date;
     acceptedAt: Date | null;
   };
 
+  const INVITEE_EMAIL = "invitee@test.com";
   const validInvitation: InvitationFixture = {
     id: INVITATION_ID,
     orgId: ORG_ID,
+    email: INVITEE_EMAIL,
     role: "member",
     expiresAt: new Date(Date.now() + 3600_000),
     acceptedAt: null,
   };
 
-  function makeAcceptService(invitationRow: InvitationFixture | null) {
-    const mockWhere = vi.fn().mockResolvedValue(invitationRow ? [invitationRow] : []);
-    const mockSelect = vi.fn().mockReturnValue({
-      from: vi.fn().mockReturnValue({ where: mockWhere }),
+  /**
+   * accept 의 select 순서: 1) invitations, 2) users(email), 3) memberships(dedup).
+   * `userEmail`/`existingMembership` 로 C-5(email 바인딩·중복) 경로를 제어한다.
+   */
+  function makeAcceptService(
+    invitationRow: InvitationFixture | null,
+    opts: { userEmail?: string; existingMembership?: boolean } = {},
+  ) {
+    const userEmail = opts.userEmail ?? invitationRow?.email ?? INVITEE_EMAIL;
+    let n = 0;
+    const mockSelect = vi.fn().mockImplementation(() => {
+      n++;
+      const rows =
+        n === 1
+          ? invitationRow
+            ? [invitationRow]
+            : []
+          : n === 2
+            ? [{ email: userEmail }]
+            : opts.existingMembership
+              ? [{ id: "existing-m" }]
+              : [];
+      return { from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(rows) }) };
     });
     const mockInsertValues = vi.fn().mockResolvedValue(undefined);
     const mockInsert = vi.fn().mockReturnValue({ values: mockInsertValues });
@@ -125,12 +149,13 @@ describe("OrgInviteService.accept", () => {
       jwtOpts,
       { sendEmail: vi.fn() } as never,
       "https://app.test",
+      new TenantAls(),
     );
 
     return { service, mocks: { mockInsert, mockUpdate } };
   }
 
-  it("유효 토큰 → memberships 삽입 + acceptedAt 업데이트 + accessToken 반환", async () => {
+  it("유효 토큰 + email 일치 → memberships 삽입 + acceptedAt 업데이트 + accessToken 반환", async () => {
     const { service, mocks } = makeAcceptService(validInvitation);
     const result = await service.accept(INVITEE_ID, INVITE_TOKEN);
     expect(result.accessToken).toBeTruthy();
@@ -161,5 +186,23 @@ describe("OrgInviteService.accept", () => {
     await expect(service.accept(INVITEE_ID, INVITE_TOKEN)).rejects.toBeInstanceOf(
       ConflictException,
     );
+  });
+
+  it("email 불일치 → ForbiddenException (C-5 토큰-이메일 바인딩)", async () => {
+    const { service, mocks } = makeAcceptService(validInvitation, {
+      userEmail: "someone-else@test.com",
+    });
+    await expect(service.accept(INVITEE_ID, INVITE_TOKEN)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+    expect(mocks.mockInsert).not.toHaveBeenCalled();
+  });
+
+  it("이미 멤버 → ConflictException (C-5 중복 거부)", async () => {
+    const { service, mocks } = makeAcceptService(validInvitation, { existingMembership: true });
+    await expect(service.accept(INVITEE_ID, INVITE_TOKEN)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+    expect(mocks.mockInsert).not.toHaveBeenCalled();
   });
 });

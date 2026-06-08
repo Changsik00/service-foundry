@@ -1,9 +1,10 @@
 import { ForbiddenException, Inject, Injectable } from "@nestjs/common";
-import { signAccessToken } from "@repo/backend-auth-jwt";
+import { ACTIVE_ORG_CLAIM, ORG_ROLE_CLAIM, signAccessToken } from "@repo/backend-auth-jwt";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { and, eq } from "drizzle-orm";
 
 import { memberships } from "../infra/schema/memberships.js";
+import { users } from "../infra/schema/users.js";
 import { JwtService } from "../jwt/jwt.service.js";
 import { JWT_SIGN_OPTIONS, type JwtSignOptions } from "./jwt-sign.options.js";
 
@@ -27,8 +28,20 @@ export class OrgSwitchService implements IOrgSwitchService {
 
     if (!membership) throw new ForbiddenException("membership not found");
 
+    // 전역 role 클레임 필수(AuthGuard 가 요구) — 누락 시 발급 토큰이 다음 요청에서 401.
+    const [user] = await this.database.db
+      .select({ role: users.role })
+      .from(users)
+      .where(eq(users.id, userId));
+    if (!user) throw new ForbiddenException("user not found");
+
     const accessToken = await signAccessToken(
-      { sub: userId, activeOrgId: newOrgId, orgRole: membership.role },
+      {
+        sub: userId,
+        role: user.role,
+        [ACTIVE_ORG_CLAIM]: newOrgId,
+        [ORG_ROLE_CLAIM]: membership.role,
+      },
       this.jwtService.getKeyStore(),
       { issuer: this.jwtOpts.issuer, audience: this.jwtOpts.audience },
     );
