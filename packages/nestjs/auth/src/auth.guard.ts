@@ -7,7 +7,7 @@ import {
 } from "@nestjs/common";
 import { Role } from "@repo/auth-contracts";
 import type { KeyStore } from "@repo/backend-auth-jwt";
-import { verifyAccessToken } from "@repo/backend-auth-jwt";
+import { ACTIVE_ORG_CLAIM, verifyAccessToken } from "@repo/backend-auth-jwt";
 
 export const NESTJS_AUTH_OPTIONS = Symbol("NESTJS_AUTH_OPTIONS");
 
@@ -56,7 +56,9 @@ export class AuthGuard implements CanActivate {
     const roleResult = Role.safeParse(result.value.role);
     if (!roleResult.success) throw new UnauthorizedException("missing or invalid role claim");
 
-    const orgId = typeof result.value.orgId === "string" ? result.value.orgId : null;
+    // activeOrgId 클레임 → req.user.orgId. 서명측과 동일 상수(ACTIVE_ORG_CLAIM)로 표류 차단.
+    const claimOrgId = result.value[ACTIVE_ORG_CLAIM];
+    const orgId = typeof claimOrgId === "string" ? claimOrgId : null;
     req.user = { sub: result.value.sub, role: roleResult.data, orgId };
     return true;
   }

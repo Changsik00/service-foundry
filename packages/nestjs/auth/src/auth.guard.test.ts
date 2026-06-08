@@ -56,6 +56,24 @@ describe("AuthGuard", () => {
     expect(req.user).toEqual({ sub: "user-123", role: "user", orgId: null });
   });
 
+  it("activeOrgId 클레임 → req.user.orgId 로 매핑 (spec-17-08 C-1)", async () => {
+    const token = await signToken({ role: "user", activeOrgId: "org-abc", orgRole: "owner" });
+    const { ctx, req } = makeCtx(`Bearer ${token}`);
+    const guard = new AuthGuard(opts);
+    // biome-ignore lint/suspicious/noExplicitAny: ExecutionContext mock
+    await guard.canActivate(ctx as any);
+    expect((req.user as { orgId: string | null }).orgId).toBe("org-abc");
+  });
+
+  it("구 클레임명 orgId 만 있으면 무시(null) — 표류 방지", async () => {
+    const token = await signToken({ role: "user", orgId: "org-legacy" });
+    const { ctx, req } = makeCtx(`Bearer ${token}`);
+    const guard = new AuthGuard(opts);
+    // biome-ignore lint/suspicious/noExplicitAny: ExecutionContext mock
+    await guard.canActivate(ctx as any);
+    expect((req.user as { orgId: string | null }).orgId).toBeNull();
+  });
+
   it("만료 token → UnauthorizedException", async () => {
     const token = await signToken({ role: "user" }, -1);
     const { ctx } = makeCtx(`Bearer ${token}`);
