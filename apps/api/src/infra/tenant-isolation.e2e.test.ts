@@ -30,6 +30,7 @@ describe("Tenant isolation (real PG, RLS DB-level on domain table)", () => {
   let runtime: Pool; // 앱 런타임 role — RLS 적용 대상
 
   async function cleanup(): Promise<void> {
+    await owner.query("DELETE FROM memberships WHERE org_id = ANY($1::uuid[])", [[ORG_A, ORG_B]]);
     await owner.query("DELETE FROM organizations WHERE id = ANY($1::uuid[])", [[ORG_A, ORG_B]]);
     await owner.query("DELETE FROM users WHERE id = $1", [OWNER_USER]);
   }
@@ -86,5 +87,38 @@ describe("Tenant isolation (real PG, RLS DB-level on domain table)", () => {
     const orgs = await selectUnderContext(null);
     expect(orgs).toContain(ORG_A);
     expect(orgs).toContain(ORG_B);
+  });
+
+  /** ctx 컨텍스트로 membership(orgId) INSERT 를 시도하고 성공/거부를 반환. */
+  async function tryInsertMembership(
+    ctx: string,
+    membershipOrg: string,
+  ): Promise<"ok" | "rejected"> {
+    const client = await runtime.connect();
+    try {
+      await client.query("BEGIN");
+      await client.query("SELECT set_config('app.current_org', $1, true)", [ctx]);
+      await client.query(
+        "INSERT INTO memberships (user_id, org_id, role) VALUES ($1, $2, 'member')",
+        [OWNER_USER, membershipOrg],
+      );
+      await client.query("ROLLBACK");
+      return "ok";
+    } catch {
+      await client.query("ROLLBACK").catch(() => {});
+      return "rejected";
+    } finally {
+      client.release();
+    }
+  }
+
+  it("context=org A → org B 로의 INSERT 는 WITH CHECK 로 거부된다 (쓰기 격리)", async () => {
+    const result = await tryInsertMembership(ORG_A, ORG_B);
+    expect(result).toBe("rejected");
+  });
+
+  it("context=org A → org A 로의 INSERT 는 허용된다 (정상 쓰기 회귀 방지)", async () => {
+    const result = await tryInsertMembership(ORG_A, ORG_A);
+    expect(result).toBe("ok");
   });
 });

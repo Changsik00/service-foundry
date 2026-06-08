@@ -99,6 +99,13 @@
       "when": 1780752200000,
       "tag": "0013_rls_scope_domain_only",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1780752300000,
+      "tag": "0014_rls_write_check",
+      "breakpoints": true
     }
   ]
 }

@@ -10,6 +10,7 @@ import { BackendSettingsModule } from "@repo/nestjs-settings";
 import { AuthModule } from "./auth/auth.module.js";
 import { HealthController } from "./health/health.controller.js";
 import { appSchema } from "./infra/schema/index.js";
+import { SuperuserGuard } from "./infra/superuser-guard.provider.js";
 import { TenantContextInterceptor } from "./infra/tenant.interceptor.js";
 import { createTenantDb } from "./infra/tenant.js";
 import { TenantModule, tenantAls } from "./infra/tenant.module.js";
@@ -53,6 +54,6 @@ const settings: AppSettings = loadSettings(process.env);
     AuthModule,
   ],
   controllers: [HealthController],
-  providers: [{ provide: APP_INTERCEPTOR, useClass: TenantContextInterceptor }],
+  providers: [{ provide: APP_INTERCEPTOR, useClass: TenantContextInterceptor }, SuperuserGuard],
 })
 export class AppModule {}
