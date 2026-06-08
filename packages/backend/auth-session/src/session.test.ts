@@ -20,6 +20,7 @@ function createFakeStore(): SessionStore & { rows: Map<string, SessionRow> } {
         createdAt: row.createdAt ?? new Date(),
         expiresAt: row.expiresAt,
         revokedAt: row.revokedAt ?? null,
+        orgId: row.orgId ?? null,
       };
       rows.set(inserted.id, inserted);
       return inserted;

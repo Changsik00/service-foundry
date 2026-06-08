@@ -7,6 +7,7 @@ export const authAuditLogs = pgTable("auth_audit_logs", {
   ip: text("ip"),
   userAgent: text("user_agent"),
   metadata: json("metadata").$type<Record<string, unknown>>(),
+  orgId: uuid("org_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 

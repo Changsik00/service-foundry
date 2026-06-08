@@ -9,6 +9,9 @@ import { AUTH_METRICS } from "../metrics/auth-metrics.provider.js";
 import { AuthController } from "./auth.controller.js";
 import { CSRF_SECRET } from "./csrf.guard.js";
 import { EmailVerifyService } from "./email-verify.service.js";
+import { OrgInviteService } from "./org-invite.service.js";
+import { OrgMembersService } from "./org-members.service.js";
+import { OrgSwitchService } from "./org-switch.service.js";
 import { PasswordResetService } from "./password-reset.service.js";
 import { SigninService } from "./signin.service.js";
 import { SignupService } from "./signup.service.js";
@@ -63,6 +66,18 @@ describe("AuthController", () => {
           useValue: {
             signUp: vi.fn().mockResolvedValue(mockSigninResult),
           },
+        },
+        {
+          provide: OrgSwitchService,
+          useValue: { switch: vi.fn() },
+        },
+        {
+          provide: OrgInviteService,
+          useValue: { invite: vi.fn(), accept: vi.fn() },
+        },
+        {
+          provide: OrgMembersService,
+          useValue: { list: vi.fn() },
         },
         {
           provide: PasswordResetService,
@@ -207,7 +222,7 @@ describe("AuthController", () => {
 
   describe("GET /auth/me", () => {
     it("currentUser → { user } 반환", () => {
-      const currentUser = { sub: mockUserRow.id, role: "user" as const };
+      const currentUser = { sub: mockUserRow.id, role: "user" as const, orgId: null };
       const result = controller.me(currentUser);
       expect(result).toEqual({ user: currentUser });
     });

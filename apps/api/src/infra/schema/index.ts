@@ -6,8 +6,21 @@ import {
   type EmailVerifyTokenRow,
   emailVerifyTokens,
 } from "./email-verify-tokens.js";
+import {
+  type InvitationInsert,
+  type InvitationRow,
+  invitations,
+  inviteRoleEnum,
+} from "./invitations.js";
+import {
+  type MembershipInsert,
+  type MembershipRow,
+  memberships,
+  orgRoleEnum,
+} from "./memberships.js";
 import { type MfaConfigInsert, type MfaConfigRow, mfaConfigs } from "./mfa-configs.js";
 import { type OAuthAccountInsert, type OAuthAccountRow, oauthAccounts } from "./oauth-accounts.js";
+import { type OrganizationInsert, type OrganizationRow, organizations } from "./organizations.js";
 import {
   type PasskeyChallengeInsert,
   type PasskeyChallengeRow,
@@ -29,10 +42,16 @@ export type {
   AuditLogRow,
   EmailVerifyTokenInsert,
   EmailVerifyTokenRow,
+  InvitationInsert,
+  InvitationRow,
+  MembershipInsert,
+  MembershipRow,
   MfaConfigInsert,
   MfaConfigRow,
   OAuthAccountInsert,
   OAuthAccountRow,
+  OrganizationInsert,
+  OrganizationRow,
   PasskeyChallengeInsert,
   PasskeyChallengeRow,
   PasskeyCredentialInsert,
@@ -48,9 +67,14 @@ export {
   authAuditLogs,
   emailVerifyTokens,
   failedLogins,
+  invitations,
+  inviteRoleEnum,
   lockouts,
+  memberships,
   mfaConfigs,
   oauthAccounts,
+  organizations,
+  orgRoleEnum,
   passkeyChallenges,
   passkeyCredentials,
   passwordResetTokens,
@@ -60,6 +84,9 @@ export {
 
 export const appSchema = {
   users,
+  organizations,
+  memberships,
+  invitations,
   passwordResetTokens,
   emailVerifyTokens,
   sessions,

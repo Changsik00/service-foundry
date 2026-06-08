@@ -1,10 +1,11 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { hashPassword } from "@repo/backend-auth-password";
 import { generateRefreshToken, hashToken } from "@repo/backend-auth-session";
-import type { Notifier } from "@repo/backend-notification";
+import { buildPasswordResetEmail, type Notifier } from "@repo/backend-notification";
 
 import { NOTIFIER } from "../notification/notifier.provider.js";
 import type { ConfirmOutcome } from "./confirm-outcome.js";
+import { FRONTEND_URL } from "./frontend-url.token.js";
 import {
   InjectTokenStore,
   InjectUserStore,
@@ -20,6 +21,7 @@ export class PasswordResetService {
     @InjectUserStore() private readonly userStore: UserStore,
     @InjectTokenStore() private readonly tokenStore: PasswordResetTokenStore,
     @Inject(NOTIFIER) private readonly notifier: Notifier,
+    @Inject(FRONTEND_URL) private readonly frontendUrl: string,
   ) {}
 
   async request(email: string): Promise<void> {
@@ -32,12 +34,8 @@ export class PasswordResetService {
 
     await this.tokenStore.insert({ userId: user.id, tokenHash, expiresAt });
 
-    // 전송은 notification 포트로 위임 — dev 어댑터는 로그(가시성), 비-dev noop(토큰 미로깅).
-    await this.notifier.sendEmail({
-      to: email,
-      subject: "비밀번호 재설정",
-      body: `비밀번호 재설정 토큰: ${token}`,
-    });
+    const emailMsg = buildPasswordResetEmail(token, this.frontendUrl);
+    await this.notifier.sendEmail({ ...emailMsg, to: email });
   }
 
   async confirm(token: string, newPassword: string): Promise<ConfirmOutcome> {

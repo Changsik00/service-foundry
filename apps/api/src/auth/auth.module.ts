@@ -5,6 +5,7 @@ import { DATABASE, type Database } from "@repo/nestjs-database";
 
 import { JwtModule } from "../jwt/jwt.module.js";
 import { JwtService } from "../jwt/jwt.service.js";
+import { PROVISION_SERVICE, ProvisionService } from "../provision/provision.service.js";
 import { type AppSettings, loadSettings } from "../settings.js";
 import { AuditEventListener } from "./audit.event-listener.js";
 import { AuthController } from "./auth.controller.js";
@@ -14,6 +15,7 @@ import {
   createDrizzleEmailVerifyTokenStore,
   EMAIL_VERIFY_TOKEN_STORE,
 } from "./email-verify.stores.js";
+import { FRONTEND_URL } from "./frontend-url.token.js";
 import { JWT_SIGN_OPTIONS, type JwtSignOptions } from "./jwt-sign.options.js";
 import { MfaController } from "./mfa.controller.js";
 import { MfaService } from "./mfa.service.js";
@@ -21,6 +23,9 @@ import { createDrizzleMfaStore, MFA_STORE } from "./mfa.stores.js";
 import { OAuthController } from "./oauth.controller.js";
 import { OAuthService } from "./oauth.service.js";
 import { createDrizzleOAuthAccountStore, OAUTH_ACCOUNT_STORE } from "./oauth.stores.js";
+import { OrgInviteService } from "./org-invite.service.js";
+import { OrgMembersService } from "./org-members.service.js";
+import { OrgSwitchService } from "./org-switch.service.js";
 import { PasskeyController } from "./passkey.controller.js";
 import { PasskeyService } from "./passkey.service.js";
 import { createDrizzlePasskeyStore, PASSKEY_STORE } from "./passkey.stores.js";
@@ -45,6 +50,11 @@ const settings: AppSettings = loadSettings(process.env);
     EmailVerifyService,
     SigninService,
     SignupService,
+    OrgSwitchService,
+    OrgInviteService,
+    OrgMembersService,
+    ProvisionService,
+    { provide: PROVISION_SERVICE, useExisting: ProvisionService },
     OAuthService,
     MfaService,
     AuthGuard,
@@ -54,6 +64,10 @@ const settings: AppSettings = loadSettings(process.env);
     {
       provide: CSRF_SECRET,
       useValue: settings.CSRF_SECRET,
+    },
+    {
+      provide: FRONTEND_URL,
+      useValue: settings.FRONTEND_URL,
     },
     {
       provide: JWT_SIGN_OPTIONS,

@@ -5,6 +5,7 @@ import { createSession } from "@repo/backend-auth-session";
 
 import type { UserRow } from "../infra/schema/index.js";
 import { JwtService } from "../jwt/jwt.service.js";
+import { type IProvisionService, PROVISION_SERVICE } from "../provision/provision.service.js";
 import { JWT_SIGN_OPTIONS, type JwtSignOptions } from "./jwt-sign.options.js";
 import { InjectUserStore, type UserStore } from "./password-reset.stores.js";
 import { InjectSessionStore, type SessionStore } from "./session.stores.js";
@@ -16,6 +17,7 @@ export class SignupService {
     @InjectSessionStore() private readonly sessionStore: SessionStore,
     @Inject(JwtService) private readonly jwtService: JwtService,
     @Inject(JWT_SIGN_OPTIONS) private readonly jwtOpts: JwtSignOptions,
+    @Inject(PROVISION_SERVICE) private readonly provisionService: IProvisionService,
   ) {}
 
   async signUp(
@@ -29,8 +31,9 @@ export class SignupService {
     const user = await this.userStore.insert({ email, passwordHash, role: "user" });
 
     const { refreshToken } = await createSession(this.sessionStore, { userId: user.id });
+    const { orgId, orgRole } = await this.provisionService.provisionUser(user.id, email);
     const accessToken = await signAccessToken(
-      { sub: user.id, role: user.role },
+      { sub: user.id, role: user.role, activeOrgId: orgId, orgRole },
       this.jwtService.getKeyStore(),
       { issuer: this.jwtOpts.issuer, audience: this.jwtOpts.audience },
     );

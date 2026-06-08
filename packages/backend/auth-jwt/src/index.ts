@@ -4,6 +4,7 @@
  * Implements ADR-0013 Decision 1/2/3/7. NestJS adapter → phase-06.
  */
 
+export { ACTIVE_ORG_CLAIM, ORG_ROLE_CLAIM } from "./claims.js";
 export { createFakeKeyStore, type FakeKeyStore, type FakeKeyStoreInit } from "./fake-store.js";
 export { type Jwks, toJwks } from "./jwks.js";
 export type { Alg, JwtClaims, KeyMaterial, KeyStore, PublicKeyMaterial } from "./keystore.js";

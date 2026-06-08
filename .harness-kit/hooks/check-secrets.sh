@@ -63,7 +63,7 @@ if [ -n "$staged_diff" ]; then
   # 라인은 계속 탐지되도록 한다.
   _keys='(password|secret|api_key|api_secret|access_token|private_key)'
   _q='["'"'"']?'                                   # 선택적 따옴표 (single 또는 double)
-  _var_re="[=:][[:space:]]*${_q}[$][{(A-Za-z_]"    # 값 = \$VAR / \${..} / \$(..)
+  _var_re="[=:][[:space:]]*${_q}([$][{(A-Za-z_]|z\.)"    # 값 = \$VAR / \${..} / \$(..) / z.xxx() Zod 스키마
   _ph_re="[=:][[:space:]]*${_q}(changeme|change-me|placeholder|example|sample|your[_-]|xxx+|dummy|todo|<[^>]+>|[.]{3})"
   _op_re="${_keys}[[:space:]]*:[-=?+]"             # \${VAR:-default} 등 bash 파라미터 확장 연산자
   if echo "$staged_diff" | grep -E '^\+' \

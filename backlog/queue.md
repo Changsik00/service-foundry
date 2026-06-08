@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
+- **phase-17** — 멀티테넌시 Foundation + 이메일 어댑터 (Spine) — 8 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -39,6 +39,11 @@
 - [ ] **configureApp SoT 에 applySecurity 흡수** (phase-15 2차회고 V1) — `app.setup.ts` 의 `configureApp` 가 requestId+cookieParser 만 캡슐화 → `main.ts` 의 `applySecurity`(helmet/CORS) 배선은 e2e 미검증(제거해도 GREEN, C1 과 동일 계열 갭). applySecurity 를 configureApp 에 흡수 + e2e 보안헤더 검증 추가. phase-16/spec-x 후보
 - [ ] **csrf.ts 주석 drift 정정** (phase-15 2차회고 V2) — `packages/backend/auth-rate-limit/src/csrf.ts:12,16` 주석이 폐기된 session-binding 전략을 설명. ADR-0021(csrf_id, session 비의존) 결정과 모순 → 주석 동기화. V1 과 함께 처리 응집적
 - [ ] **MFA 추가 factor: SMS/이메일 OTP** (2026-06-02) — 현재 MFA 는 TOTP(인증앱)+백업코드+passkey 만. `auth/mfa/totp` 네임스페이스는 다른 factor 여지를 둔 설계이나 미구현. SMS(twilio 등)/email OTP factor 는 **기능 추가**(보안 하드닝 phase-16 과 별개) → 별도 phase/spec 후보. 외부 의존(SMS provider)+비용·검증 흐름 설계 필요
+- [ ] **테넌트 쓰기 경로 RLS 강제 (후속, 2026-06-07)** — 17-07/08 은 읽기 격리까지. 정책이 `WITH CHECK(true)` 라 INSERT/UPDATE 의 org_id 변조 미차단. cross-org 쓰기 seam(`runWithSystemTenant`)은 17-08 에 존재. phase-19(인가) 전 처리 권장
+- [ ] **production 슈퍼유저 가드 강화 (W-5, 2026-06-08)** — `settings.ts` 가드가 `username==="postgres"` 단일 관례명만 검사. BYPASSRLS/타 슈퍼유저/role 상속 미검사 → 부팅 시 `SELECT rolsuper` DB 확인으로 강화 후보
+- [ ] **이메일 실전송 검증 (W-6, 2026-06-08)** — 성공 기준 1(Resend 발송)이 코드 배선·mock 까지만. sandbox/실키 e2e 또는 발송 로그 검증 없음
+- ~~**ADR `tenant-isolation-runtime-role-and-als-tx`**~~ **해소**: `docs/adr/0024-tenant-isolation-enforcement.md` (spec-17-08)
+- [ ] **운영 DB 풀 사이징 / pgbouncer 가이드** (2026-06-07) — spec-17-07 요청-스코프 tx 는 동시 인증 요청 수를 풀 크기로 제한. 운영 풀 상향 + 커넥션 풀러(tx 모드) 권장. infra phase(22) 후보
 - [ ] lat.md Phase 2 도입 평가 (지식 그래프 도구)
 - [ ] ARCHITECTURE.md 본체 재작성 (Phase 3 직전, ADR-0005 결정 후)
 

@@ -39,6 +39,7 @@ const mockSessionResult = {
     createdAt: new Date(),
     expiresAt: new Date(Date.now() + 30 * 24 * 3600_000),
     revokedAt: null,
+    orgId: null,
   },
   refreshToken: "raw-refresh-token",
 };
@@ -69,6 +70,11 @@ describe("SigninService", () => {
   let rateLimitStore: RateLimitStore;
   const jwtOpts = { issuer: "http://localhost:3000", audience: "http://localhost:3000" };
 
+  // orgClaims 는 user.orgId 없으면 db 미접근 — mockUserRow 는 orgId 미설정이라 stub 만 둔다.
+  const databaseStub = {
+    db: { select: () => ({ from: () => ({ where: async () => [] }) }) },
+  } as never;
+
   function makeService(user: typeof mockUserRow | null = mockUserRow): SigninService {
     return new SigninService(
       makeUserStore(user),
@@ -76,6 +82,7 @@ describe("SigninService", () => {
       jwtService,
       jwtOpts,
       rateLimitStore,
+      databaseStub,
     );
   }
 
@@ -93,6 +100,28 @@ describe("SigninService", () => {
     expect(result.accessToken).toBeTruthy();
     expect(result.user.email).toBe("test@example.com");
     expect(result.refreshToken).toBe("raw-refresh-token");
+  });
+
+  it("orgId 있는 user → 토큰에 activeOrgId/orgRole 클레임 포함 (C-2)", async () => {
+    vi.mocked(authPassword.verifyPassword).mockResolvedValue(true);
+    const userWithOrg = { ...mockUserRow, orgId: "org-xyz" };
+    const db = {
+      db: { select: () => ({ from: () => ({ where: async () => [{ role: "owner" }] }) }) },
+    } as never;
+    const service = new SigninService(
+      makeUserStore(userWithOrg),
+      makeSessionStore(),
+      jwtService,
+      jwtOpts,
+      rateLimitStore,
+      db,
+    );
+    const { accessToken } = await service.signIn("test@example.com", "password123", IP);
+    const payload = JSON.parse(
+      Buffer.from(accessToken.split(".")[1] ?? "", "base64url").toString(),
+    ) as { activeOrgId?: string; orgRole?: string };
+    expect(payload.activeOrgId).toBe("org-xyz");
+    expect(payload.orgRole).toBe("owner");
   });
 
   it("email 없음 → UnauthorizedException", async () => {
