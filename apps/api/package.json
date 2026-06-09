@@ -40,6 +40,7 @@
     "@repo/nestjs-logger": "workspace:*",
     "@repo/nestjs-security": "workspace:*",
     "@repo/nestjs-settings": "workspace:*",
+    "firebase-admin": "catalog:",
     "cookie-parser": "catalog:",
     "drizzle-orm": "catalog:",
     "reflect-metadata": "catalog:",
