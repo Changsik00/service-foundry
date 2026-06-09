@@ -50,6 +50,7 @@ ADR-0023 결정을 구현한다:
 | `spec-18-01` | verifier-interface | P? | Merged | `specs/spec-18-01-verifier-interface/` |
 | `spec-18-02` | firebase-backend-verifier | P? | Merged | `specs/spec-18-02-firebase-backend-verifier/` |
 | `spec-18-03` | supabase-backend-verifier | P? | Merged | `specs/spec-18-03-supabase-backend-verifier/` |
+| `spec-18-04` | spec-18-04 | P? | Active | `specs/spec-18-04-provider-mode-cleanup/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`

@@ -44,17 +44,17 @@
 
 ### 2-1. ProvisionService 구현
 
-- [ ] `apps/api/src/provision/provision.service.ts`: `provisionFromProvider` 구현 (provider_uid upsert)
-- [ ] `ProvisionService`에 `FirebaseProvisionPort` implements 추가
-- [ ] `pnpm --filter @apps/api test -- provision` → PASS 확인
+- [x] `apps/api/src/provision/provision.service.ts`: `provisionFromProvider` 구현 (provider_uid upsert)
+- [x] `ProvisionService`에 `FirebaseProvisionPort` implements 추가
+- [x] `pnpm --filter @apps/api test -- provision` → PASS 확인
 
 ### 2-2. FirebaseVerifier 업데이트
 
-- [ ] `firebase-verifier.ts`: provision 반환값에서 `internalUserId` 추출 → `sub` 교체
-- [ ] `firebase-verifier.test.ts`: 업데이트된 인터페이스에 맞게 테스트 수정
-- [ ] `pnpm --filter @repo/nestjs-auth-firebase test` → PASS 확인
+- [x] `firebase-verifier.ts`: provision 반환값에서 `internalUserId` 추출 → `sub` 교체
+- [x] `firebase-verifier.test.ts`: 업데이트된 인터페이스에 맞게 테스트 수정
+- [x] `pnpm --filter @repo/nestjs-auth-firebase test` → PASS 확인
 
-- [ ] Commit: `feat(spec-18-04): ProvisionService.provisionFromProvider + FirebaseVerifier sub 교체`
+- [x] Commit: `feat(spec-18-04): ProvisionService.provisionFromProvider + FirebaseVerifier sub 교체`
 
 ---
 
@@ -62,17 +62,17 @@
 
 ### 3-1. Settings 업데이트
 
-- [ ] `apps/api/src/settings.ts`: `AUTH_MODE`, `FIREBASE_SERVICE_ACCOUNT`, `FIREBASE_PROJECT_ID`, `SUPABASE_JWT_SECRET` 추가
+- [x] `apps/api/src/settings.ts`: `AUTH_MODE`, `FIREBASE_SERVICE_ACCOUNT`, `FIREBASE_PROJECT_ID`, `SUPABASE_JWT_SECRET` 추가
 
 ### 3-2. ProviderAuthModule 생성
 
-- [ ] `apps/api/src/auth/provider-auth.module.ts` 신규:
+- [x] `apps/api/src/auth/provider-auth.module.ts` 신규:
   - `AuthGuard`, `RolesGuard` + `ProvisionService` + 모드별 port binding
   - 컨트롤러 없음
 
 ### 3-3. AppModule 조건부 배선
 
-- [ ] `apps/api/src/app.module.ts`:
+- [x] `apps/api/src/app.module.ts`:
   - `AUTH_MODE`에 따라 verifier 모듈 + auth 모듈 조건부 import
   - `firebase`: `NestjsFirebaseAuthModule.forRoot()` + `ProviderAuthModule`
   - `supabase`: `NestjsSupabaseAuthModule.forRoot()` + `ProviderAuthModule`
@@ -80,9 +80,9 @@
 
 ### 3-4. 타입체크 + depcruise
 
-- [ ] `pnpm turbo run typecheck` → PASS
-- [ ] `pnpm depcruise apps packages --config .dependency-cruiser.cjs` → 위반 없음
-- [ ] Commit: `feat(spec-18-04): AUTH_MODE 조건부 배선 + ProviderAuthModule`
+- [x] `pnpm turbo run typecheck` → PASS
+- [x] `pnpm depcruise apps packages --config .dependency-cruiser.cjs` → 위반 없음
+- [x] Commit: `feat(spec-18-04): AUTH_MODE 조건부 배선 + ProviderAuthModule`
 
 ---
 
