@@ -48,6 +48,7 @@ ADR-0023 결정을 구현한다:
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
 | `spec-18-01` | verifier-interface | P? | Merged | `specs/spec-18-01-verifier-interface/` |
+| `spec-18-02` | firebase-backend-verifier | P? | Active | `specs/spec-18-02-firebase-backend-verifier/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
