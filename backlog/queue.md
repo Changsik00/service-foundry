@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
+- **phase-18** — 인증 권위 모드 (Auth Authority Mode) — 0/0 spec — (다음: 첫 spec 생성 대기)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -61,13 +61,6 @@
 
 > **2026-06-02 멀티테넌트 SaaS 로드맵 확정·재조정** (ADR-0022/0023). 9 → **6 phase** 로 묶음.
 > phase-03~17 완료 (done 섹션 참조). 단계적 구현이되 빠짐없이 기록(까먹지 않기).
-
-- **phase-18** — 인증 권위 모드 (**ADR-0023 / 이슈 #108**):
-  - **AuthGuard verifier-pluggable** (native / firebase / supabase)
-  - provider 토큰 검증 (Firebase JWKS / Supabase JWT)
-  - **provider-user → org 프로비저닝** (phase-17 공용 seam 활용, 재작업 0)
-  - custom-claims 주입 (Firebase `setCustomUserClaims` / Supabase hook → active_org_id·org_role)
-  - provider 모드 시 native 전용 endpoint 정리(삭제)
 
 - **phase-19** — 계정 완성 + 인가 (**이슈 #20**):
   - 비밀번호 변경 · 이메일 변경(+재검증) · **회원 탈퇴(GDPR — org owner 처리)** · 프로필(이름/아바타) · 세션/기기 관리(목록·취소·전체 로그아웃) · **OpenAPI/Swagger**
