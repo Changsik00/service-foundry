@@ -6,18 +6,11 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { Role } from "@repo/auth-contracts";
-import type { KeyStore } from "@repo/backend-auth-jwt";
 
+import { NESTJS_AUTH_OPTIONS, type NestjsAuthOptions } from "./options.js";
 import { ACCESS_TOKEN_VERIFIER, type AccessTokenVerifier } from "./verifier.js";
 
-export const NESTJS_AUTH_OPTIONS = Symbol("NESTJS_AUTH_OPTIONS");
-
-export interface NestjsAuthOptions {
-  /** `KeyStore` 인스턴스 또는 lazy getter. onModuleInit 이후 호출이 보장될 때 lazy 사용. */
-  keyStore: KeyStore | (() => KeyStore);
-  issuer: string;
-  audience: string;
-}
+export { NESTJS_AUTH_OPTIONS, type NestjsAuthOptions };
 
 export type AuthenticatedUser = {
   sub: string;

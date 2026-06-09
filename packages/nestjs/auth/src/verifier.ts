@@ -1,7 +1,7 @@
 import { UnauthorizedException } from "@nestjs/common";
 import { ACTIVE_ORG_CLAIM, verifyAccessToken } from "@repo/backend-auth-jwt";
 
-import type { NestjsAuthOptions } from "./auth.guard.js";
+import type { NestjsAuthOptions } from "./options.js";
 
 export type VerifiedIdentity = {
   sub: string;
