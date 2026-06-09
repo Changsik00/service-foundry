@@ -64,16 +64,16 @@
 
 ### 3-1. 모듈 구현
 
-- [ ] `packages/nestjs/auth-supabase/src/supabase-auth.module.ts` 완성:
+- [x] `packages/nestjs/auth-supabase/src/supabase-auth.module.ts` 완성:
   - `SUPABASE_JWT_OPTIONS` provide
   - `SupabaseVerifier` provider
   - `ACCESS_TOKEN_VERIFIER → SupabaseVerifier` provide
   - exports `ACCESS_TOKEN_VERIFIER`
-- [ ] `packages/nestjs/auth-supabase/src/index.ts` public API 완성
-- [ ] `pnpm --filter @repo/nestjs-auth-supabase typecheck` → PASS
-- [ ] `pnpm --filter @repo/nestjs-auth-supabase lint` → PASS
-- [ ] `pnpm depcruise apps packages --config .dependency-cruiser.cjs` → 위반 없음
-- [ ] Commit: `feat(spec-18-03): NestjsSupabaseAuthModule + public API`
+- [x] `packages/nestjs/auth-supabase/src/index.ts` public API 완성
+- [x] `pnpm --filter @repo/nestjs-auth-supabase typecheck` → PASS
+- [x] `pnpm --filter @repo/nestjs-auth-supabase lint` → PASS
+- [x] `pnpm depcruise apps packages --config .dependency-cruiser.cjs` → 위반 없음
+- [x] Commit: `feat(spec-18-03): NestjsSupabaseAuthModule + public API`
 
 ---
 

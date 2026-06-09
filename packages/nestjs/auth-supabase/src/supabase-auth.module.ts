@@ -8,9 +8,15 @@ export interface SupabaseAuthOptions {
 
 @Module({})
 export class NestjsSupabaseAuthModule {
-  static forRoot(_opts: SupabaseAuthOptions): DynamicModule {
-    throw new Error("not implemented");
+  static forRoot(opts: SupabaseAuthOptions): DynamicModule {
+    return {
+      module: NestjsSupabaseAuthModule,
+      providers: [
+        { provide: SUPABASE_JWT_OPTIONS, useValue: opts },
+        SupabaseVerifier,
+        { provide: ACCESS_TOKEN_VERIFIER, useExisting: SupabaseVerifier },
+      ],
+      exports: [ACCESS_TOKEN_VERIFIER],
+    };
   }
 }
-
-export { ACCESS_TOKEN_VERIFIER, SUPABASE_JWT_OPTIONS, SupabaseVerifier };
