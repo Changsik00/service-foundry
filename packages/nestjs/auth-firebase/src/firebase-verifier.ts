@@ -26,7 +26,7 @@ export class FirebaseVerifier implements AccessTokenVerifier {
     }
 
     const { uid, email = "" } = decoded;
-    const role = (decoded["role"] as string | undefined) ?? "user";
+    const role = (decoded.role as string | undefined) ?? "user";
     let orgId = (decoded[ACTIVE_ORG_CLAIM] as string | undefined) ?? null;
 
     if (!orgId && this.provision) {

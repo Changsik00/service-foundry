@@ -2,8 +2,8 @@ import { UnauthorizedException } from "@nestjs/common";
 import { ACTIVE_ORG_CLAIM } from "@repo/backend-auth-jwt";
 import type { App } from "firebase-admin/app";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { FIREBASE_PROVISION_PORT, type FirebaseProvisionPort } from "./firebase-provision-port.js";
-import { FIREBASE_ADMIN_APP, FirebaseVerifier } from "./firebase-verifier.js";
+import type { FirebaseProvisionPort } from "./firebase-provision-port.js";
+import { FirebaseVerifier } from "./firebase-verifier.js";
 
 // firebase-admin/auth 전체 모킹
 const mockVerifyIdToken = vi.fn();
