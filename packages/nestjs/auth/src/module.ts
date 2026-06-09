@@ -3,6 +3,7 @@ import { Reflector } from "@nestjs/core";
 
 import { AuthGuard, NESTJS_AUTH_OPTIONS, type NestjsAuthOptions } from "./auth.guard.js";
 import { RolesGuard } from "./roles.guard.js";
+import { ACCESS_TOKEN_VERIFIER, NativeVerifier } from "./verifier.js";
 
 export interface NestjsAuthAsyncOptions {
   imports?: DynamicModule["imports"];
@@ -18,11 +19,12 @@ export class NestjsAuthModule {
       module: NestjsAuthModule,
       providers: [
         { provide: NESTJS_AUTH_OPTIONS, useValue: opts },
+        { provide: ACCESS_TOKEN_VERIFIER, useValue: new NativeVerifier(opts) },
         Reflector,
         AuthGuard,
         RolesGuard,
       ],
-      exports: [AuthGuard, RolesGuard, NESTJS_AUTH_OPTIONS],
+      exports: [AuthGuard, RolesGuard, NESTJS_AUTH_OPTIONS, ACCESS_TOKEN_VERIFIER],
     };
   }
 
@@ -36,11 +38,16 @@ export class NestjsAuthModule {
           inject: asyncOpts.inject,
           useFactory: asyncOpts.useFactory,
         },
+        {
+          provide: ACCESS_TOKEN_VERIFIER,
+          inject: [NESTJS_AUTH_OPTIONS],
+          useFactory: (opts: NestjsAuthOptions) => new NativeVerifier(opts),
+        },
         Reflector,
         AuthGuard,
         RolesGuard,
       ],
-      exports: [AuthGuard, RolesGuard, NESTJS_AUTH_OPTIONS],
+      exports: [AuthGuard, RolesGuard, NESTJS_AUTH_OPTIONS, ACCESS_TOKEN_VERIFIER],
     };
   }
 }
