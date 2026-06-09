@@ -26,6 +26,13 @@ export class FirebaseTokenController {
   @UseGuards(AuthGuard)
   @Post("firebase/token")
   async issue(@CurrentUser() user: AuthenticatedUser): Promise<{ customToken: string }> {
-    throw new Error("not implemented");
+    if (!this.app) {
+      throw new ServiceUnavailableException("Firebase bridge not configured");
+    }
+    const customToken = await getAuth(this.app).createCustomToken(user.sub, {
+      active_org_id: user.orgId,
+      org_role: user.role,
+    });
+    return { customToken };
   }
 }

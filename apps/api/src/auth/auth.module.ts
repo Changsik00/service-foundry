@@ -7,7 +7,9 @@ import {
   NESTJS_AUTH_OPTIONS,
   type NestjsAuthOptions,
 } from "@repo/nestjs-auth";
+import { FIREBASE_ADMIN_APP } from "@repo/nestjs-auth-firebase";
 import { DATABASE, type Database } from "@repo/nestjs-database";
+import { cert, initializeApp } from "firebase-admin/app";
 
 import { JwtModule } from "../jwt/jwt.module.js";
 import { JwtService } from "../jwt/jwt.service.js";
@@ -21,6 +23,7 @@ import {
   createDrizzleEmailVerifyTokenStore,
   EMAIL_VERIFY_TOKEN_STORE,
 } from "./email-verify.stores.js";
+import { FirebaseTokenController } from "./firebase-token.controller.js";
 import { FRONTEND_URL } from "./frontend-url.token.js";
 import { JWT_SIGN_OPTIONS, type JwtSignOptions } from "./jwt-sign.options.js";
 import { MfaController } from "./mfa.controller.js";
@@ -141,7 +144,32 @@ const settings: AppSettings = loadSettings(process.env);
       inject: [DATABASE],
       useFactory: (db: Database<Record<string, unknown>>) => createDrizzlePasskeyStore(db.db),
     },
+    // [브리지 패턴] FIREBASE_SERVICE_ACCOUNT 설정 시에만 Firebase Admin 앱 초기화.
+    // AUTH_MODE=native 서버에서 Firebase 클라이언트 SDK 세션이 추가로 필요한 경우에 활성화.
+    // "native-bridge" 앱 이름 — AUTH_MODE=firebase 모드의 unnamed app과 충돌 방지.
+    ...(settings.FIREBASE_SERVICE_ACCOUNT
+      ? [
+          {
+            provide: FIREBASE_ADMIN_APP,
+            useValue: initializeApp(
+              {
+                credential: cert(settings.FIREBASE_SERVICE_ACCOUNT),
+                ...(settings.FIREBASE_PROJECT_ID
+                  ? { projectId: settings.FIREBASE_PROJECT_ID }
+                  : {}),
+              },
+              "native-bridge",
+            ),
+          },
+        ]
+      : []),
   ],
-  controllers: [AuthController, OAuthController, MfaController, PasskeyController],
+  controllers: [
+    AuthController,
+    OAuthController,
+    MfaController,
+    PasskeyController,
+    FirebaseTokenController,
+  ],
 })
 export class AuthModule {}
