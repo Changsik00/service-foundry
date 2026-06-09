@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-17** — 멀티테넌시 Foundation + 이메일 어댑터 (Spine) — 8 spec — 다음: (spec 없음)
+(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -131,6 +131,7 @@
 - **phase-15** — Security & Wiring Hardening — completed 2026-06-02
 - **phase-16** — Security Hardening II — completed 2026-06-02
 - [x] spec-x-tenant-isolation-hardening (완료)
+- **phase-17** — 멀티테넌시 Foundation + 이메일 어댑터 (Spine) — completed 2026-06-09
 <!-- sdd:done:end -->
 
 ---
