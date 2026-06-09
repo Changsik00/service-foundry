@@ -19,8 +19,24 @@ export const ACCESS_TOKEN_VERIFIER = Symbol("ACCESS_TOKEN_VERIFIER");
 export class NativeVerifier implements AccessTokenVerifier {
   constructor(private readonly opts: NestjsAuthOptions) {}
 
-  // biome-ignore lint/correctness/noUnusedVariables: stub — Task 2에서 구현
-  async verify(_token: string): Promise<VerifiedIdentity> {
-    throw new Error("NativeVerifier.verify: not implemented");
+  async verify(token: string): Promise<VerifiedIdentity> {
+    const keyStore =
+      typeof this.opts.keyStore === "function" ? this.opts.keyStore() : this.opts.keyStore;
+
+    const result = await verifyAccessToken(token, keyStore, {
+      issuer: this.opts.issuer,
+      audience: this.opts.audience,
+    });
+    if (!result.ok) throw new UnauthorizedException(result.error.message);
+
+    const { role, sub } = result.value;
+    if (typeof role !== "string" || !role) {
+      throw new UnauthorizedException("missing or invalid role claim");
+    }
+
+    const claimOrgId = result.value[ACTIVE_ORG_CLAIM];
+    const orgId = typeof claimOrgId === "string" ? claimOrgId : null;
+
+    return { sub, role, orgId };
   }
 }
