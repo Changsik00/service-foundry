@@ -81,23 +81,23 @@
 
 ### 🚦 Pre-Push Quality Gate
 
-- [ ] `pnpm --filter @repo/nestjs-auth-supabase lint` → PASS
-- [ ] `pnpm --filter @repo/nestjs-auth-supabase typecheck` → PASS
-- [ ] `pnpm --filter @repo/nestjs-auth-supabase test` → PASS
-- [ ] `pnpm turbo run typecheck` → PASS (전체 workspace)
-- [ ] `pnpm depcruise apps packages --config .dependency-cruiser.cjs` → PASS
+- [x] `pnpm --filter @repo/nestjs-auth-supabase lint` → PASS
+- [x] `pnpm --filter @repo/nestjs-auth-supabase typecheck` → PASS
+- [x] `pnpm --filter @repo/nestjs-auth-supabase test` → PASS
+- [x] `pnpm turbo run typecheck` → PASS (전체 workspace)
+- [x] `pnpm depcruise apps packages --config .dependency-cruiser.cjs` → PASS
 
 ### 📝 산출물 작성
 
-- [ ] **walkthrough.md 작성**
-- [ ] **pr_description.md 작성**
-- [ ] **Ship Commit**: `docs(spec-18-03): ship walkthrough and pr description`
+- [x] **walkthrough.md 작성**
+- [x] **pr_description.md 작성**
+- [x] **Ship Commit**: `docs(spec-18-03): ship walkthrough and pr description`
 
 ### 🚀 Push & PR
 
-- [ ] **Push**: `git push -u origin spec-18-03-supabase-backend-verifier`
-- [ ] **PR 생성**: `phase-18-auth-authority-mode` base branch 대상
-- [ ] **사용자 알림**: PR URL 보고
+- [x] **Push**: `git push -u origin spec-18-03-supabase-backend-verifier`
+- [x] **PR 생성**: `phase-18-auth-authority-mode` base branch 대상
+- [x] **사용자 알림**: PR URL 보고
 
 ---
 
