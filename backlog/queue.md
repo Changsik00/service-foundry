@@ -32,16 +32,16 @@
 - ~~🔒 **CSRF 미배선**~~ **→ phase-15-01 로 승격** (2026-06-01, wiring audit §A)
 - ~~**생성기 backend tsconfig `types:["node"]` 누락**~~ **→ phase-15-05 로 승격** (2026-06-01, wiring audit §E)
 - [ ] **wiring audit 🟡 의도적 미배선 항목들** (passkey env · HttpClient/Settings DI · web-vite theme · 프론트 MFA/Passkey UI · RequireAuth · provider 교체) — 보일러플레이트 의도적, 필요 시 개별 승격. `docs/review/2026-06-01-wiring-audit.md` §🟡
-- [ ] **MFA/passkey 상태변경 POST 8개 CSRF 보호** (phase-15 회고 W5) — `mfa/totp/{enroll,enroll/confirm,verify,disable}`·`passkey/{register,authenticate}/{options,verify}`. ADR-0021 메커니즘(csrf_id) 동일 적용 가능, 배선만 후속. 특히 `mfa/totp/verify`·`passkey/authenticate/verify` 는 미인증 로그인 완료 endpoint. spec-x/phase-16 후보
-- [ ] **CSRF/OAuth secret production 가드** (phase-15 회고 W3) — `CSRF_SECRET`·`OAUTH_STATE_SECRET` 이 `NODE_ENV=production` 에서도 dev 기본값 통과. production 기동 시 기본값 거부 가드 추가. spec-x 후보
+- ~~**MFA/passkey 상태변경 POST 8개 CSRF 보호**~~ **해소**: `spec-16-01` (2026-06-02) — CsrfGuard 전체 8 endpoint 적용 완료
+- ~~**CSRF/OAuth secret production 가드**~~ **해소**: `spec-16-02 phase-FF` (2026-06-02) — `DEV_DEFAULT_SECRET` 체크 + production 기동 거부 적용 완료
 - [ ] **web-next CSRF 403 자가복구 + web-vite/SDK 헤더 동반** (phase-15 회고 W6) — 403(토큰 만료/불일치) 시 재부트스트랩+재시도. password-reset/email-verify 흐름 클라이언트 부재분. web-vite·`packages/frontend/auth-*` SDK CSRF 헤더. 후속
 - [ ] **knip-config ignoreDependency 정리** (phase-15 회고 W4) — spec-15-02 가 `@repo/backend-auth-rate-limit` 실배선 후 spec-15-01 등록 ignore 잔존 → knip 40 redundant hint. 배선 완료 dep 의 ignore 제거. 비차단, 정리 항목
 - [ ] **configureApp SoT 에 applySecurity 흡수** (phase-15 2차회고 V1) — `app.setup.ts` 의 `configureApp` 가 requestId+cookieParser 만 캡슐화 → `main.ts` 의 `applySecurity`(helmet/CORS) 배선은 e2e 미검증(제거해도 GREEN, C1 과 동일 계열 갭). applySecurity 를 configureApp 에 흡수 + e2e 보안헤더 검증 추가. phase-16/spec-x 후보
 - [ ] **csrf.ts 주석 drift 정정** (phase-15 2차회고 V2) — `packages/backend/auth-rate-limit/src/csrf.ts:12,16` 주석이 폐기된 session-binding 전략을 설명. ADR-0021(csrf_id, session 비의존) 결정과 모순 → 주석 동기화. V1 과 함께 처리 응집적
 - [ ] **MFA 추가 factor: SMS/이메일 OTP** (2026-06-02) — 현재 MFA 는 TOTP(인증앱)+백업코드+passkey 만. `auth/mfa/totp` 네임스페이스는 다른 factor 여지를 둔 설계이나 미구현. SMS(twilio 등)/email OTP factor 는 **기능 추가**(보안 하드닝 phase-16 과 별개) → 별도 phase/spec 후보. 외부 의존(SMS provider)+비용·검증 흐름 설계 필요
-- [ ] **테넌트 쓰기 경로 RLS 강제 (후속, 2026-06-07)** — 17-07/08 은 읽기 격리까지. 정책이 `WITH CHECK(true)` 라 INSERT/UPDATE 의 org_id 변조 미차단. cross-org 쓰기 seam(`runWithSystemTenant`)은 17-08 에 존재. phase-19(인가) 전 처리 권장
-- [ ] **production 슈퍼유저 가드 강화 (W-5, 2026-06-08)** — `settings.ts` 가드가 `username==="postgres"` 단일 관례명만 검사. BYPASSRLS/타 슈퍼유저/role 상속 미검사 → 부팅 시 `SELECT rolsuper` DB 확인으로 강화 후보
-- [ ] **이메일 실전송 검증 (W-6, 2026-06-08)** — 성공 기준 1(Resend 발송)이 코드 배선·mock 까지만. sandbox/실키 e2e 또는 발송 로그 검증 없음
+- ~~**테넌트 쓰기 경로 RLS 강제**~~ **해소**: `spec-x-tenant-isolation-hardening` (2026-06-08) — WITH CHECK 정책 적용, cross-org INSERT/UPDATE 거부 e2e 검증 완료
+- ~~**production 슈퍼유저 가드 강화 (W-5)**~~ **해소**: `spec-x-tenant-isolation-hardening` (2026-06-08) — `SELECT rolsuper` DB 사실 기반 확인으로 강화 (BYPASSRLS·타 슈퍼유저 포착)
+- ~~**이메일 실전송 검증 (W-6)**~~ **해소**: `spec-x-tenant-isolation-hardening` 회고 (2026-06-08) — 기존 어댑터 테스트 충분 확인, 실 live-send 는 실 키·인박스 필요로 자동화 한계 명시
 - ~~**ADR `tenant-isolation-runtime-role-and-als-tx`**~~ **해소**: `docs/adr/0024-tenant-isolation-enforcement.md` (spec-17-08)
 - [ ] **운영 DB 풀 사이징 / pgbouncer 가이드** (2026-06-07) — spec-17-07 요청-스코프 tx 는 동시 인증 요청 수를 풀 크기로 제한. 운영 풀 상향 + 커넥션 풀러(tx 모드) 권장. infra phase(22) 후보
 - [ ] lat.md Phase 2 도입 평가 (지식 그래프 도구)
@@ -60,17 +60,7 @@
 > 자동 갱신되지 않습니다 — Icebox 와 동일한 정책.
 
 > **2026-06-02 멀티테넌트 SaaS 로드맵 확정·재조정** (ADR-0022/0023). 9 → **6 phase** 로 묶음.
-> phase-03~16 완료 (done 섹션 참조). 단계적 구현이되 빠짐없이 기록(까먹지 않기).
-
-- **phase-17** — 멀티테넌시 foundation + 이메일 어댑터 (**spine, ADR-0022**):
-  - [이메일 먼저] **실 이메일 어댑터**(Resend/SES) — notification 포트 stub 해소, password-reset/email-verify 실발송. 초대 메일의 전제이므로 phase 첫 spec.
-  - `organizations`·`memberships`(user×org×role)·`invitations` 엔티티
-  - 기존 테이블 `org_id` retrofit + **Postgres RLS** 정책
-  - 토큰 `active_org` 클레임 + org 전환/초대 endpoint
-  - 가입 시 개인 워크스페이스 자동 생성 + AsyncLocalStorage→DB 세션변수 org 주입
-  - 전역 `role` → org 멤버십 role 이동
-  - **유저 프로비저닝 공용 seam** (native signup·provider-first-login 동일 경로, ADR-0022/0023)
-  - **이후 모든 phase 의 기반.**
+> phase-03~17 완료 (done 섹션 참조). 단계적 구현이되 빠짐없이 기록(까먹지 않기).
 
 - **phase-18** — 인증 권위 모드 (**ADR-0023 / 이슈 #108**):
   - **AuthGuard verifier-pluggable** (native / firebase / supabase)
