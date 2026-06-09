@@ -60,11 +60,17 @@ function makeProviderDatabase(existingUser?: Record<string, unknown> | null) {
     ]);
   const mockUserValues = vi.fn().mockReturnValue({ returning: mockUserReturning });
 
-  const mockInsert = vi
-    .fn()
-    .mockReturnValueOnce({ values: mockUserValues }) // 1st: users insert (신규 유저 경로)
-    .mockReturnValueOnce({ values: mockOrgValues }) // 2nd: organizations insert
-    .mockReturnValueOnce({ values: mockMembershipValues }); // 3rd: memberships insert
+  // 기존 유저 경로는 user insert 없이 org → membership 순서
+  const mockInsert = existingUser
+    ? vi
+        .fn()
+        .mockReturnValueOnce({ values: mockOrgValues })
+        .mockReturnValueOnce({ values: mockMembershipValues })
+    : vi
+        .fn()
+        .mockReturnValueOnce({ values: mockUserValues }) // 신규 유저: users insert
+        .mockReturnValueOnce({ values: mockOrgValues })
+        .mockReturnValueOnce({ values: mockMembershipValues });
 
   const mockWhere = vi.fn().mockResolvedValue([]);
   const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
@@ -89,22 +95,21 @@ describe("ProvisionService.provisionFromProvider", () => {
   it("신규 Firebase 유저 → 유저 생성 + org 생성 + internalUserId 반환", async () => {
     const { database } = makeProviderDatabase(null);
     const service = new ProvisionService(database as never);
-    await expect(service.provisionFromProvider(FIREBASE_UID, EMAIL)).rejects.toThrow(
-      "not implemented",
-    );
+    const result = await service.provisionFromProvider(FIREBASE_UID, EMAIL);
+    expect(result).toEqual({ orgId: ORG_ID, orgRole: "owner", internalUserId: INTERNAL_UUID });
   });
 
   it("기존 Firebase 유저 (org 있음) → 유저/org 생성 없이 기존 orgId + internalUserId 반환", async () => {
-    const { database } = makeProviderDatabase({
+    const { database, mocks } = makeProviderDatabase({
       id: INTERNAL_UUID,
       email: EMAIL,
       orgId: ORG_ID,
       providerUid: FIREBASE_UID,
     });
     const service = new ProvisionService(database as never);
-    await expect(service.provisionFromProvider(FIREBASE_UID, EMAIL)).rejects.toThrow(
-      "not implemented",
-    );
+    const result = await service.provisionFromProvider(FIREBASE_UID, EMAIL);
+    expect(result).toEqual({ orgId: ORG_ID, orgRole: "owner", internalUserId: INTERNAL_UUID });
+    expect(mocks.mockInsert).not.toHaveBeenCalled();
   });
 
   it("기존 Firebase 유저 (org 없음) → org만 생성 + internalUserId 반환", async () => {
@@ -115,9 +120,8 @@ describe("ProvisionService.provisionFromProvider", () => {
       providerUid: FIREBASE_UID,
     });
     const service = new ProvisionService(database as never);
-    await expect(service.provisionFromProvider(FIREBASE_UID, EMAIL)).rejects.toThrow(
-      "not implemented",
-    );
+    const result = await service.provisionFromProvider(FIREBASE_UID, EMAIL);
+    expect(result).toEqual({ orgId: ORG_ID, orgRole: "owner", internalUserId: INTERNAL_UUID });
   });
 });
 
