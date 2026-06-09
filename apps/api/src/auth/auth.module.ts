@@ -1,6 +1,12 @@
 import { Module } from "@nestjs/common";
 import { AuditService, AuthEventBus, drizzleAuditLogStore } from "@repo/backend-auth-audit";
-import { AuthGuard, NESTJS_AUTH_OPTIONS } from "@repo/nestjs-auth";
+import {
+  ACCESS_TOKEN_VERIFIER,
+  AuthGuard,
+  NativeVerifier,
+  NESTJS_AUTH_OPTIONS,
+  type NestjsAuthOptions,
+} from "@repo/nestjs-auth";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 
 import { JwtModule } from "../jwt/jwt.module.js";
@@ -81,6 +87,11 @@ const settings: AppSettings = loadSettings(process.env);
         issuer: opts.issuer,
         audience: opts.audience,
       }),
+    },
+    {
+      provide: ACCESS_TOKEN_VERIFIER,
+      inject: [NESTJS_AUTH_OPTIONS],
+      useFactory: (opts: NestjsAuthOptions) => new NativeVerifier(opts),
     },
     {
       provide: AuditService,

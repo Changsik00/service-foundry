@@ -17,3 +17,9 @@ export {
 export { CurrentUser, Roles } from "./decorators.js";
 export { type NestjsAuthAsyncOptions, NestjsAuthModule } from "./module.js";
 export { ROLES_KEY, RolesGuard } from "./roles.guard.js";
+export {
+  ACCESS_TOKEN_VERIFIER,
+  type AccessTokenVerifier,
+  NativeVerifier,
+  type VerifiedIdentity,
+} from "./verifier.js";
