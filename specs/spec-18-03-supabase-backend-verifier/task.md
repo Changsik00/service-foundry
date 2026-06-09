@@ -49,14 +49,14 @@
 
 ### 2-1. SupabaseVerifier.verify() 구현
 
-- [ ] `packages/nestjs/auth-supabase/src/supabase-verifier.ts` 구현:
+- [x] `packages/nestjs/auth-supabase/src/supabase-verifier.ts` 구현:
   - `jwtVerify(token, new TextEncoder().encode(jwtSecret))` → `JWTPayload`
   - `payload.sub` → `sub`
   - `payload.role ?? "user"` → `role`
   - `payload[ACTIVE_ORG_CLAIM] ?? payload.app_metadata?.[ACTIVE_ORG_CLAIM] ?? null` → `orgId`
   - provisioning 경로: `provisionFromProvider(sub, email)`
-- [ ] `pnpm --filter @repo/nestjs-auth-supabase test` → PASS 확인
-- [ ] Commit: `feat(spec-18-03): SupabaseVerifier 구현 (Green)`
+- [x] `pnpm --filter @repo/nestjs-auth-supabase test` → PASS 확인
+- [x] Commit: `feat(spec-18-03): SupabaseVerifier 구현 (Green)`
 
 ---
 
