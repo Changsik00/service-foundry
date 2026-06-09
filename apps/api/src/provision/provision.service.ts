@@ -11,11 +11,22 @@ export const PROVISION_SERVICE = Symbol("PROVISION_SERVICE");
 
 export interface IProvisionService {
   provisionUser(userId: string, email: string): Promise<{ orgId: string; orgRole: string }>;
+  provisionFromProvider(
+    uid: string,
+    email: string,
+  ): Promise<{ orgId: string; orgRole: string; internalUserId: string }>;
 }
 
 @Injectable()
 export class ProvisionService implements IProvisionService {
   constructor(@Inject(DATABASE) private readonly database: Database<Record<string, unknown>>) {}
+
+  async provisionFromProvider(
+    _uid: string,
+    _email: string,
+  ): Promise<{ orgId: string; orgRole: string; internalUserId: string }> {
+    throw new Error("not implemented");
+  }
 
   async provisionUser(userId: string, email: string): Promise<{ orgId: string; orgRole: string }> {
     return this.database.db.transaction(async (tx) => {
