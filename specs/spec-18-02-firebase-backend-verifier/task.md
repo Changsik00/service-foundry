@@ -10,7 +10,7 @@
 - [x] plan.md 작성
 - [x] task.md 작성 (이 파일)
 - [x] 백로그 업데이트 (phase-18.md SPEC 표 sdd 자동 갱신)
-- [ ] 사용자 Plan Accept
+- [x] 사용자 Plan Accept
 
 ---
 
@@ -109,5 +109,5 @@
 |---|---|
 | **총 Task 수** | 4 |
 | **예상 commit 수** | 4 (Red + Green + Module + Ship) |
-| **현재 단계** | Planning |
+| **현재 단계** | Ship |
 | **마지막 업데이트** | 2026-06-09 |
