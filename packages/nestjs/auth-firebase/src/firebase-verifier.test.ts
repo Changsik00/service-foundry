@@ -51,7 +51,7 @@ describe("FirebaseVerifier", () => {
     expect(mockSetCustomUserClaims).not.toHaveBeenCalled();
   });
 
-  it("유효 token + activeOrgId 없음 + provisionPort 있음 → provisionFromProvider + setCustomUserClaims 호출", async () => {
+  it("유효 token + activeOrgId 없음 + provisionPort 있음 → provisionFromProvider + setCustomUserClaims 호출 + sub=internalUserId", async () => {
     mockVerifyIdToken.mockResolvedValue({
       uid: "firebase-uid-789",
       email: "new-user@example.com",
@@ -59,7 +59,11 @@ describe("FirebaseVerifier", () => {
     mockSetCustomUserClaims.mockResolvedValue(undefined);
 
     const mockProvision: FirebaseProvisionPort = {
-      provisionFromProvider: vi.fn().mockResolvedValue({ orgId: "org-new", orgRole: "owner" }),
+      provisionFromProvider: vi.fn().mockResolvedValue({
+        orgId: "org-new",
+        orgRole: "owner",
+        internalUserId: "internal-uuid-789",
+      }),
     };
 
     const verifier = makeVerifier(mockProvision);
@@ -73,7 +77,8 @@ describe("FirebaseVerifier", () => {
       [ACTIVE_ORG_CLAIM]: "org-new",
       org_role: "owner",
     });
-    expect(result).toEqual({ sub: "firebase-uid-789", role: "user", orgId: "org-new" });
+    // sub는 Firebase UID가 아닌 internalUserId (internal UUID)
+    expect(result).toEqual({ sub: "internal-uuid-789", role: "user", orgId: "org-new" });
   });
 
   it("role 클레임 없음 → role: 'user' 기본값", async () => {

@@ -33,6 +33,8 @@
     "@repo/backend-observability": "workspace:*",
     "@repo/backend-settings": "workspace:*",
     "@repo/nestjs-auth": "workspace:*",
+    "@repo/nestjs-auth-firebase": "workspace:*",
+    "@repo/nestjs-auth-supabase": "workspace:*",
     "@repo/nestjs-database": "workspace:*",
     "@repo/nestjs-http-client": "workspace:*",
     "@repo/nestjs-logger": "workspace:*",

@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-18** — 인증 권위 모드 (Auth Authority Mode) — 3 spec — 다음: (spec 없음)
+- **phase-18** — 인증 권위 모드 (Auth Authority Mode) — 4 spec — 다음: spec-18-04-provider-mode-cleanup
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기

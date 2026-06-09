@@ -365,6 +365,12 @@ importers:
       '@repo/nestjs-auth':
         specifier: workspace:*
         version: link:../../packages/nestjs/auth
+      '@repo/nestjs-auth-firebase':
+        specifier: workspace:*
+        version: link:../../packages/nestjs/auth-firebase
+      '@repo/nestjs-auth-supabase':
+        specifier: workspace:*
+        version: link:../../packages/nestjs/auth-supabase
       '@repo/nestjs-database':
         specifier: workspace:*
         version: link:../../packages/nestjs/database

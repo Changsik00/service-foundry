@@ -1,6 +1,8 @@
 import { Module } from "@nestjs/common";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { NestjsAuthModule } from "@repo/nestjs-auth";
+import { NestjsFirebaseAuthModule } from "@repo/nestjs-auth-firebase";
+import { NestjsSupabaseAuthModule } from "@repo/nestjs-auth-supabase";
 import { DatabaseModule } from "@repo/nestjs-database";
 import { HttpClientModule } from "@repo/nestjs-http-client";
 import { BackendLoggerModule } from "@repo/nestjs-logger";
@@ -8,6 +10,7 @@ import { BackendThrottlerModule } from "@repo/nestjs-security";
 import { BackendSettingsModule } from "@repo/nestjs-settings";
 
 import { AuthModule } from "./auth/auth.module.js";
+import { ProviderAuthModule } from "./auth/provider-auth.module.js";
 import { HealthController } from "./health/health.controller.js";
 import { appSchema } from "./infra/schema/index.js";
 import { SuperuserGuard } from "./infra/superuser-guard.provider.js";
@@ -22,6 +25,39 @@ import { NotificationModule } from "./notification/notification.module.js";
 import { type AppSettings, loadSettings } from "./settings.js";
 
 const settings: AppSettings = loadSettings(process.env);
+
+function buildAuthImports() {
+  if (settings.AUTH_MODE === "firebase") {
+    const fbOpts = settings.FIREBASE_PROJECT_ID
+      ? {
+          serviceAccount: settings.FIREBASE_SERVICE_ACCOUNT ?? "",
+          projectId: settings.FIREBASE_PROJECT_ID,
+        }
+      : { serviceAccount: settings.FIREBASE_SERVICE_ACCOUNT ?? "" };
+    return [ProviderAuthModule.forMode("firebase", NestjsFirebaseAuthModule.forRoot(fbOpts))];
+  }
+  if (settings.AUTH_MODE === "supabase") {
+    return [
+      ProviderAuthModule.forMode(
+        "supabase",
+        NestjsSupabaseAuthModule.forRoot({ jwtSecret: settings.SUPABASE_JWT_SECRET ?? "" }),
+      ),
+    ];
+  }
+  // native (default) — 기존 배선 유지
+  return [
+    NestjsAuthModule.forRootAsync({
+      imports: [JwtModule],
+      inject: [JwtService],
+      useFactory: (jwtSvc: JwtService) => ({
+        keyStore: () => jwtSvc.getKeyStore(),
+        issuer: settings.JWT_ISSUER,
+        audience: settings.JWT_AUDIENCE,
+      }),
+    }),
+    AuthModule,
+  ];
+}
 
 @Module({
   imports: [
@@ -42,16 +78,7 @@ const settings: AppSettings = loadSettings(process.env);
     ObservabilityModule,
     NotificationModule,
     JwtModule,
-    NestjsAuthModule.forRootAsync({
-      imports: [JwtModule],
-      inject: [JwtService],
-      useFactory: (jwtSvc: JwtService) => ({
-        keyStore: () => jwtSvc.getKeyStore(),
-        issuer: settings.JWT_ISSUER,
-        audience: settings.JWT_AUDIENCE,
-      }),
-    }),
-    AuthModule,
+    ...buildAuthImports(),
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_INTERCEPTOR, useClass: TenantContextInterceptor }, SuperuserGuard],

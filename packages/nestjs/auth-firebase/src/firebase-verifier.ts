@@ -28,16 +28,23 @@ export class FirebaseVerifier implements AccessTokenVerifier {
     const { uid, email = "" } = decoded;
     const role = (decoded.role as string | undefined) ?? "user";
     let orgId = (decoded[ACTIVE_ORG_CLAIM] as string | undefined) ?? null;
+    // Firebase UID는 UUID가 아니므로 internal UUID로 교체. provision 없으면 uid 그대로 사용.
+    let sub = uid;
 
     if (!orgId && this.provision) {
-      const { orgId: newOrgId, orgRole } = await this.provision.provisionFromProvider(uid, email);
+      const {
+        orgId: newOrgId,
+        orgRole,
+        internalUserId,
+      } = await this.provision.provisionFromProvider(uid, email);
       orgId = newOrgId;
+      sub = internalUserId;
       await getAuth(this.app).setCustomUserClaims(uid, {
         [ACTIVE_ORG_CLAIM]: orgId,
         org_role: orgRole,
       });
     }
 
-    return { sub: uid, role, orgId };
+    return { sub, role, orgId };
   }
 }
