@@ -32,6 +32,10 @@ const AppSettingsSchema = BaseBackendSchema.extend({
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().email().default("noreply@localhost"),
   FRONTEND_URL: z.string().url().default("http://localhost:3000"),
+  AUTH_MODE: z.enum(["native", "firebase", "supabase"]).default("native"),
+  FIREBASE_SERVICE_ACCOUNT: z.string().optional(),
+  FIREBASE_PROJECT_ID: z.string().optional(),
+  SUPABASE_JWT_SECRET: z.string().optional(),
 });
 
 export type AppSettings = z.output<typeof AppSettingsSchema>;
@@ -50,6 +54,15 @@ export const loadSettings = defineSettings({
     production: {},
   },
   build: (env, _layered) => {
+    // provider 모드 필수 env 가드 (환경 무관)
+    if (env.AUTH_MODE === "firebase" && !env.FIREBASE_SERVICE_ACCOUNT) {
+      throw new Error(
+        "기동 거부: AUTH_MODE=firebase 이면 FIREBASE_SERVICE_ACCOUNT 를 설정해야 합니다.",
+      );
+    }
+    if (env.AUTH_MODE === "supabase" && !env.SUPABASE_JWT_SECRET) {
+      throw new Error("기동 거부: AUTH_MODE=supabase 이면 SUPABASE_JWT_SECRET 을 설정해야 합니다.");
+    }
     // production 기동 시 dev 기본 시크릿 거부 — 약한 시크릿로의 운영 기동 차단.
     if (env.NODE_ENV === "production") {
       const weak = (["CSRF_SECRET", "OAUTH_STATE_SECRET"] as const).filter(
