@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-18** — 인증 권위 모드 (Auth Authority Mode) — 0/0 spec — (다음: 첫 spec 생성 대기)
+- **phase-18** — 인증 권위 모드 (Auth Authority Mode) — 1 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
