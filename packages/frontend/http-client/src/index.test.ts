@@ -194,15 +194,33 @@ describe("AuthSource 주입 (auth option)", () => {
     expect(req.headers.get("authorization")).toBe("Bearer tok_settled");
   });
 
-  it("authenticated + 401 → refresh + 재시도 (fetch 2회)", async () => {
+  it("authenticated + 401 → refresh + 재시도 (fetch 2회, 2회차엔 새 토큰 사용)", async () => {
     fetchMock
       .mockResolvedValueOnce(jsonResponse({ error: "expired" }, 401))
       .mockResolvedValueOnce(jsonResponse({ ok: true }));
-    const auth = makeAuthSource("authenticated", "tok_old");
+
+    let currentToken = "tok_old";
+    const auth: AuthSource = {
+      status: "authenticated",
+      getToken: vi.fn(async () => currentToken),
+      refresh: vi.fn(async () => {
+        currentToken = "tok_new";
+      }),
+      waitUntilSettled: async () => {},
+    };
     const authClient = createHttpClient({ baseUrl, retries: 0, auth });
     await authClient.get("/me");
+
     expect(auth.refresh).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledTimes(2);
+    // 1회차: old token
+    expect((fetchMock.mock.calls[0] as [Request])[0].headers.get("authorization")).toBe(
+      "Bearer tok_old",
+    );
+    // 2회차: refresh 후 새 token
+    expect((fetchMock.mock.calls[1] as [Request])[0].headers.get("authorization")).toBe(
+      "Bearer tok_new",
+    );
   });
 
   it("authenticated + 401 + token null → refresh 안 함, 즉시 throw", async () => {

@@ -12,7 +12,7 @@
  * 환경 지원: Next Server/Client Component, Vite SPA, Edge runtime (모두 globalThis.fetch 기반).
  */
 import type { AuthSource } from "@repo/auth-contracts";
-import { AppError } from "@repo/errors";
+import { AppError, isAppError, unauthenticatedError } from "@repo/errors";
 import ky, { HTTPError, type KyInstance, type Options, TimeoutError } from "ky";
 import type { ZodType } from "zod";
 
@@ -64,8 +64,10 @@ export interface HttpClient {
 const IDEMPOTENT_METHODS = ["get", "put", "delete", "head", "options", "trace"] as const;
 const RETRY_STATUS_CODES = [408, 413, 429, 500, 502, 503, 504];
 
+const isUnauthorized = (e: unknown): e is AppError => isAppError(e) && e.statusCode === 401;
+
 function toAppError(err: unknown): AppError {
-  if (err instanceof AppError) return err;
+  if (isAppError(err)) return err;
   if (err instanceof TimeoutError) {
     return new AppError({ code: "TIMEOUT", message: err.message, statusCode: 504 });
   }
@@ -106,12 +108,8 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
 
     // 2. requiresAuth + unauthenticated → 즉시 거부 (fetch 없음)
     if (opts.requiresAuth && auth?.status === "unauthenticated") {
-      throw new AppError({ code: "BAD_REQUEST", message: "인증 필요", statusCode: 401 });
+      throw unauthenticatedError("인증 필요");
     }
-
-    // 3. 토큰 획득
-    const token = auth ? await auth.getToken() : null;
-    const authHeaders = token ? { authorization: `Bearer ${token}` } : {};
 
     const methodLower = opts.method.toLowerCase();
     const explicitRetries = opts.retries !== undefined;
@@ -119,9 +117,8 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
       ? Array.from(new Set([...IDEMPOTENT_METHODS, methodLower]))
       : [...IDEMPOTENT_METHODS];
 
-    const kyOpts: Options = {
+    const baseKyOpts: Options = {
       method: opts.method,
-      headers: { ...authHeaders, ...opts.headers },
       ...(opts.body !== undefined && { json: opts.body }),
       ...(opts.timeoutMs !== undefined && { timeout: opts.timeoutMs }),
       retry: {
@@ -135,7 +132,15 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
     // ky 의 baseUrl + path — / 로 시작하면 안 됨, strip
     const normalizedPath = opts.path.replace(/^\//, "");
 
-    const attempt = async (): Promise<T> => {
+    // tok 은 attempt 마다 주입 — refresh 후 새 토큰으로 재시도 가능
+    const attempt = async (tok: string | null): Promise<T> => {
+      const kyOpts = {
+        ...baseKyOpts,
+        headers: {
+          ...(tok ? { authorization: `Bearer ${tok}` } : {}),
+          ...opts.headers,
+        },
+      };
       try {
         const raw = await baseInstance(normalizedPath, kyOpts).json<unknown>();
         if (opts.schema) {
@@ -155,19 +160,19 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
       }
     };
 
+    // 3. 첫 시도
+    const token = auth ? await auth.getToken() : null;
     try {
-      return await attempt();
+      return await attempt(token);
     } catch (e) {
-      // 4. 401 + 토큰 있었음 → refresh 후 재시도 1회
-      if (e instanceof AppError && e.statusCode === 401 && auth && token) {
-        try {
-          await auth.refresh();
-        } catch {
-          throw e;
-        }
-        return await attempt();
+      // 4. 401 + 토큰 있었음 → refresh → 새 토큰으로 재시도 1회
+      if (!isUnauthorized(e) || !auth || !token) throw e;
+      try {
+        await auth.refresh();
+      } catch {
+        throw e;
       }
-      throw e;
+      return await attempt(await auth.getToken());
     }
   };
 
