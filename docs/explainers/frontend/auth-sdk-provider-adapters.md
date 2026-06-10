@@ -23,7 +23,7 @@ flowchart LR
         FB["createFirebaseAuthSDK(app)<br/>@repo/frontend-auth-firebase<br/>firebase/auth 래핑"]
         SB["createSupabaseAuthSDK(config)<br/>@repo/frontend-auth-supabase<br/>supabase-js 래핑"]
         MOCK["createMockAuthSDK(state?)<br/>@repo/frontend-auth-testing<br/>state 제어 테스트용"]
-        HTTP["createAuthSDK(baseUrl)<br/>web-next 인라인<br/>NestJS REST 래핑"]
+        HTTP["createAuthSDK(baseUrl)<br/>web 인라인<br/>NestJS REST 래핑"]
     end
 
     FB -->|구현| Contract

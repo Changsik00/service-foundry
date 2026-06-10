@@ -67,9 +67,7 @@
 service-foundry/
 ├─ apps/
 │  ├─ api/                # Fastify 백엔드           # NOTE: framework 보류 — ADR-005 참조
-│  ├─ web-next/           # Next.js (App Router)
-│  ├─ web-vite/           # Vite + React SPA
-│  ├─ admin/              # 내부 어드민 (Vite+React 기반)
+│  ├─ web/           # Next.js (App Router)
 │  └─ worker/             # BullMQ 워커
 │
 ├─ packages/
@@ -170,9 +168,7 @@ service-foundry/
 | 앱          | 역할                                                          |
 | ---------- | ------------------------------------------------------------ |
 | `api`      | framework 보류 (ADR-005), backend package 통합 reference       |
-| `web-next` | App Router + tanstack-query + sdk + auth + ui                |
-| `web-vite` | Vite + tanstack-router + tanstack-query + sdk + auth + ui    |
-| `admin`    | web-vite와 같은 스택, 별도 레이아웃 (분리 여부는 `backlog/queue.md` Icebox 참조)    |
+| `web` | App Router + tanstack-query + sdk + auth + ui                |
 | `worker`   | BullMQ 워커 + observability + database                       |
 | (신규) `edge-api` | Hono 기반 edge / serverless 예제                         |
 
@@ -183,7 +179,7 @@ service-foundry/
 ### 3.1 레이어 (위 → 아래만 허용)
 
 ```
-apps/*  (api, web-next, web-vite, admin, worker, edge-api)
+apps/*  (api, web, worker, edge-api)
    │
    ▼
 composition packages:  shared/contracts, shared/auth-contracts,

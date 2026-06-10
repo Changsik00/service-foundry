@@ -94,6 +94,20 @@ module.exports = {
       from: { path: "^packages/react/" },
       to: { path: "^packages/(backend|nestjs)/" },
     },
+    // === Frontend app consolidation guard (ADR-0025, 2026-06-10) ===
+    // web-vite removed; the "frontend packages work without Next" guarantee is
+    // enforced statically here instead of by a living SPA app.
+    {
+      name: "frontend-no-next-imports",
+      severity: "error",
+      comment:
+        "packages/frontend/* and packages/react/* must stay Next-free. A Next adapter belongs in packages/next/<name> (ADR-0025).",
+      from: { path: "^packages/(frontend|react)/" },
+      // 두 형태 모두 매치:
+      //  1. 선언된 dep → pnpm 해석 경로 (node_modules/.pnpm/next@x/node_modules/next/...)
+      //  2. 미선언 import → unresolvable 시 raw specifier 그대로 ("next/navigation")
+      to: { path: "(^|/)node_modules/next/|^next(/|$)" },
+    },
   ],
   options: {
     doNotFollow: { path: "node_modules" },

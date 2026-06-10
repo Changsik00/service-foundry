@@ -7,6 +7,9 @@ status: accepted
 
 # ADR-0021: CSRF 토큰 바인딩 전략 — per-client `csrf_id` (session 비의존)
 
+> [!NOTE]
+> 본문의 `apps/web-vite` 전제는 [ADR-0025](./0025-frontend-app-consolidation.md)(frontend 앱 단일화, 2026-06-10)로 대체됨.
+
 ## 📚 Context
 
 phase-15(spec-15-02)에서 CSRF double-submit 방어를 `apps/api` 에 배선했다. 보호 대상은 인증 endpoint(signin/signup/refresh/signout)뿐 아니라 **미인증 상태변경 endpoint**(password-reset·email-verify 계열)도 포함하기로 결정됐다(사용자 합의). `packages/backend/auth-rate-limit/src/csrf.ts` 의 토큰 함수는 `(secret, id)` 시그니처로, 토큰을 임의의 `id` 에 바인딩한다 — 이 `id` 를 무엇으로 둘지가 핵심 결정이었다. session(refresh token)에 묶으면 미인증 요청(session 없음)을 보호할 수 없다.

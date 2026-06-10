@@ -1,19 +1,19 @@
 ---
 type: reference
-aliases: ["@apps/web-next", "웹 Next.js", "SSR 프론트엔드"]
+aliases: ["@apps/web", "웹 Next.js", "SSR 프론트엔드"]
 tags: [service-foundry, reference, frontend, app]
 ---
 
-# web-next — Next.js 16 App Router SSR 웹 프론트엔드
+# web — Next.js 16 App Router SSR 웹 프론트엔드
 
 > 💡 **한 줄 요약**: Next.js 16 App Router + React 19 기반 SSR 웹 앱. RSC 서버 패치와 TanStack Query 클라이언트 패치를 동시에 시연하며, 로그인 UI와 인증 SDK를 통합한다.
-> **위치**: `apps/web-next` · **상위**: [[architecture]]
+> **위치**: `apps/web` · **상위**: [[architecture]]
 
 ## 요약
 
-`web-next` 는 service-foundry 의 메인 SSR 웹 애플리케이션이다. Next.js 16 App Router(RSC) 를 기반으로 하며, 서버 컴포넌트에서 직접 `api` 의 `/health` 를 호출해 HTML 을 렌더링하고(zero-bundle), 동시에 `'use client'` 컴포넌트에서 TanStack Query 로 동일 데이터를 클라이언트 사이드로 패치하는 하이브리드 패턴을 보여 준다. 포트: `2027`.
+`web` 는 service-foundry 의 메인 SSR 웹 애플리케이션이다. Next.js 16 App Router(RSC) 를 기반으로 하며, 서버 컴포넌트에서 직접 `api` 의 `/health` 를 호출해 HTML 을 렌더링하고(zero-bundle), 동시에 `'use client'` 컴포넌트에서 TanStack Query 로 동일 데이터를 클라이언트 사이드로 패치하는 하이브리드 패턴을 보여 준다. 포트: `2027`.
 
-> 📄 **위치**: `apps/web-next` · **포트**: `2027` · **환경**: `API_BASE_URL` (서버→api 호출)
+> 📄 **위치**: `apps/web` · **포트**: `2027` · **환경**: `API_BASE_URL` (서버→api 호출)
 
 ## 책임
 
@@ -49,4 +49,4 @@ tags: [service-foundry, reference, frontend, app]
 - [[explainers/frontend/auth-react-provider-sdk-contract]] — React 인증 프로바이더·SDK 계약
 - [[reference/architecture]] — 전체 시스템 구조
 
-> 소스: spec-04-03, spec-08-04, spec-09-02/03 · `apps/web-next/src/`
+> 소스: spec-04-03, spec-08-04, spec-09-02/03 · `apps/web/src/`

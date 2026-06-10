@@ -7,11 +7,11 @@ tags: [service-foundry, explainer, frontend, auth, http]
 # HTTP Auth SDK 인라인 — auth-api.ts + auth-sdk.ts 2-레이어 구조
 
 > **대상**: NestJS REST API를 CoreAuthSDK 인터페이스로 연결하는 방식을 이해하려는 개발자
-> **연관 문서**: [[reference/apps/web-next]] · [[frontend-http-client-ky-wrapper]] · [[adr/0018-auth-provider-package-location]]
+> **연관 문서**: [[reference/apps/web]] · [[frontend-http-client-ky-wrapper]] · [[adr/0018-auth-provider-package-location]]
 
 ## 왜 필요한가
 
-Firebase/Supabase SDK는 여러 앱에서 재사용 가능하지만, NestJS 백엔드를 타겟으로 하는 HTTP 인증 구현은 해당 앱의 엔드포인트 스키마에 완전히 묶여 있다. ADR-0018에 따라 별도 패키지 대신 `apps/web-next/src/lib/`에 인라인으로 배치한다.
+Firebase/Supabase SDK는 여러 앱에서 재사용 가능하지만, NestJS 백엔드를 타겟으로 하는 HTTP 인증 구현은 해당 앱의 엔드포인트 스키마에 완전히 묶여 있다. ADR-0018에 따라 별도 패키지 대신 `apps/web/src/lib/`에 인라인으로 배치한다.
 
 2-레이어 분리는 관심사 혼재를 방지한다:
 - **Layer 2 (auth-api.ts)**: HTTP 메서드·경로·payload 포맷을 여기서만 관리
@@ -80,9 +80,9 @@ if (!r.ok) return { success: false, reason: toReason(r.error) };
 
 ## 동작/테스트 방법
 
-> 🧪 **테스트**: `pnpm --filter @apps/web-next test` — `auth-sdk.test.ts` 10개 (signIn 성공/실패/mfa_required, signUp, signOut, getCurrentUser, refresh 성공/실패). `vi.mock("@repo/frontend-http-client")` auto-mock으로 HTTP 레이어를 대체한다.
+> 🧪 **테스트**: `pnpm --filter @apps/web test` — `auth-sdk.test.ts` 10개 (signIn 성공/실패/mfa_required, signUp, signOut, getCurrentUser, refresh 성공/실패). `vi.mock("@repo/frontend-http-client")` auto-mock으로 HTTP 레이어를 대체한다.
 
-> 🧪 **SDK 교체 검증**: `apps/web-next/src/lib/auth.ts`의 import를 `createMockAuthSDK` ↔ `createAuthSDK`로 교체 후 `pnpm -r typecheck` — `CoreAuthSDK` 타입 충족 여부를 컴파일 수준에서 확인.
+> 🧪 **SDK 교체 검증**: `apps/web/src/lib/auth.ts`의 import를 `createMockAuthSDK` ↔ `createAuthSDK`로 교체 후 `pnpm -r typecheck` — `CoreAuthSDK` 타입 충족 여부를 컴파일 수준에서 확인.
 
 ## 마치며
 
@@ -96,4 +96,4 @@ if (!r.ok) return { success: false, reason: toReason(r.error) };
 - [[login-ui-form]] — createAuthSDK를 통해 백엔드와 연결되는 LoginForm
 - [[adr/0018-auth-provider-package-location]] — 인라인 배치 결정 근거
 
-> 소스: spec-09-03 walkthrough · `apps/web-next/src/lib/auth-api.ts` · `apps/web-next/src/lib/auth-sdk.ts`
+> 소스: spec-09-03 walkthrough · `apps/web/src/lib/auth-api.ts` · `apps/web/src/lib/auth-sdk.ts`

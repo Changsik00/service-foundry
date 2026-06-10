@@ -15,6 +15,7 @@
 
 <!-- sdd:specx:start -->
 - [ ] spec-x-auth-token-refresh-interceptor — auth-token-refresh-interceptor
+- [ ] spec-x-web-consolidation — web-consolidation
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -22,7 +23,7 @@
 > 아이디어·보류 항목 보관소. 실행 불가. 관련 항목이 쌓이면 Phase로, 단발이면 spec-x로 승격.
 > 이 섹션은 sdd가 건드리지 않습니다. 자유롭게 편집하세요.
 
-- [ ] apps/admin 별도 앱 vs apps/web-vite route 결정 (phase-09)
+- ~~apps/admin 별도 앱 여부 결정~~ **해소**: 별도 admin 앱 없음 — `apps/web` 단일 앱이 콘솔(어드민 성격) 역할 (ADR-0025, 2026-06-10)
 - [ ] tailwind를 packages/frontend/ui에만 둘지 각 앱에도 설치할지 (phase-04)
 - ~~Drizzle/Prisma 마이그레이션 공통 wrapper~~ **해소**: ADR-0005 Drizzle 단일 결정 (2026-05-18, spec-x-auth-foundation-prep)
 - [ ] Integration test orchestration: testcontainers (per-test 격리) vs docker-compose snapshot (전체 환경 미리 부팅) (phase-10)
@@ -32,10 +33,10 @@
 - [ ] check-secrets 훅 false positive 개선 — compose/env 의 `${VAR:-default}` 보간값을 시크릿으로 오탐 (spec-10-01 에서 2회 warn 우회). `${...}`-only 값 무시 또는 allowlist. spec-x 후보 — **RCA-002 작성됨** (spec-14-07, docs 예시도 오탐)
 - ~~🔒 **CSRF 미배선**~~ **→ phase-15-01 로 승격** (2026-06-01, wiring audit §A)
 - ~~**생성기 backend tsconfig `types:["node"]` 누락**~~ **→ phase-15-05 로 승격** (2026-06-01, wiring audit §E)
-- [ ] **wiring audit 🟡 의도적 미배선 항목들** (passkey env · HttpClient/Settings DI · web-vite theme · 프론트 MFA/Passkey UI · RequireAuth · provider 교체) — 보일러플레이트 의도적, 필요 시 개별 승격. `docs/review/2026-06-01-wiring-audit.md` §🟡
+- [ ] **wiring audit 🟡 의도적 미배선 항목들** (passkey env · HttpClient/Settings DI · 프론트 MFA/Passkey UI · RequireAuth · provider 교체 — ~~web-vite theme~~ ADR-0025 로 소멸) — 보일러플레이트 의도적, 필요 시 개별 승격. `docs/review/2026-06-01-wiring-audit.md` §🟡
 - ~~**MFA/passkey 상태변경 POST 8개 CSRF 보호**~~ **해소**: `spec-16-01` (2026-06-02) — CsrfGuard 전체 8 endpoint 적용 완료
 - ~~**CSRF/OAuth secret production 가드**~~ **해소**: `spec-16-02 phase-FF` (2026-06-02) — `DEV_DEFAULT_SECRET` 체크 + production 기동 거부 적용 완료
-- [x] ~~**web-next CSRF 403 자가복구**~~ **부분 해소**: `apps/web-next/src/lib/auth-api.ts` `withCsrfRetry` 구현 완료 (2026-06-09). **잔여**: 401 자동 갱신 → `spec-x-auth-token-refresh-interceptor` (spec-x 대기), web-vite CSRF 헤더, password-reset/email-verify 클라이언트 흐름
+- [x] ~~**web(구 web-next) CSRF 403 자가복구**~~ **부분 해소**: `apps/web/src/lib/auth-api.ts` `withCsrfRetry` 구현 완료 (2026-06-09). **잔여**: 401 자동 갱신 → `spec-x-auth-token-refresh-interceptor` (spec-x 대기), password-reset/email-verify 클라이언트 흐름 (~~web-vite CSRF 헤더~~ ADR-0025 로 소멸)
 - [ ] **knip-config ignoreDependency 정리** (phase-15 회고 W4) — spec-15-02 가 `@repo/backend-auth-rate-limit` 실배선 후 spec-15-01 등록 ignore 잔존 → knip 40 redundant hint. 배선 완료 dep 의 ignore 제거. 비차단, 정리 항목
 - [ ] **configureApp SoT 에 applySecurity 흡수** (phase-15 2차회고 V1) — `app.setup.ts` 의 `configureApp` 가 requestId+cookieParser 만 캡슐화 → `main.ts` 의 `applySecurity`(helmet/CORS) 배선은 e2e 미검증(제거해도 GREEN, C1 과 동일 계열 갭). applySecurity 를 configureApp 에 흡수 + e2e 보안헤더 검증 추가. phase-16/spec-x 후보
 - [ ] **csrf.ts 주석 drift 정정** (phase-15 2차회고 V2) — `packages/backend/auth-rate-limit/src/csrf.ts:12,16` 주석이 폐기된 session-binding 전략을 설명. ADR-0021(csrf_id, session 비의존) 결정과 모순 → 주석 동기화. V1 과 함께 처리 응집적

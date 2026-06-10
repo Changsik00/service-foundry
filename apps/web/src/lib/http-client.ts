@@ -5,7 +5,7 @@ import { createHttpClient } from "@repo/frontend-http-client";
 import { source } from "./supabase-auth";
 
 /**
- * apps/web-next 의 *client-side* HTTP client singleton.
+ * apps/web 의 *client-side* HTTP client singleton.
  *
  * - **client component** 만 사용 (`useHealthQuery` 등). `NEXT_PUBLIC_` env 박음 (client bundle 노출 OK)
  * - RSC (`page.tsx`) 는 별도로 `createHttpClient` 호출 — `API_BASE_URL` (server-only) 박음

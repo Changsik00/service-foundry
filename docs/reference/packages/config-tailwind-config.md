@@ -35,7 +35,7 @@ Tailwind v4 의 CSS-first 패러다임(`@theme` directive)을 활용하여 전�
 ## 사용 예
 
 ```css
-/* apps/web-next/src/app/globals.css */
+/* apps/web/src/app/globals.css */
 @import "@repo/tailwind-config/globals.css";
 
 /* 이후 커스텀 토큰 override 가능 */

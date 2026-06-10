@@ -1,3 +1,5 @@
+"use client";
+
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
@@ -14,9 +16,7 @@ export type HealthResponse = z.infer<typeof HealthSchema>;
 /**
  * `useHealthQuery` — `apps/api` 의 `/health` 호출 client query.
  *
- * - `queryKey: ['health']`
- * - `queryFn`: `httpClient.get("/health", { schema: HealthSchema })`
- * - retry / cache / refetch 는 QueryClient default 따름 (main.tsx)
+ * *client component* 안에서만 사용.
  */
 export function useHealthQuery(): UseQueryResult<HealthResponse> {
   return useQuery<HealthResponse>({

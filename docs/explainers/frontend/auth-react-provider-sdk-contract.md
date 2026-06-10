@@ -61,7 +61,7 @@ flowchart TD
 
 > 🧪 **테스트**: `pnpm --filter frontend-auth-react test` — `provider.test.tsx` 6개(마운트/signIn/signOut), `guards.test.tsx` 5개(RequireAuth/RequireRole 분기). `createMockAuthSDK()`로 SDK를 주입해 실제 네트워크 없이 검증한다.
 
-> 🧪 **SDK 교체 검증**: `apps/web-next/src/lib/auth.ts`에서 import 1줄을 Mock ↔ HTTP로 바꾼 뒤 `pnpm -r typecheck`으로 `CoreAuthSDK` 타입 충족 여부를 확인한다 (spec-08-04).
+> 🧪 **SDK 교체 검증**: `apps/web/src/lib/auth.ts`에서 import 1줄을 Mock ↔ HTTP로 바꾼 뒤 `pnpm -r typecheck`으로 `CoreAuthSDK` 타입 충족 여부를 확인한다 (spec-08-04).
 
 ## 마치며
 

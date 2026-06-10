@@ -4,6 +4,9 @@
 * 날짜: 2026-05-17
 * 스코프: TypeScript 설정, 패키지 컴파일, dist 출력
 
+> [!NOTE]
+> 본문의 `apps/web-vite` 전제는 [ADR-0025](./0025-frontend-app-consolidation.md)(frontend 앱 단일화, 2026-06-10)로 대체됨.
+
 ---
 
 # 배경

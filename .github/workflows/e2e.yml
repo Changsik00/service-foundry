@@ -49,7 +49,7 @@ jobs:
         run: pnpm --filter @apps/api db:migrate
 
       - name: Install Playwright browsers
-        run: pnpm --filter @apps/web-next exec playwright install --with-deps chromium
+        run: pnpm --filter @apps/web exec playwright install --with-deps chromium
 
       - name: Run e2e tests
         env:
@@ -61,12 +61,12 @@ jobs:
           # API
           API_BASE_URL: http://localhost:2026
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/service_foundry_test
-        run: pnpm --filter @apps/web-next test:e2e
+        run: pnpm --filter @apps/web test:e2e
 
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: apps/web-next/playwright-report/
+          path: apps/web/playwright-report/
           retention-days: 7

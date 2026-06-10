@@ -1,7 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "ignoreExportsUsedInFile": true,
-  "ignoreUnresolved": ["routeTree\\.gen"],
   "rules": {
     "duplicates": "off",
     "catalog": "warn"
@@ -49,13 +48,9 @@
     "apps/api": {
       "entry": ["src/**/*.test.ts", "src/**/*.e2e.test.ts"]
     },
-    "apps/web-next": {
+    "apps/web": {
       "entry": ["src/**/*.test.{ts,tsx}"],
       "ignoreDependencies": ["@repo/tailwind-config"]
-    },
-    "apps/web-vite": {
-      "entry": ["src/routes/**/*.tsx", "src/**/*.test.{ts,tsx}"],
-      "ignoreDependencies": ["@repo/tailwind-config", "@repo/errors"]
     }
   }
 }

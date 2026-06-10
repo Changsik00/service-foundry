@@ -1,5 +1,8 @@
 # ADR-006: Auth Strategy — Auth Platform 자체 구축 (Consistent Wrapped SDK)
 
+> [!NOTE]
+> 본문의 `apps/web-vite` 전제는 [ADR-0025](./0025-frontend-app-consolidation.md)(frontend 앱 단일화, 2026-06-10)로 대체됨.
+
 * 상태: **Accepted** (2026-05-18, spec-x-auth-foundation-prep)
 * 결정일: 2026-05-18 (보류 → Accepted)
 * 보류 본문 작성일: 2026-05-17
