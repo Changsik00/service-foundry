@@ -53,8 +53,19 @@ grep -rn "web-vite"                   이력 문서(specs/backlog done/ADR/revie
 
 > `@apps/api#test` (real PG e2e) 는 로컬 Redis 부재로 실패 — **main 에서도 동일 실패 재현** (pre-existing 환경 문제, 본 spec 무관). CI 서비스 컨테이너에서 검증.
 
+## 📌 추가 결정 (2026-06-10, PR 생성 후)
+
+| 이슈 | 선택지 | 결정 | 이유 |
+|---|---|---|---|
+| `web-next` 이름 | 유지 / `web` rename | **`web`** | `-next` 접미사는 web-vite 구별용 흔적 기관. api·worker 처럼 역할 이름으로 통일 (dennis) |
+| admin 앱 | 별도 앱 후속 / web 내 route / 폐기 | **별도 admin 폐기 — web 단일 앱이 콘솔(어드민 성격)** | "web 이걸 그냥 admin 이라고 생각해서 만들면 될 것 같아" (dennis). 빈 두 번째 frontend 는 web-vite 의 재생산 |
+
+검증(rename 후): depcruise ✔ (442 modules) / turbo lint·typecheck·build 95/95 / test(api 제외) 44/44 / knip exit 0.
+
 ## 📦 Commits
 
 1. `fbd2942` docs: adr-0025 frontend 앱 단일화 (+ spec 문서)
 2. `a7f08bf` feat: depcruise next-금지 가드 추가
 3. `bedf672` chore: web-vite 삭제 및 참조 정리 (33 files, -1,060 lines)
+4. `1bfd75a` docs: ship walkthrough and pr description
+5. refactor: web-next → web rename + admin 계획 폐기

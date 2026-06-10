@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 import { defineConfig, devices } from "@playwright/test";
 import { config } from "dotenv";
 
-// 루트 .env 로드 (apps/web-next/기준 ../../ = monorepo root)
+// 루트 .env 로드 (apps/web/기준 ../../ = monorepo root)
 // CI에서는 GitHub Actions 환경변수로 이미 주입됨 (파일 없어도 무시)
 config({ path: resolve(process.cwd(), "../../.env"), override: false });
 
@@ -46,7 +46,7 @@ export default defineConfig({
       },
     },
     {
-      // apps/web-next — Next.js 프론트엔드
+      // apps/web — Next.js 프론트엔드
       command: "pnpm dev",
       url: "http://localhost:2027",
       reuseExistingServer: !process.env.CI,

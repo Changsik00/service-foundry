@@ -339,7 +339,7 @@ git-default 입력을 잃지 않으면서 정제한다:
 | 단일 패키지 | `turbo build --filter=@repo/logger` |
 | 모든 backend 패키지 | `turbo build --filter="./packages/backend/*"` |
 | 모든 앱 | `turbo build --filter="./apps/*"` |
-| `web-next` + 그 의존성 | `turbo build --filter=web-next...` |
+| `web` + 그 의존성 | `turbo build --filter=web...` |
 | `@repo/contracts` + 그것의 dependent들 | `turbo build --filter=...@repo/contracts` |
 | main 이후 변경된 것 | `turbo build --filter="[main...HEAD]"` |
 | 마지막 커밋에서 변경된 것 | `turbo build --filter="[HEAD^1]"` |
@@ -367,10 +367,10 @@ git-default 입력을 잃지 않으면서 정제한다:
 
 ## 5. 프레임워크 통합
 
-### 5.1 Next.js (`apps/web-next`, `apps/admin`) ([docs](https://turborepo.dev/docs/guides/frameworks/nextjs))
+### 5.1 Next.js (`apps/web`, `apps/admin`) ([docs](https://turborepo.dev/docs/guides/frameworks/nextjs))
 
 ```jsonc
-// apps/web-next/turbo.json
+// apps/web/turbo.json
 {
   "extends": ["//"],
   "tasks": {

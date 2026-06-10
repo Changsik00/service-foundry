@@ -39,6 +39,8 @@ web-vite를 삭제하고, framework-agnostic 보장을 depcruise 정적 룰(`fro
 
 ### Functional Requirements
 
+0. **(추가 2026-06-10)** `apps/web-next` → `apps/web` rename + 별도 admin 앱 계획 폐기 (단일 web = 콘솔). ADR-0025 §4·§5.
+
 1. **ADR-0025** — frontend 앱 단일화 결정 기록 (기존 결정 번복 사유 + 대체 가드 명시)
 2. **depcruise 가드** — `packages/frontend/*` 및 `packages/react/*`에서 `next` 패키지 의존 금지 룰 추가, 위반 시 error
 3. **web-vite 완전 제거** — `apps/web-vite/` + `docs/reference/apps/web-vite.md` 삭제, lockfile 재생성

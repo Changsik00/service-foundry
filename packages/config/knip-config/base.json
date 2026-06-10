@@ -48,7 +48,7 @@
     "apps/api": {
       "entry": ["src/**/*.test.ts", "src/**/*.e2e.test.ts"]
     },
-    "apps/web-next": {
+    "apps/web": {
       "entry": ["src/**/*.test.{ts,tsx}"],
       "ignoreDependencies": ["@repo/tailwind-config"]
     }

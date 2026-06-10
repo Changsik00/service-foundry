@@ -3,7 +3,7 @@ import { validateManifests } from "./validate.js";
 
 const ok = [
   { name: "api", port: 2026, expose: true, depends: ["postgres"] },
-  { name: "web-next", port: 2027, expose: true, depends: ["api"] },
+  { name: "web", port: 2027, expose: true, depends: ["api"] },
   { name: "postgres", port: 5432, expose: false },
 ];
 

@@ -1,4 +1,4 @@
-# web-next
+# web
 
 > Next.js 16 App Router + React 19 기반 SSR 웹 앱. RSC 서버 패치와 TanStack Query 클라이언트 패치를 동시에 시연하며, 로그인 UI와 인증 SDK를 통합한다.
 
@@ -37,5 +37,5 @@ pnpm start
 
 ## 자세히
 
-- 레퍼런스: [`docs/reference/apps/web-next.md`](../../docs/reference/apps/web-next.md)
+- 레퍼런스: [`docs/reference/apps/web.md`](../../docs/reference/apps/web.md)
 - 동작 원리: [`docs/explainers/frontend/login-ui-form.md`](../../docs/explainers/frontend/login-ui-form.md)

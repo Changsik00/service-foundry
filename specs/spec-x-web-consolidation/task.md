@@ -41,7 +41,17 @@
 
 ---
 
-## Task 4: Ship (필수)
+## Task 4: web rename + admin 계획 폐기 (사용자 추가 요청)
+
+### 4-1. rename 및 결정 반영
+- [x] `git mv apps/web-next apps/web` + 패키지명 `@apps/web` + 전 현행 참조 25파일 치환
+- [x] ADR-0025 §4(rename)·§5(admin 폐기) 추가, queue.md admin Icebox 해소, ARCHITECTURE.md admin 행 제거
+- [x] 검증: depcruise ✔ / turbo lint·typecheck·build 95/95 / test 44/44 / knip exit 0
+- [x] Commit: `refactor(spec-x-web-consolidation): web-next → web rename + admin 계획 폐기`
+
+---
+
+## Task 5: Ship (필수)
 
 ### 🚦 Pre-Push Quality Gate (push 전 필수)
 

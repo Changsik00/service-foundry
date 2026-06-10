@@ -38,10 +38,16 @@ frontend 앱을 `apps/web-next` 단일로 통합한다. web-vite 의 존재 명�
 - catalog 잔재 4건 제거 (vite · @tanstack/react-router · @tanstack/router-plugin · @tailwindcss/vite) + knip `routeTree\.gen` ignoreUnresolved 제거
 - 이력 문서(specs/, backlog done, ADR 본문, review)는 불변
 
+### 4. web rename + admin 계획 폐기 (추가, ADR-0025 §4·§5)
+
+- `apps/web-next` → **`apps/web`** (`@apps/web`) — `-next` 접미사는 web-vite 구별용이었음. 앱 이름은 역할(api·web·worker), 프레임워크는 구현 디테일
+- **별도 `apps/admin` 계획 폐기** — web 단일 앱이 콘솔(어드민 성격)로 로그인/회원가입/테넌트 관리를 모두 담음. queue.md Icebox 항목 해소
+- 현행 참조 25파일 치환 (e2e.yml · docs · configs · service.yaml · manifest fixture)
+
 ## 검증
 
 - `pnpm depcruise` — ✔ no violations (442 modules)
-- `pnpm turbo lint typecheck build` — 93/93 PASS
+- `pnpm turbo lint typecheck build` — 95/95 PASS (rename 후 재검증)
 - `pnpm turbo test --filter='!@apps/api'` — 44/44 PASS
 - `pnpm knip` — exit 0
 - `@apps/api#test` (real PG e2e) 로컬 실패는 main 에서도 동일 재현되는 pre-existing 환경 문제 (Redis 부재) — CI 에서 검증

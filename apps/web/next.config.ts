@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 import { config } from "dotenv";
 import type { NextConfig } from "next";
 
-// 루트 .env 로드 (apps/web-next/기준 ../../ = monorepo root)
+// 루트 .env 로드 (apps/web/기준 ../../ = monorepo root)
 // CI에서는 이미 환경변수로 주입되므로 override: false
 config({ path: resolve(process.cwd(), "../../.env"), override: false });
 

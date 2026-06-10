@@ -7,7 +7,7 @@ tags: [service-foundry, explainer, frontend, auth]
 # LoginForm — Client Component + useAuth 연결 + RSC /login 페이지
 
 > **대상**: Next.js App Router에서 인증 UI가 어떻게 구성되는지 이해하려는 개발자
-> **연관 문서**: [[reference/apps/web-next]] · [[auth-react-provider-sdk-contract]]
+> **연관 문서**: [[reference/apps/web]] · [[auth-react-provider-sdk-contract]]
 
 ## 왜 필요한가
 
@@ -56,7 +56,7 @@ flowchart TD
 
 ## 동작/테스트 방법
 
-> 🧪 **테스트**: `pnpm --filter @apps/web-next test` — `login-form.test.tsx` 4개 (렌더, signIn 실패 → 에러 메시지, signIn 성공 → router.push('/'), isPending 중 버튼 disabled). `createMockAuthSDK()`로 Auth를 주입하고 Next.js `useRouter`는 `vi.mock`으로 대체한다.
+> 🧪 **테스트**: `pnpm --filter @apps/web test` — `login-form.test.tsx` 4개 (렌더, signIn 실패 → 에러 메시지, signIn 성공 → router.push('/'), isPending 중 버튼 disabled). `createMockAuthSDK()`로 Auth를 주입하고 Next.js `useRouter`는 `vi.mock`으로 대체한다.
 
 > 🧪 **수동 확인**: `pnpm dev` 후 `localhost:2027/login` — 이메일/비밀번호 입력, 로그인 버튼, 에러 메시지 렌더 확인.
 
@@ -70,4 +70,4 @@ LoginForm은 `useAuth()` → `signIn()` → `router.push('/')` 세 단계로 인
 - [[http-auth-sdk-inline]] — signIn 호출을 NestJS REST로 연결하는 createAuthSDK
 - [[auth-sdk-provider-adapters]] — Mock SDK로 LoginForm 테스트를 가능하게 하는 어댑터
 
-> 소스: spec-09-02 walkthrough · `apps/web-next/src/components/login-form.tsx` · `apps/web-next/src/app/login/page.tsx`
+> 소스: spec-09-02 walkthrough · `apps/web/src/components/login-form.tsx` · `apps/web/src/app/login/page.tsx`

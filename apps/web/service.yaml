@@ -1,4 +1,4 @@
-name: web-next
+name: web
 port: 2027
 expose: true
 depends:

@@ -6,7 +6,7 @@ import { Providers } from "@/components/providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "service-foundry — web-next",
+  title: "service-foundry — web",
   description: "Next.js 16 App Router scaffold",
 };
 

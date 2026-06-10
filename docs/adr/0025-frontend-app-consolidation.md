@@ -30,6 +30,8 @@ status: accepted
    - `frontend-no-next-imports` (error): `packages/(frontend|react)/*` → `next` 패키지 의존 금지.
    - Next 전용 어댑터가 필요해지면 `packages/next/<name>` 카테고리를 신설한다 (ADR-0015 의 framework adapter 패턴 그대로).
 3. 본 결정은 다음 문서의 "Next+Vite 둘 다" 전제를 **번복**한다: ADR-0004(컴파일 대상 앱 목록), ADR-0006·ADR-0021(web-vite 인증/CSRF 시나리오). 해당 ADR 본문은 point-in-time 기록으로 보존하고 상단에 본 ADR 참조 노트만 추가한다.
+4. **`apps/web-next` 를 `apps/web` 으로 rename 한다** (패키지명 `@apps/web`). `-next` 접미사는 web-vite 와의 구별용이었으므로 단일화와 함께 소멸 — 앱 이름은 역할(api·web·worker), 프레임워크는 구현 디테일.
+5. **별도 `apps/admin` 앱 계획을 폐기한다.** `apps/web` 단일 앱이 곧 콘솔(어드민 성격) — 로그인/회원가입/테넌트 관리를 모두 담는다. 보일러플레이트에 빈 두 번째 frontend 를 미리 만들지 않는다 (web-vite 와 같은 실효 없는 표면의 재생산 방지).
 
 ## 📊 Consequences
 
