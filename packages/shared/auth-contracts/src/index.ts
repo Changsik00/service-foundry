@@ -102,6 +102,25 @@ export type CoreAuthSDK = Pick<
   "signIn" | "signOut" | "getCurrentUser" | "signUp" | "refresh"
 >;
 
+// === Auth HTTP Integration (spec-x-auth-http-integration) === //
+
+/** SDK 초기화 상태를 포함한 3-state 인증 상태 */
+export type AuthStatus = "unknown" | "authenticated" | "unauthenticated";
+
+/**
+ * http-client가 의존하는 최소 인증 소스 계약.
+ * AuthStore(Zustand)가 구현하며, 각 SDK 어댑터가 store를 채움.
+ */
+export interface AuthSource {
+  readonly status: AuthStatus;
+  /** null = 미인증 또는 초기화 전 */
+  getToken(): Promise<string | null>;
+  /** 토큰 갱신 — 401 수신 시 http-client가 호출 */
+  refresh(): Promise<void>;
+  /** unknown 상태가 풀릴 때까지 대기 (기본 5000ms — timeout 시 resolve) */
+  waitUntilSettled(timeoutMs?: number): Promise<void>;
+}
+
 // === Multi-tenancy contracts (spec-17-02) === //
 export const OrgRole = z.enum(["owner", "admin", "member"]);
 export type OrgRole = z.output<typeof OrgRole>;
