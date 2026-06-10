@@ -1,91 +1,60 @@
 # Walkthrough: spec-x-web-consolidation
 
 > 본 문서는 *작업 기록* 입니다. 결정 과정, 사용자 협의, 검증 결과를 미래의 자신과 리뷰어에게 남깁니다.
-> 작업을 진행하는 동안 *지속적으로* 갱신하세요. 마지막에 한 번에 작성하지 마세요.
 
 ## 📌 결정 기록
 
-> 작업 중 이슈가 발생했을 때, 어떤 선택지가 있었고 왜 이 방향을 결정했는지 기록합니다.
-
 | 이슈 | 선택지 | 결정 | 이유 |
 |---|---|---|---|
-| <이슈 1> | A 또는 B | A | <이유> |
+| web-vite 처분 | 동결 유지 / 전 패키지 조립장으로 확장 / 삭제+정적 가드 | **삭제 + depcruise 가드** | 검증 범위가 3개 패키지뿐이라 "framework-agnostic 증명" 실효 없음. 정적 룰이 전 패키지를 더 싸게 커버 (사용자 결정, 2026-06-10) |
+| depcruise 룰 매칭 | `^node_modules/next` 단일 패턴 | **`(^|/)node_modules/next/\|^next(/\|$)` 이중 패턴** | 초안이 Red 검증에서 **발화 안 함** — pnpm 해석 경로(`node_modules/.pnpm/...`)와 미선언 import 의 raw specifier 둘 다 커버 필요 |
+| 이력 문서 처리 | 전부 갱신 / 전부 불변 | **불변 + 기존 ADR 3건에 참조 노트 1줄** | ADR 은 point-in-time 기록. 번복은 ADR-0025 가 담당 |
+| catalog 잔재 | 방치 / 정리 | **정리** (vite·@tanstack/react-router·router-plugin·@tailwindcss/vite + knip `routeTree\.gen` ignoreUnresolved) | knip 이 unused 로 검출 — web-vite 전용 항목 확인 후 제거 |
 
 ### ADR 승격 가이드
 
-> 위 결정 중 *cross-spec / long-lived* 인 것이 있다면 ADR 로 승격합니다 (constitution §6.3).
->
-> 승격 기준:
-> - 다른 spec 의 작업이 본 결정에 의존하는가?
-> - 6 개월 이상 유지될 가능성이 높은가?
-> - frontmatter `type:` 어휘 (`decision` / `invariant` / `convention` / `tradeoff`) 중 하나에 해당하는가?
->
-> 셋 중 둘 이상이면 ADR 후보. 비강제 — 미체크여도 ship 차단 없음.
+- [x] ADR 승격 대상 있음 → 작성됨: `docs/adr/0025-frontend-app-consolidation.md`
 
-- [ ] ADR 승격 대상 있음 → 작성됨: `docs/decisions/ADR-<NNN>-<slug>.md`
-- [ ] 없음
+## 🤝 사용자 협의 기록
 
-## 💬 사용자 협의
+- 2026-06-10: dennis — "web-vite 가 Next 없이 돌아간다는 건 이미 Next 에서 돌아가면 증명됨 … 삭제 가능", "web 은 그냥 1개면 되지 않을까", "진행하자" → Plan Accept
+- 에이전트 카운터: "Next에서 돌면 어디서나 돈다"는 방향이 반대(Next 전용 API 가 Vite 에서 깨짐)이나, **결론은 타당** — web-vite 의 증명 범위가 원래 부분적(3개 패키지)이었고 depcruise 정적 룰이 더 완전한 가드라는 근거로 합의
 
-> 사용자와 논의한 내용과 합의 사항을 기록합니다.
+## 🧪 검증 결과 (증거)
 
-- **주제**: <논의 주제>
-  - **사용자 의견**: <사용자가 제시한 방향>
-  - **합의**: <최종 합의 내용>
+### depcruise 가드 Red→Green (Task 2)
 
-## 🧪 검증 결과
+```
+# Red 1 — 미선언 import (raw specifier)
+error frontend-no-next-imports: packages/frontend/http-client/src/index.ts → next/navigation
+x 1 dependency violations (1 errors, 0 warnings)
 
-### 1. 자동화 테스트
+# Red 2 — 선언된 dep (pnpm 해석 경로)
+error frontend-no-next-imports: packages/frontend/http-client/src/index.ts
+  → node_modules/.pnpm/next@16.2.6_.../node_modules/next/navigation.js
+x 1 dependency violations (1 errors, 0 warnings)
 
-#### 단위 테스트
-- **명령**: `<프로젝트의 단위 테스트 명령>`
-- **결과**: ✅ Passed (X tests in Y.Y s) / ❌ Failed (자세한 내용 아래)
-- **로그 요약**:
-```text
-(핵심 로그 붙여넣기)
+# Green — 위반 제거 후
+✔ no dependency violations found (455 modules, 1093 dependencies cruised)
 ```
 
-#### 통합 테스트 (Integration Test Required = yes 인 경우)
-- **명령**: `<프로젝트의 통합 테스트 명령>`
-- **결과**: ✅ Passed / ❌ Failed
-- **로그 요약**:
-```text
-(핵심 로그 붙여넣기)
+> 초안 룰(`^node_modules/next`)은 Red 1 에서 **발화하지 않았음** — 수동 Red 검증이 침묵 실패를 잡아냄. 이중 패턴으로 보강 후 두 케이스 모두 발화 확인.
+
+### 삭제 후 전체 게이트 (Task 3)
+
+```
+pnpm depcruise                        ✔ no dependency violations (442 modules)
+pnpm turbo lint typecheck build       93/93 successful (api 포함 29/29)
+pnpm turbo test --filter='!@apps/api' 44/44 successful
+pnpm knip                             exit 0 (unused catalog 4건 → 정리 완료)
+grep -rn "web-vite"                   이력 문서(specs/backlog done/ADR/review/explainer)
+                                      + 의도된 참조(ADR-0025, depcruise 주석)만 잔존
 ```
 
-### 2. 수동 검증
+> `@apps/api#test` (real PG e2e) 는 로컬 Redis 부재로 실패 — **main 에서도 동일 실패 재현** (pre-existing 환경 문제, 본 spec 무관). CI 서비스 컨테이너에서 검증.
 
-> 에이전트가 실행한 단계와 결과를 시간순으로 기록.
+## 📦 Commits
 
-1. **Action**: `<실행한 명령 또는 행동>`
-   - **Result**: <관찰된 결과>
-
-## 🔍 발견 사항
-
-<!-- 작업 중 발견한 흥미로운 점, 사이드 이슈, 다음 SPEC 후보 -->
-
-- <발견 1>
-- <발견 2>
-
-## 🚧 이월 항목 (Optional)
-
-> 본 SPEC 범위를 벗어나 다음 작업으로 미룬 항목.
-
-- <항목 1> → `backlog/queue.md` 에 추가됨
-
-## 🔗 관련 문서 (Related)
-
-<!-- [[wikilinks]] 로 연결. 실제 파일 경로: docs/wiki/, docs/decisions/, docs/rca/ -->
-<!-- 예: [[wiki/decisions]], [[ADR-001]], [[RCA-001]], [[spec-19-01]] -->
-
-- 관련 wiki:
-- 관련 ADR:
-- 관련 RCA:
-
-## 📅 메타
-
-| 항목 | 값 |
-|---|---|
-| **작성자** | Agent + <user> |
-| **작성 기간** | YYYY-MM-DD ~ YYYY-MM-DD |
-| **최종 commit** | `<short hash>` |
+1. `fbd2942` docs: adr-0025 frontend 앱 단일화 (+ spec 문서)
+2. `a7f08bf` feat: depcruise next-금지 가드 추가
+3. `bedf672` chore: web-vite 삭제 및 참조 정리 (33 files, -1,060 lines)
