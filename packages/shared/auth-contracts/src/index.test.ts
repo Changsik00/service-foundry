@@ -2,6 +2,8 @@ import { match } from "ts-pattern";
 import { describe, expect, it } from "vitest";
 import {
   type AuthResult,
+  type AuthSource,
+  type AuthStatus,
   EmailVerifyConfirm,
   EmailVerifyRequest,
   JwtPayload,
@@ -148,6 +150,46 @@ describe("MfaChallenge", () => {
       expiresAt: "2026-05-20T10:00:00.000Z",
     };
     expect(ch.method).toBe("totp");
+  });
+});
+
+describe("AuthStatus", () => {
+  it("세 가지 상태 리터럴을 포함한다", () => {
+    const statuses: AuthStatus[] = ["unknown", "authenticated", "unauthenticated"];
+    expect(statuses).toHaveLength(3);
+  });
+});
+
+describe("AuthSource interface", () => {
+  it("authenticated 상태 — getToken이 토큰 문자열을 반환한다", async () => {
+    const source: AuthSource = {
+      status: "authenticated",
+      getToken: async () => "tok_test",
+      refresh: async () => {},
+      waitUntilSettled: async () => {},
+    };
+    expect(source.status).toBe("authenticated");
+    await expect(source.getToken()).resolves.toBe("tok_test");
+  });
+
+  it("unauthenticated 상태 — getToken이 null을 반환한다", async () => {
+    const source: AuthSource = {
+      status: "unauthenticated",
+      getToken: async () => null,
+      refresh: async () => {},
+      waitUntilSettled: async () => {},
+    };
+    await expect(source.getToken()).resolves.toBeNull();
+  });
+
+  it("waitUntilSettled — settled 상태에서 즉시 resolve한다", async () => {
+    const source: AuthSource = {
+      status: "authenticated",
+      getToken: async () => "tok",
+      refresh: async () => {},
+      waitUntilSettled: async () => {},
+    };
+    await expect(source.waitUntilSettled(5000)).resolves.toBeUndefined();
   });
 });
 

@@ -5,13 +5,17 @@
  * - `HttpClient` interface — backend-http-client 와 동일 API surface (request/get/post/put/delete/patch)
  * - `AppError` 변환 (NETWORK / TIMEOUT / UPSTREAM / BAD_REQUEST / VALIDATION) — `@repo/errors` 답습
  * - explicit zod schema binding (`schema?: ZodType<T>`) — 호출자가 `@repo/contracts` 의 schema 명시
+ * - `auth?: AuthSource` 역주입 — 토큰 자동 주입 + requiresAuth blocking + 401 refresh 재시도
+ *   - `requiresAuth: true` 요청만 `waitUntilSettled()` 대기 (public은 SDK 초기화 전에도 즉시 진행)
+ *   - 401 시 `auth.refresh()` → 새 토큰으로 1회 재시도 (무한 루프 없음: attempt는 request 비재귀)
  *
  * 본 패키지는 ADR-0015 (framework-adapter naming) + ADR-0009 (AppError) 답습.
  * `reqId propagation` 은 frontend 환경 한계 (AsyncLocalStorage 없음) — 호출자가 `headers` 명시.
  *
  * 환경 지원: Next Server/Client Component, Vite SPA, Edge runtime (모두 globalThis.fetch 기반).
  */
-import { AppError } from "@repo/errors";
+import type { AuthSource } from "@repo/auth-contracts";
+import { AppError, isAppError, unauthenticatedError } from "@repo/errors";
 import ky, { HTTPError, type KyInstance, type Options, TimeoutError } from "ky";
 import type { ZodType } from "zod";
 
@@ -29,6 +33,8 @@ export interface CreateHttpClientOptions {
   headers?: Record<string, string>;
   /** fetch credentials 모드 — cross-origin cookie 전송 시 "include" */
   credentials?: RequestCredentials;
+  /** 인증 소스 — 주입 시 토큰 자동 주입 + 401 refresh 재시도 활성화 */
+  auth?: AuthSource;
 }
 
 export interface HttpRequestOptions<TOutput = unknown> {
@@ -45,6 +51,8 @@ export interface HttpRequestOptions<TOutput = unknown> {
   timeoutMs?: number;
   /** runtime 검증 — 박혔으면 `parse()`, fail → AppError(VALIDATION) */
   schema?: ZodType<TOutput>;
+  /** true이면 unauthenticated 상태에서 즉시 AppError(401) — fetch 없음 */
+  requiresAuth?: boolean;
 }
 
 export interface HttpClient {
@@ -59,8 +67,10 @@ export interface HttpClient {
 const IDEMPOTENT_METHODS = ["get", "put", "delete", "head", "options", "trace"] as const;
 const RETRY_STATUS_CODES = [408, 413, 429, 500, 502, 503, 504];
 
+const isUnauthorized = (e: unknown): e is AppError => isAppError(e) && e.statusCode === 401;
+
 function toAppError(err: unknown): AppError {
-  if (err instanceof AppError) return err;
+  if (isAppError(err)) return err;
   if (err instanceof TimeoutError) {
     return new AppError({ code: "TIMEOUT", message: err.message, statusCode: 504 });
   }
@@ -80,6 +90,8 @@ function toAppError(err: unknown): AppError {
 }
 
 export const createHttpClient = (options: CreateHttpClientOptions): HttpClient => {
+  const { auth } = options;
+
   const baseInstance: KyInstance = ky.create({
     baseUrl: options.baseUrl.replace(/\/$/, ""),
     timeout: options.timeoutMs ?? 10_000,
@@ -94,16 +106,22 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
   });
 
   const request = async <T>(opts: HttpRequestOptions<T>): Promise<T> => {
+    // 1. protected 요청만 settled 대기 — public은 unknown이어도 즉시 진행
+    if (auth && opts.requiresAuth) await auth.waitUntilSettled();
+
+    // 2. requiresAuth + unauthenticated → 즉시 거부 (fetch 없음)
+    if (opts.requiresAuth && auth?.status === "unauthenticated") {
+      throw unauthenticatedError("인증 필요");
+    }
+
     const methodLower = opts.method.toLowerCase();
-    // POST/PATCH 도 retries 명시 박힌 경우 retry 허용
     const explicitRetries = opts.retries !== undefined;
     const allowedMethods: string[] = explicitRetries
       ? Array.from(new Set([...IDEMPOTENT_METHODS, methodLower]))
       : [...IDEMPOTENT_METHODS];
 
-    const kyOpts: Options = {
+    const baseKyOpts: Options = {
       method: opts.method,
-      ...(opts.headers && { headers: opts.headers }),
       ...(opts.body !== undefined && { json: opts.body }),
       ...(opts.timeoutMs !== undefined && { timeout: opts.timeoutMs }),
       retry: {
@@ -117,22 +135,47 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
     // ky 의 baseUrl + path — / 로 시작하면 안 됨, strip
     const normalizedPath = opts.path.replace(/^\//, "");
 
-    try {
-      const raw = await baseInstance(normalizedPath, kyOpts).json<unknown>();
-      if (opts.schema) {
-        const parsed = opts.schema.safeParse(raw);
-        if (!parsed.success) {
-          throw new AppError({
-            code: "VALIDATION",
-            message: `Response schema validation failed: ${parsed.error.message}`,
-            statusCode: 502,
-          });
+    // tok 은 attempt 마다 주입 — refresh 후 새 토큰으로 재시도 가능
+    const attempt = async (tok: string | null): Promise<T> => {
+      const kyOpts = {
+        ...baseKyOpts,
+        headers: {
+          ...(tok ? { authorization: `Bearer ${tok}` } : {}),
+          ...opts.headers,
+        },
+      };
+      try {
+        const raw = await baseInstance(normalizedPath, kyOpts).json<unknown>();
+        if (opts.schema) {
+          const parsed = opts.schema.safeParse(raw);
+          if (!parsed.success) {
+            throw new AppError({
+              code: "VALIDATION",
+              message: `Response schema validation failed: ${parsed.error.message}`,
+              statusCode: 502,
+            });
+          }
+          return parsed.data;
         }
-        return parsed.data;
+        return raw as T;
+      } catch (err) {
+        throw toAppError(err);
       }
-      return raw as T;
-    } catch (err) {
-      throw toAppError(err);
+    };
+
+    // 3. 첫 시도
+    const token = auth ? await auth.getToken() : null;
+    try {
+      return await attempt(token);
+    } catch (e) {
+      // 4. 401 + 토큰 있었음 → refresh → 새 토큰으로 재시도 1회
+      if (!isUnauthorized(e) || !auth || !token) throw e;
+      try {
+        await auth.refresh();
+      } catch {
+        throw e;
+      }
+      return await attempt(await auth.getToken());
     }
   };
 

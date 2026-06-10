@@ -9,12 +9,16 @@
     "start": "next start --port 2027",
     "lint": "biome check .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@repo/auth-contracts": "workspace:*",
     "@repo/errors": "workspace:*",
     "@repo/frontend-auth-react": "workspace:*",
+    "@repo/frontend-auth-store": "workspace:*",
+    "@repo/frontend-auth-supabase": "workspace:*",
     "@repo/frontend-auth-testing": "workspace:*",
     "@repo/frontend-http-client": "workspace:*",
     "@repo/utils": "workspace:*",
@@ -28,6 +32,9 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@supabase/supabase-js": "catalog:",
+    "dotenv": "catalog:",
     "@biomejs/biome": "catalog:",
     "@repo/biome-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",

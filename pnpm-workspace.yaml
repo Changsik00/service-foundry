@@ -33,6 +33,7 @@ catalog:
   "@supabase/supabase-js": ^2.0.0
 
   # frontend (phase-04+)
+  zustand: ^5.0.0
   ky: ^2.0.2
   next: ^16.2.6
   react: ^19.2.6
@@ -76,6 +77,7 @@ catalog:
   "@types/bcryptjs": ^3.0.0
 
   # toolchain
+  dotenv: ^16.0.0
   typescript: ^6.0.3
   tsx: ^4.22.1
   "drizzle-kit": ^0.31.10

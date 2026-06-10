@@ -40,7 +40,7 @@ function buildAuthImports() {
     return [
       ProviderAuthModule.forMode(
         "supabase",
-        NestjsSupabaseAuthModule.forRoot({ jwtSecret: settings.SUPABASE_JWT_SECRET ?? "" }),
+        NestjsSupabaseAuthModule.forRoot({ supabaseUrl: settings.SUPABASE_URL ?? "" }),
       ),
     ];
   }
