@@ -36,6 +36,7 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
       env: {
+        NODE_ENV: process.env.NODE_ENV ?? "test",
         PORT: "2026",
         AUTH_MODE: "supabase",
         HTTP_CLIENT_BASE_URL: "http://localhost:2026",
