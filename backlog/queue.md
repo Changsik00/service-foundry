@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-18** — 인증 권위 모드 (Auth Authority Mode) — 5 spec — 다음: spec-18-05-firebase-custom-token
+(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -117,6 +117,7 @@
 - **phase-16** — Security Hardening II — completed 2026-06-02
 - [x] spec-x-tenant-isolation-hardening (완료)
 - **phase-17** — 멀티테넌시 Foundation + 이메일 어댑터 (Spine) — completed 2026-06-09
+- **phase-18** — 인증 권위 모드 (Auth Authority Mode) — completed 2026-06-10
 <!-- sdd:done:end -->
 
 ---
