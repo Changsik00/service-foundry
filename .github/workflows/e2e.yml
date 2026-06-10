@@ -53,6 +53,7 @@ jobs:
 
       - name: Run e2e tests
         env:
+          NODE_ENV: test
           # Supabase
           SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
