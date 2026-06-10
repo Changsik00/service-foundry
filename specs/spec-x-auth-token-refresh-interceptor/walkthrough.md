@@ -1,91 +1,119 @@
 # Walkthrough: spec-x-auth-token-refresh-interceptor
 
-> 본 문서는 *작업 기록* 입니다. 결정 과정, 사용자 협의, 검증 결과를 미래의 자신과 리뷰어에게 남깁니다.
-> 작업을 진행하는 동안 *지속적으로* 갱신하세요. 마지막에 한 번에 작성하지 마세요.
+## 변경 개요
 
-## 📌 결정 기록
+`AuthProvider`에 `withAuthRetry(fn)` 메서드와 startup 401 복구 로직을 추가했다.
+native Bearer 토큰이 만료됐을 때 자동으로 refresh → 1회 재시도하는 패턴으로,
+`auth-api.ts`의 `withCsrfRetry` 컨벤션을 클라이언트 레이어에 대칭 적용한 것이다.
 
-> 작업 중 이슈가 발생했을 때, 어떤 선택지가 있었고 왜 이 방향을 결정했는지 기록합니다.
+---
 
-| 이슈 | 선택지 | 결정 | 이유 |
-|---|---|---|---|
-| <이슈 1> | A 또는 B | A | <이유> |
+## Task 1 — TDD Red
 
-### ADR 승격 가이드
+`context.ts`에 `withAuthRetry<T>` 시그니처 추가, `provider.tsx`에 stub (`throw new Error("not implemented")`), `provider.test.tsx`에 4개 신규 케이스 추가.
 
-> 위 결정 중 *cross-spec / long-lived* 인 것이 있다면 ADR 로 승격합니다 (constitution §6.3).
->
-> 승격 기준:
-> - 다른 spec 의 작업이 본 결정에 의존하는가?
-> - 6 개월 이상 유지될 가능성이 높은가?
-> - frontmatter `type:` 어휘 (`decision` / `invariant` / `convention` / `tradeoff`) 중 하나에 해당하는가?
->
-> 셋 중 둘 이상이면 ADR 후보. 비강제 — 미체크여도 ship 차단 없음.
+새 케이스:
+- `withAuthRetry` fn 성공 → 그대로 반환, refresh 미호출
+- `withAuthRetry` fn 401 → refresh 성공 → fn 재시도 반환
+- `withAuthRetry` fn 401 → refresh 실패 → user=null + onUnauthenticated + throw
+- `getCurrentUser` 401 → refresh → 재조회 → user 설정 (startup 복구)
 
-- [ ] ADR 승격 대상 있음 → 작성됨: `docs/decisions/ADR-<NNN>-<slug>.md`
-- [ ] 없음
+결과: 4 FAIL (Red 확인)
 
-## 💬 사용자 협의
+---
 
-> 사용자와 논의한 내용과 합의 사항을 기록합니다.
+## Task 2 — TDD Green
 
-- **주제**: <논의 주제>
-  - **사용자 의견**: <사용자가 제시한 방향>
-  - **합의**: <최종 합의 내용>
+### `is401` 헬퍼
 
-## 🧪 검증 결과
+모듈 최상위에 정의 — `useCallback` deps 문제를 피하고 단순하게 유지:
+```typescript
+const is401 = (e: unknown): boolean =>
+  !!e && typeof e === "object" && (e as { statusCode?: number }).statusCode === 401;
+```
+`auth-api.ts`의 `is403`과 동일 덕타이핑 패턴. AppError에 결합 없음.
 
-### 1. 자동화 테스트
+### startup 401 복구
 
-#### 단위 테스트
-- **명령**: `<프로젝트의 단위 테스트 명령>`
-- **결과**: ✅ Passed (X tests in Y.Y s) / ❌ Failed (자세한 내용 아래)
-- **로그 요약**:
-```text
-(핵심 로그 붙여넣기)
+```typescript
+.catch(async (e) => {
+  if (is401(e)) {
+    try {
+      await sdk.refresh();
+      const u = await sdk.getCurrentUser();
+      setUser(u);
+    } catch {
+      setUser(null);
+    }
+  }
+  setIsLoading(false);
+});
 ```
 
-#### 통합 테스트 (Integration Test Required = yes 인 경우)
-- **명령**: `<프로젝트의 통합 테스트 명령>`
-- **결과**: ✅ Passed / ❌ Failed
-- **로그 요약**:
-```text
-(핵심 로그 붙여넣기)
+탭 비활성 후 재진입 시 accessToken 만료 → refresh → 재조회로 로딩 플리커 없이 user 복구.
+
+### `withAuthRetry` 구현
+
+```typescript
+const withAuthRetry = useCallback(
+  async <T,>(fn: () => Promise<T>): Promise<T> => {
+    try {
+      return await fn();
+    } catch (e) {
+      if (!is401(e)) throw e;
+      try {
+        await sdk.refresh();
+      } catch {
+        setUser(null);
+        onUnauthenticated?.();
+        throw e;
+      }
+      return await fn(); // 1회만 재시도
+    }
+  },
+  [sdk, onUnauthenticated],
+);
 ```
 
-### 2. 수동 검증
+### 테스트 패턴 발견
 
-> 에이전트가 실행한 단계와 결과를 시간순으로 기록.
+`act(async () => ...)` 내부에서 throw가 발생하면 state flush가 보장되지 않는다.
+refresh 실패 케이스에서 `setUser(null)` 후 UI 갱신을 검증하기 위해 에러를 `act` 내부에서 catch:
 
-1. **Action**: `<실행한 명령 또는 행동>`
-   - **Result**: <관찰된 결과>
+```typescript
+let caughtError: unknown = null;
+await act(async () => {
+  try { await captured?.(() => Promise.reject(err401)); }
+  catch (e) { caughtError = e; }
+});
+expect(caughtError).toBeTruthy();
+await waitFor(() => expect(screen.getByText("no-user")).toBeInTheDocument());
+```
 
-## 🔍 발견 사항
+---
 
-<!-- 작업 중 발견한 흥미로운 점, 사이드 이슈, 다음 SPEC 후보 -->
+## 검증 결과
 
-- <발견 1>
-- <발견 2>
+| 항목 | 결과 |
+|---|---|
+| `provider.test.tsx` (24 tests) | ✅ PASS |
+| `pnpm turbo run typecheck` (48 packages) | ✅ PASS |
 
-## 🚧 이월 항목 (Optional)
+---
 
-> 본 SPEC 범위를 벗어나 다음 작업으로 미룬 항목.
+## 결정 및 트레이드오프
 
-- <항목 1> → `backlog/queue.md` 에 추가됨
-
-## 🔗 관련 문서 (Related)
-
-<!-- [[wikilinks]] 로 연결. 실제 파일 경로: docs/wiki/, docs/decisions/, docs/rca/ -->
-<!-- 예: [[wiki/decisions]], [[ADR-001]], [[RCA-001]], [[spec-19-01]] -->
-
-- 관련 wiki:
-- 관련 ADR:
-- 관련 RCA:
+| 결정 | 이유 |
+|---|---|
+| `AuthContext`에 `withAuthRetry` 노출 | SDK 접근권 + `setUser` React 상태 동시 필요, 별도 hook 분리보다 단순 |
+| 재시도 1회 | `withCsrfRetry` 컨벤션 통일 — 무한 루프 방지 |
+| `is401` 모듈 최상위 정의 | `useCallback` exhaustive deps 경고 방지, 컴포넌트 재렌더 무관 |
+| `onUnauthenticated` prop | redirect 로직은 앱이 결정, Provider는 상태만 관리 |
 
 ## 📅 메타
 
 | 항목 | 값 |
 |---|---|
-| **작성자** | Agent + <user> |
-| **작성 기간** | YYYY-MM-DD ~ YYYY-MM-DD |
-| **최종 commit** | `<short hash>` |
+| **작성자** | Agent + dennis |
+| **작성 기간** | 2026-06-10 |
+| **최종 commit** | `a4022b9` |

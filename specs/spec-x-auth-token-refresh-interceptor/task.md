@@ -57,7 +57,7 @@
 
 - [x] `pnpm --filter @repo/frontend-auth-react test` → 전체 PASS 확인
 - [x] `pnpm turbo run typecheck` → PASS
-- [ ] Commit: `feat(spec-x-auth-token-refresh-interceptor): AuthProvider withAuthRetry + startup 401 복구`
+- [x] Commit: `feat(spec-x-auth-token-refresh-interceptor): AuthProvider withAuthRetry + startup 401 복구`
 
 ---
 
@@ -65,13 +65,13 @@
 
 ### 🚦 Pre-Push Quality Gate
 
-- [ ] `pnpm --filter @repo/frontend-auth-react test` → PASS
-- [ ] `pnpm turbo run typecheck` → PASS
+- [x] `pnpm --filter @repo/frontend-auth-react test` → PASS
+- [x] `pnpm turbo run typecheck` → PASS
 
 ### 📝 산출물 작성
 
-- [ ] **walkthrough.md 작성**
-- [ ] **pr_description.md 작성**
+- [x] **walkthrough.md 작성**
+- [x] **pr_description.md 작성**
 - [ ] **Ship Commit**: `docs(spec-x-auth-token-refresh-interceptor): ship walkthrough and pr description`
 
 ### 🚀 Push & PR
