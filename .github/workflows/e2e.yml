@@ -1,0 +1,53 @@
+name: e2e
+
+# Playwright e2e — 실제 Supabase 프로젝트를 대상으로 auth 통합 플로우 검증.
+# - 로그인/로그아웃 (Supabase 이메일 인증)
+# - http-client 토큰 자동 주입 검증
+# - 401 → refresh → 재시도 플로우
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: e2e-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm --filter @apps/web-next exec playwright install --with-deps chromium
+
+      - name: Run e2e tests
+        env:
+          API_BASE_URL: http://localhost:2026
+          NEXT_PUBLIC_API_BASE_URL: http://localhost:2026
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: pnpm --filter @apps/web-next test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web-next/playwright-report/
+          retention-days: 7
