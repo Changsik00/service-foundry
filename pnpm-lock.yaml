@@ -1598,6 +1598,9 @@ importers:
 
   packages/frontend/http-client:
     dependencies:
+      '@repo/auth-contracts':
+        specifier: workspace:*
+        version: link:../../shared/auth-contracts
       '@repo/errors':
         specifier: workspace:*
         version: link:../../shared/errors

@@ -11,6 +11,7 @@
  *
  * 환경 지원: Next Server/Client Component, Vite SPA, Edge runtime (모두 globalThis.fetch 기반).
  */
+import type { AuthSource } from "@repo/auth-contracts";
 import { AppError } from "@repo/errors";
 import ky, { HTTPError, type KyInstance, type Options, TimeoutError } from "ky";
 import type { ZodType } from "zod";
@@ -29,6 +30,8 @@ export interface CreateHttpClientOptions {
   headers?: Record<string, string>;
   /** fetch credentials 모드 — cross-origin cookie 전송 시 "include" */
   credentials?: RequestCredentials;
+  /** 인증 소스 — 주입 시 토큰 자동 주입 + 401 refresh 재시도 활성화 */
+  auth?: AuthSource;
 }
 
 export interface HttpRequestOptions<TOutput = unknown> {
@@ -45,6 +48,8 @@ export interface HttpRequestOptions<TOutput = unknown> {
   timeoutMs?: number;
   /** runtime 검증 — 박혔으면 `parse()`, fail → AppError(VALIDATION) */
   schema?: ZodType<TOutput>;
+  /** true이면 unauthenticated 상태에서 즉시 AppError(401) — fetch 없음 */
+  requiresAuth?: boolean;
 }
 
 export interface HttpClient {
@@ -80,6 +85,8 @@ function toAppError(err: unknown): AppError {
 }
 
 export const createHttpClient = (options: CreateHttpClientOptions): HttpClient => {
+  const { auth } = options;
+
   const baseInstance: KyInstance = ky.create({
     baseUrl: options.baseUrl.replace(/\/$/, ""),
     timeout: options.timeoutMs ?? 10_000,
@@ -94,8 +101,19 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
   });
 
   const request = async <T>(opts: HttpRequestOptions<T>): Promise<T> => {
+    // 1. unknown 상태 대기
+    if (auth) await auth.waitUntilSettled();
+
+    // 2. requiresAuth + unauthenticated → 즉시 거부 (fetch 없음)
+    if (opts.requiresAuth && auth?.status === "unauthenticated") {
+      throw new AppError({ code: "BAD_REQUEST", message: "인증 필요", statusCode: 401 });
+    }
+
+    // 3. 토큰 획득
+    const token = auth ? await auth.getToken() : null;
+    const authHeaders = token ? { authorization: `Bearer ${token}` } : {};
+
     const methodLower = opts.method.toLowerCase();
-    // POST/PATCH 도 retries 명시 박힌 경우 retry 허용
     const explicitRetries = opts.retries !== undefined;
     const allowedMethods: string[] = explicitRetries
       ? Array.from(new Set([...IDEMPOTENT_METHODS, methodLower]))
@@ -103,7 +121,7 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
 
     const kyOpts: Options = {
       method: opts.method,
-      ...(opts.headers && { headers: opts.headers }),
+      headers: { ...authHeaders, ...opts.headers },
       ...(opts.body !== undefined && { json: opts.body }),
       ...(opts.timeoutMs !== undefined && { timeout: opts.timeoutMs }),
       retry: {
@@ -117,22 +135,39 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
     // ky 의 baseUrl + path — / 로 시작하면 안 됨, strip
     const normalizedPath = opts.path.replace(/^\//, "");
 
-    try {
-      const raw = await baseInstance(normalizedPath, kyOpts).json<unknown>();
-      if (opts.schema) {
-        const parsed = opts.schema.safeParse(raw);
-        if (!parsed.success) {
-          throw new AppError({
-            code: "VALIDATION",
-            message: `Response schema validation failed: ${parsed.error.message}`,
-            statusCode: 502,
-          });
+    const attempt = async (): Promise<T> => {
+      try {
+        const raw = await baseInstance(normalizedPath, kyOpts).json<unknown>();
+        if (opts.schema) {
+          const parsed = opts.schema.safeParse(raw);
+          if (!parsed.success) {
+            throw new AppError({
+              code: "VALIDATION",
+              message: `Response schema validation failed: ${parsed.error.message}`,
+              statusCode: 502,
+            });
+          }
+          return parsed.data;
         }
-        return parsed.data;
+        return raw as T;
+      } catch (err) {
+        throw toAppError(err);
       }
-      return raw as T;
-    } catch (err) {
-      throw toAppError(err);
+    };
+
+    try {
+      return await attempt();
+    } catch (e) {
+      // 4. 401 + 토큰 있었음 → refresh 후 재시도 1회
+      if (e instanceof AppError && e.statusCode === 401 && auth && token) {
+        try {
+          await auth.refresh();
+        } catch {
+          throw e;
+        }
+        return await attempt();
+      }
+      throw e;
     }
   };
 

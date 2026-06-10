@@ -1,8 +1,18 @@
+import type { AuthSource, AuthStatus } from "@repo/auth-contracts";
 import { AppError } from "@repo/errors";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
 import { createHttpClient, type HttpClient } from "./index.js";
+
+function makeAuthSource(status: AuthStatus, token: string | null): AuthSource {
+  return {
+    status,
+    getToken: async () => token,
+    refresh: vi.fn().mockResolvedValue(undefined),
+    waitUntilSettled: async () => {},
+  };
+}
 
 const baseUrl = "https://api.test";
 
@@ -123,5 +133,105 @@ describe("createHttpClient", () => {
     expect(request.method).toBe("POST");
     expect(request.headers.get("x-request-id")).toBe("trace-1");
     expect(request.headers.get("content-type")).toMatch(/application\/json/);
+  });
+});
+
+describe("AuthSource 주입 (auth option)", () => {
+  it("auth 없음 — Authorization 헤더 없이 진행", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ ok: true }));
+    await client.get("/public");
+    const [req] = fetchMock.mock.calls[0] as [Request];
+    expect(req.headers.get("authorization")).toBeNull();
+  });
+
+  it("authenticated + token → Authorization: Bearer 헤더 붙음", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ ok: true }));
+    const auth = makeAuthSource("authenticated", "tok_abc");
+    const authClient = createHttpClient({ baseUrl, retries: 0, auth });
+    await authClient.get("/me");
+    const [req] = fetchMock.mock.calls[0] as [Request];
+    expect(req.headers.get("authorization")).toBe("Bearer tok_abc");
+  });
+
+  it("unauthenticated + requiresAuth=false → token 없이 진행 (공개 API)", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ ok: true }));
+    const auth = makeAuthSource("unauthenticated", null);
+    const authClient = createHttpClient({ baseUrl, retries: 0, auth });
+    await authClient.get("/public");
+    const [req] = fetchMock.mock.calls[0] as [Request];
+    expect(req.headers.get("authorization")).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("unauthenticated + requiresAuth=true → AppError(401) 즉시 throw, fetch 0회", async () => {
+    const auth = makeAuthSource("unauthenticated", null);
+    const authClient = createHttpClient({ baseUrl, retries: 0, auth });
+    await expect(authClient.get("/protected", { requiresAuth: true })).rejects.toMatchObject({
+      statusCode: 401,
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("unknown → waitUntilSettled 후 authenticated → token 붙여서 진행", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ ok: true }));
+    let currentStatus: AuthStatus = "unknown";
+    let currentToken: string | null = null;
+    const auth: AuthSource = {
+      get status() {
+        return currentStatus;
+      },
+      getToken: async () => currentToken,
+      refresh: vi.fn(),
+      waitUntilSettled: async () => {
+        // settled 시뮬레이션
+        currentStatus = "authenticated";
+        currentToken = "tok_settled";
+      },
+    };
+    const authClient = createHttpClient({ baseUrl, retries: 0, auth });
+    await authClient.get("/me");
+    const [req] = fetchMock.mock.calls[0] as [Request];
+    expect(req.headers.get("authorization")).toBe("Bearer tok_settled");
+  });
+
+  it("authenticated + 401 → refresh + 재시도 (fetch 2회)", async () => {
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse({ error: "expired" }, 401))
+      .mockResolvedValueOnce(jsonResponse({ ok: true }));
+    const auth = makeAuthSource("authenticated", "tok_old");
+    const authClient = createHttpClient({ baseUrl, retries: 0, auth });
+    await authClient.get("/me");
+    expect(auth.refresh).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("authenticated + 401 + token null → refresh 안 함, 즉시 throw", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ error: "unauthorized" }, 401));
+    const auth = makeAuthSource("authenticated", null);
+    const authClient = createHttpClient({ baseUrl, retries: 0, auth });
+    await expect(authClient.get("/me")).rejects.toMatchObject({ statusCode: 401 });
+    expect(auth.refresh).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("authenticated + 401 → refresh 실패 → 원래 401 AppError 전파", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ error: "expired" }, 401));
+    const auth: AuthSource = {
+      ...makeAuthSource("authenticated", "tok"),
+      refresh: vi.fn().mockRejectedValue(new Error("network fail")),
+    };
+    const authClient = createHttpClient({ baseUrl, retries: 0, auth });
+    await expect(authClient.get("/me")).rejects.toMatchObject({ statusCode: 401 });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("authenticated + 401 → refresh 성공 → 재시도도 401 → AppError(401), 루프 없음", async () => {
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse({ error: "expired" }, 401))
+      .mockResolvedValueOnce(jsonResponse({ error: "still 401" }, 401));
+    const auth = makeAuthSource("authenticated", "tok");
+    const authClient = createHttpClient({ baseUrl, retries: 0, auth });
+    await expect(authClient.get("/me")).rejects.toMatchObject({ statusCode: 401 });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });
