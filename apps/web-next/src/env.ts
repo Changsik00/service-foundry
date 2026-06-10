@@ -15,8 +15,6 @@ const serverEnvSchema = publicEnvSchema.extend({
 
 export type PublicEnv = z.infer<typeof publicEnvSchema>;
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
-/** @deprecated 서버 전용. 클라이언트에서는 getPublicEnv() 사용 */
-export type Env = ServerEnv;
 
 let publicCached: PublicEnv | undefined;
 let serverCached: ServerEnv | undefined;
