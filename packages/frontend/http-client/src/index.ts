@@ -5,6 +5,9 @@
  * - `HttpClient` interface — backend-http-client 와 동일 API surface (request/get/post/put/delete/patch)
  * - `AppError` 변환 (NETWORK / TIMEOUT / UPSTREAM / BAD_REQUEST / VALIDATION) — `@repo/errors` 답습
  * - explicit zod schema binding (`schema?: ZodType<T>`) — 호출자가 `@repo/contracts` 의 schema 명시
+ * - `auth?: AuthSource` 역주입 — 토큰 자동 주입 + requiresAuth blocking + 401 refresh 재시도
+ *   - `requiresAuth: true` 요청만 `waitUntilSettled()` 대기 (public은 SDK 초기화 전에도 즉시 진행)
+ *   - 401 시 `auth.refresh()` → 새 토큰으로 1회 재시도 (무한 루프 없음: attempt는 request 비재귀)
  *
  * 본 패키지는 ADR-0015 (framework-adapter naming) + ADR-0009 (AppError) 답습.
  * `reqId propagation` 은 frontend 환경 한계 (AsyncLocalStorage 없음) — 호출자가 `headers` 명시.
