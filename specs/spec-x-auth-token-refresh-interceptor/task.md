@@ -72,8 +72,8 @@
 
 ### 📝 산출물
 
-- [ ] **walkthrough.md 작성**
-- [ ] **pr_description.md 작성**
+- [x] **walkthrough.md 작성**
+- [x] **pr_description.md 작성**
 - [ ] **Ship Commit**: `docs(spec-x-auth-token-refresh-interceptor): ship walkthrough and pr description`
 
 ### 🚀 Push & PR
