@@ -16,7 +16,7 @@ export type HealthResponse = z.infer<typeof HealthSchema>;
 /**
  * `useHealthQuery` — `apps/api` 의 `/health` 호출 client query.
  *
- * web-vite 의 답습. *client component* 안에서만 사용.
+ * *client component* 안에서만 사용.
  */
 export function useHealthQuery(): UseQueryResult<HealthResponse> {
   return useQuery<HealthResponse>({

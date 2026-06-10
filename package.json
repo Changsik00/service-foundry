@@ -12,7 +12,6 @@
     "dev": "turbo run dev",
     "dev:api": "pnpm --filter @apps/api dev",
     "dev:web-next": "pnpm --filter @apps/web-next dev",
-    "dev:web-vite": "pnpm --filter @apps/web-vite dev",
     "lint": "turbo run lint",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",

@@ -387,10 +387,10 @@ git-default 입력을 잃지 않으면서 정제한다:
 - `env: ["NEXT_PUBLIC_*"]` 와일드카드를 써서 모든 public env 변수가 해시에 들어가게 하라.
 - Docker용: `next.config.ts`에서 `output: "standalone"`을 활성화하면 `turbo prune`과 잘 동작한다 (§8.2).
 
-### 5.2 Vite (`apps/web-vite`) ([docs](https://turborepo.dev/docs/guides/frameworks/vite))
+### 5.2 Vite ([docs](https://turborepo.dev/docs/guides/frameworks/vite)) — 현재 Vite 앱 없음 (ADR-0025), apps/admin 신설 시 참조
 
 ```jsonc
-// apps/web-vite/turbo.json
+// <vite-app>/turbo.json
 {
   "extends": ["//"],
   "tasks": {

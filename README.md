@@ -30,7 +30,6 @@
 |---|---|---|
 | [`apps/api`](./apps/api) | 인증/도메인 REST 백엔드 | NestJS 11 + Drizzle + PostgreSQL |
 | [`apps/web-next`](./apps/web-next) | SSR 웹 (메인) | Next.js 16 + React 19 |
-| [`apps/web-vite`](./apps/web-vite) | SPA 데모 | Vite + TanStack Router/Query |
 | [`apps/worker`](./apps/worker) | 비동기 작업 소비자 | BullMQ consumer |
 
 **패키지 48개** (`packages/<category>/<pkg>`, import 는 `@repo/*` flat)
@@ -66,7 +65,7 @@ pnpm build
 
 ```bash
 pnpm infra:up      # docker compose 인프라 기동
-pnpm dev           # 전체 앱 dev (또는 dev:api / dev:web-next / dev:web-vite)
+pnpm dev           # 전체 앱 dev (또는 dev:api / dev:web-next)
 pnpm infra:down
 ```
 
@@ -80,7 +79,7 @@ pnpm infra:down
 
 ```
 service-foundry/
-├─ apps/          # api · web-next · web-vite · worker
+├─ apps/          # api · web-next · worker
 ├─ packages/
 │  ├─ backend/    # node 전용 인프라/도메인 core (framework-agnostic)
 │  ├─ nestjs/     # NestJS @Module 어댑터 (backend core wrap)

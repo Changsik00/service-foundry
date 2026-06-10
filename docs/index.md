@@ -29,7 +29,6 @@ tags: [service-foundry, index, meta]
 ## Reference — 앱
 - [[reference/apps/api|api]] — NestJS 인증/도메인 REST 백엔드
 - [[reference/apps/web-next|web-next]] — Next.js 16 SSR 웹 (메인)
-- [[reference/apps/web-vite|web-vite]] — Vite SPA 데모
 - [[reference/apps/worker|worker]] — BullMQ consumer 워커
 
 ## Reference — 패키지

@@ -53,7 +53,6 @@ tags: [service-foundry, reference, platform, dependencies]
 |---|---|---|
 | `next` | SSR/App Router — `apps/web-next` 메인 | [[adr/0005-backend-framework-and-orm-strategy\|ADR-0005]] |
 | `react` · `react-dom` | UI 렌더링 기반 | — |
-| `vite` | `apps/web-vite` SPA 번들러 | [[adr/0005-backend-framework-and-orm-strategy\|ADR-0005]] |
 | `@tanstack/react-router` · `react-query` | 타입 안전 라우팅 + 서버 상태 캐싱 | — |
 | `ky` | fetch 기반 경량 HTTP 클라이언트 (`@repo/frontend-http-client`) | — |
 | `tailwindcss` | utility-first CSS (v4) | — |

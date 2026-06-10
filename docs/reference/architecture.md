@@ -6,7 +6,7 @@ tags: [service-foundry, reference, platform, architecture]
 
 # Architecture — service-foundry 시스템 구조
 
-> 💡 **한 줄 요약**: 운영 가능한 Node/TS 모노레포. **framework-agnostic core(`packages/backend`,`packages/shared`,`packages/frontend`)** 를 **framework adapter(`packages/nestjs`)** 가 감싸고, **apps(`api`/`web-next`/`web-vite`/`worker`)** 가 조립한다.
+> 💡 **한 줄 요약**: 운영 가능한 Node/TS 모노레포. **framework-agnostic core(`packages/backend`,`packages/shared`,`packages/frontend`)** 를 **framework adapter(`packages/nestjs`)** 가 감싸고, **apps(`api`/`web-next`/`worker`)** 가 조립한다.
 > **상위 허브**: [[index]] · **결정 근거**: [[adr/0002-monorepo-foundations|ADR-0002]] · [[adr/0003-package-layout-and-naming|ADR-0003]] · [[adr/0015-framework-adapter-naming-and-layout|ADR-0015]]
 
 ## 1. 레이어 모델
@@ -14,7 +14,7 @@ tags: [service-foundry, reference, platform, architecture]
 이 레포의 핵심 규율은 **의존 방향이 한쪽으로만 흐른다**는 것이다 (depcruise 로 정적 강제 — [[adr/0001-linting-formatting-strategy|ADR-0001]]).
 
 ```
-apps/            (api · web-next · web-vite · worker)        ← 조립·부트스트랩
+apps/            (api · web-next · worker)                  ← 조립·부트스트랩
   │  ▼ 의존
 packages/nestjs/ (auth · database · http-client · …)        ← framework adapter (NestJS @Module)
   │  ▼ 의존
@@ -35,7 +35,6 @@ flowchart TD
     subgraph apps
       api[apps/api]
       wnext[apps/web-next]
-      wvite[apps/web-vite]
       worker[apps/worker]
     end
     subgraph nestjs["packages/nestjs (adapter)"]
@@ -56,7 +55,6 @@ flowchart TD
     api --> be
     worker --> be
     wnext --> fe --> sh
-    wvite --> fe
     api -.uses.-> sh
     config -.extends.-> apps
     config -.extends.-> backend
@@ -96,7 +94,6 @@ flowchart LR
 |---|---|---|---|
 | `api` | 인증/도메인 REST 백엔드 | NestJS 11 + Drizzle + PostgreSQL | `GET /health`, auth endpoints, `/metrics` |
 | `web-next` | SSR 웹 (메인) | Next.js 16 App Router + React 19 | `/`, `/login` |
-| `web-vite` | SPA 데모 | Vite + TanStack Router/Query | `/health` |
 | `worker` | 비동기 작업 소비자 | BullMQ consumer | 큐 소비 |
 
 로컬 인프라(postgres·redis·prometheus·grafana·tempo·loki)는 `tooling/docker` compose 로 기동 ([[explainers/platform/docker-compose-local-infra]]).

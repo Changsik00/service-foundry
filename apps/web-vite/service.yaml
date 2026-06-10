@@ -1,5 +1,0 @@
-name: web-vite
-port: 2028
-expose: true
-depends:
-  - api
