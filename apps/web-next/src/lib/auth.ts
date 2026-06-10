@@ -9,13 +9,5 @@
 //   import { initializeApp } from "firebase/app";
 //   const firebaseApp = initializeApp({ ... });
 //   export const authSDK = createFirebaseAuthSDK(firebaseApp);
-//
-// Supabase 사용 시:
-//   import { createSupabaseAuthSDK } from "@repo/frontend-auth-supabase";
-//   export const authSDK = createSupabaseAuthSDK({ url: "...", anonKey: "..." });
 
-import { createAuthSDK } from "./auth-sdk";
-
-export const authSDK = createAuthSDK(
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:2026",
-);
+export { sdk as authSDK } from "./supabase-auth";

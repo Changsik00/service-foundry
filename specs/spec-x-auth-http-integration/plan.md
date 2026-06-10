@@ -3,7 +3,7 @@
 ## 구현 순서 원칙
 
 의존 방향에 따라 하위 계층부터:
-`auth-contracts` → `auth-store` → `http-client` → `auth-react`
+`auth-contracts` → `auth-store` → `http-client` → `auth-react` → `web-next wiring` → `e2e`
 
 ---
 
@@ -254,7 +254,102 @@ useEffect(() => {
 
 ---
 
-## Task 5: Ship
+## Task 5: web-next Supabase wiring
+
+**대상**: `apps/web-next/`
+
+### 목표
+
+`web-next`가 실제 Supabase 인증을 사용하도록 연결.
+- UI 레이어: `createSupabaseAuthSDK` → `AuthProvider` (signIn/signOut/signUp)
+- HTTP 레이어: `connectSupabaseAuth` → `AuthSource` → `createHttpClient({ auth })`
+- 두 레이어가 **동일한 Supabase 클라이언트**(`sdk.supabase.rls`) 공유 → 세션 동기화
+
+### 변경
+
+```typescript
+// lib/supabase-auth.ts (신규)
+import { createSupabaseAuthSDK } from "@repo/frontend-auth-supabase";
+import { createAuthStore } from "@repo/frontend-auth-store";
+import { connectSupabaseAuth } from "@repo/frontend-auth-store/adapters/supabase";
+import { createAuthSource } from "@repo/frontend-auth-store";
+
+const sdk = createSupabaseAuthSDK({
+  url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+});
+const store = createAuthStore();
+export const { source, unsubscribe } = connectSupabaseAuth(store, sdk.supabase.rls);
+export { sdk };
+
+// lib/http-client.ts (수정)
+import { source } from "./supabase-auth";
+export const httpClient = createHttpClient({ baseUrl, auth: source });
+
+// providers.tsx (수정)
+import { sdk } from "@/lib/supabase-auth";
+<AuthProvider sdk={sdk}>...</AuthProvider>
+```
+
+### 환경변수
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```
+
+**One Commit**: `feat(spec-x-auth-http-integration): web-next Supabase auth 연결 (wiring)`
+
+---
+
+## Task 6: Playwright e2e
+
+**대상**: `apps/web-next/e2e/`
+
+### 목표
+
+실제 Supabase 계정으로 로그인 → http-client 토큰 자동 주입 → 401 refresh 재시도 플로우를 브라우저 수준에서 검증.
+
+### 설정
+
+```
+apps/web-next/
+  playwright.config.ts      — webServer: next dev, 포트 2027
+  e2e/
+    fixtures.ts             — 테스트 유저 생성 (SUPABASE_SERVICE_ROLE_KEY)
+    auth.spec.ts            — 로그인/로그아웃
+    http-auth.spec.ts       — 토큰 주입 + 401 refresh 검증
+```
+
+### 테스트 케이스
+
+| 케이스 | 검증 방법 |
+|---|---|
+| 로그인 성공 → authenticated | Zustand store status 확인 (window 노출) |
+| protected 요청 → Authorization 헤더 | MSW intercept 또는 request 캡처 |
+| 401 응답 → refresh → 재시도 | 네트워크 로그 2회 fetch 확인 |
+| public 요청 → 헤더 없이 즉시 진행 | unknown 상태에서도 응답 확인 |
+| unauthenticated + requiresAuth → 차단 | AppError(401) UI 반영 확인 |
+
+### CI 연동
+
+```yaml
+# .github/workflows/e2e.yml (추가)
+- name: Install Playwright
+  run: pnpm exec playwright install --with-deps chromium
+- name: Run e2e
+  env:
+    NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+    SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+  run: pnpm --filter @apps/web-next exec playwright test
+```
+
+**One Commit**: `feat(spec-x-auth-http-integration): Playwright e2e (auth + 토큰 주입 검증)`
+
+---
+
+## Task 7: Ship
 
 - walkthrough.md 작성
 - pr_description.md 작성

@@ -468,6 +468,12 @@ importers:
       '@repo/frontend-auth-react':
         specifier: workspace:*
         version: link:../../packages/frontend/auth-react
+      '@repo/frontend-auth-store':
+        specifier: workspace:*
+        version: link:../../packages/frontend/auth-store
+      '@repo/frontend-auth-supabase':
+        specifier: workspace:*
+        version: link:../../packages/frontend/auth-supabase
       '@repo/frontend-auth-testing':
         specifier: workspace:*
         version: link:../../packages/frontend/auth-testing
