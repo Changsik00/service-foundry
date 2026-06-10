@@ -44,7 +44,7 @@
 
 ### 2-1. `is401` 헬퍼 + `withAuthRetry` 구현
 
-- [ ] `packages/frontend/auth-react/src/provider.tsx`:
+- [x] `packages/frontend/auth-react/src/provider.tsx`:
   - `is401(e)` 헬퍼 (duck-typing, AppError 결합 없음)
   - `withAuthRetry` 실구현:
     - fn 성공 → 반환
@@ -55,8 +55,8 @@
 
 ### 2-2. 검증
 
-- [ ] `pnpm --filter @repo/frontend-auth-react test` → 전체 PASS 확인
-- [ ] `pnpm turbo run typecheck` → PASS
+- [x] `pnpm --filter @repo/frontend-auth-react test` → 전체 PASS 확인
+- [x] `pnpm turbo run typecheck` → PASS
 - [ ] Commit: `feat(spec-x-auth-token-refresh-interceptor): AuthProvider withAuthRetry + startup 401 복구`
 
 ---

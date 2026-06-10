@@ -167,7 +167,7 @@ describe("withAuthRetry", () => {
       </AuthProvider>,
     );
     await waitFor(() => expect(captured).not.toBeNull());
-    const result = await act(async () => captured!(() => Promise.resolve("ok")));
+    const result = await act(async () => captured?.(() => Promise.resolve("ok")));
     expect(result).toBe("ok");
     expect(sdk.refresh).not.toHaveBeenCalled();
   });
@@ -187,7 +187,7 @@ describe("withAuthRetry", () => {
     await waitFor(() => expect(captured).not.toBeNull());
     const err401 = Object.assign(new Error("Unauthorized"), { statusCode: 401 });
     const fn = vi.fn().mockRejectedValueOnce(err401).mockResolvedValueOnce("retried");
-    const result = await act(async () => captured!(fn));
+    const result = await act(async () => captured?.(fn));
     expect(result).toBe("retried");
     expect(sdk.refresh).toHaveBeenCalledTimes(1);
     expect(fn).toHaveBeenCalledTimes(2);
@@ -210,7 +210,16 @@ describe("withAuthRetry", () => {
     );
     await waitFor(() => expect(captured).not.toBeNull());
     const err401 = Object.assign(new Error("Unauthorized"), { statusCode: 401 });
-    await expect(act(async () => captured!(() => Promise.reject(err401)))).rejects.toThrow();
+    // act 내부에서 catch — act가 reject하면 state flush가 보장되지 않으므로 에러를 내부에서 잡음
+    let caughtError: unknown = null;
+    await act(async () => {
+      try {
+        await captured?.(() => Promise.reject(err401));
+      } catch (e) {
+        caughtError = e;
+      }
+    });
+    expect(caughtError).toBeTruthy();
     expect(onUnauthenticated).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(screen.getByText("no-user")).toBeInTheDocument());
   });

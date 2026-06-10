@@ -3,6 +3,9 @@ import { type ReactNode, useCallback, useEffect, useState } from "react";
 
 import { AuthContext } from "./context";
 
+const is401 = (e: unknown): boolean =>
+  !!e && typeof e === "object" && (e as { statusCode?: number }).statusCode === 401;
+
 interface AuthProviderProps {
   sdk: CoreAuthSDK;
   children: ReactNode;
@@ -20,7 +23,16 @@ export function AuthProvider({ sdk, children, onUnauthenticated }: AuthProviderP
         setUser(u);
         setIsLoading(false);
       })
-      .catch(() => {
+      .catch(async (e) => {
+        if (is401(e)) {
+          try {
+            await sdk.refresh();
+            const u = await sdk.getCurrentUser();
+            setUser(u);
+          } catch {
+            setUser(null);
+          }
+        }
         setIsLoading(false);
       });
   }, [sdk]);
@@ -52,9 +64,24 @@ export function AuthProvider({ sdk, children, onUnauthenticated }: AuthProviderP
     await sdk.refresh();
   }, [sdk]);
 
-  const withAuthRetry = useCallback(async <T,>(_fn: () => Promise<T>): Promise<T> => {
-    throw new Error("not implemented");
-  }, []);
+  const withAuthRetry = useCallback(
+    async <T,>(fn: () => Promise<T>): Promise<T> => {
+      try {
+        return await fn();
+      } catch (e) {
+        if (!is401(e)) throw e;
+        try {
+          await sdk.refresh();
+        } catch {
+          setUser(null);
+          onUnauthenticated?.();
+          throw e;
+        }
+        return await fn();
+      }
+    },
+    [sdk, onUnauthenticated],
+  );
 
   return (
     <AuthContext.Provider
