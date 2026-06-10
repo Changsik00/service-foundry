@@ -125,4 +125,20 @@ describe("AuthProvider + useAuth + useSession", () => {
     );
     await waitFor(() => expect(screen.getByText(`session:${mockUser.email}`)).toBeInTheDocument());
   });
+
+  it("getCurrentUser() 401 → refresh → 재조회 → user 설정", async () => {
+    const err401 = Object.assign(new Error("Unauthorized"), { statusCode: 401 });
+    const sdk = makeSdk({
+      getCurrentUser: vi.fn().mockRejectedValueOnce(err401).mockResolvedValueOnce(mockUser),
+      refresh: vi.fn().mockResolvedValue(null),
+    });
+    render(
+      <AuthProvider sdk={sdk}>
+        <ShowUser />
+      </AuthProvider>,
+    );
+    await waitFor(() => expect(screen.getByText(`user:${mockUser.email}`)).toBeInTheDocument());
+    expect(sdk.refresh).toHaveBeenCalledTimes(1);
+    expect(sdk.getCurrentUser).toHaveBeenCalledTimes(2);
+  });
 });

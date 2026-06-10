@@ -29,6 +29,8 @@ export interface CreateHttpClientOptions {
   headers?: Record<string, string>;
   /** fetch credentials 모드 — cross-origin cookie 전송 시 "include" */
   credentials?: RequestCredentials;
+  /** 401 수신 시 호출 — 통상 sdk.refresh(). throw 시 재시도 없이 401 전파 */
+  onUnauthorized?: () => Promise<void>;
 }
 
 export interface HttpRequestOptions<TOutput = unknown> {

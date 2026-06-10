@@ -107,6 +107,55 @@ describe("createHttpClient", () => {
     expect(fetchMock.mock.calls.length).toBeGreaterThan(1); // retry 발생
   });
 
+  describe("onUnauthorized interceptor", () => {
+    it("요청 성공 (2xx) → onUnauthorized 미호출, fetch 1회", async () => {
+      const onUnauthorized = vi.fn();
+      const c = createHttpClient({ baseUrl, retries: 0, onUnauthorized });
+      fetchMock.mockResolvedValueOnce(jsonResponse({ ok: true }));
+
+      await c.get("/me");
+
+      expect(onUnauthorized).not.toHaveBeenCalled();
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("401 → onUnauthorized 호출 → 재시도 성공 → 결과 반환, fetch 2회", async () => {
+      const onUnauthorized = vi.fn().mockResolvedValue(undefined);
+      const c = createHttpClient({ baseUrl, retries: 0, onUnauthorized });
+      fetchMock
+        .mockResolvedValueOnce(jsonResponse({ error: "unauthorized" }, 401))
+        .mockResolvedValueOnce(jsonResponse({ data: "ok" }));
+
+      const result = await c.get("/me");
+
+      expect(result).toEqual({ data: "ok" });
+      expect(onUnauthorized).toHaveBeenCalledTimes(1);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    it("401 → onUnauthorized 실패 → AppError(statusCode:401), fetch 1회", async () => {
+      const onUnauthorized = vi.fn().mockRejectedValue(new Error("refresh failed"));
+      const c = createHttpClient({ baseUrl, retries: 0, onUnauthorized });
+      fetchMock.mockResolvedValueOnce(jsonResponse({ error: "unauthorized" }, 401));
+
+      await expect(c.get("/me")).rejects.toMatchObject({ statusCode: 401 });
+      expect(onUnauthorized).toHaveBeenCalledTimes(1);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("401 → onUnauthorized 성공 → 재시도도 401 → AppError(401), fetch 2회, 루프 없음", async () => {
+      const onUnauthorized = vi.fn().mockResolvedValue(undefined);
+      const c = createHttpClient({ baseUrl, retries: 0, onUnauthorized });
+      fetchMock
+        .mockResolvedValueOnce(jsonResponse({ error: "unauthorized" }, 401))
+        .mockResolvedValueOnce(jsonResponse({ error: "still unauthorized" }, 401));
+
+      await expect(c.get("/me")).rejects.toMatchObject({ statusCode: 401 });
+      expect(onUnauthorized).toHaveBeenCalledTimes(1);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+  });
+
   it("headers override + body JSON serialize", async () => {
     fetchMock.mockImplementation(async (req: Request) => {
       // clone 후 body 읽음 — ky 가 이미 읽었을 수 있음
