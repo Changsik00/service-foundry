@@ -34,6 +34,7 @@
   "devDependencies": {
     "@playwright/test": "^1.60.0",
     "@supabase/supabase-js": "catalog:",
+    "dotenv": "catalog:",
     "@biomejs/biome": "catalog:",
     "@repo/biome-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",

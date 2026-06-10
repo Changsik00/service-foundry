@@ -135,6 +135,9 @@ catalogs:
     dependency-cruiser:
       specifier: ^17.4.0
       version: 17.4.0
+    dotenv:
+      specifier: ^16.0.0
+      version: 16.6.1
     drizzle-kit:
       specifier: ^0.31.10
       version: 0.31.10
@@ -438,6 +441,9 @@ importers:
       '@types/supertest':
         specifier: 'catalog:'
         version: 7.2.0
+      dotenv:
+        specifier: 'catalog:'
+        version: 16.6.1
       drizzle-kit:
         specifier: 'catalog:'
         version: 0.31.10
@@ -547,6 +553,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: 'catalog:'
         version: 6.0.2(vite@8.0.13(@types/node@24.12.4)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.22.1)(yaml@2.9.0))
+      dotenv:
+        specifier: 'catalog:'
+        version: 16.6.1
       jsdom:
         specifier: 'catalog:'
         version: 29.1.1(@noble/hashes@1.8.0)
@@ -5887,6 +5896,10 @@ packages:
 
   domutils@3.2.2:
     resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
+
+  dotenv@16.6.1:
+    resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
+    engines: {node: '>=12'}
 
   drizzle-kit@0.31.10:
     resolution: {integrity: sha512-7OZcmQUrdGI+DUNNsKBn1aW8qSoKuTH7d0mYgSP8bAzdFzKoovxEFnoGQp2dVs82EOJeYycqRtciopszwUf8bw==}
@@ -11570,6 +11583,8 @@ snapshots:
       dom-serializer: 2.0.0
       domelementtype: 2.3.0
       domhandler: 5.0.3
+
+  dotenv@16.6.1: {}
 
   drizzle-kit@0.31.10:
     dependencies:

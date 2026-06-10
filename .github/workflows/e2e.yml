@@ -1,10 +1,5 @@
 name: e2e
 
-# Playwright e2e — 실제 Supabase 프로젝트를 대상으로 auth 통합 플로우 검증.
-# - 로그인/로그아웃 (Supabase 이메일 인증)
-# - http-client 토큰 자동 주입 검증
-# - 401 → refresh → 재시도 플로우
-
 on:
   pull_request:
   push:
@@ -17,6 +12,22 @@ concurrency:
 jobs:
   e2e:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: service_foundry_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
 
@@ -32,16 +43,23 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Run DB migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/service_foundry_test
+        run: pnpm --filter @apps/api db:migrate
+
       - name: Install Playwright browsers
         run: pnpm --filter @apps/web-next exec playwright install --with-deps chromium
 
       - name: Run e2e tests
         env:
+          # Supabase
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          # API
           API_BASE_URL: http://localhost:2026
-          NEXT_PUBLIC_API_BASE_URL: http://localhost:2026
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/service_foundry_test
         run: pnpm --filter @apps/web-next test:e2e
 
       - name: Upload Playwright report
