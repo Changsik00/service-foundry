@@ -33,7 +33,7 @@ describe("SupabaseVerifier", () => {
     });
     const verifier = makeVerifier();
     const result = await verifier.verify(token);
-    expect(result).toEqual({ sub: "supabase-uid-123", role: "authenticated", orgId: "org-abc" });
+    expect(result).toEqual({ sub: "supabase-uid-123", role: "user", orgId: "org-abc" });
   });
 
   it("유효 token + app_metadata.activeOrgId → orgId 추출", async () => {
@@ -45,7 +45,7 @@ describe("SupabaseVerifier", () => {
     });
     const verifier = makeVerifier();
     const result = await verifier.verify(token);
-    expect(result).toEqual({ sub: "supabase-uid-456", role: "authenticated", orgId: "org-meta" });
+    expect(result).toEqual({ sub: "supabase-uid-456", role: "user", orgId: "org-meta" });
   });
 
   it("유효 token + orgId 없음 + provisionPort 없음 → orgId: null", async () => {
