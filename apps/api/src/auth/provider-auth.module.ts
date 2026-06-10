@@ -5,6 +5,7 @@ import { FIREBASE_PROVISION_PORT } from "@repo/nestjs-auth-firebase";
 import { SUPABASE_PROVISION_PORT } from "@repo/nestjs-auth-supabase";
 
 import { PROVISION_SERVICE, ProvisionService } from "../provision/provision.service.js";
+import { ProviderMeController } from "./provider-me.controller.js";
 
 /**
  * firebase / supabase provider 모드 전용 모듈.
@@ -26,6 +27,7 @@ export class ProviderAuthModule {
       module: ProviderAuthModule,
       global: true,
       imports: [verifierModule],
+      controllers: [ProviderMeController],
       providers: [
         ProvisionService,
         { provide: PROVISION_SERVICE, useExisting: ProvisionService },
@@ -34,7 +36,7 @@ export class ProviderAuthModule {
         AuthGuard,
         RolesGuard,
       ],
-      exports: [AuthGuard, RolesGuard, ProvisionService, ACCESS_TOKEN_VERIFIER],
+      exports: [AuthGuard, RolesGuard, ProvisionService, verifierModule],
     };
   }
 }
