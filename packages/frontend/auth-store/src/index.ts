@@ -1,3 +1,3 @@
-export { createAuthSource } from "./source.js";
-export type { AuthStore, AuthStoreState } from "./store.js";
-export { createAuthStore } from "./store.js";
+export { createAuthSource } from "./source";
+export type { AuthStore, AuthStoreState } from "./store";
+export { createAuthStore } from "./store";

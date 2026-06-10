@@ -1,5 +1,5 @@
 import type { AuthSource } from "@repo/auth-contracts";
-import type { AuthStore } from "./store.js";
+import type { AuthStore } from "./store";
 
 interface AuthSourceOptions {
   refresh?: () => Promise<void>;

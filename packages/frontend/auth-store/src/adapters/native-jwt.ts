@@ -1,6 +1,6 @@
 import type { AuthSource, User } from "@repo/auth-contracts";
-import { createAuthSource } from "../source.js";
-import type { AuthStore } from "../store.js";
+import { createAuthSource } from "../source";
+import type { AuthStore } from "../store";
 
 export interface NativeJwtOptions {
   getStoredToken(): string | null;

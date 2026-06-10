@@ -1,8 +1,8 @@
 import type { AuthSource } from "@repo/auth-contracts";
 import type { Auth as FirebaseAuth, User as FirebaseUser } from "firebase/auth";
 import { onAuthStateChanged } from "firebase/auth";
-import { createAuthSource } from "../source.js";
-import type { AuthStore } from "../store.js";
+import { createAuthSource } from "../source";
+import type { AuthStore } from "../store";
 
 interface ConnectFirebaseResult {
   source: AuthSource;

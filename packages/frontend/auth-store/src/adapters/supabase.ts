@@ -1,7 +1,7 @@
 import type { AuthSource } from "@repo/auth-contracts";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { createAuthSource } from "../source.js";
-import type { AuthStore } from "../store.js";
+import { createAuthSource } from "../source";
+import type { AuthStore } from "../store";
 
 interface ConnectSupabaseResult {
   source: AuthSource;
