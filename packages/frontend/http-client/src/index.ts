@@ -103,8 +103,8 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
   });
 
   const request = async <T>(opts: HttpRequestOptions<T>): Promise<T> => {
-    // 1. unknown 상태 대기
-    if (auth) await auth.waitUntilSettled();
+    // 1. protected 요청만 settled 대기 — public은 unknown이어도 즉시 진행
+    if (auth && opts.requiresAuth) await auth.waitUntilSettled();
 
     // 2. requiresAuth + unauthenticated → 즉시 거부 (fetch 없음)
     if (opts.requiresAuth && auth?.status === "unauthenticated") {

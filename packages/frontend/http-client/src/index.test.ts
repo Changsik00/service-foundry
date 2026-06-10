@@ -172,8 +172,12 @@ describe("AuthSource 주입 (auth option)", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("unknown → waitUntilSettled 후 authenticated → token 붙여서 진행", async () => {
+  it("unknown + requiresAuth=true → waitUntilSettled 후 authenticated → token 붙여서 진행", async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({ ok: true }));
+    const waitUntilSettled = vi.fn(async () => {
+      currentStatus = "authenticated";
+      currentToken = "tok_settled";
+    });
     let currentStatus: AuthStatus = "unknown";
     let currentToken: string | null = null;
     const auth: AuthSource = {
@@ -182,16 +186,27 @@ describe("AuthSource 주입 (auth option)", () => {
       },
       getToken: async () => currentToken,
       refresh: vi.fn(),
-      waitUntilSettled: async () => {
-        // settled 시뮬레이션
-        currentStatus = "authenticated";
-        currentToken = "tok_settled";
-      },
+      waitUntilSettled,
     };
     const authClient = createHttpClient({ baseUrl, retries: 0, auth });
-    await authClient.get("/me");
+    await authClient.get("/me", { requiresAuth: true });
+    expect(waitUntilSettled).toHaveBeenCalledTimes(1);
     const [req] = fetchMock.mock.calls[0] as [Request];
     expect(req.headers.get("authorization")).toBe("Bearer tok_settled");
+  });
+
+  it("unknown + requiresAuth 없음 → waitUntilSettled 호출 안 함, 즉시 진행", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ ok: true }));
+    const waitUntilSettled = vi.fn();
+    const auth: AuthSource = {
+      status: "unknown",
+      getToken: async () => null,
+      refresh: vi.fn(),
+      waitUntilSettled,
+    };
+    const authClient = createHttpClient({ baseUrl, retries: 0, auth });
+    await authClient.get("/public");
+    expect(waitUntilSettled).not.toHaveBeenCalled();
   });
 
   it("authenticated + 401 → refresh + 재시도 (fetch 2회, 2회차엔 새 토큰 사용)", async () => {
