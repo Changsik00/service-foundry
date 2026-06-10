@@ -138,6 +138,68 @@ return await attempt(await auth.getToken());
 
 ---
 
+## Task 5 — web-next Supabase wiring
+
+### 연결 구조
+
+```
+Supabase 클라이언트 1개 공유
+  ├─ createSupabaseAuthSDK  → sdk (CoreAuthSDK)  → AuthProvider (signIn/signOut UI)
+  └─ connectSupabaseAuth    → source (AuthSource) → createHttpClient({ auth: source })
+```
+
+`sdk.supabase.rls`를 통해 두 시스템이 동일한 Supabase 클라이언트를 공유 → 세션 동기화 자동.
+
+### 환경변수
+
+기존 `src/env.ts`의 zod 검증 패턴에 Supabase 변수 추가:
+
+```typescript
+NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
+NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
+```
+
+`@env-kit/node-settings`(Node.js 전용)는 브라우저 번들에 사용 불가 → 동일한 원칙(zod + lazy parse)을 앱 자체 `env.ts`에서 구현.
+
+### 파일 변경
+
+| 파일 | 변경 |
+|---|---|
+| `src/env.ts` | Supabase 환경변수 2개 추가 |
+| `src/lib/supabase-auth.ts` (신규) | SDK + store + connect + export |
+| `src/lib/auth.ts` | `sdk as authSDK` re-export로 교체 |
+| `src/lib/http-client.ts` | `auth: source` 주입 |
+| `package.json` | `@repo/frontend-auth-store`, `@repo/frontend-auth-supabase` 추가 |
+
+---
+
+## Task 6 — Playwright e2e
+
+### 설정
+
+- `playwright.config.ts` — `webServer: pnpm dev`, port 2027, CI reuse 없음
+- `e2e/fixtures.ts` — `SUPABASE_SERVICE_ROLE_KEY`로 테스트 유저 생성/삭제 (admin API)
+- `e2e/auth.spec.ts` — 로그인/로그아웃 UI 플로우
+- `e2e/http-auth.spec.ts` — 토큰 주입 + 401 refresh 헤더 검증
+
+### 테스트 케이스
+
+| 테스트 | 검증 |
+|---|---|
+| 로그인 성공 | 홈으로 리다이렉트 (`/`) |
+| 잘못된 비밀번호 | `role=alert` 메시지 표시 |
+| 로그인 후 API 요청 | `Authorization: Bearer` 헤더 존재 |
+| 미인증 public 요청 | 헤더 없이 즉시 진행 (차단 없음) |
+| 401 → refresh → 재시도 | 네트워크 요청 2회 이상 |
+
+### CI 연동
+
+`.github/workflows/e2e.yml` 신규 생성:
+- `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` GitHub Secrets 참조
+- Playwright 실패 시 `playwright-report/` artifact 업로드 (7일 보관)
+
+---
+
 ## Task 4 — auth-react 정리
 
 main 브랜치의 provider.tsx가 이미 clean 상태 (spec-x-auth-token-refresh-interceptor 브랜치는

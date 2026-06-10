@@ -17,7 +17,7 @@ test("로그인 후 API 요청 → Authorization: Bearer 헤더 자동 주입", 
   const authHeaders: (string | null)[] = [];
 
   await page.route("**/health**", async (route) => {
-    authHeaders.push(route.request().headers()["authorization"] ?? null);
+    authHeaders.push(route.request().headers().authorization ?? null);
     await route.continue();
   });
 
@@ -39,7 +39,7 @@ test("미인증 상태 → public API는 토큰 없이 즉시 진행 (fetch 차�
   const requests: { auth: string | null }[] = [];
 
   await page.route("**/health**", async (route) => {
-    requests.push({ auth: route.request().headers()["authorization"] ?? null });
+    requests.push({ auth: route.request().headers().authorization ?? null });
     await route.continue();
   });
 

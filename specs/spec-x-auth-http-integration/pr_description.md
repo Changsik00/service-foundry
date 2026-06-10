@@ -77,18 +77,27 @@ connectNativeJwt(store, opts)              // startup refresh + localStorage
 | `packages/frontend/http-client/src/index.ts` | `auth?: AuthSource` + `requiresAuth` + blocking 로직 |
 | `packages/frontend/http-client/package.json` | `@repo/auth-contracts` 의존성 추가 |
 | `pnpm-workspace.yaml` | `zustand: ^5.0.0` catalog 추가 |
+| `apps/web-next/src/lib/supabase-auth.ts` (신규) | SDK + auth-store 연결, AuthSource export |
+| `apps/web-next/src/lib/http-client.ts` | `auth: source` 역주입 |
+| `apps/web-next/src/env.ts` | Supabase 환경변수 검증 추가 |
+| `apps/web-next/e2e/` (신규) | Playwright e2e — auth + 토큰 주입 검증 |
+| `.github/workflows/e2e.yml` (신규) | CI e2e 워크플로우 (Supabase secrets 연동) |
 
 ---
 
 ## 검증
 
 - `@repo/frontend-auth-store` → 26/26 PASS
-- `@repo/frontend-http-client` → 22/22 PASS
+- `@repo/frontend-http-client` → 23/23 PASS
 - `@repo/frontend-auth-react` → 20/20 PASS
 - `pnpm turbo run typecheck` → 54/54 PASS
+- Playwright e2e → `.env`에 Supabase 값 설정 후 `pnpm test:e2e`로 로컬 실행
 
 ## 커밋 목록
 
 - `feat(spec-x-auth-http-integration)`: AuthStatus + AuthSource 계약 추가
 - `feat(spec-x-auth-http-integration)`: auth-store 패키지 신규 생성 (Zustand + 어댑터)
 - `feat(spec-x-auth-http-integration)`: http-client auth 주입 (blocking + 토큰 자동 주입)
+- `chore(spec-x-auth-http-integration)`: auth-store vitest.config.ts 추가 (knip 오탐 수정)
+- `feat(spec-x-auth-http-integration)`: web-next Supabase auth 연결 (wiring)
+- `feat(spec-x-auth-http-integration)`: Playwright e2e (auth + 토큰 주입 검증)
