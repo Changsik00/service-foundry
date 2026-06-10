@@ -97,7 +97,7 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
     ...(options.credentials && { credentials: options.credentials }),
   });
 
-  const doRequest = async <T>(opts: HttpRequestOptions<T>): Promise<T> => {
+  const request = async <T>(opts: HttpRequestOptions<T>): Promise<T> => {
     const methodLower = opts.method.toLowerCase();
     // POST/PATCH 도 retries 명시 박힌 경우 retry 허용
     const explicitRetries = opts.retries !== undefined;
@@ -121,29 +121,28 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
     // ky 의 baseUrl + path — / 로 시작하면 안 됨, strip
     const normalizedPath = opts.path.replace(/^\//, "");
 
-    try {
-      const raw = await baseInstance(normalizedPath, kyOpts).json<unknown>();
-      if (opts.schema) {
-        const parsed = opts.schema.safeParse(raw);
-        if (!parsed.success) {
-          throw new AppError({
-            code: "VALIDATION",
-            message: `Response schema validation failed: ${parsed.error.message}`,
-            statusCode: 502,
-          });
+    const attempt = async (): Promise<T> => {
+      try {
+        const raw = await baseInstance(normalizedPath, kyOpts).json<unknown>();
+        if (opts.schema) {
+          const parsed = opts.schema.safeParse(raw);
+          if (!parsed.success) {
+            throw new AppError({
+              code: "VALIDATION",
+              message: `Response schema validation failed: ${parsed.error.message}`,
+              statusCode: 502,
+            });
+          }
+          return parsed.data;
         }
-        return parsed.data;
+        return raw as T;
+      } catch (err) {
+        throw toAppError(err);
       }
-      return raw as T;
-    } catch (err) {
-      throw toAppError(err);
-    }
-  };
+    };
 
-  // 401 수신 시 onUnauthorized() 호출 후 1회 재시도
-  const request = async <T>(opts: HttpRequestOptions<T>): Promise<T> => {
     try {
-      return await doRequest(opts);
+      return await attempt();
     } catch (e) {
       if (e instanceof AppError && e.statusCode === 401 && onUnauthorized) {
         try {
@@ -151,7 +150,7 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
         } catch {
           throw e; // refresh 실패 → 원래 401 AppError 전파
         }
-        return await doRequest(opts); // 1회 재시도 (루프 방지: 재시도 결과 그대로 throw/return)
+        return await attempt(); // 1회 재시도
       }
       throw e;
     }
