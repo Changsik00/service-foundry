@@ -8,6 +8,7 @@ export interface AuthContextValue {
   signOut(): Promise<void>;
   signUp(input: SignUpInput): Promise<AuthResult>;
   refresh(): Promise<void>;
+  withAuthRetry<T>(fn: () => Promise<T>): Promise<T>;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);

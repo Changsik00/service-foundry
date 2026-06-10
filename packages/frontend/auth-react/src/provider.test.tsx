@@ -125,4 +125,93 @@ describe("AuthProvider + useAuth + useSession", () => {
     );
     await waitFor(() => expect(screen.getByText(`session:${mockUser.email}`)).toBeInTheDocument());
   });
+
+  it("getCurrentUser() 401 → refresh → 재조회 → user 설정", async () => {
+    const err401 = Object.assign(new Error("Unauthorized"), { statusCode: 401 });
+    const sdk = makeSdk({
+      getCurrentUser: vi.fn().mockRejectedValueOnce(err401).mockResolvedValueOnce(mockUser),
+      refresh: vi.fn().mockResolvedValue(null),
+    });
+    render(
+      <AuthProvider sdk={sdk}>
+        <ShowUser />
+      </AuthProvider>,
+    );
+    await waitFor(() => expect(screen.getByText(`user:${mockUser.email}`)).toBeInTheDocument());
+    expect(sdk.refresh).toHaveBeenCalledTimes(1);
+    expect(sdk.getCurrentUser).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("withAuthRetry", () => {
+  function CaptureRetry({
+    onCapture,
+  }: {
+    onCapture: (fn: <T>(f: () => Promise<T>) => Promise<T>) => void;
+  }) {
+    const { withAuthRetry } = useAuth();
+    onCapture(withAuthRetry);
+    return null;
+  }
+
+  it("fn 성공 → 그대로 반환, refresh 미호출", async () => {
+    const sdk = makeSdk();
+    let captured: (<T>(f: () => Promise<T>) => Promise<T>) | null = null;
+    render(
+      <AuthProvider sdk={sdk}>
+        <CaptureRetry
+          onCapture={(fn) => {
+            captured = fn;
+          }}
+        />
+      </AuthProvider>,
+    );
+    await waitFor(() => expect(captured).not.toBeNull());
+    const result = await act(async () => captured!(() => Promise.resolve("ok")));
+    expect(result).toBe("ok");
+    expect(sdk.refresh).not.toHaveBeenCalled();
+  });
+
+  it("fn 401 → refresh 성공 → fn 재시도 반환", async () => {
+    const sdk = makeSdk();
+    let captured: (<T>(f: () => Promise<T>) => Promise<T>) | null = null;
+    render(
+      <AuthProvider sdk={sdk}>
+        <CaptureRetry
+          onCapture={(fn) => {
+            captured = fn;
+          }}
+        />
+      </AuthProvider>,
+    );
+    await waitFor(() => expect(captured).not.toBeNull());
+    const err401 = Object.assign(new Error("Unauthorized"), { statusCode: 401 });
+    const fn = vi.fn().mockRejectedValueOnce(err401).mockResolvedValueOnce("retried");
+    const result = await act(async () => captured!(fn));
+    expect(result).toBe("retried");
+    expect(sdk.refresh).toHaveBeenCalledTimes(1);
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it("fn 401 → refresh 실패 → user=null + onUnauthenticated 호출 + throw", async () => {
+    const onUnauthenticated = vi.fn();
+    const refreshErr = new Error("refresh failed");
+    const sdk = makeSdk({ refresh: vi.fn().mockRejectedValue(refreshErr) });
+    let captured: (<T>(f: () => Promise<T>) => Promise<T>) | null = null;
+    function ShowAndCapture() {
+      const { user, withAuthRetry } = useAuth();
+      captured = withAuthRetry;
+      return <span>{user ? `user:${user.email}` : "no-user"}</span>;
+    }
+    render(
+      <AuthProvider sdk={sdk} onUnauthenticated={onUnauthenticated}>
+        <ShowAndCapture />
+      </AuthProvider>,
+    );
+    await waitFor(() => expect(captured).not.toBeNull());
+    const err401 = Object.assign(new Error("Unauthorized"), { statusCode: 401 });
+    await expect(act(async () => captured!(() => Promise.reject(err401)))).rejects.toThrow();
+    expect(onUnauthenticated).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(screen.getByText("no-user")).toBeInTheDocument());
+  });
 });

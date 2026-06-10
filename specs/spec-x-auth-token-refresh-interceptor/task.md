@@ -9,7 +9,7 @@
 - [x] spec.md 작성
 - [x] plan.md 작성
 - [x] task.md 작성 (이 파일)
-- [ ] 사용자 Plan Accept
+- [x] 사용자 Plan Accept
 
 ---
 
@@ -17,25 +17,25 @@
 
 ### 1-1. 브랜치 생성
 
-- [ ] `git checkout -b spec-x-auth-token-refresh-interceptor` (base: `main`)
+- [x] `git checkout -b spec-x-auth-token-refresh-interceptor` (base: `main`)
 
 ### 1-2. 타입 stub 추가 (컴파일 가능한 최소 상태)
 
-- [ ] `packages/frontend/auth-react/src/context.ts`
+- [x] `packages/frontend/auth-react/src/context.ts`
   - `AuthContextValue`에 `withAuthRetry<T>(fn: () => Promise<T>): Promise<T>` 추가
-- [ ] `packages/frontend/auth-react/src/provider.tsx`
+- [x] `packages/frontend/auth-react/src/provider.tsx`
   - `onUnauthenticated?: () => void` prop 추가
   - `withAuthRetry` stub 구현 (`throw new Error("not implemented")`)
   - Context value에 `withAuthRetry` 포함
 
 ### 1-3. 테스트 케이스 작성 (TDD Red)
 
-- [ ] `packages/frontend/auth-react/src/provider.test.tsx` 신규 케이스 추가:
+- [x] `packages/frontend/auth-react/src/provider.test.tsx` 신규 케이스 추가:
   - **케이스 1**: `withAuthRetry` — fn 성공 → 직접 반환, `sdk.refresh` 미호출
   - **케이스 2**: `withAuthRetry` — fn 401 → `sdk.refresh` 성공 → fn 재시도 반환
   - **케이스 3**: `withAuthRetry` — fn 401 → `sdk.refresh` 실패 → `user=null` + `onUnauthenticated()` + throw
   - **케이스 4**: `getCurrentUser` 401 → `sdk.refresh` → `getCurrentUser` 재호출 → user 설정
-- [ ] `pnpm --filter @repo/frontend-auth-react test` → 4개 케이스 FAIL 확인
+- [x] `pnpm --filter @repo/frontend-auth-react test` → 4개 케이스 FAIL 확인
 - [ ] Commit: `test(spec-x-auth-token-refresh-interceptor): withAuthRetry + startup 복구 테스트 (Red)`
 
 ---
