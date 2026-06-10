@@ -14,7 +14,7 @@
 | **시작일** | 2026-06-09 |
 | **목표 종료일** | 미정 |
 | **소유자** | changsik |
-| **Base Branch** | `phase-18-auth-authority-mode` (spec-18-01~ 부터 적용) |
+| **Base Branch** | phase-18-auth-authority-mode (spec-18-01~ 부터 적용) |
 
 ## 🎯 배경 및 목표
 
@@ -47,6 +47,11 @@ ADR-0023 결정을 구현한다:
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
+| `spec-18-01` | verifier-interface | P? | Merged | `specs/spec-18-01-verifier-interface/` |
+| `spec-18-02` | firebase-backend-verifier | P? | Merged | `specs/spec-18-02-firebase-backend-verifier/` |
+| `spec-18-03` | supabase-backend-verifier | P? | Merged | `specs/spec-18-03-supabase-backend-verifier/` |
+| `spec-18-04` | provider-mode-cleanup | P? | Merged | `specs/spec-18-04-provider-mode-cleanup/` |
+| `spec-18-05` | firebase-custom-token | P1 | In Progress | `specs/spec-18-05-firebase-custom-token/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
@@ -88,6 +93,16 @@ ADR-0023 결정을 구현한다:
   - `docs/adr/0023-auth-authority-modes.md` ("안 쓰면 지운다" 결정)
   - `apps/api/src/app.module.ts`
 - **연관 모듈**: `apps/api/src/app.module.ts`, `apps/api/src/settings.ts`, generator
+
+### spec-18-05 — firebase-custom-token
+
+- **요점**: `POST /auth/firebase/token` — native Bearer 인증 후 Firebase custom token 발행 (브리지 패턴)
+- **방향성**: native 모드에서 Firebase 클라이언트 SDK 세션이 추가로 필요한 경우를 위한 엔드포인트. `FIREBASE_SERVICE_ACCOUNT` 설정 시 `FIREBASE_ADMIN_APP` 초기화 + `createCustomToken(sub, claims)` 호출. 미설정 시 503. **이 endpoint 는 native Bearer가 주 인증 수단일 때의 브리지 패턴 — `AUTH_MODE=firebase` 환경에서는 불필요.**
+- **참조**:
+  - `docs/adr/0023-auth-authority-modes.md`
+  - `apps/api/src/auth/auth.module.ts`
+  - `packages/nestjs/auth-firebase/src/firebase-verifier.ts`
+- **연관 모듈**: `apps/api/src/auth/` (FirebaseTokenController 신규)
 
 ### phase-FF 예정 항목 (spec 미생성)
 

@@ -8,12 +8,13 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-18** — 인증 권위 모드 (Auth Authority Mode) — 0/0 spec — (다음: 첫 spec 생성 대기)
+- **phase-18** — 인증 권위 모드 (Auth Authority Mode) — 5 spec — 다음: spec-18-05-firebase-custom-token
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
+- [ ] spec-x-auth-token-refresh-interceptor — auth-token-refresh-interceptor
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -34,7 +35,7 @@
 - [ ] **wiring audit 🟡 의도적 미배선 항목들** (passkey env · HttpClient/Settings DI · web-vite theme · 프론트 MFA/Passkey UI · RequireAuth · provider 교체) — 보일러플레이트 의도적, 필요 시 개별 승격. `docs/review/2026-06-01-wiring-audit.md` §🟡
 - ~~**MFA/passkey 상태변경 POST 8개 CSRF 보호**~~ **해소**: `spec-16-01` (2026-06-02) — CsrfGuard 전체 8 endpoint 적용 완료
 - ~~**CSRF/OAuth secret production 가드**~~ **해소**: `spec-16-02 phase-FF` (2026-06-02) — `DEV_DEFAULT_SECRET` 체크 + production 기동 거부 적용 완료
-- [ ] **web-next CSRF 403 자가복구 + web-vite/SDK 헤더 동반** (phase-15 회고 W6) — 403(토큰 만료/불일치) 시 재부트스트랩+재시도. password-reset/email-verify 흐름 클라이언트 부재분. web-vite·`packages/frontend/auth-*` SDK CSRF 헤더. 후속
+- [x] ~~**web-next CSRF 403 자가복구**~~ **부분 해소**: `apps/web-next/src/lib/auth-api.ts` `withCsrfRetry` 구현 완료 (2026-06-09). **잔여**: 401 자동 갱신 → `spec-x-auth-token-refresh-interceptor` (spec-x 대기), web-vite CSRF 헤더, password-reset/email-verify 클라이언트 흐름
 - [ ] **knip-config ignoreDependency 정리** (phase-15 회고 W4) — spec-15-02 가 `@repo/backend-auth-rate-limit` 실배선 후 spec-15-01 등록 ignore 잔존 → knip 40 redundant hint. 배선 완료 dep 의 ignore 제거. 비차단, 정리 항목
 - [ ] **configureApp SoT 에 applySecurity 흡수** (phase-15 2차회고 V1) — `app.setup.ts` 의 `configureApp` 가 requestId+cookieParser 만 캡슐화 → `main.ts` 의 `applySecurity`(helmet/CORS) 배선은 e2e 미검증(제거해도 GREEN, C1 과 동일 계열 갭). applySecurity 를 configureApp 에 흡수 + e2e 보안헤더 검증 추가. phase-16/spec-x 후보
 - [ ] **csrf.ts 주석 drift 정정** (phase-15 2차회고 V2) — `packages/backend/auth-rate-limit/src/csrf.ts:12,16` 주석이 폐기된 session-binding 전략을 설명. ADR-0021(csrf_id, session 비의존) 결정과 모순 → 주석 동기화. V1 과 함께 처리 응집적
@@ -44,6 +45,7 @@
 - ~~**이메일 실전송 검증 (W-6)**~~ **해소**: `spec-x-tenant-isolation-hardening` 회고 (2026-06-08) — 기존 어댑터 테스트 충분 확인, 실 live-send 는 실 키·인박스 필요로 자동화 한계 명시
 - ~~**ADR `tenant-isolation-runtime-role-and-als-tx`**~~ **해소**: `docs/adr/0024-tenant-isolation-enforcement.md` (spec-17-08)
 - [ ] **운영 DB 풀 사이징 / pgbouncer 가이드** (2026-06-07) — spec-17-07 요청-스코프 tx 는 동시 인증 요청 수를 풀 크기로 제한. 운영 풀 상향 + 커넥션 풀러(tx 모드) 권장. infra phase(22) 후보
+- [ ] **[제안] Proactive Token Rotation** (2026-06-09) — `spec-x-auth-token-refresh-interceptor` A방식 이후 후속. `SignResponse`에 `expiresAt` 추가 → auth-sdk 저장 → AuthProvider 타이머로 만료 2분 전 자동 `refresh()`. 사용자가 401을 아예 안 만남(UX 최상). 구현 복잡도: 타이머 + 탭 포커스 재진입 + contracts 변경. 진입 시점: phase-19 이후 또는 실제 불만 보고 이후 권장
 - [ ] lat.md Phase 2 도입 평가 (지식 그래프 도구)
 - [ ] ARCHITECTURE.md 본체 재작성 (Phase 3 직전, ADR-0005 결정 후)
 

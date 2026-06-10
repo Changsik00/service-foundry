@@ -29,6 +29,7 @@ catalog:
   "@simplewebauthn/server": ^13.1.1
   "@simplewebauthn/browser": ^13.1.1
   firebase: ^11.0.0
+  "firebase-admin": ^13.0.0
   "@supabase/supabase-js": ^2.0.0
 
   # frontend (phase-04+)
@@ -55,7 +56,6 @@ catalog:
 
   # backend framework (phase-03+)
   "@nestjs/common": ^11.1.21
-  "@nestjs/config": ^4.0.4
   "@nestjs/core": ^11.1.21
   "@nestjs/platform-express": ^11.1.21
   "@nestjs/testing": ^11.1.21
