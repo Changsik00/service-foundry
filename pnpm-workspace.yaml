@@ -33,6 +33,7 @@ catalog:
   "@supabase/supabase-js": ^2.0.0
 
   # frontend (phase-04+)
+  zustand: ^5.0.0
   ky: ^2.0.2
   next: ^16.2.6
   react: ^19.2.6
