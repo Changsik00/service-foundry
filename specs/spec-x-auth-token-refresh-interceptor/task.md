@@ -42,21 +42,22 @@
 
 ### 2-1. http-client 구현
 
-- [ ] `packages/frontend/http-client/src/index.ts`:
+- [x] `packages/frontend/http-client/src/index.ts`:
   - `CreateHttpClientOptions`에 `onUnauthorized?: () => Promise<void>` 추가
-  - `createHttpClient` 내부 — `afterResponse` hook 추가
+  - `doRequest` / `request` 분리 — 401 catch 후 onUnauthorized → doRequest 재시도 (1회)
+  - ky afterResponse hook 방식 대신 AppError catch 래퍼로 구현 (hook이 기존 테스트와 충돌)
 
 ### 2-2. auth-react 구현
 
-- [ ] `packages/frontend/auth-react/src/provider.tsx`:
+- [x] `packages/frontend/auth-react/src/provider.tsx`:
   - `is401` 헬퍼 추가 (모듈 최상위)
   - startup `catch` 블록 — 401 시 refresh → 재조회
 
 ### 2-3. 검증
 
-- [ ] `pnpm --filter @repo/frontend-http-client test` → 전체 PASS
-- [ ] `pnpm --filter @repo/frontend-auth-react test` → 전체 PASS
-- [ ] `pnpm turbo run typecheck` → PASS
+- [x] `pnpm --filter @repo/frontend-http-client test` → 17/17 PASS
+- [x] `pnpm --filter @repo/frontend-auth-react test` → 21/21 PASS
+- [x] `pnpm turbo run typecheck` → 48/48 PASS
 - [ ] Commit: `feat(spec-x-auth-token-refresh-interceptor): http-client onUnauthorized interceptor + startup 401 복구`
 
 ---

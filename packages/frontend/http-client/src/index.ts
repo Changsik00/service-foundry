@@ -82,6 +82,8 @@ function toAppError(err: unknown): AppError {
 }
 
 export const createHttpClient = (options: CreateHttpClientOptions): HttpClient => {
+  const { onUnauthorized } = options;
+
   const baseInstance: KyInstance = ky.create({
     baseUrl: options.baseUrl.replace(/\/$/, ""),
     timeout: options.timeoutMs ?? 10_000,
@@ -95,7 +97,7 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
     ...(options.credentials && { credentials: options.credentials }),
   });
 
-  const request = async <T>(opts: HttpRequestOptions<T>): Promise<T> => {
+  const doRequest = async <T>(opts: HttpRequestOptions<T>): Promise<T> => {
     const methodLower = opts.method.toLowerCase();
     // POST/PATCH 도 retries 명시 박힌 경우 retry 허용
     const explicitRetries = opts.retries !== undefined;
@@ -135,6 +137,23 @@ export const createHttpClient = (options: CreateHttpClientOptions): HttpClient =
       return raw as T;
     } catch (err) {
       throw toAppError(err);
+    }
+  };
+
+  // 401 수신 시 onUnauthorized() 호출 후 1회 재시도
+  const request = async <T>(opts: HttpRequestOptions<T>): Promise<T> => {
+    try {
+      return await doRequest(opts);
+    } catch (e) {
+      if (e instanceof AppError && e.statusCode === 401 && onUnauthorized) {
+        try {
+          await onUnauthorized();
+        } catch {
+          throw e; // refresh 실패 → 원래 401 AppError 전파
+        }
+        return await doRequest(opts); // 1회 재시도 (루프 방지: 재시도 결과 그대로 throw/return)
+      }
+      throw e;
     }
   };
 
