@@ -41,13 +41,28 @@ export class ProvisionService implements IProvisionService {
         userId = existing.id;
         currentOrgId = existing.orgId ?? null;
       } else {
-        // 신규 유저 생성
-        const [created] = await tx
-          .insert(users)
-          .values({ email, providerUid: uid })
-          .returning({ id: users.id, orgId: users.orgId });
-        userId = created!.id;
-        currentOrgId = null;
+        // uid 미발견이어도 동일 email 기존 계정이 있으면 재링크 — provider 유저 재생성/이전 시
+        // insert 가 email unique 에 충돌한다 (spec-x-org-api 발견). provider 가 email 권위 (ADR-0023).
+        const byEmail = await tx
+          .select()
+          .from(users)
+          .where(eq(users.email, email))
+          .limit(1)
+          .then((r) => r[0]);
+
+        if (byEmail) {
+          await tx.update(users).set({ providerUid: uid }).where(eq(users.id, byEmail.id));
+          userId = byEmail.id;
+          currentOrgId = byEmail.orgId ?? null;
+        } else {
+          // 신규 유저 생성
+          const [created] = await tx
+            .insert(users)
+            .values({ email, providerUid: uid })
+            .returning({ id: users.id, orgId: users.orgId });
+          userId = created!.id;
+          currentOrgId = null;
+        }
       }
 
       if (currentOrgId) {
