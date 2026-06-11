@@ -11,6 +11,11 @@
 
 @import "tailwindcss";
 
+/* Tailwind v4 자동 감지는 node_modules(워크스페이스 심링크 포함)를 스캔하지 않음 —
+ * 본 패키지 컴포넌트가 쓰는 유틸리티(shadow-ring, bg-brand-hover 등)가 소비 앱에서
+ * 생성되도록 자기 소스를 명시한다. */
+@source "./";
+
 :root {
   /* 유일한 회색 hue — 모든 회색은 이것의 opacity 파생 (DESIGN §1.2) */
   --ink: 28 28 28; /* #1c1c1c */
@@ -89,7 +94,8 @@
 
   /* ── Typography (DESIGN §3) ── */
   --font-sans:
-    "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI",
+    Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
