@@ -32,6 +32,13 @@ export {
   CardTitle,
 } from "./components/card";
 export {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./components/dropdown-menu";
+export {
   Form,
   FormControl,
   FormDescription,

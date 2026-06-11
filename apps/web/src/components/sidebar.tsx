@@ -4,6 +4,8 @@ import { cn } from "@repo/frontend-ui";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { TenantSwitcher } from "@/features/orgs";
+
 import { UserMenu } from "./user-menu";
 
 // 메뉴는 실화면이 있는 것만 — 자리 차지용 디밍 메뉴 금지 (DESIGN 가드레일 #3 정신)
@@ -15,10 +17,13 @@ export function Sidebar() {
 
   return (
     <aside className="flex w-60 shrink-0 flex-col bg-secondary">
-      <div className="px-5 py-5">
+      <div className="px-5 pt-5 pb-3">
         <Link href="/" className="text-sm font-semibold text-foreground">
           service-foundry
         </Link>
+      </div>
+      <div className="pb-3">
+        <TenantSwitcher />
       </div>
       <nav className="flex flex-1 flex-col gap-0.5 px-3">
         {NAV.map(({ href, label }) => {
