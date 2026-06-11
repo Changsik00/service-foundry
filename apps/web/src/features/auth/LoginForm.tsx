@@ -12,7 +12,7 @@ import {
   FormMessage,
   Input,
 } from "@repo/frontend-ui";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 
 import { type LoginInput, loginSchema } from "./schema";
@@ -20,6 +20,7 @@ import { type LoginInput, loginSchema } from "./schema";
 export function LoginForm() {
   const { signIn } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
@@ -28,7 +29,9 @@ export function LoginForm() {
   const onSubmit = form.handleSubmit(async (data) => {
     const result = await signIn(data);
     if (result.success) {
-      router.push("/");
+      // AuthGuard 가 보낸 ?redirect= 복귀 — 내부 경로만 (오픈 리다이렉트 방지)
+      const redirect = searchParams.get("redirect");
+      router.push(redirect?.startsWith("/") && !redirect.startsWith("//") ? redirect : "/");
       return;
     }
     // enumeration-safe — 어느 쪽이 틀렸는지 노출 금지 (DESIGN §6.1)
