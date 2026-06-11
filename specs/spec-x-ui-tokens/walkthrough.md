@@ -1,91 +1,40 @@
 # Walkthrough: spec-x-ui-tokens
 
-> 본 문서는 *작업 기록* 입니다. 결정 과정, 사용자 협의, 검증 결과를 미래의 자신과 리뷰어에게 남깁니다.
-> 작업을 진행하는 동안 *지속적으로* 갱신하세요. 마지막에 한 번에 작성하지 마세요.
-
 ## 📌 결정 기록
-
-> 작업 중 이슈가 발생했을 때, 어떤 선택지가 있었고 왜 이 방향을 결정했는지 기록합니다.
 
 | 이슈 | 선택지 | 결정 | 이유 |
 |---|---|---|---|
-| <이슈 1> | A 또는 B | A | <이유> |
+| 토큰 위치 | tailwind-config (기존) / frontend-ui | **frontend-ui/src/styles.css 자급** | 디자인 토큰은 design system 소유물 — config 카테고리는 도구 preset (ADR-0003 의미론). tailwind-config 는 범용 shadcn preset 으로 잔존 |
+| 오버라이드 범위 | TOKEN.md §6 전체 7종 / 현존만 | **현존 6종만** (button/input/card/label/form/toaster) | fill-forward (TOKEN.md §8) — dialog/table/badge 는 미존재, 선제 생성 = filler |
+| 포커스 링 | 컴포넌트별 ring 클래스 | **전역 `:focus-visible` 1곳** | 중복 ring 충돌 방지, DESIGN §4.5 단일 규칙 |
+| 다크모드 | 기존 .dark 블록 이식 | **미정의 (제거)** | DESIGN.md 가 다크 값을 정의하지 않음 — 추측 값 금지. ThemeToggle 은 시각적 no-op (후속 spec) |
+| Destructive hover | 새 component 토큰 | **기존 `--color-error-text`(#b3261e) 재사용** | DESIGN §5.1 hover 값 = error-text 와 동일 — 새 토큰 불필요 (파생 우선) |
 
-### ADR 승격 가이드
+## 🧪 검증 결과 (증거)
 
-> 위 결정 중 *cross-spec / long-lived* 인 것이 있다면 ADR 로 승격합니다 (constitution §6.3).
->
-> 승격 기준:
-> - 다른 spec 의 작업이 본 결정에 의존하는가?
-> - 6 개월 이상 유지될 가능성이 높은가?
-> - frontmatter `type:` 어휘 (`decision` / `invariant` / `convention` / `tradeoff`) 중 하나에 해당하는가?
->
-> 셋 중 둘 이상이면 ADR 후보. 비강제 — 미체크여도 ship 차단 없음.
-
-- [ ] ADR 승격 대상 있음 → 작성됨: `docs/decisions/ADR-<NNN>-<slug>.md`
-- [ ] 없음
-
-## 💬 사용자 협의
-
-> 사용자와 논의한 내용과 합의 사항을 기록합니다.
-
-- **주제**: <논의 주제>
-  - **사용자 의견**: <사용자가 제시한 방향>
-  - **합의**: <최종 합의 내용>
-
-## 🧪 검증 결과
-
-### 1. 자동화 테스트
-
-#### 단위 테스트
-- **명령**: `<프로젝트의 단위 테스트 명령>`
-- **결과**: ✅ Passed (X tests in Y.Y s) / ❌ Failed (자세한 내용 아래)
-- **로그 요약**:
-```text
-(핵심 로그 붙여넣기)
+```
+pnpm turbo lint typecheck build test (api 제외)   137/137 PASS
+pnpm turbo lint typecheck build (api)             29/29 PASS
+pnpm knip                                          exit 0 (tailwind-config ignore 정리 포함)
+pnpm depcruise                                     ✔ no violations (442 modules)
+pnpm --filter @apps/web test:e2e                   7/7 PASS (full-stack, 새 토큰 렌더 회귀 확인)
 ```
 
-#### 통합 테스트 (Integration Test Required = yes 인 경우)
-- **명령**: `<프로젝트의 통합 테스트 명령>`
-- **결과**: ✅ Passed / ❌ Failed
-- **로그 요약**:
-```text
-(핵심 로그 붙여넣기)
-```
+> e2e 1차 실패: Turbopack "Next.js package not found" panic — pnpm install(dep 제거) 이전에 뜬
+> dev 서버를 reuseExistingServer 가 재사용하며 깨진 모듈 그래프 참조. 서버 kill + `.next` 클리어로
+> 해소 (코드 문제 아님). **교훈: dep 변경 후 e2e 는 dev 서버 재기동 필수.**
 
-### 2. 수동 검증
+## 📦 변경 요약
 
-> 에이전트가 실행한 단계와 결과를 시간순으로 기록.
+- `frontend-ui/src/styles.css` — 전면 재작성: `:root --ink` 채널 + `--color-tenant` 슬롯, `@theme inline` (shadcn 매핑 + 전용 토큰 + radius 6/8/12/16 + ring 그림자 5종 + Pretendard), base(14px/500·keep-all·input 16px·전역 focus-visible), `.tnum` 유틸
+- `button.tsx` — variants 재정의 (Primary hover 어두워짐 / Secondary=흰배경+ring / Destructive), sizes 28/36/44, outline variant 제거 (Secondary 로 통합)
+- `input.tsx` — border 제거 → `shadow-ring`, `text-base`(16px), `aria-invalid` 에러 ring
+- `card.tsx` — `rounded-lg shadow-md` (radius 12 + elevation-2), border 제거
+- `toaster.tsx` — bottom-right (DESIGN §5.6)
+- dep 정리: frontend-ui·apps/web 의 `@repo/tailwind-config` 의존 제거 + knip ignore 정리
 
-1. **Action**: `<실행한 명령 또는 행동>`
-   - **Result**: <관찰된 결과>
+## 📦 Commits
 
-## 🔍 발견 사항
-
-<!-- 작업 중 발견한 흥미로운 점, 사이드 이슈, 다음 SPEC 후보 -->
-
-- <발견 1>
-- <발견 2>
-
-## 🚧 이월 항목 (Optional)
-
-> 본 SPEC 범위를 벗어나 다음 작업으로 미룬 항목.
-
-- <항목 1> → `backlog/queue.md` 에 추가됨
-
-## 🔗 관련 문서 (Related)
-
-<!-- [[wikilinks]] 로 연결. 실제 파일 경로: docs/wiki/, docs/decisions/, docs/rca/ -->
-<!-- 예: [[wiki/decisions]], [[ADR-001]], [[RCA-001]], [[spec-19-01]] -->
-
-- 관련 wiki:
-- 관련 ADR:
-- 관련 RCA:
-
-## 📅 메타
-
-| 항목 | 값 |
-|---|---|
-| **작성자** | Agent + <user> |
-| **작성 기간** | YYYY-MM-DD ~ YYYY-MM-DD |
-| **최종 commit** | `<short hash>` |
+1. feat: 디자인 토큰 스타일시트 (token.md 구현)
+2. feat: shadcn 컴포넌트 디자인 시스템 오버라이드
+3. docs: ship walkthrough and pr description
