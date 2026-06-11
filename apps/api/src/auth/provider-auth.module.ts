@@ -1,6 +1,6 @@
 import { type DynamicModule, Module } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { ACCESS_TOKEN_VERIFIER, AuthGuard, RolesGuard } from "@repo/nestjs-auth";
+import { AuthGuard, RolesGuard } from "@repo/nestjs-auth";
 import { FIREBASE_PROVISION_PORT } from "@repo/nestjs-auth-firebase";
 import { SUPABASE_PROVISION_PORT } from "@repo/nestjs-auth-supabase";
 
@@ -8,6 +8,7 @@ import { PROVISION_SERVICE, ProvisionService } from "../provision/provision.serv
 import { OrgListService } from "./org-list.service.js";
 import { ProviderMeController } from "./provider-me.controller.js";
 import { ProviderOrgController } from "./provider-org.controller.js";
+import { ProviderOrgSwitchService } from "./provider-org-switch.service.js";
 
 /**
  * firebase / supabase provider 모드 전용 모듈.
@@ -32,6 +33,7 @@ export class ProviderAuthModule {
       controllers: [ProviderMeController, ProviderOrgController],
       providers: [
         OrgListService,
+        ProviderOrgSwitchService,
         ProvisionService,
         { provide: PROVISION_SERVICE, useExisting: ProvisionService },
         portProvider,
