@@ -15,7 +15,6 @@
 
 <!-- sdd:specx:start -->
 - [ ] spec-x-auth-token-refresh-interceptor — auth-token-refresh-interceptor
-- [ ] spec-x-org-api — org-api
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -125,6 +124,7 @@
 - [x] spec-x-ui-tokens (완료)
 - [x] spec-x-auth-screens (완료)
 - [x] spec-x-console-shell (완료)
+- [x] spec-x-org-api (완료)
 <!-- sdd:done:end -->
 
 ---
