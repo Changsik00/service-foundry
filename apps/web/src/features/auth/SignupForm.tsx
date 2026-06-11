@@ -7,18 +7,37 @@ import {
   Button,
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
   Input,
+  PasswordInput,
 } from "@repo/frontend-ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { type SignupInput, signupSchema } from "./schema";
+import { PASSWORD_RULES, type SignupInput, signupSchema } from "./schema";
+
+/** 규칙 충족 라이브 표시 — 색 + 기호 병행 (색 단독 의미 전달 금지, DESIGN §4.5) */
+function PasswordRuleHints({ value }: { value: string }) {
+  return (
+    <ul className="flex flex-col gap-0.5">
+      {PASSWORD_RULES.map((rule) => {
+        const ok = rule.test(value);
+        return (
+          <li
+            key={rule.id}
+            className={ok ? "text-xs text-success-text" : "text-xs text-muted-foreground"}
+          >
+            {ok ? "✓" : "·"} {rule.label}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
 
 export function SignupForm() {
   const { signUp } = useAuth();
@@ -26,7 +45,7 @@ export function SignupForm() {
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
   const form = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
-    defaultValues: { displayName: "", email: "", password: "" },
+    defaultValues: { displayName: "", email: "", password: "", passwordConfirm: "" },
   });
 
   const onSubmit = form.handleSubmit(async (data) => {
@@ -114,12 +133,23 @@ export function SignupForm() {
             <FormItem>
               <FormLabel>비밀번호</FormLabel>
               <FormControl>
-                <Input type="password" autoComplete="new-password" className="h-11" {...field} />
+                <PasswordInput autoComplete="new-password" className="h-11" {...field} />
               </FormControl>
-              {/* 규칙 사전 고지 — 입력 후 깜짝 에러 금지 (DESIGN §6.2). 에러 시 FormMessage 가 대체 */}
-              {!form.formState.errors.password && (
-                <FormDescription>비밀번호는 8자 이상이어야 합니다</FormDescription>
-              )}
+              {/* 규칙 사전 고지 + 입력에 따라 충족 표시 — 깜짝 에러 금지 (DESIGN §6.2) */}
+              <PasswordRuleHints value={field.value} />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="passwordConfirm"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>비밀번호 확인</FormLabel>
+              <FormControl>
+                <PasswordInput autoComplete="new-password" className="h-11" {...field} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
