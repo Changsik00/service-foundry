@@ -14,7 +14,7 @@ import {
   Input,
   PasswordInput,
 } from "@repo/frontend-ui";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -42,6 +42,7 @@ function PasswordRuleHints({ value }: { value: string }) {
 export function SignupForm() {
   const { signUp } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
   const form = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
@@ -56,8 +57,10 @@ export function SignupForm() {
         displayName: data.displayName,
       });
       if (result.success) {
-        // 개인 워크스페이스는 첫 인증 API 호출 시 자동 프로비저닝 (ADR-0022) — 콘솔 직행
-        router.push("/");
+        // 개인 워크스페이스는 첫 인증 API 호출 시 자동 프로비저닝 (ADR-0022) — 콘솔 직행.
+        // 초대 플로우 등 ?redirect= 복귀 — 내부 경로만 (오픈 리다이렉트 방지)
+        const redirect = searchParams.get("redirect");
+        router.push(redirect?.startsWith("/") && !redirect.startsWith("//") ? redirect : "/");
         return;
       }
       if (result.reason === "unverified_email") {
