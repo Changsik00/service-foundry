@@ -8,11 +8,13 @@ import {
   Post,
   UseGuards,
 } from "@nestjs/common";
-import { OrgSwitchInput } from "@repo/auth-contracts";
+import { OrgInviteAcceptInput, OrgInviteInput, OrgSwitchInput } from "@repo/auth-contracts";
 import { type AuthenticatedUser, AuthGuard, CurrentUser } from "@repo/nestjs-auth";
 import { ZodError, type z } from "zod";
 
+import { OrgInviteService } from "./org-invite.service.js";
 import { OrgListService, type OrgSummary } from "./org-list.service.js";
+import { type OrgMember, OrgMembersService } from "./org-members.service.js";
 import { ProviderOrgSwitchService } from "./provider-org-switch.service.js";
 
 function parseOr400<T>(schema: z.ZodType<T>, value: unknown): T {
@@ -31,6 +33,8 @@ export class ProviderOrgController {
   constructor(
     @Inject(OrgListService) private readonly orgList: OrgListService,
     @Inject(ProviderOrgSwitchService) private readonly orgSwitch: ProviderOrgSwitchService,
+    @Inject(OrgMembersService) private readonly orgMembers: OrgMembersService,
+    @Inject(OrgInviteService) private readonly orgInvite: OrgInviteService,
   ) {}
 
   @Get("orgs")
@@ -49,5 +53,37 @@ export class ProviderOrgController {
   ): Promise<{ orgId: string }> {
     const { orgId } = parseOr400(OrgSwitchInput, body);
     return this.orgSwitch.switch(user.sub, orgId);
+  }
+
+  /** active org 멤버 목록 — RLS 자동 스코프 (native 와 동일 서비스, email join 포함) */
+  @Get("org/members")
+  @UseGuards(AuthGuard)
+  async members(@CurrentUser() _user: AuthenticatedUser): Promise<{ members: OrgMember[] }> {
+    return { members: await this.orgMembers.list() };
+  }
+
+  @Post("org/invite")
+  @UseGuards(AuthGuard)
+  @HttpCode(200)
+  async invite(
+    @Body() body: unknown,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<{ status: string }> {
+    const { email, role } = parseOr400(OrgInviteInput, body);
+    if (!user.orgId) throw new BadRequestException("no active org");
+    await this.orgInvite.inviteForProvider(user.sub, user.orgId, email, role);
+    return { status: "ok" };
+  }
+
+  /** 초대 수락 — 멤버십 생성 + active org 전환 (토큰 불변, ADR-0026) */
+  @Post("org/invite/accept")
+  @UseGuards(AuthGuard)
+  @HttpCode(200)
+  async inviteAccept(
+    @Body() body: unknown,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<{ orgId: string }> {
+    const { token } = parseOr400(OrgInviteAcceptInput, body);
+    return this.orgInvite.acceptForProvider(user.sub, token);
   }
 }

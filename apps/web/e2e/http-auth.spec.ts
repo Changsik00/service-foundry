@@ -62,6 +62,8 @@ test("로그인 후 GET /auth/me → apps/api가 Bearer 검증 후 사용자 정
   expect(response.status()).toBe(200);
   const body = await response.json();
   expect(body.user.sub).toBeTruthy();
+  // provision 발화 증명 — null 이면 PROVISION_PORT 주입 단선 (provider-auth.module exports 참조)
+  expect(body.user.orgId).toBeTruthy();
 });
 
 test("미인증 상태 → GET /auth/me 401 반환", async ({ page }) => {

@@ -1,12 +1,16 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 
+import { eq } from "drizzle-orm";
+
 import { memberships } from "../infra/schema/memberships.js";
+import { users } from "../infra/schema/users.js";
 
 export interface OrgMember {
   userId: string;
   orgId: string;
   role: string;
+  email: string;
 }
 
 /**
@@ -25,8 +29,10 @@ export class OrgMembersService {
         userId: memberships.userId,
         orgId: memberships.orgId,
         role: memberships.role,
+        email: users.email,
       })
-      .from(memberships);
+      .from(memberships)
+      .innerJoin(users, eq(memberships.userId, users.id));
     return rows as OrgMember[];
   }
 }
