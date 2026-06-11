@@ -5,5 +5,5 @@ export { InviteForm } from "./InviteForm";
 export { MemberTable } from "./MemberTable";
 export { useAcceptInvite, useInviteMember, useSwitchOrg } from "./mutations";
 export { OrgSelectList } from "./OrgSelectList";
-export { type OrgMember, type OrgSummary, orgQueries } from "./queries";
+export { orgQueries } from "./queries";
 export { TenantSwitcher } from "./TenantSwitcher";

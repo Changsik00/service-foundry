@@ -25,9 +25,6 @@ const MembersSchema = z.object({
   ),
 });
 
-export type OrgSummary = z.infer<typeof OrgsSchema>["orgs"][number];
-export type OrgMember = z.infer<typeof MembersSchema>["members"][number];
-
 export const orgQueries = {
   list: () =>
     queryOptions({
