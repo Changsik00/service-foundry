@@ -15,6 +15,7 @@
 
 <!-- sdd:specx:start -->
 - [ ] spec-x-auth-token-refresh-interceptor — auth-token-refresh-interceptor
+- [ ] spec-x-ui-tokens — ui-tokens
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
