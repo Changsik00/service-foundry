@@ -6,23 +6,28 @@ import * as React from "react";
 
 import { cn } from "../lib/utils";
 
+// DESIGN.md §5.1 — radius 8 고정(rounded-md), pill 금지. 포커스 링은 전역 :focus-visible 가 처리.
 export const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors duration-100 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
-        outline:
-          "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        /** Primary — 화면당 1개 (DESIGN §5.1). hover 는 어두워짐 */
+        default: "bg-primary text-primary-foreground hover:bg-brand-hover active:bg-brand-active",
+        /** Secondary — 흰 배경 + ring 경계 */
+        secondary: "bg-background text-foreground shadow-ring hover:bg-accent",
+        ghost: "text-secondary-foreground hover:bg-accent hover:text-accent-foreground",
+        /** Destructive — Primary 와 같은 모달 공존 금지 (Ghost 취소와 조합) */
+        destructive:
+          "bg-destructive text-destructive-foreground hover:bg-error-text active:bg-error-text",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-10 rounded-md px-8",
+        sm: "h-7 px-2.5 text-[13px]",
+        /** md ⭐ 콘솔 기본 (36px) */
+        default: "h-9 px-3.5",
+        /** lg — auth CTA 전용 (44px) */
+        lg: "h-11 px-4 font-semibold",
         icon: "h-9 w-9",
       },
     },

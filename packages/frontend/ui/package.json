@@ -23,7 +23,6 @@
     "@hookform/resolvers": "catalog:",
     "@radix-ui/react-label": "catalog:",
     "@radix-ui/react-slot": "catalog:",
-    "@repo/tailwind-config": "workspace:*",
     "@repo/validation": "workspace:*",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
