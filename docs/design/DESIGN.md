@@ -43,6 +43,7 @@ Font:      Pretendard. UI 기본 14px/500/LH 1.5/LS -0.1px
 숫자:       tabular-nums 전수 / 통화 풀표기 ₩1,200,000
 한글:       word-break: keep-all 전역
 금지:       이모지 / 감탄사 / 그라디언트 배경 / Primary 버튼 화면당 2개+
+토큰 없음:  기존 파생 우선 → 1회성 인라인 → 2회째 승격 (TOKEN.md §8). 새 hue 는 사용자 승인
 ```
 
 ---
