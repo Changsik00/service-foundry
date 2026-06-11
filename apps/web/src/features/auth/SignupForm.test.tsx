@@ -15,10 +15,11 @@ vi.mock("next/navigation", () => ({
 const TEST_USER = { id: "u-1", email: "new@example.com" };
 const TEST_SESSION = { userId: "u-1", expiresAt: "2099-01-01T00:00:00Z" };
 
-function fillAndSubmit() {
+function fillAndSubmit(confirm = "password123") {
   fireEvent.change(screen.getByLabelText("이름"), { target: { value: "데니스" } });
   fireEvent.change(screen.getByLabelText("이메일"), { target: { value: "new@example.com" } });
   fireEvent.change(screen.getByLabelText("비밀번호"), { target: { value: "password123" } });
+  fireEvent.change(screen.getByLabelText("비밀번호 확인"), { target: { value: confirm } });
   fireEvent.click(screen.getByRole("button", { name: "계정 만들기" }));
 }
 
@@ -38,8 +39,10 @@ describe("SignupForm", () => {
     expect(screen.getByLabelText("이름")).toBeInTheDocument();
     expect(screen.getByLabelText("이메일")).toBeInTheDocument();
     expect(screen.getByLabelText("비밀번호")).toBeInTheDocument();
-    // 입력 후 깜짝 에러 금지 — 규칙은 미리 보여준다
-    expect(screen.getByText("비밀번호는 8자 이상이어야 합니다")).toBeInTheDocument();
+    // 입력 후 깜짝 에러 금지 — 규칙 체크리스트를 미리 보여준다
+    expect(screen.getByText(/8자 이상/)).toBeInTheDocument();
+    expect(screen.getByText(/영문과 숫자 포함/)).toBeInTheDocument();
+    expect(screen.getByLabelText("비밀번호 확인")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "계정 만들기" })).toBeInTheDocument();
   });
 
@@ -119,6 +122,40 @@ describe("SignupForm", () => {
     expect(mockPush).not.toHaveBeenCalled();
   });
 
+  it("비밀번호 확인 불일치 → 인라인 에러 + signUp 미호출", async () => {
+    const sdk = createMockAuthSDK();
+    const signUpSpy = vi.spyOn(sdk, "signUp");
+    render(
+      <AuthProvider sdk={sdk}>
+        <SignupForm />
+      </AuthProvider>,
+    );
+
+    fillAndSubmit("different-password1");
+
+    expect(await screen.findByText("비밀번호가 일치하지 않습니다")).toBeInTheDocument();
+    expect(signUpSpy).not.toHaveBeenCalled();
+  });
+
+  it("영문+숫자 미포함 비밀번호 → 강도 규칙 인라인 에러", async () => {
+    const sdk = createMockAuthSDK();
+    const signUpSpy = vi.spyOn(sdk, "signUp");
+    render(
+      <AuthProvider sdk={sdk}>
+        <SignupForm />
+      </AuthProvider>,
+    );
+
+    fireEvent.change(screen.getByLabelText("이름"), { target: { value: "데니스" } });
+    fireEvent.change(screen.getByLabelText("이메일"), { target: { value: "new@example.com" } });
+    fireEvent.change(screen.getByLabelText("비밀번호"), { target: { value: "onlyletters" } });
+    fireEvent.change(screen.getByLabelText("비밀번호 확인"), { target: { value: "onlyletters" } });
+    fireEvent.click(screen.getByRole("button", { name: "계정 만들기" }));
+
+    expect(await screen.findByText("영문과 숫자를 모두 포함해야 합니다")).toBeInTheDocument();
+    expect(signUpSpy).not.toHaveBeenCalled();
+  });
+
   it("비밀번호 8자 미만 → Zod 인라인 에러", async () => {
     const sdk = createMockAuthSDK();
     const signUpSpy = vi.spyOn(sdk, "signUp");
@@ -131,6 +168,7 @@ describe("SignupForm", () => {
     fireEvent.change(screen.getByLabelText("이름"), { target: { value: "데니스" } });
     fireEvent.change(screen.getByLabelText("이메일"), { target: { value: "new@example.com" } });
     fireEvent.change(screen.getByLabelText("비밀번호"), { target: { value: "short" } });
+    fireEvent.change(screen.getByLabelText("비밀번호 확인"), { target: { value: "short" } });
     fireEvent.click(screen.getByRole("button", { name: "계정 만들기" }));
 
     // 헬퍼 텍스트(사전 고지)가 에러 스타일로 전환 — 같은 문구가 FormMessage 로도 노출

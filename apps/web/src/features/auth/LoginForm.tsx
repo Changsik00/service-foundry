@@ -11,6 +11,7 @@ import {
   FormLabel,
   FormMessage,
   Input,
+  PasswordInput,
 } from "@repo/frontend-ui";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -69,12 +70,7 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>비밀번호</FormLabel>
               <FormControl>
-                <Input
-                  type="password"
-                  autoComplete="current-password"
-                  className="h-11"
-                  {...field}
-                />
+                <PasswordInput autoComplete="current-password" className="h-11" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

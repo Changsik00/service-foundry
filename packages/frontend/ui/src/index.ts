@@ -42,6 +42,7 @@ export {
 } from "./components/form";
 export { Input, type InputProps } from "./components/input";
 export { Label, type LabelProps } from "./components/label";
+export { PasswordInput, type PasswordInputProps } from "./components/password-input";
 export { Toaster, toast } from "./components/toaster";
 export { ThemeProvider, type ThemeProviderProps, useTheme } from "./lib/theme-context";
 export { cn } from "./lib/utils";
