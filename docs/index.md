@@ -24,6 +24,12 @@ tags: [service-foundry, index, meta]
 - [[reference/architecture]] — 시스템 구조 + 의존 그래프
 - [[reference/stack]] — 의존성 도입 근거
 
+## Design & Frontend (정본)
+- [[design/DESIGN|DESIGN]] — 디자인 언어 정본 (Notion-warm light + Anti-AI Guardrails)
+- [[design/TOKEN|TOKEN]] — CSS 변수 ↔ shadcn ↔ Tailwind 매핑
+- [[frontend/FRONT|FRONT]] — 범용 스택 패턴집 (타 프로젝트 이식용)
+- [[frontend/ARCHITECTURE|frontend ARCHITECTURE]] — apps/web 구조 규칙·불변규칙·쿡북
+
 ---
 
 ## Reference — 앱
