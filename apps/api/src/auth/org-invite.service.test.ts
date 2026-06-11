@@ -206,3 +206,68 @@ describe("OrgInviteService.accept", () => {
     expect(mocks.mockInsert).not.toHaveBeenCalled();
   });
 });
+
+describe("OrgInviteService.acceptForProvider (spec-x-org-api)", () => {
+  const PROVIDER_UID = "supabase-uid-1";
+  const futureDate = new Date(Date.now() + 86_400_000);
+
+  function makeProviderAcceptService({ userFound = true, invitationFound = true } = {}) {
+    // select 순서: 1) users(providerUid) 2) invitations 3) users(email·role) 4) memberships(중복)
+    const responses = [
+      userFound ? [{ id: INVITEE_ID }] : [],
+      invitationFound
+        ? [
+            {
+              id: INVITATION_ID,
+              orgId: ORG_ID,
+              email: "invitee@example.com",
+              role: "member",
+              tokenHash: `hash:${INVITE_TOKEN}`,
+              expiresAt: futureDate,
+              acceptedAt: null,
+            },
+          ]
+        : [],
+      [{ email: "invitee@example.com", role: "user" }],
+      [],
+    ];
+    let n = 0;
+    const mockSelect = vi.fn().mockImplementation(() => ({
+      from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(responses[n++] ?? []) }),
+    }));
+    const mockInsert = vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue(undefined) });
+    const usersOrgIdWhere = vi.fn().mockResolvedValue(undefined);
+    const mockUpdate = vi.fn().mockReturnValue({
+      set: vi.fn().mockReturnValue({ where: usersOrgIdWhere }),
+    });
+    const database = { db: { select: mockSelect, insert: mockInsert, update: mockUpdate } };
+    const als = { getStore: () => undefined } as unknown as TenantAls;
+    const service = new OrgInviteService(
+      database as never,
+      { getKeyStore: () => null } as never,
+      jwtOpts as never,
+      { send: vi.fn() } as never,
+      "http://localhost:2027",
+      als,
+    );
+    return { service, mocks: { mockInsert, mockUpdate } };
+  }
+
+  it("수락 → 멤버십 생성 + users.orgId 전환 + { orgId } 반환 (토큰 재발급 없음)", async () => {
+    const { service, mocks } = makeProviderAcceptService();
+
+    const result = await service.acceptForProvider(PROVIDER_UID, INVITE_TOKEN);
+
+    expect(result).toEqual({ orgId: ORG_ID });
+    expect(mocks.mockInsert).toHaveBeenCalled(); // 멤버십
+    // invitations.acceptedAt + users.orgId — update 2회
+    expect(mocks.mockUpdate).toHaveBeenCalledTimes(2);
+  });
+
+  it("provider uid 미해석 → ForbiddenException", async () => {
+    const { service } = makeProviderAcceptService({ userFound: false });
+    await expect(service.acceptForProvider(PROVIDER_UID, INVITE_TOKEN)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+  });
+});

@@ -151,3 +151,35 @@ describe("ProvisionService", () => {
     expect(mocks.mockSet).toHaveBeenCalledWith({ orgId: ORG_ID });
   });
 });
+
+describe("ProvisionService.provisionFromProvider — uid 재링크 (spec-x-org-api)", () => {
+  it("uid 미발견 + 동일 email 기존 유저 → providerUid 재링크, 기존 org 유지, insert 없음", async () => {
+    // select#1: provider_uid 미스 / select#2: email 히트
+    const limits = [
+      vi.fn().mockResolvedValue([]),
+      vi.fn().mockResolvedValue([{ id: INTERNAL_UUID, email: EMAIL, orgId: ORG_ID }]),
+    ];
+    let n = 0;
+    const mockSelect = vi.fn().mockImplementation(() => ({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({ limit: limits[n++] }),
+      }),
+    }));
+    const mockInsert = vi.fn();
+    const updateWhere = vi.fn().mockResolvedValue([]);
+    const mockUpdate = vi
+      .fn()
+      .mockReturnValue({ set: vi.fn().mockReturnValue({ where: updateWhere }) });
+    const tx = { select: mockSelect, insert: mockInsert, update: mockUpdate };
+    const database = {
+      db: { transaction: vi.fn().mockImplementation((cb: (t: typeof tx) => unknown) => cb(tx)) },
+    };
+    const service = new ProvisionService(database as never);
+
+    const result = await service.provisionFromProvider("new-uid-after-recreate", EMAIL);
+
+    expect(result).toEqual({ orgId: ORG_ID, orgRole: "owner", internalUserId: INTERNAL_UUID });
+    expect(mockUpdate).toHaveBeenCalled(); // providerUid 재링크
+    expect(mockInsert).not.toHaveBeenCalled(); // 유저/오그 신규 생성 없음
+  });
+});

@@ -71,11 +71,68 @@ export class OrgInviteService {
   }
 
   async accept(userId: string, token: string): Promise<{ accessToken: string }> {
+    const accepted = await this.acceptCore(userId, token);
+
+    const accessToken = await signAccessToken(
+      {
+        sub: userId,
+        role: accepted.userRole,
+        [ACTIVE_ORG_CLAIM]: accepted.orgId,
+        [ORG_ROLE_CLAIM]: accepted.orgRole,
+      },
+      this.jwtService.getKeyStore(),
+      { issuer: this.jwtOpts.issuer, audience: this.jwtOpts.audience },
+    );
+    return { accessToken };
+  }
+
+  /** provider 모드 수락 — 멤버십 생성 + active org 전환(users.orgId, ADR-0026). 토큰 불변 */
+  async acceptForProvider(providerUid: string, token: string): Promise<{ orgId: string }> {
+    const userId = await this.resolveInternalUserId(providerUid);
+    const accepted = await this.acceptCore(userId, token);
+    await runWithSystemTenant(this.als, async () => {
+      await this.database.db
+        .update(users)
+        .set({ orgId: accepted.orgId })
+        .where(eq(users.id, userId));
+    });
+    return { orgId: accepted.orgId };
+  }
+
+  /** provider 모드 초대 — providerUid 를 내부 유저로 해석 후 위임 */
+  async inviteForProvider(
+    providerUid: string,
+    orgId: string,
+    email: string,
+    role: "admin" | "member",
+  ): Promise<void> {
+    const userId = await this.resolveInternalUserId(providerUid);
+    return this.invite(userId, orgId, email, role);
+  }
+
+  private async resolveInternalUserId(providerUid: string): Promise<string> {
+    return runWithSystemTenant(this.als, async () => {
+      const [user] = await this.database.db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.providerUid, providerUid));
+      if (!user) throw new ForbiddenException("user not found");
+      return user.id;
+    });
+  }
+
+  /**
+   * 수락 코어 — 검증(만료/중복/이메일 바인딩 C-5) + 멤버십 생성. native/provider 공용.
+   * 초대는 *수락자의* org 가 아닌 *초대한* org 소유 → 수락자 컨텍스트로는 RLS 에 가린다.
+   * 토큰 자체가 인가이므로 시스템 컨텍스트로 조회/쓰기한다 (같은 tx → 원자성 유지, C-4).
+   */
+  private async acceptCore(
+    userId: string,
+    token: string,
+  ): Promise<{ orgId: string; orgRole: "admin" | "member"; userRole: string }> {
     const tokenHash = hashToken(token);
 
-    // 초대는 *수락자의* org 가 아닌 *초대한* org 소유 → 수락자 컨텍스트로는 RLS 에 가린다.
-    // 토큰 자체가 인가이므로 시스템 컨텍스트로 조회/쓰기한다 (같은 tx → 원자성 유지, C-4).
-    const accepted = await runWithSystemTenant(this.als, async () => {
+    return runWithSystemTenant(this.als, async () => {
       const [invitation] = await this.database.db
         .select()
         .from(invitations)
@@ -113,17 +170,5 @@ export class OrgInviteService {
 
       return { orgId: invitation.orgId, orgRole: invitation.role, userRole: user.role };
     });
-
-    const accessToken = await signAccessToken(
-      {
-        sub: userId,
-        role: accepted.userRole,
-        [ACTIVE_ORG_CLAIM]: accepted.orgId,
-        [ORG_ROLE_CLAIM]: accepted.orgRole,
-      },
-      this.jwtService.getKeyStore(),
-      { issuer: this.jwtOpts.issuer, audience: this.jwtOpts.audience },
-    );
-    return { accessToken };
   }
 }
