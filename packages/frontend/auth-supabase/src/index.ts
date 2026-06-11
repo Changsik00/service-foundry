@@ -52,10 +52,14 @@ export function createSupabaseAuthSDK(
         password: input.password,
       });
       if (error) return normalizeSupabaseAuthError(error);
+      // 이메일 확인 활성 프로젝트: 계정은 생성되지만 세션은 메일 확인 후 발급 — 크래시 대신 명시적 상태
+      if (!data.session || !data.user) {
+        return { success: false, reason: "unverified_email" };
+      }
       return {
         success: true,
-        user: toUser(data.user!),
-        session: toSession(data.user!.id, data.session!.expires_at),
+        user: toUser(data.user),
+        session: toSession(data.user.id, data.session.expires_at),
       };
     },
 

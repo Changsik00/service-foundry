@@ -17,6 +17,11 @@ describe("normalizeSupabaseAuthError", () => {
     expect(result).toEqual({ success: false, reason: "unverified_email" });
   });
 
+  it("email rate limit exceeded (소문자 — 실서버 응답) → rate_limited", () => {
+    const result = normalizeSupabaseAuthError(makeAuthError("email rate limit exceeded", 429));
+    expect(result).toEqual({ success: false, reason: "rate_limited" });
+  });
+
   it("Email rate limit exceeded → rate_limited", () => {
     const result = normalizeSupabaseAuthError(makeAuthError("Email rate limit exceeded", 429));
     expect(result).toEqual({ success: false, reason: "rate_limited" });

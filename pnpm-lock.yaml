@@ -453,6 +453,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@hookform/resolvers':
+        specifier: 'catalog:'
+        version: 5.2.2(react-hook-form@7.76.0(react@19.2.6))
       '@repo/auth-contracts':
         specifier: workspace:*
         version: link:../../packages/shared/auth-contracts
@@ -495,6 +498,9 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.2.6(react@19.2.6)
+      react-hook-form:
+        specifier: 'catalog:'
+        version: 7.76.0(react@19.2.6)
       zod:
         specifier: 'catalog:'
         version: 4.4.3

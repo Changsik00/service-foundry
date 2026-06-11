@@ -15,6 +15,7 @@
 
 <!-- sdd:specx:start -->
 - [ ] spec-x-auth-token-refresh-interceptor — auth-token-refresh-interceptor
+- [ ] spec-x-auth-screens — auth-screens
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -36,6 +37,7 @@
 - ~~**MFA/passkey 상태변경 POST 8개 CSRF 보호**~~ **해소**: `spec-16-01` (2026-06-02) — CsrfGuard 전체 8 endpoint 적용 완료
 - ~~**CSRF/OAuth secret production 가드**~~ **해소**: `spec-16-02 phase-FF` (2026-06-02) — `DEV_DEFAULT_SECRET` 체크 + production 기동 거부 적용 완료
 - [x] ~~**web(구 web-next) CSRF 403 자가복구**~~ **부분 해소**: `apps/web/src/lib/auth-api.ts` `withCsrfRetry` 구현 완료 (2026-06-09). **잔여**: 401 자동 갱신 → `spec-x-auth-token-refresh-interceptor` (spec-x 대기), password-reset/email-verify 클라이언트 흐름 (~~web-vite CSRF 헤더~~ ADR-0025 로 소멸)
+- [ ] **email-verify 흐름 구현 시 Supabase "Confirm email" ON 복귀 필수** (2026-06-11 결정) — dev 는 현재 OFF(autoconfirm: 가입 즉시 email_verified=true 도장, 의미 거짓 — env.sample 주석). 검증 분기를 실제 구현하는 spec 에서 ON 복귀 + e2e 는 `admin.generateLink(type: 'signup')` 으로 확인 링크 방문 패턴 (메일 클릭 자동화 대체). OFF 인 채 검증 분기를 만들면 영원히 거짓 GREEN
 - [ ] **knip-config ignoreDependency 정리** (phase-15 회고 W4) — spec-15-02 가 `@repo/backend-auth-rate-limit` 실배선 후 spec-15-01 등록 ignore 잔존 → knip 40 redundant hint. 배선 완료 dep 의 ignore 제거. 비차단, 정리 항목
 - [ ] **configureApp SoT 에 applySecurity 흡수** (phase-15 2차회고 V1) — `app.setup.ts` 의 `configureApp` 가 requestId+cookieParser 만 캡슐화 → `main.ts` 의 `applySecurity`(helmet/CORS) 배선은 e2e 미검증(제거해도 GREEN, C1 과 동일 계열 갭). applySecurity 를 configureApp 에 흡수 + e2e 보안헤더 검증 추가. phase-16/spec-x 후보
 - [ ] **csrf.ts 주석 drift 정정** (phase-15 2차회고 V2) — `packages/backend/auth-rate-limit/src/csrf.ts:12,16` 주석이 폐기된 session-binding 전략을 설명. ADR-0021(csrf_id, session 비의존) 결정과 모순 → 주석 동기화. V1 과 함께 처리 응집적
