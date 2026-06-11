@@ -22,6 +22,7 @@ export {
   type HealthData,
 } from "./blocks/health-card";
 export { ThemeToggle } from "./blocks/theme-toggle";
+export { Badge, type BadgeProps } from "./components/badge";
 export { Button, type ButtonProps, buttonVariants } from "./components/button";
 export {
   Card,
@@ -50,6 +51,14 @@ export {
 export { Input, type InputProps } from "./components/input";
 export { Label, type LabelProps } from "./components/label";
 export { PasswordInput, type PasswordInputProps } from "./components/password-input";
+export {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./components/table";
 export { Toaster, toast } from "./components/toaster";
 export { ThemeProvider, type ThemeProviderProps, useTheme } from "./lib/theme-context";
 export { cn } from "./lib/utils";
