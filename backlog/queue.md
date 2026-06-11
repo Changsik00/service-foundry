@@ -15,7 +15,6 @@
 
 <!-- sdd:specx:start -->
 - [ ] spec-x-auth-token-refresh-interceptor — auth-token-refresh-interceptor
-- [ ] spec-x-ui-tokens — ui-tokens
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -121,6 +120,7 @@
 - **phase-18** — 인증 권위 모드 (Auth Authority Mode) — completed 2026-06-10
 - [x] spec-x-web-consolidation (완료)
 - [x] spec-x-design-md (완료)
+- [x] spec-x-ui-tokens (완료)
 <!-- sdd:done:end -->
 
 ---
