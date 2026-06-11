@@ -17,7 +17,7 @@ import { Toaster as SonnerToaster, type ToasterProps } from "sonner";
  * Toast 호출: `import { toast } from "@repo/frontend-ui"` 후 `toast("Hello")`.
  */
 export function Toaster(props: ToasterProps): React.ReactElement {
-  return <SonnerToaster richColors closeButton position="top-right" {...props} />;
+  return <SonnerToaster richColors closeButton position="bottom-right" {...props} />;
 }
 
 export { toast } from "sonner";

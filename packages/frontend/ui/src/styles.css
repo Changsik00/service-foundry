@@ -1,1 +1,129 @@
-@import "@repo/tailwind-config/globals.css";
+/**
+ * @repo/frontend-ui — 디자인 시스템 정본 스타일시트.
+ *
+ * 값의 정본: docs/design/DESIGN.md / 매핑: docs/design/TOKEN.md
+ * 새 토큰이 필요하면 TOKEN.md §8 승격 규칙(fill-forward)을 따른다 —
+ * 회색은 --ink opacity 파생만, 새 hue 는 사용자 승인, radius 단계 추가 금지.
+ *
+ * `@theme inline` 인 이유: CSS 변수 참조가 유지되어야 테넌트 슬롯(--color-tenant)
+ * 런타임 오버라이드가 동작한다 (TOKEN.md §1.2).
+ */
+
+@import "tailwindcss";
+
+:root {
+  /* 유일한 회색 hue — 모든 회색은 이것의 opacity 파생 (DESIGN §1.2) */
+  --ink: 28 28 28; /* #1c1c1c */
+
+  /* 테넌트 식별 슬롯 — org 레이아웃에서 인라인 오버라이드 (TOKEN.md §2.3) */
+  --color-tenant: var(--color-primary);
+}
+
+@theme inline {
+  /* ── shadcn 예약 변수 ↔ DESIGN semantic (TOKEN.md §2.1) ── */
+  --color-background: #ffffff; /* surface-page */
+  --color-foreground: rgb(var(--ink)); /* text-primary */
+
+  --color-card: #ffffff;
+  --color-card-foreground: rgb(var(--ink));
+
+  --color-popover: #ffffff;
+  --color-popover-foreground: rgb(var(--ink));
+
+  --color-primary: #2383e2; /* brand — 기능적 블루 */
+  --color-primary-foreground: #ffffff;
+
+  --color-secondary: #f6f5f4; /* surface-sunken (warm gray) */
+  --color-secondary-foreground: rgb(var(--ink) / 0.7);
+
+  --color-muted: #f6f5f4;
+  --color-muted-foreground: rgb(var(--ink) / 0.5); /* text-tertiary */
+
+  --color-accent: rgb(var(--ink) / 0.04); /* surface-hover */
+  --color-accent-foreground: rgb(var(--ink));
+
+  --color-destructive: #d44c47; /* error 보더·아이콘 */
+  --color-destructive-foreground: #ffffff;
+
+  --color-border: rgb(var(--ink) / 0.08);
+  --color-input: rgb(var(--ink) / 0.08);
+  --color-ring: #2383e2; /* 포커스 = brand */
+
+  /* ── service-foundry 전용 (TOKEN.md §2.2) ── */
+  --color-brand-hover: #1b6fc7;
+  --color-brand-active: #155a9e;
+  --color-brand-soft: rgba(35, 131, 226, 0.08);
+  --color-tenant: var(--color-tenant); /* :root 슬롯을 유틸로 노출 (bg-tenant) */
+  --color-surface-selected: rgb(var(--ink) / 0.06);
+  --color-text-disabled: rgb(var(--ink) / 0.35);
+  --color-overlay: rgb(var(--ink) / 0.4);
+
+  --color-success: #18794e;
+  --color-success-bg: #e9f5ee;
+  --color-success-text: #18794e;
+  --color-warning: #d97706;
+  --color-warning-bg: #fbf0e0;
+  --color-warning-text: #b45309;
+  --color-error: #d44c47;
+  --color-error-bg: #fbecea;
+  --color-error-text: #b3261e;
+
+  --color-chart-1: #2383e2;
+  --color-chart-2: #7eb3ec;
+  --color-chart-3: #c4dcf6;
+
+  /* ── Radius — 위계가 의도, 5단계가 전부 (DESIGN §4.2) ── */
+  --radius-sm: 6px; /* chip, 배지 */
+  --radius-md: 8px; /* Input, Button */
+  --radius-lg: 12px; /* Card, 팝오버 */
+  --radius-xl: 16px; /* Modal, Sheet */
+
+  /* ── Depth — ring + 낮은 그림자 (DESIGN §4.3) ── */
+  --shadow-ring: 0 0 0 1px rgb(var(--ink) / 0.08);
+  --shadow-sm: 0 0 0 1px rgb(var(--ink) / 0.08), 0 1px 2px rgb(var(--ink) / 0.04);
+  --shadow-md:
+    0 0 0 1px rgb(var(--ink) / 0.08), 0 1px 2px rgb(var(--ink) / 0.04),
+    0 4px 8px rgb(var(--ink) / 0.04);
+  --shadow-lg: 0 0 0 1px rgb(var(--ink) / 0.08), 0 4px 12px rgb(var(--ink) / 0.08);
+  --shadow-xl: 0 0 0 1px rgb(var(--ink) / 0.08), 0 12px 32px rgb(var(--ink) / 0.12);
+
+  /* ── Typography (DESIGN §3) ── */
+  --font-sans:
+    "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    /* 콘솔 UI 기본 — DESIGN §3.1 body ⭐ */
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: -0.1px;
+    /* 한글 단어 중간 끊김 방지 — 전역 필수 (DESIGN §3.3) */
+    word-break: keep-all;
+  }
+
+  /* iOS 자동 줌 방지 — 폼 컨트롤은 16px (DESIGN §5.2) */
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+
+  /* 포커스 — outline:none 단독 금지 (DESIGN §4.5) */
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-ring);
+  }
+}
+
+@layer utilities {
+  /* 모든 수치 컬럼·금액·날짜에 필수 (DESIGN §3.2) */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}

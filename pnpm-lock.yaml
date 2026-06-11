@@ -477,9 +477,6 @@ importers:
       '@repo/frontend-ui':
         specifier: workspace:*
         version: link:../../packages/frontend/ui
-      '@repo/tailwind-config':
-        specifier: workspace:*
-        version: link:../../packages/config/tailwind-config
       '@repo/utils':
         specifier: workspace:*
         version: link:../../packages/shared/utils
@@ -1568,9 +1565,6 @@ importers:
       '@radix-ui/react-slot':
         specifier: 'catalog:'
         version: 1.2.4(@types/react@19.2.15)(react@19.2.6)
-      '@repo/tailwind-config':
-        specifier: workspace:*
-        version: link:../../config/tailwind-config
       '@repo/validation':
         specifier: workspace:*
         version: link:../../shared/validation
