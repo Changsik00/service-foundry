@@ -83,6 +83,42 @@ describe("SignupForm", () => {
     expect(mockPush).not.toHaveBeenCalled();
   });
 
+  it("unverified_email (이메일 확인 활성 프로젝트) → 메일 확인 안내 표시, 이동 없음", async () => {
+    const sdk = createMockAuthSDK({
+      signUpResult: { success: false, reason: "unverified_email" } as never,
+    });
+    render(
+      <AuthProvider sdk={sdk}>
+        <SignupForm />
+      </AuthProvider>,
+    );
+
+    fillAndSubmit();
+
+    expect(
+      await screen.findByText("확인 이메일을 보냈습니다. 메일함에서 가입을 완료해주세요"),
+    ).toBeInTheDocument();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("rate_limited → 사실 + 다음 행동 안내", async () => {
+    const sdk = createMockAuthSDK({
+      signUpResult: { success: false, reason: "rate_limited" } as never,
+    });
+    render(
+      <AuthProvider sdk={sdk}>
+        <SignupForm />
+      </AuthProvider>,
+    );
+
+    fillAndSubmit();
+
+    expect(
+      await screen.findByText("요청이 너무 많습니다. 잠시 후 다시 시도해주세요"),
+    ).toBeInTheDocument();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
   it("비밀번호 8자 미만 → Zod 인라인 에러", async () => {
     const sdk = createMockAuthSDK();
     const signUpSpy = vi.spyOn(sdk, "signUp");

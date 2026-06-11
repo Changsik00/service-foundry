@@ -15,6 +15,7 @@ import {
   Input,
 } from "@repo/frontend-ui";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { type SignupInput, signupSchema } from "./schema";
@@ -22,6 +23,7 @@ import { type SignupInput, signupSchema } from "./schema";
 export function SignupForm() {
   const { signUp } = useAuth();
   const router = useRouter();
+  const [awaitingConfirm, setAwaitingConfirm] = useState(false);
   const form = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
     defaultValues: { displayName: "", email: "", password: "" },
@@ -39,6 +41,15 @@ export function SignupForm() {
         router.push("/");
         return;
       }
+      if (result.reason === "unverified_email") {
+        // 이메일 확인 활성 프로젝트 — 계정 생성됨, 세션은 메일 확인 후
+        setAwaitingConfirm(true);
+        return;
+      }
+      if (result.reason === "rate_limited") {
+        form.setError("root", { message: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요" });
+        return;
+      }
       form.setError("root", { message: "요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요" });
     } catch (err) {
       if (err instanceof AppError && err.statusCode === 409) {
@@ -49,6 +60,15 @@ export function SignupForm() {
       form.setError("root", { message: "요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요" });
     }
   });
+
+  if (awaitingConfirm) {
+    // 사실 + 다음 행동 (DESIGN §9) — 축하 문구·일러스트 없음
+    return (
+      <p className="text-sm leading-relaxed text-secondary-foreground">
+        확인 이메일을 보냈습니다. 메일함에서 가입을 완료해주세요
+      </p>
+    );
+  }
 
   return (
     <Form {...form}>

@@ -31,7 +31,8 @@ export function normalizeSupabaseAuthError(err: unknown): AuthResult {
     return { success: false, reason: "unverified_email" };
   }
 
-  if (message === "Email rate limit exceeded") {
+  // GoTrue 버전에 따라 대소문자가 다름 ("Email ..." / "email ...") — 불문 매치
+  if (message.toLowerCase() === "email rate limit exceeded") {
     return { success: false, reason: "rate_limited" };
   }
 

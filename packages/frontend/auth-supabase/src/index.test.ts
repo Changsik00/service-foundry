@@ -121,6 +121,20 @@ describe("createSupabaseAuthSDK", () => {
       }
     });
 
+    it("세션 없음 (이메일 확인 필요 프로젝트) → unverified_email (크래시 금지)", async () => {
+      mockSignUp.mockResolvedValue({
+        data: { user: MOCK_USER, session: null },
+        error: null,
+      });
+
+      const result = await sdk.signUp({
+        email: "new@example.com",
+        password: "password123",
+      });
+
+      expect(result).toEqual({ success: false, reason: "unverified_email" });
+    });
+
     it("User already registered → AppError CONFLICT throw", async () => {
       mockSignUp.mockResolvedValue({
         data: { user: null, session: null },
