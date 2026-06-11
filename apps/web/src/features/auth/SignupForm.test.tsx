@@ -10,6 +10,7 @@ const mockPush = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 const TEST_USER = { id: "u-1", email: "new@example.com" };

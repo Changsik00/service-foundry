@@ -15,6 +15,7 @@
 
 <!-- sdd:specx:start -->
 - [ ] spec-x-auth-token-refresh-interceptor — auth-token-refresh-interceptor
+- [ ] spec-x-org-screens — org-screens
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -39,6 +40,7 @@
 - [ ] **email-verify 흐름 구현 시 Supabase "Confirm email" ON 복귀 필수** (2026-06-11 결정) — dev 는 현재 OFF(autoconfirm: 가입 즉시 email_verified=true 도장, 의미 거짓 — env.sample 주석). 검증 분기를 실제 구현하는 spec 에서 ON 복귀 + e2e 는 `admin.generateLink(type: 'signup')` 으로 확인 링크 방문 패턴 (메일 클릭 자동화 대체). OFF 인 채 검증 분기를 만들면 영원히 거짓 GREEN
 - [ ] **knip-config ignoreDependency 정리** (phase-15 회고 W4) — spec-15-02 가 `@repo/backend-auth-rate-limit` 실배선 후 spec-15-01 등록 ignore 잔존 → knip 40 redundant hint. 배선 완료 dep 의 ignore 제거. 비차단, 정리 항목
 - [ ] **configureApp SoT 에 applySecurity 흡수** (phase-15 2차회고 V1) — `app.setup.ts` 의 `configureApp` 가 requestId+cookieParser 만 캡슐화 → `main.ts` 의 `applySecurity`(helmet/CORS) 배선은 e2e 미검증(제거해도 GREEN, C1 과 동일 계열 갭). applySecurity 를 configureApp 에 흡수 + e2e 보안헤더 검증 추가. phase-16/spec-x 후보
+- [ ] **web e2e/로컬 dev 의 RLS 우회** (spec-x-org-screens 발견, 2026-06-11) — dev·web-e2e 의 DATABASE_URL 이 postgres superuser 라 RLS(defense-in-depth)가 통째로 비활성. 격리는 api e2e(runtime role, spec-17-08)가 검증하지만, dev 환경도 app_runtime role 로 전환하면 화면 개발 중 격리 버그를 조기 발견 가능. compose/migrate 의 role 부여 흐름 정리 필요. spec-x 후보
 - [ ] **csrf.ts 주석 drift 정정** (phase-15 2차회고 V2) — `packages/backend/auth-rate-limit/src/csrf.ts:12,16` 주석이 폐기된 session-binding 전략을 설명. ADR-0021(csrf_id, session 비의존) 결정과 모순 → 주석 동기화. V1 과 함께 처리 응집적
 - [ ] **MFA 추가 factor: SMS/이메일 OTP** (2026-06-02) — 현재 MFA 는 TOTP(인증앱)+백업코드+passkey 만. `auth/mfa/totp` 네임스페이스는 다른 factor 여지를 둔 설계이나 미구현. SMS(twilio 등)/email OTP factor 는 **기능 추가**(보안 하드닝 phase-16 과 별개) → 별도 phase/spec 후보. 외부 의존(SMS provider)+비용·검증 흐름 설계 필요
 - ~~**테넌트 쓰기 경로 RLS 강제**~~ **해소**: `spec-x-tenant-isolation-hardening` (2026-06-08) — WITH CHECK 정책 적용, cross-org INSERT/UPDATE 거부 e2e 검증 완료
