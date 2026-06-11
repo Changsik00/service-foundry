@@ -15,7 +15,6 @@
 
 <!-- sdd:specx:start -->
 - [ ] spec-x-auth-token-refresh-interceptor — auth-token-refresh-interceptor
-- [ ] spec-x-design-md — design-md
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -120,6 +119,7 @@
 - **phase-17** — 멀티테넌시 Foundation + 이메일 어댑터 (Spine) — completed 2026-06-09
 - **phase-18** — 인증 권위 모드 (Auth Authority Mode) — completed 2026-06-10
 - [x] spec-x-web-consolidation (완료)
+- [x] spec-x-design-md (완료)
 <!-- sdd:done:end -->
 
 ---
