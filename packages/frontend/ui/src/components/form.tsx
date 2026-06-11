@@ -149,10 +149,12 @@ export const FormMessage = React.forwardRef<
   const body = error ? String(error?.message ?? "") : children;
   if (!body) return null;
   return (
+    // role=alert — 에러 즉시 낭독. 색은 error-text(#b3261e) — destructive(#d44c47)는 텍스트 AA 미달 (DESIGN §2.4)
     <p
       ref={ref}
       id={formMessageId}
-      className={cn("text-[0.8rem] font-medium text-destructive", className)}
+      role="alert"
+      className={cn("text-xs font-medium text-error-text", className)}
       {...props}
     >
       {body}

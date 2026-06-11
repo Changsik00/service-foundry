@@ -42,7 +42,8 @@ export function SignupForm() {
         return;
       }
       if (result.reason === "unverified_email") {
-        // 이메일 확인 활성 프로젝트 — 계정 생성됨, 세션은 메일 확인 후
+        // 이메일 확인(Confirm email) 활성 프로젝트 — 계정 생성됨, 세션은 메일 확인 후.
+        // dev 는 OFF(e2e 결정론), prod 는 ON 복원 필수 — env.sample Supabase 섹션 참조.
         setAwaitingConfirm(true);
         return;
       }
