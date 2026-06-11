@@ -1,91 +1,44 @@
 # Walkthrough: spec-x-design-md
 
-> 본 문서는 *작업 기록* 입니다. 결정 과정, 사용자 협의, 검증 결과를 미래의 자신과 리뷰어에게 남깁니다.
-> 작업을 진행하는 동안 *지속적으로* 갱신하세요. 마지막에 한 번에 작성하지 마세요.
-
 ## 📌 결정 기록
-
-> 작업 중 이슈가 발생했을 때, 어떤 선택지가 있었고 왜 이 방향을 결정했는지 기록합니다.
 
 | 이슈 | 선택지 | 결정 | 이유 |
 |---|---|---|---|
-| <이슈 1> | A 또는 B | A | <이유> |
+| 베이스 미학 | Notion-warm / Linear dark / Vercel neutral / NEXTPAY 유지 | **Notion-warm light** | 66개 컬렉션 평가 후 사용자 선택 (2026-06-09). 가장 구체적 문서 + 실제 SaaS 출신 + 한국어 UI 궁합 |
+| 미학 vs 방법론 | 66개 장점 혼합 | **미학 1개 고정, 방법론만 합성** | 미학은 배타적 — 섞으면 정체성 사망 |
+| 사이드바 | next-academy 진검정 #111 | **#f6f5f4 warm gray** | 진검정은 warm light 와 충돌. active 무채색 규칙은 유지 |
+| pill CTA | NEXTPAY pill 999px | **버튼 radius 8 고정, pill 금지** | Notion-warm 의 조용한 톤 — 가드레일 #7 로 명문화 |
+| a11y 지시 방식 | "접근성 신경 써라" 일반 지시 | **"shadcn 에 맡기고 손대지 마라" + 빈틈 6규칙** | 막연한 지시는 무효과 or 과잉 aria 역효과 (사용자 문제 제기, 2026-06-10). FRONT.md §6.2 |
+| FRONT vs ARCHITECTURE | 단일 문서 | **범용/특화 분리** | 보일러플레이트 목적 — FRONT 는 타 프로젝트 이식용 |
+| 문서 위치 | 루트 / docs 하위 | `docs/design/` + `docs/frontend/` | 루트 ARCHITECTURE.md 와 이름 충돌 회피, docs/index 허브 등록 |
 
-### ADR 승격 가이드
+## 🤝 사용자 협의 기록
 
-> 위 결정 중 *cross-spec / long-lived* 인 것이 있다면 ADR 로 승격합니다 (constitution §6.3).
->
-> 승격 기준:
-> - 다른 spec 의 작업이 본 결정에 의존하는가?
-> - 6 개월 이상 유지될 가능성이 높은가?
-> - frontmatter `type:` 어휘 (`decision` / `invariant` / `convention` / `tradeoff`) 중 하나에 해당하는가?
->
-> 셋 중 둘 이상이면 ADR 후보. 비강제 — 미체크여도 ship 차단 없음.
-
-- [ ] ADR 승격 대상 있음 → 작성됨: `docs/decisions/ADR-<NNN>-<slug>.md`
-- [ ] 없음
-
-## 💬 사용자 협의
-
-> 사용자와 논의한 내용과 합의 사항을 기록합니다.
-
-- **주제**: <논의 주제>
-  - **사용자 의견**: <사용자가 제시한 방향>
-  - **합의**: <최종 합의 내용>
+- 2026-06-09: 66개 design-md + next-academy 4종 전수 평가 → Notion-warm 선택, 4문서 구성 합의
+- 2026-06-10: "design.md 등은 이번 스펙 아니지?" → 본 spec 이 그 작업임을 확인 / shadcn aria 질문 → FRONT.md §6.2 설계 반영
+- Plan Accept: 로드맵 합의 + "진행하자"/"다음"
 
 ## 🧪 검증 결과
 
-### 1. 자동화 테스트
+spec.md 요구사항 대조:
 
-#### 단위 테스트
-- **명령**: `<프로젝트의 단위 테스트 명령>`
-- **결과**: ✅ Passed (X tests in Y.Y s) / ❌ Failed (자세한 내용 아래)
-- **로그 요약**:
-```text
-(핵심 로그 붙여넣기)
-```
-
-#### 통합 테스트 (Integration Test Required = yes 인 경우)
-- **명령**: `<프로젝트의 통합 테스트 명령>`
-- **결과**: ✅ Passed / ❌ Failed
-- **로그 요약**:
-```text
-(핵심 로그 붙여넣기)
-```
-
-### 2. 수동 검증
-
-> 에이전트가 실행한 단계와 결과를 시간순으로 기록.
-
-1. **Action**: `<실행한 명령 또는 행동>`
-   - **Result**: <관찰된 결과>
-
-## 🔍 발견 사항
-
-<!-- 작업 중 발견한 흥미로운 점, 사이드 이슈, 다음 SPEC 후보 -->
-
-- <발견 1>
-- <발견 2>
-
-## 🚧 이월 항목 (Optional)
-
-> 본 SPEC 범위를 벗어나 다음 작업으로 미룬 항목.
-
-- <항목 1> → `backlog/queue.md` 에 추가됨
-
-## 🔗 관련 문서 (Related)
-
-<!-- [[wikilinks]] 로 연결. 실제 파일 경로: docs/wiki/, docs/decisions/, docs/rca/ -->
-<!-- 예: [[wiki/decisions]], [[ADR-001]], [[RCA-001]], [[spec-19-01]] -->
-
-- 관련 wiki:
-- 관련 ADR:
-- 관련 RCA:
-
-## 📅 메타
-
-| 항목 | 값 |
+| 요구 | 충족 |
 |---|---|
-| **작성자** | Agent + <user> |
-| **작성 기간** | YYYY-MM-DD ~ YYYY-MM-DD |
-| **최종 commit** | `<short hash>` |
+| DESIGN.md — Quick Ref / 3-tier / opacity-grayscale / ring-shadow / 테넌트 슬롯 / Guardrails(16금지+6필수) / Audit 7 / Voice&Tone / Prompt Guide | ✅ 전 섹션 |
+| DESIGN.md — Auth 화면 스펙 (로그인/가입/테넌트 선택/초대) | ✅ §6 — spec-x-auth-screens 구현 기준 |
+| 도메인 중립 (50대 페르소나·학원 제거) | ✅ |
+| TOKEN.md — CSS 변수 ↔ shadcn ↔ Tailwind + 구현 금지 목록 | ✅ + shadcn 오버라이드 작업 목록(§6) = spec-x-ui-tokens 입력 |
+| FRONT.md — 범용 + a11y 빈틈 6규칙 | ✅ 레포 특화 내용 없음 (이식 가능) |
+| frontend ARCHITECTURE.md — 레이어/불변규칙 8/auth 실배선/쿡북 | ✅ "왜"는 ADR 위임 |
+| 상호 링크 + index 등록 | ✅ |
+| Agent Prompt 예시가 문서 수치만으로 실행 가능한지 self-check | ✅ §10 4종 — 모든 값이 §2~5 토큰으로 해소됨 |
+
+코드 변경 없음 — 기존 게이트 그린 유지 (문서 전용 spec).
+
+## 📦 Commits
+
+1. docs: design.md 디자인 언어 정본
+2. docs: token.md 토큰 매핑 레퍼런스
+3. docs: front.md 범용 스택 패턴집
+4. docs: frontend architecture.md + index 등록
+5. docs: ship walkthrough and pr description
