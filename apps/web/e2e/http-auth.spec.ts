@@ -69,27 +69,28 @@ test("미인증 상태 → GET /auth/me 401 반환", async ({ page }) => {
   expect(response.status()).toBe(401);
 });
 
-test("미인증 상태 → public API는 토큰 없이 즉시 진행", async ({ page }) => {
-  const requests: { auth: string | null }[] = [];
+test("미인증 → 콘솔 접근 시 클라이언트 API 호출 없이 /login (401 스팸 방지)", async ({ page }) => {
+  // 구 시나리오(public 즉시 진행)는 홈이 AuthGuard 뒤로 가며 호스트 화면 소실 —
+  // public 무토큰 진행은 http-client 단위 테스트가 커버. 여기선 가드가 호출 자체를 막는지 검증.
+  const requests: string[] = [];
 
   await page.route(`${API_URL}/**`, async (route) => {
-    requests.push({ auth: route.request().headers().authorization ?? null });
+    requests.push(route.request().url());
     await route.continue();
   });
 
   await page.goto("/");
-  await page.waitForTimeout(2_000);
+  await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
+  await page.waitForTimeout(1_000);
 
-  expect(requests.length).toBeGreaterThan(0);
-  for (const r of requests) {
-    expect(r.auth).toBeNull();
-  }
+  expect(requests).toHaveLength(0);
 });
 
 test("401 수신 → refresh 후 재시도 (네트워크 요청 2회)", async ({ page }) => {
   let callCount = 0;
 
-  await page.route(`${API_URL}/health`, async (route) => {
+  // 로그인 후 클라이언트 첫 호출 = GET /auth/me (대시보드 계정 카드)
+  await page.route(`${API_URL}/auth/me`, async (route) => {
     callCount += 1;
     if (callCount === 1) {
       await route.fulfill({ status: 401, body: JSON.stringify({ error: "expired" }) });

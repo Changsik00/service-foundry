@@ -1,91 +1,37 @@
 # Walkthrough: spec-x-console-shell
 
-> 본 문서는 *작업 기록* 입니다. 결정 과정, 사용자 협의, 검증 결과를 미래의 자신과 리뷰어에게 남깁니다.
-> 작업을 진행하는 동안 *지속적으로* 갱신하세요. 마지막에 한 번에 작성하지 마세요.
-
 ## 📌 결정 기록
-
-> 작업 중 이슈가 발생했을 때, 어떤 선택지가 있었고 왜 이 방향을 결정했는지 기록합니다.
 
 | 이슈 | 선택지 | 결정 | 이유 |
 |---|---|---|---|
-| <이슈 1> | A 또는 B | A | <이유> |
-
-### ADR 승격 가이드
-
-> 위 결정 중 *cross-spec / long-lived* 인 것이 있다면 ADR 로 승격합니다 (constitution §6.3).
->
-> 승격 기준:
-> - 다른 spec 의 작업이 본 결정에 의존하는가?
-> - 6 개월 이상 유지될 가능성이 높은가?
-> - frontmatter `type:` 어휘 (`decision` / `invariant` / `convention` / `tradeoff`) 중 하나에 해당하는가?
->
-> 셋 중 둘 이상이면 ADR 후보. 비강제 — 미체크여도 ship 차단 없음.
-
-- [ ] ADR 승격 대상 있음 → 작성됨: `docs/decisions/ADR-<NNN>-<slug>.md`
-- [ ] 없음
-
-## 💬 사용자 협의
-
-> 사용자와 논의한 내용과 합의 사항을 기록합니다.
-
-- **주제**: <논의 주제>
-  - **사용자 의견**: <사용자가 제시한 방향>
-  - **합의**: <최종 합의 내용>
+| 가드 | auth-react `RequireAuth` 재사용 | **앱 로컬 `AuthGuard` 신설** | RequireAuth 는 fallback 렌더만 (redirect 없음) — (console) 은 `/login?redirect=` 이동 필요. GuestOnly 와 대칭 |
+| redirect 복귀 | 무조건 `/` | **`?redirect=` 소비 + 내부 경로 검증** | 오픈 리다이렉트 방지 (`//` 차단) |
+| 사이드바 메뉴 | 멤버/조직 자리 디밍 | **대시보드 1개만** | 실화면 없는 메뉴 = filler (가드레일 #3 정신). org-screens 에서 추가 |
+| 비밀번호 토글 | 앱 로컬 | **frontend-ui `PasswordInput` 승격** | 로그인·가입 2회 사용 = 승격 기준 (TOKEN.md §8). 아이콘은 인라인 SVG (lucide dep 회피) |
+| 강도 표시 | 게이지 바 | **규칙 체크리스트 (✓/·) 라이브** | 두 규칙(8자+/영문+숫자)뿐 — 게이지는 과장식. 색+기호 병행 (색 단독 금지) |
+| 데모 잔재 | 유지 | **health-card-client·lib/queries 삭제** | 대시보드가 RSC(health)+client(account) 하이브리드를 계승 — 구 데모는 중복 |
+| http-auth e2e 2건 | 삭제 | **의도 보존 재조준** | 홈이 가드 뒤로 가며 호스트 소실 — "public 무토큰"은 단위가 커버, e2e 는 "가드가 클라 호출 0건 보장(401 스팸 방지)" + 401 재시도는 /auth/me 로 |
 
 ## 🧪 검증 결과
 
-### 1. 자동화 테스트
-
-#### 단위 테스트
-- **명령**: `<프로젝트의 단위 테스트 명령>`
-- **결과**: ✅ Passed (X tests in Y.Y s) / ❌ Failed (자세한 내용 아래)
-- **로그 요약**:
-```text
-(핵심 로그 붙여넣기)
+```
+단위: 35 (web) + 22 (ui, PasswordInput 2 추가) — TDD Red→Green
+e2e:  13/13 PASS (기존 10 + 로그아웃/미로그인 가드/confirm 불일치)
+게이트: turbo 137/137 · knip 0 (미사용 Me 타입 제거) · depcruise ✔
 ```
 
-#### 통합 테스트 (Integration Test Required = yes 인 경우)
-- **명령**: `<프로젝트의 통합 테스트 명령>`
-- **결과**: ✅ Passed / ❌ Failed
-- **로그 요약**:
-```text
-(핵심 로그 붙여넣기)
-```
+## ✅ DESIGN §8 Audit Checklist
 
-### 2. 수동 검증
+1. 회색 — ink 파생 유틸만 ✅ 2. 블루 — CTA·링크만, 사이드바 active 무채색 ✅
+3. 경계 — ring (UserMenu 상단 구분선만 border, 테이블류 예외 준용) ✅
+4. 라디우스 — 카드 12/인풋·버튼 8/메뉴 6 ✅ 5. tnum — 대시보드 수치 행 적용, keep-all 전역 ✅
+6. 톤 — 이모지·감탄사 0, 에러 = 사실+행동 ✅
+7. a11y — 토글 aria-label, role=alert, 라벨 상시, status dot 텍스트 병행 ✅
 
-> 에이전트가 실행한 단계와 결과를 시간순으로 기록.
+## 📦 Commits
 
-1. **Action**: `<실행한 명령 또는 행동>`
-   - **Result**: <관찰된 결과>
-
-## 🔍 발견 사항
-
-<!-- 작업 중 발견한 흥미로운 점, 사이드 이슈, 다음 SPEC 후보 -->
-
-- <발견 1>
-- <발견 2>
-
-## 🚧 이월 항목 (Optional)
-
-> 본 SPEC 범위를 벗어나 다음 작업으로 미룬 항목.
-
-- <항목 1> → `backlog/queue.md` 에 추가됨
-
-## 🔗 관련 문서 (Related)
-
-<!-- [[wikilinks]] 로 연결. 실제 파일 경로: docs/wiki/, docs/decisions/, docs/rca/ -->
-<!-- 예: [[wiki/decisions]], [[ADR-001]], [[RCA-001]], [[spec-19-01]] -->
-
-- 관련 wiki:
-- 관련 ADR:
-- 관련 RCA:
-
-## 📅 메타
-
-| 항목 | 값 |
-|---|---|
-| **작성자** | Agent + <user> |
-| **작성 기간** | YYYY-MM-DD ~ YYYY-MM-DD |
-| **최종 commit** | `<short hash>` |
+1. feat: appshell + (console) 가드 + 로그아웃
+2. feat: 대시보드 (계정·api 상태 실데이터)
+3. feat: 비밀번호 토글·확인·강도 힌트
+4. test: e2e 확장 + 데모 잔재 정리
+5. docs: ship

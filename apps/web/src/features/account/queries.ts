@@ -12,8 +12,6 @@ const MeSchema = z.object({
   }),
 });
 
-export type Me = z.infer<typeof MeSchema>;
-
 export const accountQueries = {
   me: () =>
     queryOptions({
