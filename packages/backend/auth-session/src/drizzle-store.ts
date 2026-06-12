@@ -43,5 +43,11 @@ export function drizzleSessionStore(db: NodePgDatabase<typeof schema>): SessionS
         .returning({ id: sessions.id });
       return result.length;
     },
+    async revokeAllByUser(userId) {
+      await db
+        .update(sessions)
+        .set({ revokedAt: new Date() })
+        .where(and(eq(sessions.userId, userId), isNull(sessions.revokedAt)));
+    },
   };
 }

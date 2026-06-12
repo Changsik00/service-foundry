@@ -12,6 +12,8 @@ export const users = pgTable("users", {
   orgId: uuid("org_id"),
   /** Firebase/Supabase provider UID (native 유저는 null). Firebase UID는 UUID가 아니므로 text로 저장. */
   providerUid: text("provider_uid").unique(),
+  displayName: text("display_name"),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 

@@ -58,6 +58,7 @@ function makeSessionStore(): SessionStore {
     findByHash: vi.fn(),
     updateRevoked: vi.fn(),
     bulkRevokeByFamily: vi.fn(),
+    revokeAllByUser: vi.fn(),
   };
 }
 

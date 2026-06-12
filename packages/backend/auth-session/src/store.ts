@@ -14,4 +14,5 @@ export interface SessionStore {
   findByHash(refreshTokenHash: string): Promise<SessionRow | null>;
   updateRevoked(id: string, revokedAt: Date): Promise<void>;
   bulkRevokeByFamily(refreshTokenFamily: string, revokedAt: Date): Promise<number>;
+  revokeAllByUser(userId: string): Promise<void>;
 }
