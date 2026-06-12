@@ -3,9 +3,6 @@ import { type ReactNode, useCallback, useEffect, useState } from "react";
 
 import { AuthContext } from "./context";
 
-const is401 = (e: unknown): boolean =>
-  !!e && typeof e === "object" && (e as { statusCode?: number }).statusCode === 401;
-
 interface AuthProviderProps {
   sdk: CoreAuthSDK;
   children: ReactNode;
@@ -22,16 +19,8 @@ export function AuthProvider({ sdk, children }: AuthProviderProps) {
         setUser(u);
         setIsLoading(false);
       })
-      .catch(async (e) => {
-        if (is401(e)) {
-          try {
-            await sdk.refresh();
-            const u = await sdk.getCurrentUser();
-            setUser(u);
-          } catch {
-            setUser(null);
-          }
-        }
+      .catch(() => {
+        setUser(null);
         setIsLoading(false);
       });
   }, [sdk]);
