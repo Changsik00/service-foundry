@@ -36,6 +36,7 @@ const AppSettingsSchema = BaseBackendSchema.extend({
   FIREBASE_SERVICE_ACCOUNT: z.string().optional(),
   FIREBASE_PROJECT_ID: z.string().optional(),
   SUPABASE_URL: z.string().url().optional(),
+  SWAGGER_ENABLED: z.coerce.boolean().default(false),
 });
 
 export type AppSettings = z.output<typeof AppSettingsSchema>;
