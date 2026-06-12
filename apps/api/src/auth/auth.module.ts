@@ -52,6 +52,7 @@ import {
 } from "./password-reset.stores.js";
 import { createDrizzleRateLimitStore, RATE_LIMIT_STORE } from "./rate-limit.stores.js";
 import { createDrizzleSessionStore, SESSION_STORE } from "./session.stores.js";
+import { SessionManagementService } from "./session-management.service.js";
 import { SigninService } from "./signin.service.js";
 import { SignupService } from "./signup.service.js";
 
@@ -73,6 +74,7 @@ const settings: AppSettings = loadSettings(process.env);
     MfaService,
     AccountService,
     EmailChangeService,
+    SessionManagementService,
     {
       provide: EMAIL_CHANGE_TOKEN_STORE,
       inject: [DATABASE],

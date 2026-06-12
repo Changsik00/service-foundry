@@ -12,7 +12,10 @@ import type { SessionInsert, SessionRow } from "./schema.js";
 export interface SessionStore {
   insert(row: SessionInsert): Promise<SessionRow>;
   findByHash(refreshTokenHash: string): Promise<SessionRow | null>;
+  findById(id: string): Promise<SessionRow | null>;
   updateRevoked(id: string, revokedAt: Date): Promise<void>;
   bulkRevokeByFamily(refreshTokenFamily: string, revokedAt: Date): Promise<number>;
   revokeAllByUser(userId: string): Promise<void>;
+  listActiveByUser(userId: string): Promise<SessionRow[]>;
+  revokeOthers(userId: string, excludeHash: string | null): Promise<void>;
 }

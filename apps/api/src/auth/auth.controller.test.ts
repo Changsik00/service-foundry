@@ -14,6 +14,7 @@ import { OrgInviteService } from "./org-invite.service.js";
 import { OrgMembersService } from "./org-members.service.js";
 import { OrgSwitchService } from "./org-switch.service.js";
 import { PasswordResetService } from "./password-reset.service.js";
+import { SessionManagementService } from "./session-management.service.js";
 import { SigninService } from "./signin.service.js";
 import { SignupService } from "./signup.service.js";
 
@@ -118,6 +119,14 @@ describe("AuthController", () => {
             updatePasswordHash: vi.fn(),
             softDelete: vi.fn(),
             isSoleOwnerOfAnyOrg: vi.fn().mockResolvedValue(false),
+          },
+        },
+        {
+          provide: SessionManagementService,
+          useValue: {
+            listSessions: vi.fn().mockResolvedValue([]),
+            revokeSession: vi.fn().mockResolvedValue(undefined),
+            revokeOtherSessions: vi.fn().mockResolvedValue(undefined),
           },
         },
       ],
