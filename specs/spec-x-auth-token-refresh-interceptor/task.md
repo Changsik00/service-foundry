@@ -34,7 +34,7 @@
 
 - [x] `pnpm --filter @repo/frontend-http-client test` → 3개 케이스 FAIL 확인 (케이스 1 선통과)
 - [x] `pnpm --filter @repo/frontend-auth-react test` → 1개 케이스 FAIL 확인
-- [ ] Commit: `test(spec-x-auth-token-refresh-interceptor): http-client onUnauthorized + startup 복구 테스트 (Red)`
+- [x] Commit: `test(spec-x-auth-token-refresh-interceptor): http-client onUnauthorized + startup 복구 테스트 (Red)`
 
 ---
 
@@ -58,7 +58,7 @@
 - [x] `pnpm --filter @repo/frontend-http-client test` → 17/17 PASS
 - [x] `pnpm --filter @repo/frontend-auth-react test` → 21/21 PASS
 - [x] `pnpm turbo run typecheck` → 48/48 PASS
-- [ ] Commit: `feat(spec-x-auth-token-refresh-interceptor): http-client onUnauthorized interceptor + startup 401 복구`
+- [x] Commit: `feat(spec-x-auth-token-refresh-interceptor): http-client onUnauthorized interceptor + startup 401 복구`
 
 ---
 
@@ -66,15 +66,15 @@
 
 ### 🚦 Pre-Push Quality Gate
 
-- [ ] `pnpm --filter @repo/frontend-http-client test` → PASS
-- [ ] `pnpm --filter @repo/frontend-auth-react test` → PASS
-- [ ] `pnpm turbo run typecheck` → PASS
+- [x] `pnpm --filter @repo/frontend-http-client test` → PASS
+- [x] `pnpm --filter @repo/frontend-auth-react test` → PASS
+- [x] `pnpm turbo run typecheck` → PASS
 
 ### 📝 산출물
 
 - [x] **walkthrough.md 작성**
 - [x] **pr_description.md 작성**
-- [ ] **Ship Commit**: `docs(spec-x-auth-token-refresh-interceptor): ship walkthrough and pr description`
+- [x] **Ship Commit**: `docs(spec-x-auth-token-refresh-interceptor): ship walkthrough and pr description`
 
 ### 🚀 Push & PR
 
