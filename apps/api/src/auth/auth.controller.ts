@@ -13,6 +13,7 @@ import {
   Res,
   UseGuards,
 } from "@nestjs/common";
+import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import {
   EmailVerifyConfirm,
   EmailVerifyRequest,
@@ -73,6 +74,7 @@ type SignResponse = {
 };
 type SignInResponse = SignResponse | { status: "mfa_required"; mfaChallengeToken: string };
 
+@ApiTags("auth")
 @Controller("auth")
 export class AuthController {
   constructor(
@@ -92,13 +94,18 @@ export class AuthController {
     private readonly sessionManagementService: SessionManagementService,
   ) {}
 
-  /** CSRF 부트스트랩 — safe(GET) 요청에서 csrf_id+csrf_token 쿠키 발급, body 로 토큰 전달. */
+  @ApiOperation({ summary: "CSRF 토큰 발급 — csrf_id·csrf_token 쿠키 설정" })
+  @ApiResponse({ status: 200, description: "csrfToken 반환" })
   @Get("csrf")
   issueCsrf(@Res({ passthrough: true }) res: Response): { csrfToken: string } {
     const { csrfToken } = setCsrfCookies(res, this.csrfSecret);
     return { csrfToken };
   }
 
+  @ApiOperation({ summary: "이메일·비밀번호 로그인" })
+  @ApiHeader({ name: "X-Csrf-Token", required: true })
+  @ApiResponse({ status: 200, description: "accessToken + user 반환, refresh_token 쿠키 설정" })
+  @ApiResponse({ status: 401, description: "인증 실패" })
   @Post("signin")
   @UseGuards(CsrfGuard)
   @HttpCode(200)
@@ -152,6 +159,10 @@ export class AuthController {
     };
   }
 
+  @ApiOperation({ summary: "이메일·비밀번호 회원 가입" })
+  @ApiHeader({ name: "X-Csrf-Token", required: true })
+  @ApiResponse({ status: 201, description: "accessToken + user 반환, refresh_token 쿠키 설정" })
+  @ApiResponse({ status: 409, description: "이메일 중복" })
   @Post("signup")
   @UseGuards(CsrfGuard)
   @HttpCode(201)
@@ -184,6 +195,9 @@ export class AuthController {
     };
   }
 
+  @ApiOperation({ summary: "로그아웃 — refresh_token 쿠키 삭제 + 세션 revoke" })
+  @ApiHeader({ name: "X-Csrf-Token", required: true })
+  @ApiResponse({ status: 200, description: "로그아웃 성공" })
   @Post("signout")
   @UseGuards(CsrfGuard)
   @HttpCode(200)
@@ -201,6 +215,10 @@ export class AuthController {
     return { status: "ok" };
   }
 
+  @ApiOperation({ summary: "Access token 갱신 — refresh_token 쿠키 로테이션" })
+  @ApiHeader({ name: "X-Csrf-Token", required: true })
+  @ApiResponse({ status: 200, description: "새 accessToken + refresh_token 쿠키 갱신" })
+  @ApiResponse({ status: 401, description: "refresh_token 만료·revoked·미존재" })
   @Post("refresh")
   @UseGuards(CsrfGuard)
   @HttpCode(200)
@@ -225,6 +243,9 @@ export class AuthController {
     };
   }
 
+  @ApiOperation({ summary: "현재 인증된 사용자 정보 조회" })
+  @ApiBearerAuth("access-token")
+  @ApiResponse({ status: 200, description: "JWT 클레임 + displayName 반환" })
   @Get("me")
   @UseGuards(AuthGuard)
   async me(
@@ -315,6 +336,9 @@ export class AuthController {
     return { members: await this.orgMembersService.list() };
   }
 
+  @ApiOperation({ summary: "활성 세션 목록 조회 — current 세션 표시" })
+  @ApiBearerAuth("access-token")
+  @ApiResponse({ status: 200, description: "활성 세션 배열 (refreshTokenHash 미포함)" })
   @Get("sessions")
   @UseGuards(AuthGuard)
   @HttpCode(200)
@@ -329,6 +353,11 @@ export class AuthController {
     return { sessions };
   }
 
+  @ApiOperation({ summary: "특정 세션 종료" })
+  @ApiBearerAuth("access-token")
+  @ApiHeader({ name: "X-Csrf-Token", required: true })
+  @ApiResponse({ status: 200, description: "종료 성공" })
+  @ApiResponse({ status: 403, description: "타인 세션 접근 불가" })
   @Delete("sessions/:id")
   @UseGuards(AuthGuard, CsrfGuard)
   @HttpCode(200)
@@ -340,6 +369,10 @@ export class AuthController {
     return { status: "ok" };
   }
 
+  @ApiOperation({ summary: "현재 세션 외 전체 종료" })
+  @ApiBearerAuth("access-token")
+  @ApiHeader({ name: "X-Csrf-Token", required: true })
+  @ApiResponse({ status: 200, description: "현재 세션 제외 전체 revoke" })
   @Delete("sessions")
   @UseGuards(AuthGuard, CsrfGuard)
   @HttpCode(200)

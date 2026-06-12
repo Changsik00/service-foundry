@@ -40,6 +40,8 @@
     "@repo/nestjs-logger": "workspace:*",
     "@repo/nestjs-security": "workspace:*",
     "@repo/nestjs-settings": "workspace:*",
+    "@nestjs/swagger": "^11.2.0",
+    "swagger-ui-express": "^5.0.0",
     "firebase-admin": "catalog:",
     "cookie-parser": "catalog:",
     "drizzle-orm": "catalog:",
