@@ -41,7 +41,12 @@ describe("EmailChangeService", () => {
     isSoleOwnerOfAnyOrg: vi.fn(),
   };
   const tokenStore = { insert: vi.fn(), findByHash: vi.fn(), markUsed: vi.fn() };
-  const sessionStore = { revokeAllByUser: vi.fn() };
+  const sessionStore = {
+    revokeAllByUser: vi.fn(),
+    findById: vi.fn(),
+    listActiveByUser: vi.fn(),
+    revokeOthers: vi.fn(),
+  };
   const notifier = { sendEmail: vi.fn() };
 
   beforeEach(async () => {

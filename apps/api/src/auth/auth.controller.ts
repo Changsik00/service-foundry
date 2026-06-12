@@ -2,10 +2,12 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Inject,
   Optional,
+  Param,
   Post,
   Req,
   Res,
@@ -40,6 +42,7 @@ import { OrgInviteService } from "./org-invite.service.js";
 import { type OrgMember, OrgMembersService } from "./org-members.service.js";
 import { OrgSwitchService } from "./org-switch.service.js";
 import { PasswordResetService } from "./password-reset.service.js";
+import { type SessionInfo, SessionManagementService } from "./session-management.service.js";
 import { SigninService } from "./signin.service.js";
 import { SignupService } from "./signup.service.js";
 
@@ -85,6 +88,8 @@ export class AuthController {
     @Optional() @Inject(MfaService) private readonly mfaService: MfaService | undefined,
     @Inject(CSRF_SECRET) private readonly csrfSecret: string,
     @InjectAccountUserStore() private readonly accountUserStore: AccountUserStore,
+    @Inject(SessionManagementService)
+    private readonly sessionManagementService: SessionManagementService,
   ) {}
 
   /** CSRF 부트스트랩 — safe(GET) 요청에서 csrf_id+csrf_token 쿠키 발급, body 로 토큰 전달. */
@@ -308,5 +313,44 @@ export class AuthController {
   @HttpCode(200)
   async orgMembers(@CurrentUser() _user: AuthenticatedUser): Promise<{ members: OrgMember[] }> {
     return { members: await this.orgMembersService.list() };
+  }
+
+  @Get("sessions")
+  @UseGuards(AuthGuard)
+  @HttpCode(200)
+  async listSessions(
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ): Promise<{ sessions: SessionInfo[] }> {
+    const token = (req as unknown as import("express").Request).cookies?.refresh_token as
+      | string
+      | undefined;
+    const sessions = await this.sessionManagementService.listSessions(user.sub, token);
+    return { sessions };
+  }
+
+  @Delete("sessions/:id")
+  @UseGuards(AuthGuard, CsrfGuard)
+  @HttpCode(200)
+  async revokeSession(
+    @Param("id") id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<{ status: "ok" }> {
+    await this.sessionManagementService.revokeSession(user.sub, id);
+    return { status: "ok" };
+  }
+
+  @Delete("sessions")
+  @UseGuards(AuthGuard, CsrfGuard)
+  @HttpCode(200)
+  async revokeOtherSessions(
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ): Promise<{ status: "ok" }> {
+    const token = (req as unknown as import("express").Request).cookies?.refresh_token as
+      | string
+      | undefined;
+    await this.sessionManagementService.revokeOtherSessions(user.sub, token);
+    return { status: "ok" };
   }
 }

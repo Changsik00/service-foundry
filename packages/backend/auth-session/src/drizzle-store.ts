@@ -1,6 +1,6 @@
 import type { NodePgDatabase } from "@repo/backend-database";
 import { AppError } from "@repo/errors";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, gt, isNull, ne } from "drizzle-orm";
 
 import { type schema, sessions } from "./schema.js";
 import type { SessionStore } from "./store.js";
@@ -48,6 +48,39 @@ export function drizzleSessionStore(db: NodePgDatabase<typeof schema>): SessionS
         .update(sessions)
         .set({ revokedAt: new Date() })
         .where(and(eq(sessions.userId, userId), isNull(sessions.revokedAt)));
+    },
+    async findById(id) {
+      const rows = await db.select().from(sessions).where(eq(sessions.id, id)).limit(1);
+      return rows[0] ?? null;
+    },
+    async listActiveByUser(userId) {
+      const now = new Date();
+      return db
+        .select()
+        .from(sessions)
+        .where(
+          and(eq(sessions.userId, userId), isNull(sessions.revokedAt), gt(sessions.expiresAt, now)),
+        );
+    },
+    async revokeOthers(userId, excludeHash) {
+      const now = new Date();
+      if (excludeHash) {
+        await db
+          .update(sessions)
+          .set({ revokedAt: now })
+          .where(
+            and(
+              eq(sessions.userId, userId),
+              isNull(sessions.revokedAt),
+              ne(sessions.refreshTokenHash, excludeHash),
+            ),
+          );
+      } else {
+        await db
+          .update(sessions)
+          .set({ revokedAt: now })
+          .where(and(eq(sessions.userId, userId), isNull(sessions.revokedAt)));
+      }
     },
   };
 }
