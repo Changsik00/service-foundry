@@ -33,7 +33,12 @@ describe("SupabaseVerifier", () => {
     });
     const verifier = makeVerifier();
     const result = await verifier.verify(token);
-    expect(result).toEqual({ sub: "supabase-uid-123", role: "user", orgId: "org-abc" });
+    expect(result).toEqual({
+      sub: "supabase-uid-123",
+      role: "user",
+      orgId: "org-abc",
+      orgRole: null,
+    });
   });
 
   it("유효 token + app_metadata.activeOrgId → orgId 추출", async () => {
@@ -45,7 +50,12 @@ describe("SupabaseVerifier", () => {
     });
     const verifier = makeVerifier();
     const result = await verifier.verify(token);
-    expect(result).toEqual({ sub: "supabase-uid-456", role: "user", orgId: "org-meta" });
+    expect(result).toEqual({
+      sub: "supabase-uid-456",
+      role: "user",
+      orgId: "org-meta",
+      orgRole: null,
+    });
   });
 
   it("유효 token + orgId 없음 + provisionPort 없음 → orgId: null", async () => {
@@ -55,7 +65,7 @@ describe("SupabaseVerifier", () => {
     });
     const verifier = makeVerifier();
     const result = await verifier.verify(token);
-    expect(result).toEqual({ sub: "supabase-uid-789", role: "user", orgId: null });
+    expect(result).toEqual({ sub: "supabase-uid-789", role: "user", orgId: null, orgRole: null });
   });
 
   it("유효 token + orgId 없음 + provisionPort 있음 → provisionFromProvider 호출", async () => {
@@ -72,7 +82,12 @@ describe("SupabaseVerifier", () => {
       "supabase-uid-new",
       "newuser@example.com",
     );
-    expect(result).toEqual({ sub: "supabase-uid-new", role: "user", orgId: "org-new" });
+    expect(result).toEqual({
+      sub: "supabase-uid-new",
+      role: "user",
+      orgId: "org-new",
+      orgRole: null,
+    });
   });
 
   it("무효 token (잘못된 서명) → UnauthorizedException", async () => {

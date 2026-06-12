@@ -36,7 +36,12 @@ describe("FirebaseVerifier", () => {
     });
     const verifier = makeVerifier();
     const result = await verifier.verify("valid-token");
-    expect(result).toEqual({ sub: "firebase-uid-123", role: "user", orgId: "org-abc" });
+    expect(result).toEqual({
+      sub: "firebase-uid-123",
+      role: "user",
+      orgId: "org-abc",
+      orgRole: null,
+    });
     expect(mockSetCustomUserClaims).not.toHaveBeenCalled();
   });
 
@@ -47,7 +52,7 @@ describe("FirebaseVerifier", () => {
     });
     const verifier = makeVerifier();
     const result = await verifier.verify("valid-token");
-    expect(result).toEqual({ sub: "firebase-uid-456", role: "user", orgId: null });
+    expect(result).toEqual({ sub: "firebase-uid-456", role: "user", orgId: null, orgRole: null });
     expect(mockSetCustomUserClaims).not.toHaveBeenCalled();
   });
 
@@ -78,7 +83,12 @@ describe("FirebaseVerifier", () => {
       org_role: "owner",
     });
     // sub는 Firebase UID가 아닌 internalUserId (internal UUID)
-    expect(result).toEqual({ sub: "internal-uuid-789", role: "user", orgId: "org-new" });
+    expect(result).toEqual({
+      sub: "internal-uuid-789",
+      role: "user",
+      orgId: "org-new",
+      orgRole: null,
+    });
   });
 
   it("role 클레임 없음 → role: 'user' 기본값", async () => {
