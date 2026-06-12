@@ -14,16 +14,21 @@ export const ORG_ROLES_KEY = "nestjs_auth:org_roles";
 
 @Injectable()
 export class OrgRolesGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {
-    // reflector used in canActivate — needed for NestJS DI
-    void this.reflector;
-  }
+  constructor(private readonly reflector: Reflector) {}
 
-  canActivate(_ctx: ExecutionContext): boolean {
-    throw new ForbiddenException("not implemented");
+  canActivate(ctx: ExecutionContext): boolean {
+    const roles = this.reflector.getAllAndOverride<OrgRole[] | undefined>(ORG_ROLES_KEY, [
+      ctx.getHandler(),
+      ctx.getClass(),
+    ]);
+
+    if (!roles || roles.length === 0) return true;
+
+    const req = ctx.switchToHttp().getRequest<{ user?: AuthenticatedUser }>();
+    const orgRole = req.user?.orgRole ?? null;
+    if (!orgRole || !roles.includes(orgRole as OrgRole)) {
+      throw new ForbiddenException("insufficient org role");
+    }
+    return true;
   }
 }
-
-// placeholder — will be removed after Green
-export type _OrgRoleRef = OrgRole;
-export type _AuthUserRef = AuthenticatedUser;

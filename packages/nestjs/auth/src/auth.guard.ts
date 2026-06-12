@@ -44,7 +44,12 @@ export class AuthGuard implements CanActivate {
     const roleResult = Role.safeParse(identity.role);
     if (!roleResult.success) throw new UnauthorizedException("missing or invalid role claim");
 
-    req.user = { sub: identity.sub, role: roleResult.data, orgId: identity.orgId, orgRole: null };
+    req.user = {
+      sub: identity.sub,
+      role: roleResult.data,
+      orgId: identity.orgId,
+      orgRole: identity.orgRole,
+    };
     return true;
   }
 }

@@ -54,7 +54,7 @@ describe("AuthGuard", () => {
     // biome-ignore lint/suspicious/noExplicitAny: ExecutionContext mock
     const result = await guard.canActivate(ctx as any);
     expect(result).toBe(true);
-    expect(req.user).toEqual({ sub: "user-123", role: "user", orgId: null });
+    expect(req.user).toEqual({ sub: "user-123", role: "user", orgId: null, orgRole: null });
   });
 
   it("activeOrgId + orgRole 클레임 → req.user.orgId·orgRole 매핑 (spec-17-08 C-1)", async () => {

@@ -14,8 +14,9 @@ export {
   NESTJS_AUTH_OPTIONS,
   type NestjsAuthOptions,
 } from "./auth.guard.js";
-export { CurrentUser, Roles } from "./decorators.js";
+export { CurrentUser, OrgRoles, Roles } from "./decorators.js";
 export { type NestjsAuthAsyncOptions, NestjsAuthModule } from "./module.js";
+export { ORG_ROLES_KEY, OrgRolesGuard } from "./org-roles.guard.js";
 export { ROLES_KEY, RolesGuard } from "./roles.guard.js";
 export {
   ACCESS_TOKEN_VERIFIER,
