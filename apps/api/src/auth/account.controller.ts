@@ -1,14 +1,11 @@
 import { Body, Controller, Delete, HttpCode, Inject, Patch, UseGuards } from "@nestjs/common";
 import { type AuthenticatedUser, AuthGuard, CurrentUser } from "@repo/nestjs-auth";
 import { AccountService } from "./account.service.js";
-import { CSRF_SECRET, CsrfGuard } from "./csrf.guard.js";
+import { CsrfGuard } from "./csrf.guard.js";
 
 @Controller("auth/account")
 export class AccountController {
-  constructor(
-    @Inject(AccountService) private readonly accountService: AccountService,
-    @Inject(CSRF_SECRET) private readonly csrfSecret: string,
-  ) {}
+  constructor(@Inject(AccountService) private readonly accountService: AccountService) {}
 
   @Patch("password")
   @UseGuards(AuthGuard)

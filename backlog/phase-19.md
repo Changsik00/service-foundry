@@ -45,6 +45,7 @@ phase-17·18 이후 멀티테넌시 기반과 인증 권위 모드가 완성됐�
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
+| `spec-19-01` | account-mutations-api | P? | Active | `specs/spec-19-01-account-mutations-api/` |
 <!-- sdd:specs:end -->
 
 ### spec-19-01 — 계정 변경 API
