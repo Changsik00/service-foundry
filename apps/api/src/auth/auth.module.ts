@@ -21,6 +21,8 @@ import { ACCOUNT_USER_STORE, createAccountUserStore } from "./account.stores.js"
 import { AuditEventListener } from "./audit.event-listener.js";
 import { AuthController } from "./auth.controller.js";
 import { CSRF_SECRET, CsrfGuard } from "./csrf.guard.js";
+import { EmailChangeService } from "./email-change.service.js";
+import { createEmailChangeTokenStore, EMAIL_CHANGE_TOKEN_STORE } from "./email-change.stores.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import {
   createDrizzleEmailVerifyTokenStore,
@@ -70,6 +72,12 @@ const settings: AppSettings = loadSettings(process.env);
     OAuthService,
     MfaService,
     AccountService,
+    EmailChangeService,
+    {
+      provide: EMAIL_CHANGE_TOKEN_STORE,
+      inject: [DATABASE],
+      useFactory: (db: Database<Record<string, unknown>>) => createEmailChangeTokenStore(db.db),
+    },
     {
       provide: ACCOUNT_USER_STORE,
       inject: [DATABASE],

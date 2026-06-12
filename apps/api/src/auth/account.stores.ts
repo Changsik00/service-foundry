@@ -13,9 +13,12 @@ export interface AccountUserStore {
     email: string;
     passwordHash: string | null;
     displayName: string | null;
+    providerUid: string | null;
   } | null>;
+  findByEmail(email: string): Promise<{ id: string } | null>;
   updateDisplayName(id: string, displayName: string | null): Promise<void>;
   updatePasswordHash(id: string, passwordHash: string): Promise<void>;
+  updateEmail(id: string, email: string): Promise<void>;
   softDelete(id: string, maskedEmail: string): Promise<void>;
   isSoleOwnerOfAnyOrg(userId: string): Promise<boolean>;
 }
@@ -33,9 +36,19 @@ export function createAccountUserStore(db: AnyDb): AccountUserStore {
           email: users.email,
           passwordHash: users.passwordHash,
           displayName: users.displayName,
+          providerUid: users.providerUid,
         })
         .from(users)
         .where(eq(users.id, id))
+        .limit(1);
+      return rows[0] ?? null;
+    },
+
+    async findByEmail(email) {
+      const rows = await typedDb
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, email))
         .limit(1);
       return rows[0] ?? null;
     },
@@ -46,6 +59,10 @@ export function createAccountUserStore(db: AnyDb): AccountUserStore {
 
     async updatePasswordHash(id, passwordHash) {
       await typedDb.update(users).set({ passwordHash }).where(eq(users.id, id));
+    },
+
+    async updateEmail(id, email) {
+      await typedDb.update(users).set({ email }).where(eq(users.id, id));
     },
 
     async softDelete(id, maskedEmail) {
