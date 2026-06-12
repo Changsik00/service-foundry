@@ -35,7 +35,13 @@ import {
 } from "@repo/auth-contracts";
 import { AuthEventBus } from "@repo/backend-auth-audit";
 import type { AuthMetrics } from "@repo/backend-observability";
-import { type AuthenticatedUser, AuthGuard, CurrentUser } from "@repo/nestjs-auth";
+import {
+  type AuthenticatedUser,
+  AuthGuard,
+  CurrentUser,
+  OrgRoles,
+  OrgRolesGuard,
+} from "@repo/nestjs-auth";
 import type { Request, Response } from "express";
 import { ZodError, type z } from "zod";
 
@@ -507,7 +513,8 @@ export class AuthController {
   }
 
   @Post("org/invite")
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, OrgRolesGuard)
+  @OrgRoles("admin", "owner")
   @HttpCode(200)
   async orgInvite(
     @Body() body: unknown,

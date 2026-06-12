@@ -6,6 +6,7 @@ import {
   NativeVerifier,
   NESTJS_AUTH_OPTIONS,
   type NestjsAuthOptions,
+  OrgRolesGuard,
 } from "@repo/nestjs-auth";
 import { FIREBASE_ADMIN_APP } from "@repo/nestjs-auth-firebase";
 import { DATABASE, type Database } from "@repo/nestjs-database";
@@ -86,6 +87,7 @@ const settings: AppSettings = loadSettings(process.env);
       useFactory: (db: Database<Record<string, unknown>>) => createAccountUserStore(db.db),
     },
     AuthGuard,
+    OrgRolesGuard,
     AuthEventBus,
     AuditEventListener,
     CsrfGuard,
