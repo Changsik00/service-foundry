@@ -56,6 +56,7 @@ export function createAccountUserStore(db: AnyDb): AccountUserStore {
     },
 
     async isSoleOwnerOfAnyOrg(userId) {
+      // org 내 user 이외의 다른 멤버(owner 포함)가 있을 때만 차단 — 본인만 있는 개인 org는 허용.
       const ownerOrgs = await typedDb
         .select({ orgId: memberships.orgId })
         .from(memberships)
@@ -73,7 +74,15 @@ export function createAccountUserStore(db: AnyDb): AccountUserStore {
             ),
           )
           .limit(1);
-        if (otherOwners.length === 0) return true;
+
+        const otherMembers = await typedDb
+          .select({ id: memberships.id })
+          .from(memberships)
+          .where(and(eq(memberships.orgId, orgId), ne(memberships.userId, userId)))
+          .limit(1);
+
+        // 다른 owner가 없고 + 다른 멤버도 있으면 → sole owner of non-empty org → 차단
+        if (otherOwners.length === 0 && otherMembers.length > 0) return true;
       }
       return false;
     },

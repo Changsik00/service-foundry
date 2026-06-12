@@ -15,6 +15,9 @@ import { JwtModule } from "../jwt/jwt.module.js";
 import { JwtService } from "../jwt/jwt.service.js";
 import { PROVISION_SERVICE, ProvisionService } from "../provision/provision.service.js";
 import { type AppSettings, loadSettings } from "../settings.js";
+import { AccountController } from "./account.controller.js";
+import { AccountService } from "./account.service.js";
+import { ACCOUNT_USER_STORE, createAccountUserStore } from "./account.stores.js";
 import { AuditEventListener } from "./audit.event-listener.js";
 import { AuthController } from "./auth.controller.js";
 import { CSRF_SECRET, CsrfGuard } from "./csrf.guard.js";
@@ -66,6 +69,12 @@ const settings: AppSettings = loadSettings(process.env);
     { provide: PROVISION_SERVICE, useExisting: ProvisionService },
     OAuthService,
     MfaService,
+    AccountService,
+    {
+      provide: ACCOUNT_USER_STORE,
+      inject: [DATABASE],
+      useFactory: (db: Database<Record<string, unknown>>) => createAccountUserStore(db.db),
+    },
     AuthGuard,
     AuthEventBus,
     AuditEventListener,
@@ -166,6 +175,7 @@ const settings: AppSettings = loadSettings(process.env);
   ],
   controllers: [
     AuthController,
+    AccountController,
     OAuthController,
     MfaController,
     PasskeyController,
