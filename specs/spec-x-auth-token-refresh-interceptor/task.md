@@ -78,6 +78,6 @@
 
 ### 🚀 Push & PR
 
-- [ ] `git push -u origin spec-x-auth-token-refresh-interceptor`
-- [ ] PR 생성 (base: `main`)
-- [ ] 사용자 알림
+- [x] `git push -u origin spec-x-auth-token-refresh-interceptor`
+- [x] PR 생성 (base: `main`)
+- [x] 사용자 알림
