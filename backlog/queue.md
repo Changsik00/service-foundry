@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-19** — account-authz — 0/0 spec — (다음: 첫 spec 생성 대기)
+- **phase-19** — 계정 완성 + 인가 — 1 spec — 다음: spec-19-01-account-mutations-api
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기

@@ -30,6 +30,7 @@ import { ZodError, type z } from "zod";
 
 import type { UserRow } from "../infra/schema/index.js";
 import { AUTH_METRICS } from "../metrics/auth-metrics.provider.js";
+import { type AccountUserStore, InjectAccountUserStore } from "./account.stores.js";
 import { clearRefreshTokenCookie, setRefreshTokenCookie } from "./cookie.helper.js";
 import { setCsrfCookies } from "./csrf.cookie.js";
 import { CSRF_SECRET, CsrfGuard } from "./csrf.guard.js";
@@ -83,6 +84,7 @@ export class AuthController {
     @Inject(AUTH_METRICS) private readonly metrics: AuthMetrics,
     @Optional() @Inject(MfaService) private readonly mfaService: MfaService | undefined,
     @Inject(CSRF_SECRET) private readonly csrfSecret: string,
+    @InjectAccountUserStore() private readonly accountUserStore: AccountUserStore,
   ) {}
 
   /** CSRF 부트스트랩 — safe(GET) 요청에서 csrf_id+csrf_token 쿠키 발급, body 로 토큰 전달. */
@@ -220,8 +222,11 @@ export class AuthController {
 
   @Get("me")
   @UseGuards(AuthGuard)
-  me(@CurrentUser() currentUser: AuthenticatedUser): { user: AuthenticatedUser } {
-    return { user: currentUser };
+  async me(
+    @CurrentUser() currentUser: AuthenticatedUser,
+  ): Promise<{ user: AuthenticatedUser & { displayName: string | null } }> {
+    const row = await this.accountUserStore.findById(currentUser.sub);
+    return { user: { ...currentUser, displayName: row?.displayName ?? null } };
   }
 
   // --- existing endpoints ---

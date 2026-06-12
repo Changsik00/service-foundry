@@ -45,6 +45,14 @@ function createFakeStore(): SessionStore & { rows: Map<string, SessionRow> } {
       }
       return count;
     },
+    async revokeAllByUser(userId: string): Promise<void> {
+      const now = new Date();
+      for (const [id, row] of rows.entries()) {
+        if (row.userId === userId && row.revokedAt === null) {
+          rows.set(id, { ...row, revokedAt: now });
+        }
+      }
+    },
   };
 }
 
