@@ -84,6 +84,16 @@ export function buildEmailVerifyEmail(token: string, frontendUrl: string): Email
   };
 }
 
+/** 이메일 변경 확인 메일 — 새 이메일 주소로 발송. */
+export function buildEmailChangeEmail(token: string, frontendUrl: string): EmailMessage {
+  const link = `${frontendUrl}/auth/email-change/confirm?token=${token}`;
+  return {
+    to: "",
+    subject: "이메일 주소 변경 확인",
+    body: `<p>이메일 주소 변경을 확인하려면 아래 링크를 클릭하세요 (24시간 유효):</p><p><a href="${link}">${link}</a></p>`,
+  };
+}
+
 /** 초대 이메일 — orgName, token, frontendUrl 포함. */
 export function buildInvitationEmail(
   orgName: string,

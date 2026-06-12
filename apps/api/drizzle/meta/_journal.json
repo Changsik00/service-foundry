@@ -120,6 +120,13 @@
       "when": 1780752500000,
       "tag": "0016_account_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1780752600000,
+      "tag": "0017_email_change_tokens",
+      "breakpoints": true
     }
   ]
 }
