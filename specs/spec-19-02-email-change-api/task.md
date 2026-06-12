@@ -65,9 +65,9 @@
 
 ### 🚀 Push & PR
 
-- [ ] **Push**: `git push -u origin spec-19-02-email-change-api`
-- [ ] **PR 생성**: base `phase-19-account-authz` 대상
-- [ ] **사용자 알림**: PR URL 보고
+- [x] **Push**: `git push -u origin spec-19-02-email-change-api`
+- [x] **PR 생성**: base `phase-19-account-authz` 대상 → **PR #141**
+- [x] **사용자 알림**: PR URL 보고
 
 ---
 
@@ -77,5 +77,5 @@
 |---|---|
 | **총 Task 수** | 3 |
 | **예상 commit 수** | 3 (마이그레이션+빌더 / Green / Ship) |
-| **현재 단계** | Ship |
+| **현재 단계** | Done ✅ |
 | **마지막 업데이트** | 2026-06-12 |
