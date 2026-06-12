@@ -2,6 +2,11 @@ import { type AuditLogRow, authAuditLogs } from "@repo/backend-auth-audit";
 import { failedLogins, lockouts } from "@repo/backend-auth-rate-limit/schema";
 import { type SessionInsert, type SessionRow, sessions } from "@repo/backend-auth-session";
 import {
+  type EmailChangeTokenInsert,
+  type EmailChangeTokenRow,
+  emailChangeTokens,
+} from "./email-change-tokens.js";
+import {
   type EmailVerifyTokenInsert,
   type EmailVerifyTokenRow,
   emailVerifyTokens,
@@ -40,6 +45,8 @@ import { type UserInsert, type UserRow, users } from "./users.js";
 
 export type {
   AuditLogRow,
+  EmailChangeTokenInsert,
+  EmailChangeTokenRow,
   EmailVerifyTokenInsert,
   EmailVerifyTokenRow,
   InvitationInsert,
@@ -65,6 +72,7 @@ export type {
 };
 export {
   authAuditLogs,
+  emailChangeTokens,
   emailVerifyTokens,
   failedLogins,
   invitations,
@@ -89,6 +97,7 @@ export const appSchema = {
   invitations,
   passwordResetTokens,
   emailVerifyTokens,
+  emailChangeTokens,
   sessions,
   authAuditLogs,
   oauthAccounts,
