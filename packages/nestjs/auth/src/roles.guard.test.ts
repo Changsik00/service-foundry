@@ -28,21 +28,21 @@ function makeReflector(roles: string[] | undefined): Reflector {
 describe("RolesGuard", () => {
   it("@Roles 메타데이터 없음 → 통과", () => {
     const guard = new RolesGuard(makeReflector(undefined));
-    const ctx = makeCtx({ sub: "u1", role: "user", orgId: null });
+    const ctx = makeCtx({ sub: "u1", role: "user", orgId: null, orgRole: null });
     // biome-ignore lint/suspicious/noExplicitAny: ExecutionContext mock
     expect(guard.canActivate(ctx as any)).toBe(true);
   });
 
   it("user.role 일치 → 통과", () => {
     const guard = new RolesGuard(makeReflector(["admin"]));
-    const ctx = makeCtx({ sub: "u1", role: "admin", orgId: null });
+    const ctx = makeCtx({ sub: "u1", role: "admin", orgId: null, orgRole: null });
     // biome-ignore lint/suspicious/noExplicitAny: ExecutionContext mock
     expect(guard.canActivate(ctx as any)).toBe(true);
   });
 
   it("user.role 불일치 → ForbiddenException", () => {
     const guard = new RolesGuard(makeReflector(["admin"]));
-    const ctx = makeCtx({ sub: "u1", role: "user", orgId: null });
+    const ctx = makeCtx({ sub: "u1", role: "user", orgId: null, orgRole: null });
     // biome-ignore lint/suspicious/noExplicitAny: ExecutionContext mock
     expect(() => guard.canActivate(ctx as any)).toThrow(ForbiddenException);
   });

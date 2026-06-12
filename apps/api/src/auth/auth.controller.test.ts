@@ -247,7 +247,12 @@ describe("AuthController", () => {
 
   describe("GET /auth/me", () => {
     it("currentUser → { user } 반환 (displayName 포함)", async () => {
-      const currentUser = { sub: mockUserRow.id, role: "user" as const, orgId: null };
+      const currentUser = {
+        sub: mockUserRow.id,
+        role: "user" as const,
+        orgId: null,
+        orgRole: null,
+      };
       const result = await controller.me(currentUser);
       expect(result).toEqual({ user: { ...currentUser, displayName: null } });
     });
