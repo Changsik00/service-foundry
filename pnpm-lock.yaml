@@ -362,6 +362,9 @@ importers:
       '@repo/backend-settings':
         specifier: workspace:*
         version: link:../../packages/backend/settings
+      '@repo/backend-storage':
+        specifier: workspace:*
+        version: link:../../packages/backend/storage
       '@repo/nestjs-auth':
         specifier: workspace:*
         version: link:../../packages/nestjs/auth
@@ -386,6 +389,9 @@ importers:
       '@repo/nestjs-settings':
         specifier: workspace:*
         version: link:../../packages/nestjs/settings
+      '@supabase/supabase-js':
+        specifier: 'catalog:'
+        version: 2.106.1
       cookie-parser:
         specifier: 'catalog:'
         version: 1.4.7

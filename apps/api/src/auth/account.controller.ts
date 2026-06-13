@@ -1,7 +1,21 @@
-import { Body, Controller, Delete, HttpCode, Inject, Patch, Post, UseGuards } from "@nestjs/common";
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  HttpCode,
+  Inject,
+  Patch,
+  Post,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiHeader,
   ApiOperation,
   ApiResponse,
@@ -11,6 +25,14 @@ import { type AuthenticatedUser, AuthGuard, CurrentUser } from "@repo/nestjs-aut
 import { AccountService } from "./account.service.js";
 import { CsrfGuard } from "./csrf.guard.js";
 import { EmailChangeService } from "./email-change.service.js";
+
+interface MulterFile {
+  fieldname: string;
+  originalname: string;
+  mimetype: string;
+  size: number;
+  buffer: Buffer;
+}
 
 const S_StatusOk = {
   type: "object",
@@ -208,5 +230,48 @@ export class AccountController {
     const { token } = body as { token: string };
     const outcome = await this.emailChangeService.confirmEmailChange(token);
     return { status: outcome };
+  }
+
+  @ApiOperation({
+    summary: "아바타 업로드",
+    description: "프로필 이미지를 업로드합니다. JPEG·PNG·WebP, 최대 2 MB.",
+  })
+  @ApiBearerAuth("access-token")
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        avatar: {
+          type: "string",
+          format: "binary",
+          description: "이미지 파일 (JPEG/PNG/WebP, max 2 MB)",
+        },
+      },
+      required: ["avatar"],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: "업로드 성공",
+    schema: {
+      type: "object",
+      properties: { status: { type: "string", enum: ["ok"] }, avatarUrl: { type: "string" } },
+      required: ["status", "avatarUrl"],
+    },
+  })
+  @ApiResponse({ status: 400, description: "파일 크기 초과 또는 허용되지 않는 형식" })
+  @ApiResponse({ status: 401, description: "미인증" })
+  @Post("avatar")
+  @UseGuards(AuthGuard)
+  @UseInterceptors(FileInterceptor("avatar", { limits: { fileSize: 2 * 1024 * 1024 + 1 } }))
+  @HttpCode(200)
+  async uploadAvatar(
+    @UploadedFile() file: MulterFile | undefined,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<{ status: "ok"; avatarUrl: string }> {
+    if (!file) throw new BadRequestException("파일이 없습니다");
+    const avatarUrl = await this.accountService.updateAvatar(user.sub, file.buffer, file.mimetype);
+    return { status: "ok", avatarUrl };
   }
 }

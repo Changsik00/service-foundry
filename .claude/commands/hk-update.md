@@ -108,11 +108,11 @@ git commit -m "chore: apply harness-kit update <new-version>"
 ```
 수동으로 실행하려면 (로컬 클론 불필요):
 
-  bash <(curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/main/get.sh) --update
+  curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/main/get.sh | bash -s -- --update
 
 Claude Code 프롬프트에서 바로 실행하려면 ! prefix 사용:
 
-  ! bash <(curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/main/get.sh) --update
+  ! curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/main/get.sh | bash -s -- --update
 
 특정 버전 설치: --version <ver> 를 --update 앞에 추가
 ```

@@ -134,6 +134,13 @@
       "when": 1780752700000,
       "tag": "0018_api_keys",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1781340706192,
+      "tag": "0019_avatar_url",
+      "breakpoints": true
     }
   ]
 }

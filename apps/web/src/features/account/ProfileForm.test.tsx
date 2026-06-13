@@ -13,9 +13,10 @@ const mockMutate = vi.fn();
 
 vi.mock("./mutations", () => ({
   useUpdateProfile: vi.fn(),
+  useUploadAvatar: vi.fn(),
 }));
 
-import { useUpdateProfile } from "./mutations";
+import { useUpdateProfile, useUploadAvatar } from "./mutations";
 
 const meData = {
   user: { sub: "u-1", role: "user", orgId: "org-1", displayName: "홍길동" },
@@ -42,6 +43,12 @@ describe("ProfileForm", () => {
       isError: false,
       error: null,
     } as unknown as ReturnType<typeof useUpdateProfile>);
+    vi.mocked(useUploadAvatar).mockReturnValue({
+      mutate: vi.fn(),
+      isPending: false,
+      isError: false,
+      error: null,
+    } as unknown as ReturnType<typeof useUploadAvatar>);
   });
 
   it("현재 displayName이 input에 prefill된다", () => {

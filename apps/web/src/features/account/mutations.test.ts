@@ -22,6 +22,12 @@ vi.mock("@/lib/auth", () => ({
   authSDK: { signOut: (...a: unknown[]) => mockSignOut(...a) },
 }));
 
+vi.mock("@/lib/supabase-auth", () => ({
+  source: { getToken: vi.fn().mockResolvedValue(null) },
+  sdk: { signOut: vi.fn() },
+  unsubscribe: vi.fn(),
+}));
+
 function wrapper({ children }: { children: React.ReactNode }) {
   const qc = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },

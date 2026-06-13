@@ -10,6 +10,7 @@ const MeSchema = z.object({
     role: z.string(),
     orgId: z.string().nullable(),
     displayName: z.string().nullable(),
+    avatarUrl: z.string().url().nullable().optional(),
   }),
 });
 

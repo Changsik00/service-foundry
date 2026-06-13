@@ -14,11 +14,13 @@ export interface AccountUserStore {
     passwordHash: string | null;
     displayName: string | null;
     providerUid: string | null;
+    avatarUrl: string | null;
   } | null>;
   findByEmail(email: string): Promise<{ id: string } | null>;
   updateDisplayName(id: string, displayName: string | null): Promise<void>;
   updatePasswordHash(id: string, passwordHash: string): Promise<void>;
   updateEmail(id: string, email: string): Promise<void>;
+  updateAvatarUrl(id: string, url: string | null): Promise<void>;
   softDelete(id: string, maskedEmail: string): Promise<void>;
   isSoleOwnerOfAnyOrg(userId: string): Promise<boolean>;
 }
@@ -37,6 +39,7 @@ export function createAccountUserStore(db: AnyDb): AccountUserStore {
           passwordHash: users.passwordHash,
           displayName: users.displayName,
           providerUid: users.providerUid,
+          avatarUrl: users.avatarUrl,
         })
         .from(users)
         .where(eq(users.id, id))
@@ -63,6 +66,10 @@ export function createAccountUserStore(db: AnyDb): AccountUserStore {
 
     async updateEmail(id, email) {
       await typedDb.update(users).set({ email }).where(eq(users.id, id));
+    },
+
+    async updateAvatarUrl(id, url) {
+      await typedDb.update(users).set({ avatarUrl: url }).where(eq(users.id, id));
     },
 
     async softDelete(id, maskedEmail) {

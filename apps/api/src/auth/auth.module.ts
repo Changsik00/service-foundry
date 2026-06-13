@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { AuditService, AuthEventBus, drizzleAuditLogStore } from "@repo/backend-auth-audit";
+import { createMemoryStorage } from "@repo/backend-storage";
 import {
   ACCESS_TOKEN_VERIFIER,
   AuthGuard,
@@ -10,14 +11,15 @@ import {
 } from "@repo/nestjs-auth";
 import { FIREBASE_ADMIN_APP } from "@repo/nestjs-auth-firebase";
 import { DATABASE, type Database } from "@repo/nestjs-database";
+import { createClient } from "@supabase/supabase-js";
 import { cert, initializeApp } from "firebase-admin/app";
-
+import { createSupabaseStorage } from "../infra/storage/supabase-storage.js";
 import { JwtModule } from "../jwt/jwt.module.js";
 import { JwtService } from "../jwt/jwt.service.js";
 import { PROVISION_SERVICE, ProvisionService } from "../provision/provision.service.js";
 import { type AppSettings, loadSettings } from "../settings.js";
 import { AccountController } from "./account.controller.js";
-import { AccountService } from "./account.service.js";
+import { AccountService, STORAGE } from "./account.service.js";
 import { ACCOUNT_USER_STORE, createAccountUserStore } from "./account.stores.js";
 import { ApiKeyController } from "./api-key.controller.js";
 import { ApiKeyGuard } from "./api-key.guard.js";
@@ -169,6 +171,20 @@ const settings: AppSettings = loadSettings(process.env);
       provide: PASSKEY_STORE,
       inject: [DATABASE],
       useFactory: (db: Database<Record<string, unknown>>) => createDrizzlePasskeyStore(db.db),
+    },
+    {
+      provide: STORAGE,
+      useFactory: () => {
+        if (settings.SUPABASE_URL && settings.SUPABASE_SERVICE_ROLE_KEY) {
+          const client = createClient(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY);
+          return createSupabaseStorage(
+            client,
+            settings.SUPABASE_STORAGE_BUCKET,
+            settings.SUPABASE_URL,
+          );
+        }
+        return createMemoryStorage({ baseUrl: "memory://avatars" });
+      },
     },
     // [브리지 패턴] FIREBASE_SERVICE_ACCOUNT 설정 시에만 Firebase Admin 앱 초기화.
     // AUTH_MODE=native 서버에서 Firebase 클라이언트 SDK 세션이 추가로 필요한 경우에 활성화.
