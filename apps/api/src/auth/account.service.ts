@@ -1,16 +1,23 @@
 import { randomUUID } from "node:crypto";
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, Optional } from "@nestjs/common";
 import { hashPassword, verifyPassword } from "@repo/backend-auth-password";
+import type { Storage } from "@repo/backend-storage";
 import type { AccountUserStore } from "./account.stores.js";
 import { InjectAccountUserStore } from "./account.stores.js";
 import type { SessionStore } from "./session.stores.js";
 import { InjectSessionStore } from "./session.stores.js";
+
+export const STORAGE = Symbol("STORAGE");
+
+const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
+const MAX_BYTES = 2 * 1024 * 1024;
 
 @Injectable()
 export class AccountService {
   constructor(
     @InjectAccountUserStore() private readonly userStore: AccountUserStore,
     @InjectSessionStore() private readonly sessionStore: SessionStore,
+    @Optional() @Inject(STORAGE) private readonly storage: Storage | null = null,
   ) {}
 
   async changePassword(
@@ -28,6 +35,23 @@ export class AccountService {
 
   async updateProfile(userId: string, displayName: string): Promise<void> {
     await this.userStore.updateDisplayName(userId, displayName);
+  }
+
+  async updateAvatar(userId: string, buffer: Buffer, contentType: string): Promise<string> {
+    if (buffer.byteLength > MAX_BYTES) {
+      throw new BadRequestException("파일 크기는 2 MB 이하여야 합니다");
+    }
+    if (!ALLOWED_MIME.has(contentType)) {
+      throw new BadRequestException("JPEG, PNG, WebP 형식만 허용됩니다");
+    }
+    if (!this.storage) {
+      throw new BadRequestException("스토리지가 설정되지 않았습니다");
+    }
+    const key = userId;
+    await this.storage.put(key, new Uint8Array(buffer), { contentType });
+    const url = this.storage.url(key);
+    await this.userStore.updateAvatarUrl(userId, url);
+    return url;
   }
 
   async deleteAccount(userId: string): Promise<void> {
