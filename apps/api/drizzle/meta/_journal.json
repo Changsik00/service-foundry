@@ -127,6 +127,13 @@
       "when": 1780752600000,
       "tag": "0017_email_change_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1780752700000,
+      "tag": "0018_api_keys",
+      "breakpoints": true
     }
   ]
 }
