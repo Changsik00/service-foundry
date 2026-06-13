@@ -14,6 +14,7 @@ export const users = pgTable("users", {
   providerUid: text("provider_uid").unique(),
   displayName: text("display_name"),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  avatarUrl: text("avatar_url"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
