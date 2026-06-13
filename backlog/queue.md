@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-20** — 데이터 UX — 0/4 spec — (다음: spec-20-01)
+- **phase-20** — 데이터 UX — 1/4 spec — (다음: spec-20-02)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
