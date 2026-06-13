@@ -1,7 +1,7 @@
 {
-  "kitVersion": "0.16.0",
+  "kitVersion": "0.17.1",
   "kitOrigin": "https://github.com/Changsik00/harness-kit.git",
-  "installedAt": "2026-06-06T10:16:43Z",
+  "installedAt": "2026-06-13T08:08:25Z",
   "uxMode": "interactive",
   "installedCommands": [
     "hk-align",
@@ -19,6 +19,7 @@
     "hk-report-issue",
     "hk-ship",
     "hk-spec-critique",
+    "hk-turbo",
     "hk-update",
     "hk-wiki-ingest",
     "hk"
