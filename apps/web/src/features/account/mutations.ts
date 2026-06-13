@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { authSDK } from "@/lib/auth";
 import { httpClient } from "@/lib/http-client";
+import { source } from "@/lib/supabase-auth";
 
 export interface UpdateProfileVars {
   displayName: string;
@@ -35,6 +36,29 @@ export function useChangePassword() {
         { currentPassword: vars.currentPassword, newPassword: vars.newPassword },
         { requiresAuth: true },
       ),
+  });
+}
+
+export function useUploadAvatar() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const token = await source.getToken();
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+      const form = new FormData();
+      form.append("avatar", file);
+      const res = await fetch(`${baseUrl}/auth/account/avatar`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: form,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { message?: string }).message ?? `Upload failed: ${res.status}`);
+      }
+      return (res.json() as Promise<{ avatarUrl: string }>).then((d) => d.avatarUrl);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["auth", "me"] }),
   });
 }
 
