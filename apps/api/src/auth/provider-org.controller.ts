@@ -6,6 +6,7 @@ import {
   HttpCode,
   Inject,
   Post,
+  Query,
   UseGuards,
 } from "@nestjs/common";
 import { OrgInviteAcceptInput, OrgInviteInput, OrgSwitchInput } from "@repo/auth-contracts";
@@ -14,7 +15,7 @@ import { ZodError, type z } from "zod";
 
 import { OrgInviteService } from "./org-invite.service.js";
 import { OrgListService, type OrgSummary } from "./org-list.service.js";
-import { type OrgMember, OrgMembersService } from "./org-members.service.js";
+import { type MemberListResult, type OrgMember, OrgMembersService } from "./org-members.service.js";
 import { ProviderOrgSwitchService } from "./provider-org-switch.service.js";
 
 function parseOr400<T>(schema: z.ZodType<T>, value: unknown): T {
@@ -55,13 +56,22 @@ export class ProviderOrgController {
     return this.orgSwitch.switch(user.sub, orgId);
   }
 
-  /** active org 멤버 목록 — RLS 자동 스코프 (native 와 동일 서비스, email join 포함) */
+  /** active org 멤버 목록 — RLS 자동 스코프, search/role/cursor/limit 쿼리 파라미터 지원 */
   @Get("org/members")
   @UseGuards(AuthGuard)
   async members(
     @CurrentUser() _user: AuthenticatedUser,
-  ): Promise<{ members: OrgMember[]; nextCursor: string | null }> {
-    return this.orgMembers.list();
+    @Query("search") search?: string,
+    @Query("role") role?: string,
+    @Query("cursor") cursor?: string,
+    @Query("limit") rawLimit?: string,
+  ): Promise<MemberListResult> {
+    return this.orgMembers.list({
+      ...(search !== undefined && { search }),
+      ...(role !== undefined && { role }),
+      ...(cursor !== undefined && { cursor }),
+      ...(rawLimit !== undefined && { limit: Number(rawLimit) }),
+    });
   }
 
   @Post("org/invite")
