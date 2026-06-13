@@ -58,8 +58,10 @@ export class ProviderOrgController {
   /** active org 멤버 목록 — RLS 자동 스코프 (native 와 동일 서비스, email join 포함) */
   @Get("org/members")
   @UseGuards(AuthGuard)
-  async members(@CurrentUser() _user: AuthenticatedUser): Promise<{ members: OrgMember[] }> {
-    return { members: await this.orgMembers.list() };
+  async members(
+    @CurrentUser() _user: AuthenticatedUser,
+  ): Promise<{ members: OrgMember[]; nextCursor: string | null }> {
+    return this.orgMembers.list();
   }
 
   @Post("org/invite")

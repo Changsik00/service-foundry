@@ -54,7 +54,7 @@ import { CSRF_SECRET, CsrfGuard } from "./csrf.guard.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import { MfaService } from "./mfa.service.js";
 import { OrgInviteService } from "./org-invite.service.js";
-import { type OrgMember, OrgMembersService } from "./org-members.service.js";
+import { type MemberListResult, type OrgMember, OrgMembersService } from "./org-members.service.js";
 import { OrgSwitchService } from "./org-switch.service.js";
 import { PasswordResetService } from "./password-reset.service.js";
 import { type SessionInfo, SessionManagementService } from "./session-management.service.js";
@@ -541,8 +541,8 @@ export class AuthController {
   @Get("org/members")
   @UseGuards(AuthGuard)
   @HttpCode(200)
-  async orgMembers(@CurrentUser() _user: AuthenticatedUser): Promise<{ members: OrgMember[] }> {
-    return { members: await this.orgMembersService.list() };
+  async orgMembers(@CurrentUser() _user: AuthenticatedUser): Promise<MemberListResult> {
+    return this.orgMembersService.list();
   }
 
   @ApiOperation({

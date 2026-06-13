@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import { OrgMembersService } from "./org-members.service.js";
 
 const ROWS = [
-  { userId: "u-1", orgId: "org-1", role: "owner", email: "a@x.com" },
-  { userId: "u-2", orgId: "org-1", role: "member", email: "b@x.com" },
+  { userId: "u-1", orgId: "org-1", role: "owner", email: "a@x.com", displayName: null },
+  { userId: "u-2", orgId: "org-1", role: "member", email: "b@x.com", displayName: null },
 ];
 
 describe("OrgMembersService — email join (spec-x-org-api)", () => {
@@ -17,7 +17,7 @@ describe("OrgMembersService — email join (spec-x-org-api)", () => {
 
     const result = await service.list();
 
-    expect(result).toEqual(ROWS);
+    expect(result.members).toEqual(ROWS);
     expect(innerJoin).toHaveBeenCalled(); // 명시 WHERE 없이 join 만 — RLS 검증 표면 유지
     void where;
   });

@@ -11,6 +11,19 @@ export interface OrgMember {
   orgId: string;
   role: string;
   email: string;
+  displayName: string | null;
+}
+
+export interface MemberListParams {
+  search?: string;
+  role?: string;
+  cursor?: string;
+  limit?: number;
+}
+
+export interface MemberListResult {
+  members: OrgMember[];
+  nextCursor: string | null;
 }
 
 /**
@@ -23,16 +36,17 @@ export interface OrgMember {
 export class OrgMembersService {
   constructor(@Inject(DATABASE) private readonly database: Database<Record<string, unknown>>) {}
 
-  async list(): Promise<OrgMember[]> {
+  async list(_params: MemberListParams = {}): Promise<MemberListResult> {
     const rows = await this.database.db
       .select({
         userId: memberships.userId,
         orgId: memberships.orgId,
         role: memberships.role,
         email: users.email,
+        displayName: users.displayName,
       })
       .from(memberships)
       .innerJoin(users, eq(memberships.userId, users.id));
-    return rows as OrgMember[];
+    return { members: rows as OrgMember[], nextCursor: null };
   }
 }
