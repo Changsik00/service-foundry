@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-19** — 계정 완성 + 인가 — 6 spec — 다음: (spec 없음)
+- **phase-19** — 계정 완성 + 인가 — 2 spec — 다음: spec-19-01
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
