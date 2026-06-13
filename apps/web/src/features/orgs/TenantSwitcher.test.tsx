@@ -14,6 +14,8 @@ vi.mock("@/lib/http-client", () => ({
   },
 }));
 
+vi.mock("@/lib/auth", () => ({ authSDK: { signOut: vi.fn() } }));
+
 const ORGS = {
   orgs: [
     { orgId: "org-1", name: "personal", role: "owner", isPersonal: true },
