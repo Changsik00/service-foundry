@@ -3,6 +3,10 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("@/lib/http-client", () => ({
+  httpClient: { get: vi.fn(), patch: vi.fn(), delete: vi.fn() },
+}));
+
 import { ProfileForm } from "./ProfileForm";
 
 const mockMutate = vi.fn();
