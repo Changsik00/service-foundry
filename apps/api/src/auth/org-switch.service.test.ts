@@ -8,26 +8,20 @@ import { OrgSwitchService } from "./org-switch.service.js";
 const USER_ID = "00000000-0000-0000-0000-000000000001";
 const ORG_ID = "00000000-0000-0000-0000-000000000099";
 
-const mockMembership = {
-  id: "mem-001",
-  userId: USER_ID,
-  orgId: ORG_ID,
-  role: "owner" as const,
-  createdAt: new Date(),
-};
-
-function makeDatabase(membership: typeof mockMembership | null = mockMembership) {
-  // select 순서: 1) memberships, 2) users(role).
+function makeDatabase(membershipRole: string | null = "owner") {
+  // pool.query 호출 순서: 1) memberships(role), 2) users(role).
   let n = 0;
-  const mockSelect = vi.fn().mockImplementation(() => {
+  const mockQuery = vi.fn().mockImplementation(() => {
     n++;
-    const rows = n === 1 ? (membership ? [membership] : []) : [{ role: "user" }];
-    return { from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(rows) }) };
+    if (n === 1) {
+      return Promise.resolve({ rows: membershipRole ? [{ role: membershipRole }] : [] });
+    }
+    return Promise.resolve({ rows: [{ role: "user" }] });
   });
 
   return {
-    database: { db: { select: mockSelect } },
-    mocks: { mockSelect },
+    database: { pool: { query: mockQuery } },
+    mocks: { mockQuery },
   };
 }
 
@@ -57,13 +51,13 @@ describe("OrgSwitchService", () => {
     await expect(service.switch(USER_ID, ORG_ID)).rejects.toThrow(ForbiddenException);
   });
 
-  it("멤버십 + 유저 role 조회(select 2회)", async () => {
+  it("멤버십 + 유저 role 조회(pool.query 2회)", async () => {
     const { database, mocks } = makeDatabase();
     const service = new OrgSwitchService(database as never, jwtService, jwtOpts);
 
     await service.switch(USER_ID, ORG_ID);
 
     // 1) memberships(인가) 2) users(role 클레임) — 가드가 role 을 요구하므로 토큰에 포함.
-    expect(mocks.mockSelect).toHaveBeenCalledTimes(2);
+    expect(mocks.mockQuery).toHaveBeenCalledTimes(2);
   });
 });
