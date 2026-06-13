@@ -36,6 +36,8 @@ const AppSettingsSchema = BaseBackendSchema.extend({
   FIREBASE_SERVICE_ACCOUNT: z.string().optional(),
   FIREBASE_PROJECT_ID: z.string().optional(),
   SUPABASE_URL: z.string().url().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+  SUPABASE_STORAGE_BUCKET: z.string().default("avatars"),
   SWAGGER_ENABLED: z.coerce.boolean().default(false),
 });
 

@@ -4,9 +4,11 @@ import { AuthGuard, RolesGuard } from "@repo/nestjs-auth";
 import { FIREBASE_PROVISION_PORT } from "@repo/nestjs-auth-firebase";
 import { SUPABASE_PROVISION_PORT } from "@repo/nestjs-auth-supabase";
 
+import { DATABASE, type Database } from "@repo/nestjs-database";
 import { JwtModule } from "../jwt/jwt.module.js";
 import { PROVISION_SERVICE, ProvisionService } from "../provision/provision.service.js";
 import { type AppSettings, loadSettings } from "../settings.js";
+import { ACCOUNT_USER_STORE, createAccountUserStore } from "./account.stores.js";
 import { FRONTEND_URL } from "./frontend-url.token.js";
 import { JWT_SIGN_OPTIONS } from "./jwt-sign.options.js";
 import { OrgInviteService } from "./org-invite.service.js";
@@ -54,6 +56,11 @@ export class ProviderAuthModule {
         Reflector,
         AuthGuard,
         RolesGuard,
+        {
+          provide: ACCOUNT_USER_STORE,
+          inject: [DATABASE],
+          useFactory: (db: Database<Record<string, unknown>>) => createAccountUserStore(db.db),
+        },
       ],
       // portToken export 필수 — global 모듈도 export 하지 않은 provider 는 외부(verifierModule 내부
       // SupabaseVerifier 의 @Optional 주입)에서 보이지 않는다. 누락 시 provision 이 조용히 null
