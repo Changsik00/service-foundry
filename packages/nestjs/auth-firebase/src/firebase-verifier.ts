@@ -45,6 +45,6 @@ export class FirebaseVerifier implements AccessTokenVerifier {
       });
     }
 
-    return { sub, role, orgId };
+    return { sub, role, orgId, orgRole: null };
   }
 }

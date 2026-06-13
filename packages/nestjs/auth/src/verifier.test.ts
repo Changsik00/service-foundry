@@ -38,7 +38,7 @@ describe("NativeVerifier", () => {
     const token = await signToken({ role: "user" });
     const verifier = new NativeVerifier(opts);
     const result = await verifier.verify(token);
-    expect(result).toEqual({ sub: "user-123", role: "user", orgId: null });
+    expect(result).toEqual({ sub: "user-123", role: "user", orgId: null, orgRole: null });
   });
 
   it("activeOrgId 클레임 → orgId 매핑", async () => {

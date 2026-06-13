@@ -1,10 +1,12 @@
 import { createParamDecorator, type ExecutionContext, SetMetadata } from "@nestjs/common";
-import type { Role } from "@repo/auth-contracts";
+import type { OrgRole, Role } from "@repo/auth-contracts";
 
 import type { AuthenticatedUser } from "./auth.guard.js";
+import { ORG_ROLES_KEY } from "./org-roles.guard.js";
 import { ROLES_KEY } from "./roles.guard.js";
 
 export const Roles = (...roles: Role[]) => SetMetadata(ROLES_KEY, roles);
+export const OrgRoles = (...roles: OrgRole[]) => SetMetadata(ORG_ROLES_KEY, roles);
 
 export const CurrentUser = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext): AuthenticatedUser | undefined =>

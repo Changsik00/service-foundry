@@ -10,9 +10,9 @@
 | 항목 | 값 |
 |---|---|
 | **Phase ID** | `phase-19` |
-| **상태** | In Progress |
+| **상태** | Done |
 | **시작일** | 2026-06-12 |
-| **목표 종료일** | — |
+| **목표 종료일** | 2026-06-13 |
 | **소유자** | changsik |
 | **Base Branch** | `phase-19-account-authz` |
 
@@ -43,8 +43,15 @@ phase-17·18 이후 멀티테넌시 기반과 인증 권위 모드가 완성됐�
 > sdd 가 `<!-- sdd:specs:start --> ~ <!-- sdd:specs:end -->` 사이를 자동 갱신하므로 마커는 그대로 두세요.
 
 <!-- sdd:specs:start -->
-| ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
-|---|---|:---:|---|---|
+| ID | 슬러그 | 우선순위 | 상태 | PR | 디렉토리 |
+|---|---|:---:|---|---|---|
+| `spec-19-01` | account-mutations-api | P1 | Merged | #140 | `specs/spec-19-01-account-mutations-api/` |
+| `spec-19-02` | email-change-api | P1 | Merged | #141 | `specs/spec-19-02-email-change-api/` |
+| `spec-19-03` | session-management-api | P1 | Merged | #142 | `specs/spec-19-03-session-management-api/` |
+| `spec-19-04` | openapi-swagger | P2 | Merged | #143 | `specs/spec-19-04-openapi-swagger/` |
+| `spec-19-05` | rbac-wiring | P1 | Merged | #144 | `specs/spec-19-05-rbac-wiring/` |
+| `spec-19-06` | api-key | P1 | Merged | #145 | `specs/spec-19-06-api-key/` |
+| `spec-19-07` | account-settings-ui | P1 | Merged | #146 | `specs/spec-19-07-account-settings-ui/` |
 <!-- sdd:specs:end -->
 
 ### spec-19-01 — 계정 변경 API

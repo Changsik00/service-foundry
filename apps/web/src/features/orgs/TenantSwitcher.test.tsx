@@ -14,6 +14,14 @@ vi.mock("@/lib/http-client", () => ({
   },
 }));
 
+vi.mock("@/lib/auth", () => ({ authSDK: { signOut: vi.fn() } }));
+
+vi.mock("@/lib/supabase-auth", () => ({
+  source: { getToken: vi.fn().mockResolvedValue(null) },
+  sdk: { signOut: vi.fn() },
+  unsubscribe: vi.fn(),
+}));
+
 const ORGS = {
   orgs: [
     { orgId: "org-1", name: "personal", role: "owner", isPersonal: true },

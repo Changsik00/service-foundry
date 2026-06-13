@@ -1,6 +1,7 @@
 import "./tracing.js"; // OTEL 자동계측 — 다른 import 보다 먼저 (env-gated, opt-in)
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import type { Lifecycle } from "@repo/backend-lifecycle";
 import { maskConfig } from "@repo/backend-settings";
 import { PinoLoggerService } from "@repo/nestjs-logger";
@@ -33,6 +34,19 @@ async function bootstrap(): Promise<void> {
   };
   process.on("SIGTERM", () => onSignal("SIGTERM"));
   process.on("SIGINT", () => onSignal("SIGINT"));
+
+  if (settings.SWAGGER_ENABLED) {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle("Service Foundry API")
+      .setDescription("Service Foundry 백엔드 API")
+      .setVersion("1.0")
+      .addBearerAuth({ type: "http", scheme: "bearer", bearerFormat: "JWT" }, "access-token")
+      .addCookieAuth("refresh_token")
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup("api-docs", app, document);
+    logger.log("Swagger UI available at /api-docs", "Bootstrap");
+  }
 
   await app.listen(settings.PORT);
 

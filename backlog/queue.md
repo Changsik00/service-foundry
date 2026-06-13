@@ -8,7 +8,6 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-19** — account-authz — 0/0 spec — (다음: 첫 spec 생성 대기)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -127,6 +126,7 @@
 - [x] spec-x-org-api (완료)
 - [x] spec-x-org-screens (완료)
 - [x] spec-x-auth-token-refresh-interceptor (완료)
+- **phase-19** — 계정 완성 + 인가 (spec-19-01~07, PR #140~146) — completed 2026-06-13
 <!-- sdd:done:end -->
 
 ---

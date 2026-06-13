@@ -3,7 +3,7 @@ import { createHttpClient } from "@repo/frontend-http-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/frontend-ui";
 import { z } from "zod";
 import { getEnv } from "@/env";
-import { AccountCard } from "@/features/account";
+import { AccountCard, SessionsCard } from "@/features/account";
 
 // `/health` 는 매 요청마다 fetch — build 시점 static 추출 회피 (env 의존 + 외부 호출)
 export const dynamic = "force-dynamic";
@@ -49,6 +49,7 @@ export default async function DashboardPage(): Promise<React.ReactElement> {
       <h1 className="mb-6 text-xl font-semibold tracking-[-0.4px]">대시보드</h1>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <AccountCard />
+        <SessionsCard />
         <Card>
           <CardHeader>
             <CardTitle className="text-base">API 상태</CardTitle>

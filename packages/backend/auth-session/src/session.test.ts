@@ -45,6 +45,35 @@ function createFakeStore(): SessionStore & { rows: Map<string, SessionRow> } {
       }
       return count;
     },
+    async revokeAllByUser(userId: string): Promise<void> {
+      const now = new Date();
+      for (const [id, row] of rows.entries()) {
+        if (row.userId === userId && row.revokedAt === null) {
+          rows.set(id, { ...row, revokedAt: now });
+        }
+      }
+    },
+    async findById(id: string): Promise<SessionRow | null> {
+      return rows.get(id) ?? null;
+    },
+    async listActiveByUser(userId: string): Promise<SessionRow[]> {
+      const now = new Date();
+      return [...rows.values()].filter(
+        (r) => r.userId === userId && r.revokedAt === null && r.expiresAt > now,
+      );
+    },
+    async revokeOthers(userId: string, excludeHash: string | null): Promise<void> {
+      const now = new Date();
+      for (const [id, row] of rows.entries()) {
+        if (
+          row.userId === userId &&
+          row.revokedAt === null &&
+          (excludeHash === null || row.refreshTokenHash !== excludeHash)
+        ) {
+          rows.set(id, { ...row, revokedAt: now });
+        }
+      }
+    },
   };
 }
 

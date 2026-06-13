@@ -1,23 +1,34 @@
 import { Module } from "@nestjs/common";
 import { AuditService, AuthEventBus, drizzleAuditLogStore } from "@repo/backend-auth-audit";
+import { createMemoryStorage } from "@repo/backend-storage";
 import {
   ACCESS_TOKEN_VERIFIER,
   AuthGuard,
   NativeVerifier,
   NESTJS_AUTH_OPTIONS,
   type NestjsAuthOptions,
+  OrgRolesGuard,
 } from "@repo/nestjs-auth";
 import { FIREBASE_ADMIN_APP } from "@repo/nestjs-auth-firebase";
 import { DATABASE, type Database } from "@repo/nestjs-database";
+import { createClient } from "@supabase/supabase-js";
 import { cert, initializeApp } from "firebase-admin/app";
-
+import { createSupabaseStorage } from "../infra/storage/supabase-storage.js";
 import { JwtModule } from "../jwt/jwt.module.js";
 import { JwtService } from "../jwt/jwt.service.js";
 import { PROVISION_SERVICE, ProvisionService } from "../provision/provision.service.js";
 import { type AppSettings, loadSettings } from "../settings.js";
+import { AccountController } from "./account.controller.js";
+import { AccountService, STORAGE } from "./account.service.js";
+import { ACCOUNT_USER_STORE, createAccountUserStore } from "./account.stores.js";
+import { ApiKeyController } from "./api-key.controller.js";
+import { ApiKeyGuard } from "./api-key.guard.js";
+import { ApiKeyService } from "./api-key.service.js";
 import { AuditEventListener } from "./audit.event-listener.js";
 import { AuthController } from "./auth.controller.js";
 import { CSRF_SECRET, CsrfGuard } from "./csrf.guard.js";
+import { EmailChangeService } from "./email-change.service.js";
+import { createEmailChangeTokenStore, EMAIL_CHANGE_TOKEN_STORE } from "./email-change.stores.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import {
   createDrizzleEmailVerifyTokenStore,
@@ -47,6 +58,7 @@ import {
 } from "./password-reset.stores.js";
 import { createDrizzleRateLimitStore, RATE_LIMIT_STORE } from "./rate-limit.stores.js";
 import { createDrizzleSessionStore, SESSION_STORE } from "./session.stores.js";
+import { SessionManagementService } from "./session-management.service.js";
 import { SigninService } from "./signin.service.js";
 import { SignupService } from "./signup.service.js";
 
@@ -66,7 +78,23 @@ const settings: AppSettings = loadSettings(process.env);
     { provide: PROVISION_SERVICE, useExisting: ProvisionService },
     OAuthService,
     MfaService,
+    AccountService,
+    EmailChangeService,
+    SessionManagementService,
+    {
+      provide: EMAIL_CHANGE_TOKEN_STORE,
+      inject: [DATABASE],
+      useFactory: (db: Database<Record<string, unknown>>) => createEmailChangeTokenStore(db.db),
+    },
+    {
+      provide: ACCOUNT_USER_STORE,
+      inject: [DATABASE],
+      useFactory: (db: Database<Record<string, unknown>>) => createAccountUserStore(db.db),
+    },
     AuthGuard,
+    OrgRolesGuard,
+    ApiKeyService,
+    ApiKeyGuard,
     AuthEventBus,
     AuditEventListener,
     CsrfGuard,
@@ -144,6 +172,20 @@ const settings: AppSettings = loadSettings(process.env);
       inject: [DATABASE],
       useFactory: (db: Database<Record<string, unknown>>) => createDrizzlePasskeyStore(db.db),
     },
+    {
+      provide: STORAGE,
+      useFactory: () => {
+        if (settings.SUPABASE_URL && settings.SUPABASE_SERVICE_ROLE_KEY) {
+          const client = createClient(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY);
+          return createSupabaseStorage(
+            client,
+            settings.SUPABASE_STORAGE_BUCKET,
+            settings.SUPABASE_URL,
+          );
+        }
+        return createMemoryStorage({ baseUrl: "memory://avatars" });
+      },
+    },
     // [브리지 패턴] FIREBASE_SERVICE_ACCOUNT 설정 시에만 Firebase Admin 앱 초기화.
     // AUTH_MODE=native 서버에서 Firebase 클라이언트 SDK 세션이 추가로 필요한 경우에 활성화.
     // "native-bridge" 앱 이름 — AUTH_MODE=firebase 모드의 unnamed app과 충돌 방지.
@@ -166,6 +208,8 @@ const settings: AppSettings = loadSettings(process.env);
   ],
   controllers: [
     AuthController,
+    AccountController,
+    ApiKeyController,
     OAuthController,
     MfaController,
     PasskeyController,

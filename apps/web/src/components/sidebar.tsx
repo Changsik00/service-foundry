@@ -12,6 +12,7 @@ import { UserMenu } from "./user-menu";
 const NAV = [
   { href: "/", label: "대시보드" },
   { href: "/members", label: "멤버" },
+  { href: "/account", label: "계정 설정" },
 ] as const;
 
 /** 콘솔 사이드바 — 240px #f6f5f4, active 는 무채색 (blue 금지, DESIGN §5.8) */

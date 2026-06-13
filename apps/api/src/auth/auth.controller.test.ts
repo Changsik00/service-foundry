@@ -6,6 +6,7 @@ import type { Request, Response } from "express";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AUTH_METRICS } from "../metrics/auth-metrics.provider.js";
+import { ACCOUNT_USER_STORE } from "./account.stores.js";
 import { AuthController } from "./auth.controller.js";
 import { CSRF_SECRET } from "./csrf.guard.js";
 import { EmailVerifyService } from "./email-verify.service.js";
@@ -13,6 +14,7 @@ import { OrgInviteService } from "./org-invite.service.js";
 import { OrgMembersService } from "./org-members.service.js";
 import { OrgSwitchService } from "./org-switch.service.js";
 import { PasswordResetService } from "./password-reset.service.js";
+import { SessionManagementService } from "./session-management.service.js";
 import { SigninService } from "./signin.service.js";
 import { SignupService } from "./signup.service.js";
 
@@ -103,6 +105,29 @@ describe("AuthController", () => {
         {
           provide: CSRF_SECRET,
           useValue: "test-csrf-secret",
+        },
+        {
+          provide: ACCOUNT_USER_STORE,
+          useValue: {
+            findById: vi.fn().mockResolvedValue({
+              id: mockUserRow.id,
+              email: mockUserRow.email,
+              passwordHash: null,
+              displayName: null,
+            }),
+            updateDisplayName: vi.fn(),
+            updatePasswordHash: vi.fn(),
+            softDelete: vi.fn(),
+            isSoleOwnerOfAnyOrg: vi.fn().mockResolvedValue(false),
+          },
+        },
+        {
+          provide: SessionManagementService,
+          useValue: {
+            listSessions: vi.fn().mockResolvedValue([]),
+            revokeSession: vi.fn().mockResolvedValue(undefined),
+            revokeOtherSessions: vi.fn().mockResolvedValue(undefined),
+          },
         },
       ],
     })
@@ -221,10 +246,15 @@ describe("AuthController", () => {
   });
 
   describe("GET /auth/me", () => {
-    it("currentUser → { user } 반환", () => {
-      const currentUser = { sub: mockUserRow.id, role: "user" as const, orgId: null };
-      const result = controller.me(currentUser);
-      expect(result).toEqual({ user: currentUser });
+    it("currentUser → { user } 반환 (displayName 포함)", async () => {
+      const currentUser = {
+        sub: mockUserRow.id,
+        role: "user" as const,
+        orgId: null,
+        orgRole: null,
+      };
+      const result = await controller.me(currentUser);
+      expect(result).toEqual({ user: { ...currentUser, displayName: null } });
     });
   });
 });
