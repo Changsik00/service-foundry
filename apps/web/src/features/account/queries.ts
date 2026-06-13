@@ -9,6 +9,7 @@ const MeSchema = z.object({
     sub: z.string(),
     role: z.string(),
     orgId: z.string().nullable(),
+    displayName: z.string().nullable(),
   }),
 });
 
