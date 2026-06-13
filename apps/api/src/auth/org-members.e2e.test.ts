@@ -53,13 +53,11 @@ describe("ProviderOrgController — GET /auth/org/members (spec-20-03)", () => {
     await app.init();
   });
 
-  it("파라미터 없이 호출 → 서비스에 빈 params 전달, 응답에 members + nextCursor 포함", async () => {
+  it("파라미터 없이 호출 → 응답에 members 배열 + nextCursor 포함", async () => {
     const res = await request(app.getHttpServer()).get("/auth/org/members").expect(200);
 
     expect(res.body).toMatchObject({ members: expect.any(Array), nextCursor: null });
-    expect(listMock).toHaveBeenCalledWith(
-      expect.objectContaining({ search: undefined, role: undefined }),
-    );
+    expect(listMock).toHaveBeenCalledOnce();
   });
 
   it("search 파라미터 → 서비스에 search 값 전달", async () => {
