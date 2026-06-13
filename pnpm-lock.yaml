@@ -365,6 +365,9 @@ importers:
       '@repo/backend-storage':
         specifier: workspace:*
         version: link:../../packages/backend/storage
+      '@repo/contracts':
+        specifier: workspace:*
+        version: link:../../packages/shared/contracts
       '@repo/nestjs-auth':
         specifier: workspace:*
         version: link:../../packages/nestjs/auth

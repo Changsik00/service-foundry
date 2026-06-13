@@ -1,7 +1,8 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { decodeCursor, encodeCursor } from "@repo/contracts";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 
-import { eq } from "drizzle-orm";
+import { and, asc, eq, gt, ilike, or } from "drizzle-orm";
 
 import { memberships } from "../infra/schema/memberships.js";
 import { users } from "../infra/schema/users.js";
@@ -36,7 +37,20 @@ export interface MemberListResult {
 export class OrgMembersService {
   constructor(@Inject(DATABASE) private readonly database: Database<Record<string, unknown>>) {}
 
-  async list(_params: MemberListParams = {}): Promise<MemberListResult> {
+  async list(params: MemberListParams = {}): Promise<MemberListResult> {
+    const { search, role, cursor, limit: rawLimit } = params;
+    const limit = rawLimit ?? 20;
+
+    const cursorData = cursor ? decodeCursor<{ userId: string }>(cursor) : null;
+
+    const conditions = and(
+      search
+        ? or(ilike(users.email, `%${search}%`), ilike(users.displayName, `%${search}%`))
+        : undefined,
+      role ? eq(memberships.role, role as "owner" | "admin" | "member") : undefined,
+      cursorData?.userId ? gt(users.id, cursorData.userId) : undefined,
+    );
+
     const rows = await this.database.db
       .select({
         userId: memberships.userId,
@@ -46,7 +60,16 @@ export class OrgMembersService {
         displayName: users.displayName,
       })
       .from(memberships)
-      .innerJoin(users, eq(memberships.userId, users.id));
-    return { members: rows as OrgMember[], nextCursor: null };
+      .innerJoin(users, eq(memberships.userId, users.id))
+      .where(conditions)
+      .orderBy(asc(memberships.createdAt), asc(users.id))
+      .limit(limit + 1);
+
+    const hasMore = rows.length > limit;
+    const members = hasMore ? rows.slice(0, limit) : rows;
+    const lastMember = members[members.length - 1];
+    const nextCursor = hasMore && lastMember ? encodeCursor({ userId: lastMember.userId }) : null;
+
+    return { members: members as OrgMember[], nextCursor };
   }
 }
