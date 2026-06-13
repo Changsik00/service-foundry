@@ -1,7 +1,8 @@
 import type { CanActivate, ExecutionContext } from "@nestjs/common";
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 
-import type { ApiKeyService } from "./api-key.service.js";
+// biome-ignore lint/style/useImportType: emitDecoratorMetadata requires value import for DI
+import { ApiKeyService } from "./api-key.service.js";
 
 @Injectable()
 export class ApiKeyGuard implements CanActivate {

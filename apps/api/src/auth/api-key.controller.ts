@@ -18,7 +18,9 @@ import {
 } from "@repo/nestjs-auth";
 
 import { ApiKeyGuard } from "./api-key.guard.js";
-import type { ApiKeyCreated, ApiKeyPublic, ApiKeyService } from "./api-key.service.js";
+import type { ApiKeyCreated, ApiKeyPublic } from "./api-key.service.js";
+// biome-ignore lint/style/useImportType: emitDecoratorMetadata requires value import for DI
+import { ApiKeyService } from "./api-key.service.js";
 
 @Controller("auth/api-keys")
 export class ApiKeyController {
