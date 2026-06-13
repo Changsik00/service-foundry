@@ -19,6 +19,9 @@ import { type AppSettings, loadSettings } from "../settings.js";
 import { AccountController } from "./account.controller.js";
 import { AccountService } from "./account.service.js";
 import { ACCOUNT_USER_STORE, createAccountUserStore } from "./account.stores.js";
+import { ApiKeyController } from "./api-key.controller.js";
+import { ApiKeyGuard } from "./api-key.guard.js";
+import { ApiKeyService } from "./api-key.service.js";
 import { AuditEventListener } from "./audit.event-listener.js";
 import { AuthController } from "./auth.controller.js";
 import { CSRF_SECRET, CsrfGuard } from "./csrf.guard.js";
@@ -88,6 +91,8 @@ const settings: AppSettings = loadSettings(process.env);
     },
     AuthGuard,
     OrgRolesGuard,
+    ApiKeyService,
+    ApiKeyGuard,
     AuthEventBus,
     AuditEventListener,
     CsrfGuard,
@@ -188,6 +193,7 @@ const settings: AppSettings = loadSettings(process.env);
   controllers: [
     AuthController,
     AccountController,
+    ApiKeyController,
     OAuthController,
     MfaController,
     PasskeyController,
