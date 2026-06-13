@@ -1,5 +1,5 @@
 import { UnauthorizedException } from "@nestjs/common";
-import { ACTIVE_ORG_CLAIM, verifyAccessToken } from "@repo/backend-auth-jwt";
+import { ACTIVE_ORG_CLAIM, ORG_ROLE_CLAIM, verifyAccessToken } from "@repo/backend-auth-jwt";
 
 import type { NestjsAuthOptions } from "./options.js";
 
@@ -8,6 +8,7 @@ export type VerifiedIdentity = {
   /** raw string — 호출자(AuthGuard)가 Role.safeParse 로 검증 */
   role: string;
   orgId: string | null;
+  orgRole: string | null;
 };
 
 export interface AccessTokenVerifier {
@@ -37,6 +38,9 @@ export class NativeVerifier implements AccessTokenVerifier {
     const claimOrgId = result.value[ACTIVE_ORG_CLAIM];
     const orgId = typeof claimOrgId === "string" ? claimOrgId : null;
 
-    return { sub, role, orgId };
+    const claimOrgRole = result.value[ORG_ROLE_CLAIM];
+    const orgRole = typeof claimOrgRole === "string" ? claimOrgRole : null;
+
+    return { sub, role, orgId, orgRole };
   }
 }

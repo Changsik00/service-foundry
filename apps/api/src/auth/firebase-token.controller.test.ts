@@ -19,6 +19,7 @@ const mockUser: AuthenticatedUser = {
   sub: "user-uuid-001",
   role: "user",
   orgId: "org-uuid-001",
+  orgRole: "owner",
 };
 
 beforeEach(() => {

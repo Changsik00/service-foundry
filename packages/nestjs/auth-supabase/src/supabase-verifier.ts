@@ -60,6 +60,6 @@ export class SupabaseVerifier implements AccessTokenVerifier {
       orgId = newOrgId;
     }
 
-    return { sub, role, orgId };
+    return { sub, role, orgId, orgRole: null };
   }
 }

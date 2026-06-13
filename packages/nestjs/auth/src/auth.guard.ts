@@ -16,6 +16,7 @@ export type AuthenticatedUser = {
   sub: string;
   role: Role;
   orgId: string | null;
+  orgRole: string | null;
 };
 
 function extractBearer(headers: Record<string, string | undefined>): string | null {
@@ -43,7 +44,12 @@ export class AuthGuard implements CanActivate {
     const roleResult = Role.safeParse(identity.role);
     if (!roleResult.success) throw new UnauthorizedException("missing or invalid role claim");
 
-    req.user = { sub: identity.sub, role: roleResult.data, orgId: identity.orgId };
+    req.user = {
+      sub: identity.sub,
+      role: roleResult.data,
+      orgId: identity.orgId,
+      orgRole: identity.orgRole,
+    };
     return true;
   }
 }
