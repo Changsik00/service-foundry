@@ -4,9 +4,11 @@ import {
   ForbiddenException,
   Injectable,
 } from "@nestjs/common";
-import type { Reflector } from "@nestjs/core";
+// biome-ignore lint/style/useImportType: NestJS injectable class value import
+import { Reflector } from "@nestjs/core";
 import { FEATURE_FLAG_KEY } from "./feature-flag.decorator.js";
-import type { FeatureFlagService } from "./feature-flag.service.js";
+// biome-ignore lint/style/useImportType: NestJS injectable class value import
+import { FeatureFlagService } from "./feature-flag.service.js";
 
 @Injectable()
 export class FeatureFlagGuard implements CanActivate {
