@@ -373,7 +373,7 @@ export class AuthController {
   ): Promise<{ status: "ok" }> {
     const token = req.cookies?.refresh_token as string | undefined;
     if (token) {
-      void this.signinService.revokeSession(token).catch(() => {});
+      await this.signinService.revokeSession(token).catch(() => {});
       this.eventBus.emit({ type: "SESSION_REVOKED", sessionId: token, reason: "signout" });
     }
     this.eventBus.emit({ type: "SIGNED_OUT", sessionId: token ?? "" });
