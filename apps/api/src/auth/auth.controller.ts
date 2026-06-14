@@ -9,6 +9,7 @@ import {
   Optional,
   Param,
   Post,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -54,7 +55,7 @@ import { CSRF_SECRET, CsrfGuard } from "./csrf.guard.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import { MfaService } from "./mfa.service.js";
 import { OrgInviteService } from "./org-invite.service.js";
-import { type OrgMember, OrgMembersService } from "./org-members.service.js";
+import { type MemberListResult, type OrgMember, OrgMembersService } from "./org-members.service.js";
 import { OrgSwitchService } from "./org-switch.service.js";
 import { PasswordResetService } from "./password-reset.service.js";
 import { type SessionInfo, SessionManagementService } from "./session-management.service.js";
@@ -537,12 +538,23 @@ export class AuthController {
     return this.orgInviteService.accept(user.sub, token);
   }
 
-  /** active org 의 멤버 목록 — RLS 가 자동 스코프(spec-17-08 격리 검증 표면). */
+  /** active org 의 멤버 목록 — RLS 가 자동 스코프(spec-17-08 격리 검증 표면). search/role/cursor/limit 지원. */
   @Get("org/members")
   @UseGuards(AuthGuard)
   @HttpCode(200)
-  async orgMembers(@CurrentUser() _user: AuthenticatedUser): Promise<{ members: OrgMember[] }> {
-    return { members: await this.orgMembersService.list() };
+  async orgMembers(
+    @CurrentUser() _user: AuthenticatedUser,
+    @Query("search") search?: string,
+    @Query("role") role?: string,
+    @Query("cursor") cursor?: string,
+    @Query("limit") rawLimit?: string,
+  ): Promise<MemberListResult> {
+    return this.orgMembersService.list({
+      ...(search !== undefined && { search }),
+      ...(role !== undefined && { role }),
+      ...(cursor !== undefined && { cursor }),
+      ...(rawLimit !== undefined && { limit: Number(rawLimit) }),
+    });
   }
 
   @ApiOperation({
