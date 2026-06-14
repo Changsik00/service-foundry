@@ -8,11 +8,14 @@ import {
   NESTJS_AUTH_OPTIONS,
   type NestjsAuthOptions,
   OrgRolesGuard,
+  RolesGuard,
 } from "@repo/nestjs-auth";
 import { FIREBASE_ADMIN_APP } from "@repo/nestjs-auth-firebase";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { createClient } from "@supabase/supabase-js";
 import { cert, initializeApp } from "firebase-admin/app";
+import { AdminController } from "../admin/admin.controller.js";
+import { AdminService } from "../admin/admin.service.js";
 import { createSupabaseStorage } from "../infra/storage/supabase-storage.js";
 import { JwtModule } from "../jwt/jwt.module.js";
 import { JwtService } from "../jwt/jwt.service.js";
@@ -93,6 +96,8 @@ const settings: AppSettings = loadSettings(process.env);
     },
     AuthGuard,
     OrgRolesGuard,
+    RolesGuard,
+    AdminService,
     ApiKeyService,
     ApiKeyGuard,
     AuthEventBus,
@@ -214,6 +219,7 @@ const settings: AppSettings = loadSettings(process.env);
     MfaController,
     PasskeyController,
     FirebaseTokenController,
+    AdminController,
   ],
 })
 export class AuthModule {}
