@@ -14,7 +14,7 @@
 | **시작일** | 2026-06-13 |
 | **목표 종료일** | — |
 | **소유자** | changsik |
-| **Base Branch** | `phase-20-data-ux` |
+| **Base Branch** | phase-20-data-ux |
 
 ## 🎯 배경 및 목표
 
@@ -44,6 +44,7 @@ phase-19 완료로 계정 관리·RBAC·API Key·계정 설정 UI까지 구현�
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
+| `spec-20-03` | member-search-filter-pagination | P? | Merged | `specs/spec-20-03-member-search-filter-pagination/` |
 <!-- sdd:specs:end -->
 
 ### spec-20-01 — 아바타 업로드

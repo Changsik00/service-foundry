@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-20** — 데이터 UX — 1/4 spec — (다음: spec-20-02)
+- **phase-20** — 데이터 UX — 2 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -127,6 +127,7 @@
 - [x] spec-x-org-api (완료)
 - [x] spec-x-org-screens (완료)
 - [x] spec-x-auth-token-refresh-interceptor (완료)
+- **phase-23** — ? — completed 2026-06-13
 <!-- sdd:done:end -->
 
 ---
