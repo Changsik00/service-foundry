@@ -19,6 +19,7 @@
     "@nestjs/platform-express": "catalog:",
     "@nestjs/throttler": "catalog:",
     "@repo/auth-contracts": "workspace:*",
+    "@repo/contracts": "workspace:*",
     "@repo/backend-auth-audit": "workspace:*",
     "@repo/backend-auth-mfa": "workspace:*",
     "@repo/backend-auth-oauth": "workspace:*",
