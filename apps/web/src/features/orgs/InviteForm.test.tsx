@@ -4,6 +4,35 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { InviteForm } from "./InviteForm";
 
+// Select 컴포넌트 → native <select> (jsdom 에서 Radix Portal/레이블 연결 불가)
+vi.mock("@repo/frontend-ui", async (importOriginal) => {
+  const mod = await importOriginal<typeof import("@repo/frontend-ui")>();
+  const { createElement, Fragment } = await import("react");
+  // biome-ignore lint/suspicious/noExplicitAny: test mock
+  const pass = ({ children }: any) => createElement(Fragment, null, children);
+  const nil = () => null;
+  return {
+    ...mod,
+    // biome-ignore lint/suspicious/noExplicitAny: test mock
+    Select: ({ value, onValueChange, children, ...rest }: any) =>
+      createElement(
+        "select",
+        { value: value ?? "", onChange: (e: any) => onValueChange?.(e.target.value), ...rest },
+        children,
+      ),
+    SelectTrigger: pass,
+    SelectValue: nil,
+    SelectContent: pass,
+    // biome-ignore lint/suspicious/noExplicitAny: test mock
+    SelectItem: ({ value, children }: any) => createElement("option", { value }, children),
+    SelectGroup: pass,
+    SelectLabel: pass,
+    SelectSeparator: nil,
+    SelectScrollUpButton: nil,
+    SelectScrollDownButton: nil,
+  };
+});
+
 const mockPost = vi.fn();
 vi.mock("@/lib/http-client", () => ({
   httpClient: {
