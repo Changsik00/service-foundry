@@ -16,6 +16,8 @@ import { createClient } from "@supabase/supabase-js";
 import { cert, initializeApp } from "firebase-admin/app";
 import { AdminController } from "../admin/admin.controller.js";
 import { AdminService } from "../admin/admin.service.js";
+import { FeatureFlagGuard } from "../admin/feature-flag.guard.js";
+import { FeatureFlagService } from "../admin/feature-flag.service.js";
 import { createSupabaseStorage } from "../infra/storage/supabase-storage.js";
 import { JwtModule } from "../jwt/jwt.module.js";
 import { JwtService } from "../jwt/jwt.service.js";
@@ -98,6 +100,8 @@ const settings: AppSettings = loadSettings(process.env);
     OrgRolesGuard,
     RolesGuard,
     AdminService,
+    FeatureFlagService,
+    FeatureFlagGuard,
     ApiKeyService,
     ApiKeyGuard,
     AuthEventBus,

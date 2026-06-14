@@ -8,6 +8,8 @@ import { DATABASE, type Database } from "@repo/nestjs-database";
 import { createClient } from "@supabase/supabase-js";
 import { AdminController } from "../admin/admin.controller.js";
 import { AdminService } from "../admin/admin.service.js";
+import { FeatureFlagGuard } from "../admin/feature-flag.guard.js";
+import { FeatureFlagService } from "../admin/feature-flag.service.js";
 import { createSupabaseStorage } from "../infra/storage/supabase-storage.js";
 import { JwtModule } from "../jwt/jwt.module.js";
 import { notifierProvider } from "../notification/notifier.provider.js";
@@ -62,6 +64,8 @@ export class ProviderAuthModule {
       ],
       providers: [
         AdminService,
+        FeatureFlagService,
+        FeatureFlagGuard,
         OrgListService,
         ProviderOrgSwitchService,
         OrgMembersService,

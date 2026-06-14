@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AdminController } from "./admin.controller.js";
 import { AdminService, type OrgListResult, type UserListResult } from "./admin.service.js";
+import { FeatureFlagService } from "./feature-flag.service.js";
 
 const ORGS_RESULT: OrgListResult = {
   orgs: [
@@ -59,11 +60,20 @@ function buildModule(userRole: "admin" | "user" | "unauth") {
           },
         };
 
+  const ffServiceMock = {
+    list: vi.fn().mockResolvedValue([]),
+    isEnabled: vi.fn().mockResolvedValue(true),
+    create: vi.fn(),
+    update: vi.fn(),
+    remove: vi.fn(),
+  };
+
   return {
     module: Test.createTestingModule({
       controllers: [AdminController],
       providers: [
         { provide: AdminService, useValue: { listOrgs: listOrgsMock, listUsers: listUsersMock } },
+        { provide: FeatureFlagService, useValue: ffServiceMock },
         Reflector,
         { provide: RolesGuard, useClass: RolesGuard },
       ],

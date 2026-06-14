@@ -12,6 +12,7 @@ import {
   type EmailVerifyTokenRow,
   emailVerifyTokens,
 } from "./email-verify-tokens.js";
+import { type FeatureFlagInsert, type FeatureFlagRow, featureFlags } from "./feature-flags.js";
 import {
   type InvitationInsert,
   type InvitationRow,
@@ -52,6 +53,8 @@ export type {
   EmailChangeTokenRow,
   EmailVerifyTokenInsert,
   EmailVerifyTokenRow,
+  FeatureFlagInsert,
+  FeatureFlagRow,
   InvitationInsert,
   InvitationRow,
   MembershipInsert,
@@ -79,6 +82,7 @@ export {
   emailChangeTokens,
   emailVerifyTokens,
   failedLogins,
+  featureFlags,
   invitations,
   inviteRoleEnum,
   lockouts,
@@ -96,6 +100,7 @@ export {
 
 export const appSchema = {
   apiKeys,
+  featureFlags,
   users,
   organizations,
   memberships,

@@ -2,6 +2,7 @@ export { authAuditLogs } from "@repo/backend-auth-audit";
 export { failedLogins, lockouts } from "@repo/backend-auth-rate-limit/schema";
 export { sessions } from "@repo/backend-auth-session";
 export { emailVerifyTokens } from "./email-verify-tokens.js";
+export { featureFlags } from "./feature-flags.js";
 export { invitations, inviteRoleEnum } from "./invitations.js";
 export { memberships, orgRoleEnum } from "./memberships.js";
 export { mfaConfigs } from "./mfa-configs.js";
