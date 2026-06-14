@@ -66,5 +66,44 @@ export const adminQueries = {
     }),
 };
 
+const FeatureFlagSchema = z.object({
+  id: z.string(),
+  key: z.string(),
+  description: z.string().nullable(),
+  enabled: z.boolean(),
+  createdAt: z.string(),
+});
+
+const FeatureFlagListSchema = z.array(FeatureFlagSchema);
+
+export const featureFlagQueries = {
+  list: () =>
+    queryOptions({
+      queryKey: ["admin", "feature-flags"],
+      queryFn: () =>
+        httpClient.get("/admin/feature-flags", {
+          schema: FeatureFlagListSchema,
+          requiresAuth: true,
+        }),
+    }),
+  createFn: (body: { key: string; description?: string }) =>
+    httpClient.post("/admin/feature-flags", body, {
+      schema: FeatureFlagSchema,
+      requiresAuth: true,
+    }),
+  updateFn: (key: string, enabled: boolean) =>
+    httpClient.patch(
+      `/admin/feature-flags/${key}`,
+      { enabled },
+      {
+        schema: FeatureFlagSchema,
+        requiresAuth: true,
+      },
+    ),
+  removeFn: (key: string) =>
+    httpClient.delete(`/admin/feature-flags/${key}`, { requiresAuth: true }),
+};
+
 export type AdminOrg = z.output<typeof AdminOrgSchema>["orgs"][number];
 export type AdminUser = z.output<typeof AdminUserSchema>["users"][number];
+export type AdminFeatureFlag = z.output<typeof FeatureFlagSchema>;
