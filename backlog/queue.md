@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-21** — 어드민 + 빌링 — 1 spec — 다음: spec-21-01-admin-panel
+- **phase-21** — 어드민 + 빌링 — 2 spec — 다음: spec-21-02-feature-flags
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기

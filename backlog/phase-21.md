@@ -42,6 +42,7 @@ phase-20 완료로 멤버 목록 검색·필터·페이지네이션까지 구현
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
 | `spec-21-01` | admin-panel | P? | Active | `specs/spec-21-01-admin-panel/` |
+| `spec-21-02` | feature-flags | P? | Active | `specs/spec-21-02-feature-flags/` |
 <!-- sdd:specs:end -->
 
 ### 예정 Spec 목록
