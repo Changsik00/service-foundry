@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-21** — 어드민 + 빌링 — 0/0 spec — (다음: 첫 spec 생성 대기)
+- **phase-21** — 어드민 + 빌링 — 1 spec — 다음: spec-21-01-admin-panel
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
