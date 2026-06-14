@@ -52,6 +52,18 @@ export { Input, type InputProps } from "./components/input";
 export { Label, type LabelProps } from "./components/label";
 export { PasswordInput, type PasswordInputProps } from "./components/password-input";
 export {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "./components/select";
+export {
   Table,
   TableBody,
   TableCell,
@@ -59,6 +71,7 @@ export {
   TableHeader,
   TableRow,
 } from "./components/table";
+export { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/tabs";
 export { Toaster, toast } from "./components/toaster";
 export { ThemeProvider, type ThemeProviderProps, useTheme } from "./lib/theme-context";
 export { cn } from "./lib/utils";
