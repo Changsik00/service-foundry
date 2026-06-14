@@ -43,14 +43,14 @@ phase-20 완료로 멤버 목록 검색·필터·페이지네이션까지 구현
 |---|---|:---:|---|---|
 <!-- sdd:specs:end -->
 
-### 예정 Spec 목록 (초안)
+### 예정 Spec 목록
 
 | 순서 | 슬러그 | 설명 |
 |---|---|---|
-| spec-21-01 | admin-org-user-api | 수퍼어드민 조직·유저 조회 API |
-| spec-21-02 | feature-flags | 피처플래그 설정 API + 가드 |
-| spec-21-03 | stripe-billing | Stripe Checkout + webhook 기본 연동 |
-| spec-21-04 | admin-panel-ui | 어드민 패널 프론트엔드 |
+| spec-21-01 | admin-panel | 수퍼어드민 조직·유저 조회 API + 어드민 패널 UI |
+| spec-21-02 | feature-flags | 피처플래그 설정 API + 가드 + 관리 UI |
+
+> Stripe 빌링은 optional — Icebox 이동 (원래 "(선택)" 항목, 복잡도 대비 당장 필요 없음)
 
 ## 📎 참조
 

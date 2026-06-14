@@ -6,6 +6,8 @@ import { FIREBASE_PROVISION_PORT } from "@repo/nestjs-auth-firebase";
 import { SUPABASE_PROVISION_PORT } from "@repo/nestjs-auth-supabase";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { createClient } from "@supabase/supabase-js";
+import { AdminController } from "../admin/admin.controller.js";
+import { AdminService } from "../admin/admin.service.js";
 import { createSupabaseStorage } from "../infra/storage/supabase-storage.js";
 import { JwtModule } from "../jwt/jwt.module.js";
 import { notifierProvider } from "../notification/notifier.provider.js";
@@ -56,8 +58,10 @@ export class ProviderAuthModule {
         ProviderOrgController,
         AccountController,
         ApiKeyController,
+        AdminController,
       ],
       providers: [
+        AdminService,
         OrgListService,
         ProviderOrgSwitchService,
         OrgMembersService,
