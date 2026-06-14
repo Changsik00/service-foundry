@@ -18,11 +18,10 @@ const FLAG_B = {
 };
 
 function makeSelectChain(rows: unknown[]) {
-  const limit = vi.fn().mockResolvedValue(rows);
-  const orderBy = vi.fn().mockReturnValue({ limit });
+  const orderBy = vi.fn().mockResolvedValue(rows);
   const from = vi.fn().mockReturnValue({ orderBy });
   const select = vi.fn().mockReturnValue({ from });
-  return { db: { select }, mocks: { select, from, orderBy, limit } };
+  return { db: { select }, mocks: { select, from, orderBy } };
 }
 
 function makeDb(overrides: Record<string, unknown> = {}) {
