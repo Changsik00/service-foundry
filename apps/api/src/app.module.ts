@@ -9,6 +9,7 @@ import { BackendLoggerModule } from "@repo/nestjs-logger";
 import { BackendThrottlerModule } from "@repo/nestjs-security";
 import { BackendSettingsModule } from "@repo/nestjs-settings";
 
+import { AdminModule } from "./admin/admin.module.js";
 import { AuthModule } from "./auth/auth.module.js";
 import { ProviderAuthModule } from "./auth/provider-auth.module.js";
 import { HealthController } from "./health/health.controller.js";
@@ -79,6 +80,7 @@ function buildAuthImports() {
     NotificationModule,
     JwtModule,
     ...buildAuthImports(),
+    AdminModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_INTERCEPTOR, useClass: TenantContextInterceptor }, SuperuserGuard],
