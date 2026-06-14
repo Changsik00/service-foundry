@@ -79,7 +79,7 @@ export function InviteForm() {
               <FormLabel>역할</FormLabel>
               <FormControl>
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger>
+                  <SelectTrigger aria-label="역할">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
