@@ -52,7 +52,8 @@ test("/members — 본인 멤버십 행(email·owner) + 초대 전송", async ({
   // 초대 전송 — 실 API (notifier 는 로그 — 발송 200 + 완료 안내까지 검증)
   const inviteeEmail = `e2e-invitee-${Date.now()}@test.example.com`;
   await page.getByLabel("이메일").fill(inviteeEmail);
-  await page.getByLabel("역할").selectOption("member");
+  await page.getByLabel("역할").click();
+  await page.getByRole("option", { name: "member" }).click();
   await page.getByRole("button", { name: "초대 보내기" }).click();
   await expect(page.getByText("초대 이메일을 보냈습니다")).toBeVisible({ timeout: 10_000 });
 });

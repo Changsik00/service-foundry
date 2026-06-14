@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@repo/frontend-ui";
+import { Button, cn } from "@repo/frontend-ui";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
@@ -31,13 +31,14 @@ export function OrgSelectList() {
     <ul className="flex flex-col gap-1">
       {orgs.map((org) => (
         <li key={org.orgId}>
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => select(org.orgId)}
             disabled={switchOrg.isPending}
             className={cn(
-              "flex h-12 w-full items-center gap-3 rounded-md px-2 text-left transition-colors duration-100 hover:bg-accent focus-visible:outline-none disabled:opacity-50",
-              org.orgId === me?.user.orgId && "bg-surface-selected",
+              "h-12 w-full justify-start gap-3 px-2 text-foreground",
+              org.orgId === me?.user.orgId && "bg-surface-selected hover:bg-surface-selected",
             )}
           >
             <span
@@ -48,7 +49,7 @@ export function OrgSelectList() {
             </span>
             <span className="min-w-0 flex-1 truncate text-sm font-medium">{org.name}</span>
             <span className="text-xs text-muted-foreground">{org.role}</span>
-          </button>
+          </Button>
         </li>
       ))}
     </ul>

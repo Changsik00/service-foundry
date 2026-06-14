@@ -10,6 +10,11 @@ import {
   FormLabel,
   FormMessage,
   Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@repo/frontend-ui";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -73,14 +78,15 @@ export function InviteForm() {
             <FormItem>
               <FormLabel>역할</FormLabel>
               <FormControl>
-                {/* 옵션 2개뿐 — Select 컴포넌트 대신 네이티브 (fill-forward 1회성) */}
-                <select
-                  {...field}
-                  className="h-9 rounded-md bg-background px-3 text-sm shadow-ring focus-visible:outline-none"
-                >
-                  <option value="member">member</option>
-                  <option value="admin">admin</option>
-                </select>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger aria-label="역할">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="member">member</SelectItem>
+                    <SelectItem value="admin">admin</SelectItem>
+                  </SelectContent>
+                </Select>
               </FormControl>
             </FormItem>
           )}

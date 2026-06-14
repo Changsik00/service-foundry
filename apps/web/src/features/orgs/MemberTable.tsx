@@ -4,6 +4,11 @@ import {
   Badge,
   Button,
   Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Table,
   TableBody,
   TableCell,
@@ -97,16 +102,17 @@ export function MemberTable() {
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-xs"
         />
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
-        >
-          <option value="all">전체 역할</option>
-          <option value="owner">Owner</option>
-          <option value="admin">Admin</option>
-          <option value="member">Member</option>
-        </select>
+        <Select value={role} onValueChange={setRole}>
+          <SelectTrigger className="w-36">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">전체 역할</SelectItem>
+            <SelectItem value="owner">Owner</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+            <SelectItem value="member">Member</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {allMembers.length === 0 ? (
