@@ -39,6 +39,9 @@ Thumbs.db
 .eslintcache
 .cache/
 
+# Serena (LSP 코드 인텔리전스 — 개발자 개인 opt-in, 글로벌 uvx 설치 시 프로젝트에 생성됨)
+.serena/
+
 # harness-kit (runtime / backup only — .harness-kit/ and .claude/commands|settings are tracked)
 .harness-backup-*/
 .claude/state/
