@@ -12,7 +12,7 @@
 | **시작일** | 2026-06-16 |
 | **목표 종료일** | 미정 |
 | **소유자** | dennis |
-| **Base Branch** | `phase-22-deploy` |
+| **Base Branch** | phase-22-deploy |
 
 ## 🎯 배경 및 목표
 
@@ -32,7 +32,7 @@ phase-14 에서 CI(turbo affected lint/typecheck/test/build) + docker publish + 
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
-| `spec-22-01` | k8s-manifest-example | P? | Active | `specs/spec-22-01-k8s-manifest-example/` |
+| `spec-22-01` | k8s-manifest-example | P? | Merged | `specs/spec-22-01-k8s-manifest-example/` |
 <!-- sdd:specs:end -->
 
 ### spec-22-01 — k8s-manifest-example
