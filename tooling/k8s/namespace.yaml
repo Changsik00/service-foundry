@@ -1,0 +1,8 @@
+# service-foundry 전용 네임스페이스.
+# 한 번에 정리: kubectl delete namespace service-foundry
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: service-foundry
+  labels:
+    app.kubernetes.io/part-of: service-foundry

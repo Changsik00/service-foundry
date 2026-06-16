@@ -1,0 +1,22 @@
+# 비-민감 런타임 설정. 민감값(시크릿/DB URL)은 secret.yaml 참조.
+# apps/api/src/settings.ts 의 env 스키마와 정합.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: service-foundry
+  labels:
+    app.kubernetes.io/part-of: service-foundry
+data:
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+  # apps/api/service.yaml(SoT) 의 port 와 일치해야 한다 — manifest-drift 테스트가 강제.
+  PORT: "2026"
+  # 외부 API base URL (apps/api 필수 env). 샘플 placeholder.
+  HTTP_CLIENT_BASE_URL: "https://api.example.com"
+  AUTH_MODE: "native"
+  # redis 연결 (apps/worker · rate-limit). Service 이름으로 클러스터 내부 DNS 해석.
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  # 마이그레이션 Job / api 가 postgres 에 붙을 때 사용하는 DB 이름.
+  POSTGRES_DB: "service_foundry"
