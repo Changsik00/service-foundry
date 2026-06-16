@@ -24,9 +24,9 @@
 ## Task 2: 앱 매니페스트 + 드리프트 테스트 (TDD)
 
 ### 2-1. 테스트 작성 (TDD Red)
-- [ ] 드리프트 테스트 작성: k8s api 매니페스트의 containerPort·Service targetPort·name 라벨이 `apps/api/service.yaml`(port=2026, name=api)과 일치하는지 검증
-- [ ] 테스트 실행 → Fail 확인 (api.yaml 미존재)
-- [ ] Commit: `test(spec-22-01): add k8s api manifest drift test`
+- [x] 드리프트 테스트 작성: `tooling/k8s/__tests__/manifest-drift.test.ts`
+- [x] 테스트 실행 → Fail 확인 (api.yaml 미존재, ENOENT)
+- [x] Commit: `test(spec-22-01): add k8s api manifest drift test`
 
 ### 2-2. 구현 (TDD Green)
 - [ ] `tooling/k8s/api.yaml` — Deployment(`containerPort: 2026`, liveness `/health/live`·readiness `/health/ready`, postgres 대기 initContainer, env from Config/Secret) + ClusterIP Service(2026)
