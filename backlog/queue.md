@@ -127,6 +127,7 @@
 - [x] spec-x-org-api (완료)
 - [x] spec-x-org-screens (완료)
 - [x] spec-x-auth-token-refresh-interceptor (완료)
+- **phase-19** — 계정 완성 + 인가 (Account + Authz) — completed 2026-06-13
 - **phase-23** — ? — completed 2026-06-13
 - **phase-20** — 데이터 UX — completed 2026-06-14
 - **phase-21** — 어드민 + 빌링 — completed 2026-06-14
