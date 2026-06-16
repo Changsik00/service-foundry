@@ -12,6 +12,8 @@ SDD_BIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SDD_BIN_DIR/lib/common.sh"
 # shellcheck source=lib/state.sh
 source "$SDD_BIN_DIR/lib/state.sh"
+# shellcheck source=lib/extend.sh
+source "$SDD_BIN_DIR/lib/extend.sh"
 
 # ============================================================
 # help
@@ -97,6 +99,9 @@ sdd — harness-kit 메타 명령
   run-test <cmd...>             테스트 실행 + 통과 시 자동으로 sdd test passed 기록
   search <keyword> [--scope=<s>] [--ignore-case]
                                 마크다운 자산 통합 검색 (scope: all/active/archive/decisions/rca/backlog)
+
+  extend serena [--scope local|user] [--dry-run] | --remove
+                                외부 도구 opt-in 통합 (Serena/LSP). default-off — 켠 사람만 비용 부담
 
   help                          이 도움말
   version                       키트 버전
@@ -396,6 +401,31 @@ _drift_kit_version() {
   return 0
 }
 
+# 확장(MCP) 권장: 코드 프로젝트인데 코드 인텔리전스 확장(serena) 미설치 시 1 줄 권장
+# - 코드 판정: git tracked 파일 중 LSP 지원 언어 확장자 존재
+# - 설치 판정: installed.json 의 .extensions.serena 존재
+# - 조건부 우선 사용 정책 (→ ADR-008, agent.md §6.5)
+_drift_extension_recommend() {
+  local installed_json="$SDD_ROOT/.harness-kit/installed.json"
+  [ -f "$installed_json" ] || return 1
+
+  # 이미 설치됨 → 권장 불필요
+  if jq -e '.extensions.serena' "$installed_json" >/dev/null 2>&1; then
+    return 1
+  fi
+
+  # 코드 프로젝트 판정 — LSP 지원 언어의 tracked 파일이 하나라도 있으면
+  local code
+  code=$(git -C "$SDD_ROOT" ls-files \
+    '*.ts' '*.tsx' '*.js' '*.jsx' '*.py' '*.go' '*.rs' \
+    '*.java' '*.rb' '*.php' '*.cs' '*.c' '*.cpp' '*.kt' \
+    2>/dev/null | head -1)
+  [ -n "$code" ] || return 1
+
+  printf "  ${C_YLW}확장 권장: 코드 프로젝트인데 Serena 미설치 — /hk-extend 권장 (조건부 우선 사용, ADR-008)${C_RST}\n"
+  return 0
+}
+
 # Stale ADR 탐지: 본문의 backtick-wrapped 경로 중 존재하지 않는 것 검사
 # - 검사 대상: docs/decisions/ADR-*.md (RCA 제외)
 # - 추출 규칙: backtick(`) 안 토큰 중 슬래시 포함 + URL 제외 + 확장자/끝슬래시
@@ -419,6 +449,8 @@ _drift_stale_adr() {
       echo "$token" | grep -q '/' || continue
       # 2) URL/SSH 패턴 제외
       echo "$token" | grep -qE '^(https?:|git@)' && continue
+      # 2-1) glob 패턴(설명용 예시)은 리터럴 파일이 아님 → 제외
+      echo "$token" | grep -q '[*?]' && continue
       # 3) 확장자 또는 끝 슬래시 보유
       echo "$token" | grep -qE '\.[a-zA-Z0-9]+$|/$' || continue
       # 4) 존재하면 skip
@@ -465,6 +497,7 @@ _status_drift() {
   _drift_consistency && has_drift=1
   _drift_install     && has_drift=1
   _drift_stale_adr   && has_drift=1
+  _drift_extension_recommend && has_drift=1
 
   if [ "$has_drift" -eq 0 ]; then
     echo "  ${C_DIM}깔끔${C_RST}"
@@ -1998,8 +2031,8 @@ specx_new() {
   log "spec-x 생성: $id"
   mkdir -p "$dir"
 
-  # 템플릿 복사 (spec, plan, task, walkthrough)
-  for f in spec plan task walkthrough; do
+  # 템플릿 복사 (spec, task, walkthrough) — plan 은 폐기 산출물(spec.md 가 spec+plan 통합, agent.md §4.2·§5)
+  for f in spec task walkthrough; do
     if [ -f "$SDD_TEMPLATES/$f.md" ]; then
       sed "s/{phaseN}/x/g; s/{seq}-{slug}/${slug}/g; s/{seq}/${slug}/g; s/{slug}/${slug}/g" \
         "$SDD_TEMPLATES/$f.md" > "$dir/$f.md"
@@ -2757,6 +2790,7 @@ main() {
     pr-watch)  cmd_pr_watch "$@" ;;
     run-test)  cmd_run_test "$@" ;;
     search)   cmd_search "$@" ;;
+    extend)   cmd_extend "$@" ;;
     *)         err "알 수 없는 명령: $cmd"; cmd_help; exit 1 ;;
   esac
 }

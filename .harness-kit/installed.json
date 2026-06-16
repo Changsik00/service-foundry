@@ -1,7 +1,7 @@
 {
-  "kitVersion": "0.17.1",
+  "kitVersion": "0.18.0",
   "kitOrigin": "https://github.com/Changsik00/harness-kit.git",
-  "installedAt": "2026-06-13T08:08:25Z",
+  "installedAt": "2026-06-16T01:07:35Z",
   "uxMode": "interactive",
   "installedCommands": [
     "hk-align",
@@ -11,6 +11,7 @@
     "hk-code-review",
     "hk-director",
     "hk-doctor",
+    "hk-extend",
     "hk-phase-review",
     "hk-phase-ship",
     "hk-plan-accept",
