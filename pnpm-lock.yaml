@@ -404,6 +404,9 @@ importers:
       cookie-parser:
         specifier: 'catalog:'
         version: 1.4.7
+      drizzle-kit:
+        specifier: 'catalog:'
+        version: 0.31.10
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.2(@opentelemetry/api@1.9.1)(@types/pg@8.20.0)(pg@8.21.0)
@@ -422,6 +425,9 @@ importers:
       swagger-ui-express:
         specifier: ^5.0.0
         version: 5.0.1(express@5.2.1)
+      tsx:
+        specifier: 'catalog:'
+        version: 4.22.1
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -456,18 +462,12 @@ importers:
       dotenv:
         specifier: 'catalog:'
         version: 16.6.1
-      drizzle-kit:
-        specifier: 'catalog:'
-        version: 0.31.10
       otplib:
         specifier: 'catalog:'
         version: 12.0.1
       supertest:
         specifier: 'catalog:'
         version: 7.2.2
-      tsx:
-        specifier: 'catalog:'
-        version: 4.22.1
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -589,6 +589,9 @@ importers:
       '@repo/backend-queue':
         specifier: workspace:*
         version: link:../../packages/backend/queue
+      tsx:
+        specifier: 'catalog:'
+        version: 4.22.1
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
@@ -602,9 +605,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.12.4
-      tsx:
-        specifier: 'catalog:'
-        version: 4.22.1
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
