@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-22** — Deploy (k8s manifest 예제) — 0/0 spec — (다음: 첫 spec 생성 대기)
+- **phase-22** — Deploy (k8s manifest 예제) — 2 spec — 다음: spec-22-02-dockerfile-slim
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기

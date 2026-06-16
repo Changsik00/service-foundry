@@ -33,6 +33,7 @@ phase-14 에서 CI(turbo affected lint/typecheck/test/build) + docker publish + 
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
 | `spec-22-01` | k8s-manifest-example | P? | Merged | `specs/spec-22-01-k8s-manifest-example/` |
+| `spec-22-02` | dockerfile-slim | P? | Active | `specs/spec-22-02-dockerfile-slim/` |
 <!-- sdd:specs:end -->
 
 ### spec-22-01 — k8s-manifest-example
