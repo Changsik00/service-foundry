@@ -44,30 +44,30 @@
 - [ ] Commit: `feat(spec-22-01): add kind verification script`
 
 ### 3-2. 검증 실행 (증빙 수집)
-- [ ] `bash tooling/k8s/verify.sh` 실행 → api `/health/ready` 200 + worker 기동 로그 확인
-- [ ] (DB 거동에 따라 initContainer/Job 전략 보정 — 필요 시 Task 2 매니페스트 수정 후 재커밋)
-- [ ] 증빙 캡처 → walkthrough 첨부용 보관
+- [x] `bash tooling/k8s/verify.sh` 실행 → api `/health/ready` → `{"status":"ready"}` (200) + worker `consumer started` 로그 확인
+- [x] DB 거동: initContainer 대기 + migrate Job 전략으로 충분 — 추가 보정 불필요
+- [x] 증빙 캡처 (walkthrough 첨부)
 
 ---
 
 ## Task 4: README
 
 ### 4-1. 작성
-- [ ] `tooling/k8s/README.md` — 구조 · 검증 절차 · 운영 확장(ghcr 이미지 교체, Secret 관리, PVC, Ingress/HPA) 가이드
-- [ ] Commit: `docs(spec-22-01): add tooling/k8s README`
+- [x] `tooling/k8s/README.md` — 구조 · 검증 절차 · 운영 확장(ghcr 이미지 교체, Secret 관리, PVC, Ingress/HPA) 가이드
+- [x] Commit: `docs(spec-22-01): add tooling/k8s README`
 
 ---
 
 ## Task 5: Ship (필수)
 
 ### 🚦 Pre-Push Quality Gate
-- [ ] **전체 테스트 실행** → 모두 PASS (`pnpm vitest run` 관련 범위 + `pnpm tooling:manifest`)
+- [x] **품질 게이트** → PASS (`turbo run lint typecheck` 96 ok + `npx vitest run tooling/k8s` 4 pass + `pnpm tooling:manifest` pass)
 
 ### 📝 산출물 작성
-- [ ] **walkthrough.md 작성** (kind 검증 증빙 포함)
-- [ ] **pr_description.md 작성**
-- [ ] Commit: `docs(spec-22-01): ship walkthrough and pr description`
+- [x] **walkthrough.md 작성** (kind 검증 증빙 포함)
+- [x] **pr_description.md 작성**
+- [x] Commit: `docs(spec-22-01): ship walkthrough and pr description`
 
 ### 🚀 Push & PR
-- [ ] `git push -u origin spec-22-01-k8s-manifest-example`
-- [ ] PR 생성 (`gh pr create` 또는 `/hk-pr-gh`)
+- [x] `git push -u origin spec-22-01-k8s-manifest-example`
+- [x] PR 생성 (`gh pr create` 또는 `/hk-pr-gh`)
