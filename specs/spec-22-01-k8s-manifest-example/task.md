@@ -29,11 +29,11 @@
 - [x] Commit: `test(spec-22-01): add k8s api manifest drift test`
 
 ### 2-2. 구현 (TDD Green)
-- [ ] `tooling/k8s/api.yaml` — Deployment(`containerPort: 2026`, liveness `/health/live`·readiness `/health/ready`, postgres 대기 initContainer, env from Config/Secret) + ClusterIP Service(2026)
-- [ ] `tooling/k8s/worker.yaml` — Deployment(redis env, Service 없음)
-- [ ] `tooling/k8s/migrate-job.yaml` — `pnpm db:migrate` Job (postgres 대기 initContainer)
-- [ ] 드리프트 테스트 + `pnpm tooling:manifest` 실행 → Pass 확인
-- [ ] Commit: `feat(spec-22-01): add api/worker/migrate k8s manifests`
+- [x] `tooling/k8s/api.yaml` — Deployment(`containerPort: 2026`, liveness `/health/live`·readiness `/health/ready`, postgres 대기 initContainer, envFrom Config/Secret) + ClusterIP Service(2026)
+- [x] `tooling/k8s/worker.yaml` — Deployment(redis env + wait-for-redis initContainer, Service 없음)
+- [x] `tooling/k8s/migrate-job.yaml` — `pnpm db:migrate` Job (postgres 대기 initContainer, DATABASE_MIGRATE_URL 슈퍼유저)
+- [x] 드리프트 테스트(4 pass) + `pnpm tooling:manifest`(pass) + kubectl dry-run 통과
+- [x] Commit: `feat(spec-22-01): add api/worker/migrate k8s manifests`
 
 ---
 
