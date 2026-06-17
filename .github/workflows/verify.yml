@@ -60,6 +60,11 @@ jobs:
           restore-keys: |
             turbo-${{ runner.os }}-
 
+      # tooling/ 은 워크스페이스 패키지가 아니라 turbo run test 가 수집하지 않는다.
+      # tooling 테스트(k8s 매니페스트 드리프트 등)를 별도 스텝으로 CI 에 편입.
+      - name: Tooling tests (non-workspace)
+        run: npx vitest run tooling
+
       # 죽은 코드(knip) + 레이어 경계(depcruise) 게이트. DB·build 불필요 →
       # 무거운 test 앞에서 구조 결함을 빠르게 차단 (spec-15-01, phase-14 성공기준5 보강).
       - name: Dead code + boundary gate (knip + depcruise)
