@@ -49,6 +49,8 @@
 - [ ] **[제안] Proactive Token Rotation** (2026-06-09) — `spec-x-auth-token-refresh-interceptor` A방식 이후 후속. `SignResponse`에 `expiresAt` 추가 → auth-sdk 저장 → AuthProvider 타이머로 만료 2분 전 자동 `refresh()`. 사용자가 401을 아예 안 만남(UX 최상). 구현 복잡도: 타이머 + 탭 포커스 재진입 + contracts 변경. 진입 시점: phase-19 이후 또는 실제 불만 보고 이후 권장
 - [ ] **k8s 드리프트 테스트 CI 자동화** (spec-22-01, 2026-06-16) — `tooling/k8s/__tests__/manifest-drift.test.ts` 가 tooling 비-패키지라 `turbo run test` 에 안 잡힘. 현재 `npx vitest run tooling/k8s` 수동. root vitest 또는 tooling 패키지화로 CI 편입. spec-x 후보
 - [ ] **k8s 운영 리소스 확장** (spec-22-01) — helm/kustomize overlay · Ingress/TLS · HPA/PDB · PVC(StatefulSet) · NetworkPolicy. 샘플은 의도적 제외(README 확장 포인트). 필요 시 후속 phase/spec
+- [ ] **`@env-kit/node-settings` 의 next 의존 제거/대체** (spec-22-02, 2026-06-17) — slim api/worker 이미지에 `next`(~288MB)가 잔존. `@env-kit/node-settings@1.1.0` 이 `next` 를 직접 의존 → backend-settings 경유 api 까지 끌려옴. 해당 dep 제거/대체 시 이미지 추가 대폭 감소. spec-x 후보
+- [ ] **이미지 추가 슬림** (spec-22-02 후속) — 컴파일(tsup → node 런타임, tsx 제거) + distroless 베이스. 현재 tsx 런타임 유지. 후속 spec 후보
 - [ ] lat.md Phase 2 도입 평가 (지식 그래프 도구)
 - [ ] ARCHITECTURE.md 본체 재작성 (Phase 3 직전, ADR-0005 결정 후)
 
