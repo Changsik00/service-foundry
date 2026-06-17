@@ -11,14 +11,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/backend-queue": "workspace:*"
+    "@repo/backend-queue": "workspace:*",
+    "tsx": "catalog:"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@repo/biome-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "catalog:",
-    "tsx": "catalog:",
     "typescript": "catalog:"
   }
 }

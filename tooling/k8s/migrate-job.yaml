@@ -28,7 +28,8 @@ spec:
           image: service-foundry-api:local
           imagePullPolicy: IfNotPresent
           # 이미지 WORKDIR=/app/apps/api. drizzle.config 는 DATABASE_MIGRATE_URL 우선 사용.
-          command: ["pnpm", "run", "db:migrate"]
+          # pnpm 우회(slim 이미지에서 catalog deps-check 회피) — drizzle-kit 바이너리 직접 실행.
+          command: ["./node_modules/.bin/drizzle-kit", "migrate"]
           envFrom:
             - configMapRef:
                 name: app-config
