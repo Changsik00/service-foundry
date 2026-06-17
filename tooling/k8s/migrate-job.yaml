@@ -1,0 +1,37 @@
+# DB 마이그레이션 1회 실행 Job — api 이미지로 `pnpm db:migrate`(drizzle-kit).
+# DATABASE_MIGRATE_URL(슈퍼유저) 로 실행 → 0012 마이그레이션이 app_runtime 에 GRANT 적용.
+# api/worker 보다 먼저 적용 권장: kubectl apply 후 이 Job 의 완료를 기다린 뒤 트래픽 확인.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migrate
+  namespace: service-foundry
+  labels:
+    app.kubernetes.io/name: db-migrate
+    app.kubernetes.io/part-of: service-foundry
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: db-migrate
+        app.kubernetes.io/part-of: service-foundry
+    spec:
+      restartPolicy: Never
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:16-alpine
+          command:
+            ["sh", "-c", "until pg_isready -h postgres -U postgres; do echo waiting-postgres; sleep 2; done"]
+      containers:
+        - name: migrate
+          image: service-foundry-api:local
+          imagePullPolicy: IfNotPresent
+          # 이미지 WORKDIR=/app/apps/api. drizzle.config 는 DATABASE_MIGRATE_URL 우선 사용.
+          # pnpm 우회(slim 이미지에서 catalog deps-check 회피) — drizzle-kit 바이너리 직접 실행.
+          command: ["./node_modules/.bin/drizzle-kit", "migrate"]
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: app-secret

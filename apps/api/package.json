@@ -51,10 +51,12 @@
     "reflect-metadata": "catalog:",
     "resend": "^4.0.0",
     "rxjs": "catalog:",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "tsx": "catalog:",
+    "drizzle-kit": "catalog:",
+    "dotenv": "catalog:"
   },
   "devDependencies": {
-    "dotenv": "catalog:",
     "@biomejs/biome": "catalog:",
     "@nestjs/testing": "catalog:",
     "@repo/biome-config": "workspace:*",
@@ -64,10 +66,8 @@
     "@types/node": "catalog:",
     "@types/cookie-parser": "catalog:",
     "@types/supertest": "catalog:",
-    "drizzle-kit": "catalog:",
     "otplib": "catalog:",
     "supertest": "catalog:",
-    "tsx": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }
