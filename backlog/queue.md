@@ -14,6 +14,7 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
+- [ ] spec-x-ci-cache — ci-cache
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox

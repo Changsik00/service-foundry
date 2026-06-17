@@ -50,6 +50,16 @@ jobs:
       - name: Install (frozen lockfile)
         run: pnpm install --frozen-lockfile
 
+      # turbo 로컬 캐시(.turbo/cache) 복원 — 변경 없는 태스크는 재실행 스킵(FULL TURBO).
+      # 캐시는 속도 최적화일 뿐: 소스/lockfile 변경 시 turbo 해시가 자동 무효화한다.
+      - name: Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-
+
       # 죽은 코드(knip) + 레이어 경계(depcruise) 게이트. DB·build 불필요 →
       # 무거운 test 앞에서 구조 결함을 빠르게 차단 (spec-15-01, phase-14 성공기준5 보강).
       - name: Dead code + boundary gate (knip + depcruise)

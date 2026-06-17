@@ -48,6 +48,15 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/service_foundry_test
         run: pnpm --filter @apps/api db:migrate
 
+      # 브라우저 바이너리 캐시 — 버전은 playwright(lockfile)에 종속. 적중 시 다운로드 스킵.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
       - name: Install Playwright browsers
         run: pnpm --filter @apps/web exec playwright install --with-deps chromium
 
