@@ -14,7 +14,6 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
-- [ ] spec-x-ci-tooling-cleanup — ci-tooling-cleanup
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -139,6 +138,7 @@
 - **phase-22** — Deploy (k8s manifest 예제) — completed 2026-06-17
 - [x] spec-x-ci-cache (완료)
 - [x] spec-x-dev-rls-app-runtime (완료)
+- [x] spec-x-ci-tooling-cleanup (완료)
 <!-- sdd:done:end -->
 
 ---
