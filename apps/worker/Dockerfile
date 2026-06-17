@@ -17,6 +17,8 @@ RUN pnpm dlx turbo@2.9.14 prune @apps/worker --docker
 FROM base AS runner
 ENV NODE_ENV=production
 COPY --from=pruner /app/out/json/ .
+# lockfile 의 pnpmfileChecksum 정합 — turbo prune 산출물엔 .pnpmfile.cjs 가 없어 별도 복사.
+COPY .pnpmfile.cjs ./
 # --shamefully-hoist: 전이 의존성 최상위 hoist (fat 이미지 해석 동작 복원).
 RUN pnpm install --prod --frozen-lockfile --shamefully-hoist
 COPY --from=pruner /app/out/full/ .
