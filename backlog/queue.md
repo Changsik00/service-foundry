@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-22** — Deploy (k8s manifest 예제) — 2 spec — 다음: (spec 없음)
+(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -135,6 +135,7 @@
 - **phase-23** — ? — completed 2026-06-13
 - **phase-20** — 데이터 UX — completed 2026-06-14
 - **phase-21** — 어드민 + 빌링 — completed 2026-06-14
+- **phase-22** — Deploy (k8s manifest 예제) — completed 2026-06-17
 <!-- sdd:done:end -->
 
 ---
