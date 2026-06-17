@@ -43,9 +43,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # 런타임 role 을 LOGIN+비밀번호로 사전 생성 (verify.yml 동일) — migrate 0012 는 GRANT 만 적용.
+      - name: Provision app_runtime role (login)
+        run: psql "postgresql://postgres:postgres@localhost:5432/service_foundry_test" -c "CREATE ROLE app_runtime LOGIN PASSWORD 'app_runtime'"
+
       - name: Run DB migrations
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/service_foundry_test
+          # 마이그레이션 = owner/superuser (DDL·RLS 우회 + app_runtime GRANT 적용).
+          DATABASE_MIGRATE_URL: postgresql://postgres:postgres@localhost:5432/service_foundry_test
         run: pnpm --filter @apps/api db:migrate
 
       # 브라우저 바이너리 캐시 — 버전은 playwright(lockfile)에 종속. 적중 시 다운로드 스킵.
@@ -67,9 +72,9 @@ jobs:
           SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
-          # API
+          # API — 런타임 = 비-슈퍼유저 app_runtime (RLS 테넌트 격리 적용, spec-17-07).
           API_BASE_URL: http://localhost:2026
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/service_foundry_test
+          DATABASE_URL: postgresql://app_runtime:app_runtime@localhost:5432/service_foundry_test
         run: pnpm --filter @apps/web test:e2e
 
       - name: Upload Playwright report
