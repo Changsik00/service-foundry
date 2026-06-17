@@ -14,7 +14,6 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
-- [ ] spec-x-dev-rls-app-runtime — dev-rls-app-runtime
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -138,6 +137,7 @@
 - **phase-21** — 어드민 + 빌링 — completed 2026-06-14
 - **phase-22** — Deploy (k8s manifest 예제) — completed 2026-06-17
 - [x] spec-x-ci-cache (완료)
+- [x] spec-x-dev-rls-app-runtime (완료)
 <!-- sdd:done:end -->
 
 ---
