@@ -22,7 +22,16 @@
       "entry": ["src/**/*.test.{ts,tsx}"]
     },
     "packages/backend/*": {
-      "entry": ["src/**/*.test.ts", "roundtrip.ts", "emit-span.ts"]
+      "entry": ["src/**/*.test.ts"]
+    },
+    "packages/backend/cache": {
+      "entry": ["src/**/*.test.ts", "roundtrip.ts"]
+    },
+    "packages/backend/queue": {
+      "entry": ["src/**/*.test.ts", "roundtrip.ts"]
+    },
+    "packages/backend/observability": {
+      "entry": ["src/**/*.test.ts", "emit-span.ts"]
     },
     "packages/backend/settings": {
       "entry": ["src/**/*.test.ts"],
@@ -51,6 +60,7 @@
     },
     "apps/web": {
       "entry": ["src/**/*.test.{ts,tsx}"]
-    }
+    },
+    "apps/worker": {}
   }
 }

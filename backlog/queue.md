@@ -14,6 +14,7 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
+- [ ] spec-x-ci-tooling-cleanup — ci-tooling-cleanup
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
