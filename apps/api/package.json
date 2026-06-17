@@ -53,10 +53,10 @@
     "rxjs": "catalog:",
     "zod": "catalog:",
     "tsx": "catalog:",
-    "drizzle-kit": "catalog:"
+    "drizzle-kit": "catalog:",
+    "dotenv": "catalog:"
   },
   "devDependencies": {
-    "dotenv": "catalog:",
     "@biomejs/biome": "catalog:",
     "@nestjs/testing": "catalog:",
     "@repo/biome-config": "workspace:*",
