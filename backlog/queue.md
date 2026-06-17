@@ -14,6 +14,7 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
+- [ ] spec-x-dev-rls-app-runtime — dev-rls-app-runtime
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox

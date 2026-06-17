@@ -43,8 +43,8 @@ test("/members — 본인 멤버십 행(email·owner) + 초대 전송", async ({
   await page.goto("/members");
 
   // 멤버 테이블: 본인 행 + 행 스코프 owner 배지.
-  // 주의: dev/CI 의 DATABASE_URL 이 superuser 라 RLS 미적용 — 타 org 행도 보일 수 있음.
-  // org 격리 검증은 runtime role 을 쓰는 api e2e(spec-17-08)가 담당. 여기선 화면 동작만.
+  // 런타임이 app_runtime role 이라 RLS 적용됨 (spec-x-dev-rls-app-runtime) — 본인 org 행만 노출.
+  // org 격리의 정식 검증(cross-org 거부)은 api e2e(spec-17-08)가 담당. 여기선 화면 동작 + RLS 하 정상성.
   const myRow = page.getByRole("row", { name: new RegExp(TEST_EMAIL) });
   await expect(myRow).toBeVisible({ timeout: 10_000 });
   await expect(myRow.getByText("owner")).toBeVisible();
