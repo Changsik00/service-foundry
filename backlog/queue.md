@@ -14,7 +14,6 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
-- [ ] spec-x-ci-cache — ci-cache
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -137,6 +136,7 @@
 - **phase-20** — 데이터 UX — completed 2026-06-14
 - **phase-21** — 어드민 + 빌링 — completed 2026-06-14
 - **phase-22** — Deploy (k8s manifest 예제) — completed 2026-06-17
+- [x] spec-x-ci-cache (완료)
 <!-- sdd:done:end -->
 
 ---
