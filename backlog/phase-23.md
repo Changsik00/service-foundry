@@ -41,7 +41,7 @@
 | `spec-23-02` | hotpath-fixes | P? | Merged | `specs/spec-23-02-hotpath-fixes/` |
 | `spec-23-03` | constants-and-dedup | P? | Merged | `specs/spec-23-03-constants-and-dedup/` |
 | `spec-23-04` | error-handling-convention | P? | Merged | `specs/spec-23-04-error-handling-convention/` |
-| `spec-23-05` | type-design | P? | Active | `specs/spec-23-05-type-design/` |
+| `spec-23-05` | type-design | P? | Merged | `specs/spec-23-05-type-design/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
