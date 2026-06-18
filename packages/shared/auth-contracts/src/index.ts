@@ -82,6 +82,13 @@ export interface AuthSDK {
   signUp(input: SignUpInput): Promise<AuthResult>;
   refresh(): Promise<Session | null>;
 
+  /**
+   * 액세스 토큰 만료 시각(epoch ms) 또는 null(미인증/모름).
+   * AuthProvider 의 선제 갱신 타이머가 사용 (spec-x-proactive-token-rotation).
+   * optional — provider 모드(firebase/supabase)는 자체 갱신하므로 미구현 → 타이머 비활성.
+   */
+  getAccessTokenExpiresAt?(): number | null;
+
   // MFA
   verifyMfaTotp(mfaChallengeToken: string, code: string): Promise<AuthResult>;
 
@@ -99,7 +106,7 @@ export interface AuthSDK {
 /** Provider 패키지가 최소한 구현해야 하는 Core Surface (5개 메서드). */
 export type CoreAuthSDK = Pick<
   AuthSDK,
-  "signIn" | "signOut" | "getCurrentUser" | "signUp" | "refresh"
+  "signIn" | "signOut" | "getCurrentUser" | "signUp" | "refresh" | "getAccessTokenExpiresAt"
 >;
 
 // === Auth HTTP Integration (spec-x-auth-http-integration) === //
