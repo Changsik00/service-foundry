@@ -40,7 +40,7 @@
 | `spec-23-01` | test-safety-net | P? | Merged | `specs/spec-23-01-test-safety-net/` |
 | `spec-23-02` | hotpath-fixes | P? | Merged | `specs/spec-23-02-hotpath-fixes/` |
 | `spec-23-03` | constants-and-dedup | P? | Merged | `specs/spec-23-03-constants-and-dedup/` |
-| `spec-23-04` | error-handling-convention | P? | Active | `specs/spec-23-04-error-handling-convention/` |
+| `spec-23-04` | error-handling-convention | P? | Merged | `specs/spec-23-04-error-handling-convention/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`

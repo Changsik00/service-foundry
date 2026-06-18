@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-23** — refactor-hardening — 4 spec — 다음: spec-23-04-error-handling-convention
+- **phase-23** — refactor-hardening — 4 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
