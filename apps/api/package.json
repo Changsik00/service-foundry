@@ -28,6 +28,7 @@
     "@repo/backend-auth-password": "workspace:*",
     "@repo/backend-auth-rate-limit": "workspace:*",
     "@repo/backend-auth-session": "workspace:*",
+    "@repo/backend-authz": "workspace:*",
     "@repo/backend-lifecycle": "workspace:*",
     "@repo/backend-storage": "workspace:*",
     "@supabase/supabase-js": "catalog:",

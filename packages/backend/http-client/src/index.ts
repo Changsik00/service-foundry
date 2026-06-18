@@ -1,5 +1,6 @@
 import { getCurrentRequestId } from "@repo/backend-logger";
 import { AppError } from "@repo/errors";
+import { sleep } from "@repo/utils";
 import { fetch } from "undici";
 import type { ZodType } from "zod";
 
@@ -37,11 +38,6 @@ const IDEMPOTENT_METHODS: ReadonlySet<HttpMethod> = new Set(["GET", "PUT", "DELE
 const DEFAULT_TIMEOUT_MS = 10_000;
 const DEFAULT_RETRIES = 3;
 const DEFAULT_BACKOFF_MS = 100;
-
-const sleep = (ms: number): Promise<void> =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
 
 const isAbortError = (err: unknown): boolean =>
   typeof err === "object" && err !== null && (err as { name?: string }).name === "AbortError";

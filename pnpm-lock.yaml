@@ -355,6 +355,9 @@ importers:
       '@repo/backend-auth-session':
         specifier: workspace:*
         version: link:../../packages/backend/auth-session
+      '@repo/backend-authz':
+        specifier: workspace:*
+        version: link:../../packages/backend/authz
       '@repo/backend-lifecycle':
         specifier: workspace:*
         version: link:../../packages/backend/lifecycle
@@ -588,6 +591,9 @@ importers:
 
   apps/worker:
     dependencies:
+      '@repo/backend-logger':
+        specifier: workspace:*
+        version: link:../../packages/backend/logger
       '@repo/backend-queue':
         specifier: workspace:*
         version: link:../../packages/backend/queue
@@ -999,6 +1005,9 @@ importers:
       '@repo/errors':
         specifier: workspace:*
         version: link:../../shared/errors
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../../shared/utils
       undici:
         specifier: 'catalog:'
         version: 8.3.0

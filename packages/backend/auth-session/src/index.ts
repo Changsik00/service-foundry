@@ -21,5 +21,6 @@ export {
   type RotateResult,
   revokeSession,
   rotateSession,
+  SESSION_TTL_MS,
 } from "./session.js";
 export type { SessionStore } from "./store.js";

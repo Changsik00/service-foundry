@@ -1,7 +1,7 @@
+import { SESSION_TTL_MS } from "@repo/backend-auth-session";
 import type { Response } from "express";
 
 const REFRESH_TOKEN_COOKIE = "refresh_token";
-const MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 
 export function setRefreshTokenCookie(res: Response, token: string): void {
   res.cookie(REFRESH_TOKEN_COOKIE, token, {
@@ -9,7 +9,7 @@ export function setRefreshTokenCookie(res: Response, token: string): void {
     secure: process.env.NODE_ENV !== "development",
     sameSite: "lax",
     path: "/",
-    maxAge: MAX_AGE_SECONDS * 1000,
+    maxAge: SESSION_TTL_MS,
   });
 }
 

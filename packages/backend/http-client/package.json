@@ -21,6 +21,7 @@
   "dependencies": {
     "@repo/backend-logger": "workspace:*",
     "@repo/errors": "workspace:*",
+    "@repo/utils": "workspace:*",
     "undici": "catalog:",
     "zod": "catalog:"
   },

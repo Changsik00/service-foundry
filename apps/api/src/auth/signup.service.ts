@@ -1,5 +1,5 @@
 import { ConflictException, Inject, Injectable } from "@nestjs/common";
-import { signAccessToken } from "@repo/backend-auth-jwt";
+import { ACTIVE_ORG_CLAIM, ORG_ROLE_CLAIM, signAccessToken } from "@repo/backend-auth-jwt";
 import { hashPassword } from "@repo/backend-auth-password";
 import { createSession } from "@repo/backend-auth-session";
 
@@ -33,7 +33,7 @@ export class SignupService {
     const { refreshToken } = await createSession(this.sessionStore, { userId: user.id });
     const { orgId, orgRole } = await this.provisionService.provisionUser(user.id, email);
     const accessToken = await signAccessToken(
-      { sub: user.id, role: user.role, activeOrgId: orgId, orgRole },
+      { sub: user.id, role: user.role, [ACTIVE_ORG_CLAIM]: orgId, [ORG_ROLE_CLAIM]: orgRole },
       this.jwtService.getKeyStore(),
       { issuer: this.jwtOpts.issuer, audience: this.jwtOpts.audience },
     );

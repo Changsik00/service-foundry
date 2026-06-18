@@ -4,7 +4,8 @@ import type { SessionRow } from "./schema.js";
 import type { SessionStore } from "./store.js";
 import { generateRefreshToken, hashToken } from "./token.js";
 
-const DEFAULT_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+/** Refresh token / session lifetime (30 days). 쿠키 maxAge 와 세션 만료의 단일 출처. */
+export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 export interface CreateSessionInput {
   userId: string;
@@ -36,7 +37,7 @@ export async function createSession(
   const refreshTokenHash = hashToken(refreshToken);
   const refreshTokenFamily = randomUUID();
   const now = new Date();
-  const ttl = input.ttlMs ?? DEFAULT_TTL_MS;
+  const ttl = input.ttlMs ?? SESSION_TTL_MS;
 
   const session = await store.insert({
     userId: input.userId,
@@ -88,7 +89,7 @@ export async function rotateSession(
     refreshTokenHash: hashToken(newToken),
     refreshTokenFamily: existing.refreshTokenFamily,
     createdAt: now,
-    expiresAt: new Date(now.getTime() + DEFAULT_TTL_MS),
+    expiresAt: new Date(now.getTime() + SESSION_TTL_MS),
     revokedAt: null,
   });
 
