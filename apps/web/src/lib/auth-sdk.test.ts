@@ -35,6 +35,32 @@ describe("createAuthSDK", () => {
     expect(await createAuthSDK("http://localhost:3001").getCurrentUser()).toBeNull();
   });
 
+  describe("getAccessTokenExpiresAt", () => {
+    const jwt = (expSec: number) =>
+      `h.${Buffer.from(JSON.stringify({ exp: expSec })).toString("base64url")}.s`;
+
+    it("초기값은 null", () => {
+      expect(createAuthSDK("http://localhost:3001").getAccessTokenExpiresAt?.()).toBeNull();
+    });
+
+    it("signIn 후 accessToken 의 exp(ms) 추적", async () => {
+      mockPost.mockResolvedValueOnce({ accessToken: jwt(1_700_000_000), user: mockUser });
+      const sdk = createAuthSDK("http://localhost:3001");
+      await sdk.signIn({ email: "test@example.com", password: "pw123456" });
+      expect(sdk.getAccessTokenExpiresAt?.()).toBe(1_700_000_000_000);
+    });
+
+    it("signOut 후 null 로 초기화", async () => {
+      mockPost
+        .mockResolvedValueOnce({ accessToken: jwt(1_700_000_000), user: mockUser })
+        .mockResolvedValueOnce({});
+      const sdk = createAuthSDK("http://localhost:3001");
+      await sdk.signIn({ email: "test@example.com", password: "pw123456" });
+      await sdk.signOut();
+      expect(sdk.getAccessTokenExpiresAt?.()).toBeNull();
+    });
+  });
+
   describe("signIn", () => {
     it("성공 → user 저장 + AuthResult success", async () => {
       mockPost.mockResolvedValueOnce(SIGN_RESPONSE);

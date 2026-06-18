@@ -3,6 +3,7 @@ import { isCode } from "@repo/errors";
 import { fromPromise } from "@repo/utils";
 
 import { type AuthApi, buildAuthApi, type SignResponse } from "./auth-api";
+import { decodeJwtExp } from "./jwt";
 
 // ── 변환 헬퍼 ─────────────────────────────────────────────────────────────────
 const toReason = (error: unknown): "invalid_credentials" | "rate_limited" =>
@@ -18,15 +19,18 @@ const toSuccess = (user: User): Extract<AuthResult, { success: true }> => ({
 export function createAuthSDK(baseUrl: string): CoreAuthSDK {
   const api: AuthApi = buildAuthApi(baseUrl);
   let currentUser: User | null = null;
+  // 액세스 토큰 만료(epoch ms) — accessToken JWT 의 exp 디코드. 선제 갱신 타이머용.
+  let accessTokenExpiresAt: number | null = null;
 
-  const storeAndSucceed = (user: User): AuthResult => {
-    currentUser = user;
-    return toSuccess(user);
+  const storeAndSucceed = (value: SignResponse): AuthResult => {
+    currentUser = value.user;
+    accessTokenExpiresAt = decodeJwtExp(value.accessToken);
+    return toSuccess(value.user);
   };
 
   const withSign = async (request: () => Promise<SignResponse>): Promise<AuthResult> => {
     const r = await fromPromise(request);
-    return r.ok ? storeAndSucceed(r.value.user) : { success: false, reason: toReason(r.error) };
+    return r.ok ? storeAndSucceed(r.value) : { success: false, reason: toReason(r.error) };
   };
 
   return {
@@ -40,7 +44,7 @@ export function createAuthSDK(baseUrl: string): CoreAuthSDK {
           challenge: { challengeId: "", method: "totp", expiresAt: "" },
         };
       }
-      return storeAndSucceed(r.value.user);
+      return storeAndSucceed(r.value);
     },
 
     signUp: (input) => withSign(() => api.signUp(input)),
@@ -48,6 +52,7 @@ export function createAuthSDK(baseUrl: string): CoreAuthSDK {
     signOut: async () => {
       const r = await fromPromise(() => api.signOut());
       currentUser = null;
+      accessTokenExpiresAt = null;
       if (!r.ok) throw r.error;
     },
 
@@ -57,7 +62,10 @@ export function createAuthSDK(baseUrl: string): CoreAuthSDK {
       const r = await fromPromise(() => api.refresh());
       if (!r.ok) return null;
       currentUser = r.value.user;
+      accessTokenExpiresAt = decodeJwtExp(r.value.accessToken);
       return { userId: currentUser.id, expiresAt: "" };
     },
+
+    getAccessTokenExpiresAt: () => accessTokenExpiresAt,
   };
 }
