@@ -39,7 +39,7 @@ tags: [service-foundry, index, meta]
 
 ## Reference — 패키지
 
-### backend (core, 22)
+### backend (core, 23)
 - [[reference/packages/backend-auth-session|@repo/backend-auth-session]] — refresh 토큰 rotation/family reuse
 - [[reference/packages/backend-auth-jwt|@repo/backend-auth-jwt]] — EdDSA 토큰 + JWKS
 - [[reference/packages/backend-auth-password|@repo/backend-auth-password]] — argon2id 해싱
@@ -48,6 +48,7 @@ tags: [service-foundry, index, meta]
 - [[reference/packages/backend-auth-mfa|@repo/backend-auth-mfa]] — TOTP MFA
 - [[reference/packages/backend-auth-passkey|@repo/backend-auth-passkey]] — WebAuthn/Passkey
 - [[reference/packages/backend-auth-audit|@repo/backend-auth-audit]] — 인증 감사 로그
+- [[reference/packages/backend-authz|@repo/backend-authz]] — org 권한 정책 (canInviteMember/canManageOrg)
 - [[reference/packages/backend-database|@repo/backend-database]] — Drizzle + PG + Repository
 - [[reference/packages/backend-logger|@repo/backend-logger]] — pino + request-id + redaction
 - [[reference/packages/backend-http-client|@repo/backend-http-client]] — undici typed client
@@ -63,16 +64,19 @@ tags: [service-foundry, index, meta]
 - [[reference/packages/backend-rate-limit|@repo/backend-rate-limit]] — 범용 RateLimiter 포트
 - [[reference/packages/backend-secrets|@repo/backend-secrets]] — SecretsProvider 포트
 
-### nestjs (adapter, 6)
+### nestjs (adapter, 8)
 - [[reference/packages/nestjs-auth|@repo/nestjs-auth]] — AuthGuard/RolesGuard + 데코레이터
+- [[reference/packages/nestjs-auth-firebase|@repo/nestjs-auth-firebase]] — Firebase 토큰 검증 모듈 (AUTH_MODE=firebase)
+- [[reference/packages/nestjs-auth-supabase|@repo/nestjs-auth-supabase]] — Supabase 토큰 검증 모듈 (AUTH_MODE=supabase)
 - [[reference/packages/nestjs-database|@repo/nestjs-database]] — DatabaseModule (Drizzle DI)
 - [[reference/packages/nestjs-http-client|@repo/nestjs-http-client]] — HttpClientModule
 - [[reference/packages/nestjs-logger|@repo/nestjs-logger]] — LoggerModule + interceptor
 - [[reference/packages/nestjs-security|@repo/nestjs-security]] — helmet/cors/throttler
 - [[reference/packages/nestjs-settings|@repo/nestjs-settings]] — SettingsModule
 
-### frontend (7)
+### frontend (8)
 - [[reference/packages/frontend-auth-react|@repo/frontend-auth-react]] — AuthProvider/useAuth + MFA·Passkey 훅
+- [[reference/packages/frontend-auth-store|@repo/frontend-auth-store]] — CoreAuthSDK source/store + native/firebase/supabase 어댑터
 - [[reference/packages/frontend-auth-firebase|@repo/frontend-auth-firebase]] — Firebase → CoreAuthSDK
 - [[reference/packages/frontend-auth-supabase|@repo/frontend-auth-supabase]] — Supabase → CoreAuthSDK
 - [[reference/packages/frontend-auth-testing|@repo/frontend-auth-testing]] — Mock CoreAuthSDK
