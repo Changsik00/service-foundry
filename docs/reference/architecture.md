@@ -7,7 +7,8 @@ tags: [service-foundry, reference, platform, architecture]
 # Architecture — service-foundry 시스템 구조
 
 > 💡 **한 줄 요약**: 운영 가능한 Node/TS 모노레포. **framework-agnostic core(`packages/backend`,`packages/shared`,`packages/frontend`)** 를 **framework adapter(`packages/nestjs`)** 가 감싸고, **apps(`api`/`web`/`worker`)** 가 조립한다.
-> **상위 허브**: [[index]] · **결정 근거**: [[adr/0002-monorepo-foundations|ADR-0002]] · [[adr/0003-package-layout-and-naming|ADR-0003]] · [[adr/0015-framework-adapter-naming-and-layout|ADR-0015]]
+> **상위 허브**: [[index]] · **결정 근거**: [[adr/0002-monorepo-foundations|ADR-0002]] · [[adr/0003-package-layout-and-naming|ADR-0003]] · [[adr/0015-framework-adapter-naming-and-layout|ADR-0015]] · [[adr/0022-multi-tenancy-strategy|ADR-0022]] · [[adr/0023-auth-authority-modes|ADR-0023]] · [[adr/0024-tenant-isolation-enforcement|ADR-0024]]
+> **엔지니어링 원칙**(TS-first · "설치 버전=SoT" · 셋업)은 루트 [`ARCHITECTURE.md`](../../ARCHITECTURE.md) §0 정본.
 
 ## 1. 레이어 모델
 
@@ -88,6 +89,19 @@ flowchart LR
 세부 동작 원리는 explainers 참조:
 [[explainers/auth/session-rotation-chain]] · [[explainers/auth/jwt-verify-edDSA]] · [[explainers/auth/oauth-pkce-flow]] · [[explainers/auth/mfa-totp-challenge]] · [[explainers/auth/passkey-webauthn]] · [[explainers/auth/cookie-strategy]]
 
+### 3.1 인증 권위 모드 (auth authority modes)
+
+인증 권위는 3 모드로 교체 가능 — `AUTH_MODE` env: **native**(자체 JWT/세션) · **firebase** · **supabase**. 동일 `CoreAuthSDK` 계약을 각 모드 어댑터가 구현(Consistent Wrapped SDK)해 앱 코드는 모드에 무관 ([[adr/0023-auth-authority-modes|ADR-0023]] · [[adr/0026-provider-mode-active-org-transport|ADR-0026]]).
+
+## 3.5 멀티테넌시 & 격리 (RLS)
+
+org 스코프 멀티테넌트. 격리는 **PostgreSQL RLS** 가 정본 강제선 ([[adr/0022-multi-tenancy-strategy|ADR-0022]] · [[adr/0024-tenant-isolation-enforcement|ADR-0024]]):
+
+- **런타임 role 분리**: 앱 런타임은 비-슈퍼유저 `app_runtime` 로 접속(RLS 적용 대상). 마이그레이션만 owner/superuser. 슈퍼유저 런타임은 RLS 를 우회하므로 production 기동 가드가 거부.
+- **요청-스코프 tx + ALS**: 요청마다 `app.current_org` 를 세팅한 트랜잭션을 AsyncLocalStorage 로 전파 → 모든 쿼리가 자동으로 org 격리.
+- **검증**: api e2e 가 실제 런타임 role 로 cross-org 거부를 확인. dev·web-e2e 도 `app_runtime` 로 동작(spec-x-dev-rls-app-runtime).
+- 세부 결정: [[adr/0024-tenant-isolation-enforcement|ADR-0024]] · [[adr/0022-multi-tenancy-strategy|ADR-0022]].
+
 ## 4. 런타임 토폴로지 (apps)
 
 | app | 역할 | 스택 | 진입 |
@@ -97,6 +111,8 @@ flowchart LR
 | `worker` | 비동기 작업 소비자 | BullMQ consumer | 큐 소비 |
 
 로컬 인프라(postgres·redis·prometheus·grafana·tempo·loki)는 `tooling/docker` compose 로 기동 ([[explainers/platform/docker-compose-local-infra]]).
+
+**배포**: `tooling/k8s` 에 api·worker·postgres·redis 샘플 매니페스트(+migrate Job)와 로컬 kind 검증 스크립트 제공(phase-22). 이미지는 `turbo prune + pnpm --prod` 멀티스테이지로 슬림화(api ~803MB).
 
 ## 5. 횡단 규약 (cross-cutting)
 
@@ -111,15 +127,17 @@ flowchart LR
 
 ## 6. 패키지 카테고리 요약
 
-- **backend (22)** — node 전용 인프라/도메인 core. 전수: [[index]] §reference/packages.
-- **nestjs (6)** — backend core 를 NestJS `@Module` 로 감싼 adapter ([[adr/0016-nestjs-adapter-standard-module-pattern|ADR-0016]], [[explainers/platform/nestjs-adapter-module-pattern]]).
-- **frontend (7)** — UI + http-client + auth SDK 래퍼. ⚠️ `auth-http` 는 현재 스텁(package.json 미완).
-- **shared (6)** — errors/utils/validation/contracts/auth-contracts/factory.
-- **config (7)** — typescript/vitest/biome/tsup/tailwind/depcruise/knip preset (런타임 의존 0).
+> 카테고리별 역할 (전수 목록·개수는 drift 원천 → 정본은 [[index]] §reference/packages 카탈로그):
+
+- **backend** — node 전용 인프라/도메인 core (auth-* · database · queue · cache · observability · notification · …).
+- **nestjs** — backend core 를 NestJS `@Module` 로 감싼 adapter ([[adr/0016-nestjs-adapter-standard-module-pattern|ADR-0016]], [[explainers/platform/nestjs-adapter-module-pattern]]).
+- **frontend** — UI + http-client + auth SDK 래퍼 (auth-react/store/firebase/supabase 등).
+- **shared** — errors · utils · validation · contracts · auth-contracts · factory.
+- **config** — typescript/vitest/biome/tsup/tailwind/depcruise/knip preset (런타임 의존 0).
 
 ## 연결된 개념
 - [[reference/stack]] — 의존성 도입 근거
 - [[index]] — 전체 카탈로그
 - [[explainers/platform/config-packages-presets]] — config preset 패턴
 
-> 소스: 전체 spec(phase-01~14) walkthrough + `pnpm-workspace.yaml` + `docs/adr/*` + 의존성 마이닝(task-03)
+> 소스: 전체 spec(phase-01~22) walkthrough + `pnpm-workspace.yaml` + `docs/adr/*`

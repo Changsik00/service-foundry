@@ -15,9 +15,9 @@
 ### → [`docs/index.md`](./docs/index.md) — 전체 카탈로그(MOC)
 
 - **[아키텍처](./docs/reference/architecture.md)** — 시스템 구조 + 패키지 의존 그래프
-- **[reference/](./docs/reference/)** — "무엇인가": 패키지 48개 + 앱 4개 + [의존성 도입 근거](./docs/reference/stack.md)
+- **[reference/](./docs/reference/)** — "무엇인가": 패키지(`packages/<category>/<pkg>`) + 앱 3개(api·web·worker) + [의존성 도입 근거](./docs/reference/stack.md)
 - **[explainers/](./docs/explainers/)** — "어떻게 동작하나": auth / backend / frontend / platform 메커니즘
-- **[adr/](./docs/adr/)** — "왜 그렇게 정했나": 결정 기록 20개
+- **[adr/](./docs/adr/)** — "왜 그렇게 정했나": 결정 기록 (`docs/adr/` 전수)
 - 작성 규약은 [`docs/CONVENTIONS.md`](./docs/CONVENTIONS.md)
 
 ---
@@ -32,7 +32,7 @@
 | [`apps/web`](./apps/web) | SSR 웹 (메인) | Next.js 16 + React 19 |
 | [`apps/worker`](./apps/worker) | 비동기 작업 소비자 | BullMQ consumer |
 
-**패키지 48개** (`packages/<category>/<pkg>`, import 는 `@repo/*` flat)
+**패키지** (`packages/<category>/<pkg>`, import 는 `@repo/*` flat)
 
 | 카테고리 | 수 | 내용 |
 |---|---|---|
@@ -98,7 +98,7 @@ service-foundry/
 
 ## 결정 (ADRs)
 
-확정된 결정은 [`docs/adr/`](./docs/adr/) 20개에 있다 (본문 영어 — AI 컨텍스트 친화). 핵심:
+확정된 결정은 [`docs/adr/`](./docs/adr/) 에 있다 (본문 영어 — AI 컨텍스트 친화). 핵심:
 
 - [ADR-0002](./docs/adr/0002-monorepo-foundations.md) — pnpm 11 + turborepo + Node 24
 - [ADR-0003](./docs/adr/0003-package-layout-and-naming.md) — `packages/<category>/<pkg>` + `@repo/*`

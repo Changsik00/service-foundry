@@ -153,7 +153,7 @@ tags: [service-foundry, index, meta]
 > 결정 본문은 `docs/adr/` (영어 — AI 컨텍스트 친화). 아래는 카탈로그.
 
 - [[adr/0001-linting-formatting-strategy|ADR-0001]] — Biome + Knip + dependency-cruiser
-- [[adr/0002-monorepo-foundations|ADR-0002]] — pnpm 11 + turborepo + Node 22
+- [[adr/0002-monorepo-foundations|ADR-0002]] — pnpm + turborepo + Node 24
 - [[adr/0003-package-layout-and-naming|ADR-0003]] — `packages/<category>/<pkg>` + `@repo/*`
 - [[adr/0004-typescript-and-compilation-strategy|ADR-0004]] — TS strict + tsup/JIT
 - [[adr/0005-backend-framework-and-orm-strategy|ADR-0005]] — NestJS + Drizzle + PostgreSQL
@@ -172,10 +172,17 @@ tags: [service-foundry, index, meta]
 - [[adr/0018-auth-provider-package-location|ADR-0018]] — auth 패키지 위치
 - [[adr/0019-security-linter|ADR-0019]] — 보안 linter No-Go (재평가)
 - [[adr/0020-error-handling-convention|ADR-0020]] — 에러 처리 결정 트리
+- [[adr/0021-csrf-binding-strategy|ADR-0021]] — CSRF per-client csrf_id 바인딩
+- [[adr/0022-multi-tenancy-strategy|ADR-0022]] — 멀티테넌시(org 스코프) 전략
+- [[adr/0023-auth-authority-modes|ADR-0023]] — 인증 권위 모드 (native/firebase/supabase)
+- [[adr/0024-tenant-isolation-enforcement|ADR-0024]] — 테넌트 격리(RLS) 강제 + 런타임 role
+- [[adr/0025-frontend-app-consolidation|ADR-0025]] — frontend 앱 단일화 (web-vite 삭제)
+- [[adr/0026-provider-mode-active-org-transport|ADR-0026]] — provider 모드 active org 전송
 
 ## 기타 문서
 - `docs/notes/auth-foundation-architecture.md` — Auth Platform 설계 배경
 - `docs/notes/error-handling-paradigms.md` — 에러 패러다임 비교
 - [[RCA-001-lefthook-typecheck-non-blocking|RCA-001]] — lefthook typecheck 비차단 RCA
 - [[RCA-002-check-secrets-false-positive|RCA-002]] — check-secrets 오탐 RCA
+- [[RCA-003-phase-ship-success-criteria-unverified|RCA-003]] — phase-ship 성공기준 미검증 RCA
 - `docs/turborepo-rules.md` — turbo 사용 룰 요약

@@ -39,6 +39,31 @@ docs/
 
 판단 기준: "이건 어떻게 동작/왜 이렇게 행동하나" → **explainer**. "이 패키지가 무엇을 노출하나" → **reference**. "왜 이 기술을 골랐나" → **adr**.
 
+## 2.5 문서 위치 / SSOT (루트 ↔ docs/)
+
+> **원칙: 주제별 정본(SSOT)은 한 곳.** 나머지 문서는 본문을 복제하지 말고 wikilink/상대링크로 정본을 가리킨다. 같은 주제를 루트와 `docs/` 양쪽에 쓰지 않는다.
+
+| 주제 | 정본(SSOT) | 비고 |
+|---|---|---|
+| 진입점 / Quickstart | `README.md` (루트) | 현관 — `docs/index.md` 로 안내만 |
+| 에이전트 운영 규약 | `CLAUDE.md` (루트) | harness-kit import |
+| **시스템 구조** (레이어·패키지·의존그래프) | `docs/reference/architecture.md` | 정본. 루트 `ARCHITECTURE.md` 에 **구조를 중복 서술 금지** — 링크만 |
+| **엔지니어링 원칙** (TS-first·"설치 버전=SoT"·초기 셋업) | `ARCHITECTURE.md` (루트) §0 | ADR-0002/0004 가 참조하는 정본. 구조(§1~)는 두지 않음 |
+| 문서 카탈로그(MOC) | `docs/index.md` | 모든 노트 1줄 등재 |
+| 문서 규약 | `docs/CONVENTIONS.md` | 이 문서 |
+| 패키지/앱 표면 | `docs/reference/**` | 전수 |
+| 의존성 도입 근거 | `docs/reference/stack.md` | |
+| 결정(왜) | `docs/adr/**` | 이동 금지, 링크만 |
+| 동작 메커니즘 | `docs/explainers/**` | |
+| 디자인 언어 | `docs/design/**` | |
+| 용어/약어 | `docs/glossary.md` | |
+| 변경 로그 | `docs/log.md` | append-only |
+
+**규칙**
+- 새 문서는 위 표의 정본 위치에만 만든다. 루트에는 README·CLAUDE·(pointer)ARCHITECTURE 외 신규 산문 문서를 두지 않는다.
+- **백로그·목표·로드맵은 docs/ 가 아니다** → `backlog/` (queue.md/phase-*.md). architecture/reference 에 "할 일"을 섞지 않는다.
+- 카운트(ADR 개수 등)·목록은 drift 원천 → 가능하면 "코드/디렉토리 참조"로 쓰고, 불가피한 수치는 갱신 책임을 해당 정본에만 둔다.
+
 ## 3. Frontmatter (필수)
 
 모든 노트는 frontmatter 를 가지며 `tags` 는 4층(아래 §4)을 따른다.
