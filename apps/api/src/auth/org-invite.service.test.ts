@@ -76,6 +76,13 @@ describe("OrgInviteService.invite", () => {
     expect(emailArg.to).toBe("invitee@test.com");
   });
 
+  it("admin → 초대 성공", async () => {
+    const { service, mocks } = makeInviteService("admin");
+    await service.invite(USER_ID, ORG_ID, "invitee@test.com", "member");
+    expect(mocks.mockInsert).toHaveBeenCalledOnce();
+    expect(mocks.mockSendEmail).toHaveBeenCalledOnce();
+  });
+
   it("member → ForbiddenException", async () => {
     const { service } = makeInviteService("member");
     await expect(

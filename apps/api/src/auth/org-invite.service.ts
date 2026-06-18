@@ -8,6 +8,7 @@ import {
 } from "@nestjs/common";
 import { ACTIVE_ORG_CLAIM, ORG_ROLE_CLAIM, signAccessToken } from "@repo/backend-auth-jwt";
 import { generateRefreshToken, hashToken } from "@repo/backend-auth-session";
+import { canInviteMember } from "@repo/backend-authz";
 import { buildInvitationEmail, type Notifier } from "@repo/backend-notification";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { and, eq } from "drizzle-orm";
@@ -44,7 +45,7 @@ export class OrgInviteService {
       .from(memberships)
       .where(and(eq(memberships.userId, inviterId), eq(memberships.orgId, orgId)));
 
-    if (!membership || !["owner", "admin"].includes(membership.role)) {
+    if (!membership || !canInviteMember(membership.role)) {
       throw new ForbiddenException("insufficient org role");
     }
 

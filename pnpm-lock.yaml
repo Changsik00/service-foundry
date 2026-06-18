@@ -355,6 +355,9 @@ importers:
       '@repo/backend-auth-session':
         specifier: workspace:*
         version: link:../../packages/backend/auth-session
+      '@repo/backend-authz':
+        specifier: workspace:*
+        version: link:../../packages/backend/authz
       '@repo/backend-lifecycle':
         specifier: workspace:*
         version: link:../../packages/backend/lifecycle
