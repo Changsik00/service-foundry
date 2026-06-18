@@ -14,6 +14,7 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
+- [ ] spec-x-refactor-tidy — refactor-tidy
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
