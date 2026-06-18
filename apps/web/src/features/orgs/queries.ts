@@ -1,3 +1,4 @@
+import { OrgRole } from "@repo/auth-contracts";
 import { queryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 
@@ -8,7 +9,7 @@ const OrgsSchema = z.object({
     z.object({
       orgId: z.string(),
       name: z.string(),
-      role: z.string(),
+      role: OrgRole,
       isPersonal: z.boolean(),
     }),
   ),
@@ -19,7 +20,7 @@ const MembersSchema = z.object({
     z.object({
       userId: z.string(),
       orgId: z.string(),
-      role: z.string(),
+      role: OrgRole,
       email: z.string(),
       displayName: z.string().nullable(),
     }),
