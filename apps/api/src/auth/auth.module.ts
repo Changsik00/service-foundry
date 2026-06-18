@@ -62,6 +62,7 @@ import {
   USER_STORE,
 } from "./password-reset.stores.js";
 import { createDrizzleRateLimitStore, RATE_LIMIT_STORE } from "./rate-limit.stores.js";
+import { SessionController } from "./session.controller.js";
 import { createDrizzleSessionStore, SESSION_STORE } from "./session.stores.js";
 import { SessionManagementService } from "./session-management.service.js";
 import { SigninService } from "./signin.service.js";
@@ -217,6 +218,7 @@ const settings: AppSettings = loadSettings(process.env);
   ],
   controllers: [
     AuthController,
+    SessionController,
     AccountController,
     ApiKeyController,
     OAuthController,
