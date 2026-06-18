@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-23** — refactor-hardening — 5 spec — 다음: (spec 없음)
+- **phase-23** — refactor-hardening — 6 spec — 다음: spec-23-06-controller-split
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기

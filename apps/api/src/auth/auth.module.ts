@@ -48,6 +48,7 @@ import { createDrizzleMfaStore, MFA_STORE } from "./mfa.stores.js";
 import { OAuthController } from "./oauth.controller.js";
 import { OAuthService } from "./oauth.service.js";
 import { createDrizzleOAuthAccountStore, OAUTH_ACCOUNT_STORE } from "./oauth.stores.js";
+import { OrgController } from "./org.controller.js";
 import { OrgInviteService } from "./org-invite.service.js";
 import { OrgMembersService } from "./org-members.service.js";
 import { OrgSwitchService } from "./org-switch.service.js";
@@ -62,6 +63,7 @@ import {
   USER_STORE,
 } from "./password-reset.stores.js";
 import { createDrizzleRateLimitStore, RATE_LIMIT_STORE } from "./rate-limit.stores.js";
+import { SessionController } from "./session.controller.js";
 import { createDrizzleSessionStore, SESSION_STORE } from "./session.stores.js";
 import { SessionManagementService } from "./session-management.service.js";
 import { SigninService } from "./signin.service.js";
@@ -217,6 +219,8 @@ const settings: AppSettings = loadSettings(process.env);
   ],
   controllers: [
     AuthController,
+    SessionController,
+    OrgController,
     AccountController,
     ApiKeyController,
     OAuthController,

@@ -1,15 +1,11 @@
 import {
-  BadRequestException,
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   Inject,
   Optional,
-  Param,
   Post,
-  Query,
   Req,
   Res,
   UseGuards,
@@ -19,16 +15,12 @@ import {
   ApiBody,
   ApiHeader,
   ApiOperation,
-  ApiParam,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
 import {
   EmailVerifyConfirm,
   EmailVerifyRequest,
-  OrgInviteAcceptInput,
-  OrgInviteInput,
-  OrgSwitchInput,
   PasswordResetConfirm,
   PasswordResetRequest,
   SignInInput,
@@ -36,120 +28,26 @@ import {
 } from "@repo/auth-contracts";
 import { AuthEventBus } from "@repo/backend-auth-audit";
 import type { AuthMetrics } from "@repo/backend-observability";
-import {
-  type AuthenticatedUser,
-  AuthGuard,
-  CurrentUser,
-  OrgRoles,
-  OrgRolesGuard,
-} from "@repo/nestjs-auth";
+import { type AuthenticatedUser, AuthGuard, CurrentUser } from "@repo/nestjs-auth";
 import type { Request, Response } from "express";
-import { ZodError, type z } from "zod";
-
-import type { UserRow } from "../infra/schema/index.js";
 import { AUTH_METRICS } from "../metrics/auth-metrics.provider.js";
 import { type AccountUserStore, InjectAccountUserStore } from "./account.stores.js";
+import {
+  getContext,
+  S_SignResponse,
+  S_StatusOk,
+  type SignInResponse,
+  type SignResponse,
+  zodPipe,
+} from "./auth-controller.shared.js";
 import { clearRefreshTokenCookie, setRefreshTokenCookie } from "./cookie.helper.js";
 import { setCsrfCookies } from "./csrf.cookie.js";
 import { CSRF_SECRET, CsrfGuard } from "./csrf.guard.js";
 import { EmailVerifyService } from "./email-verify.service.js";
 import { MfaService } from "./mfa.service.js";
-import { OrgInviteService } from "./org-invite.service.js";
-import { type MemberListResult, type OrgMember, OrgMembersService } from "./org-members.service.js";
-import { OrgSwitchService } from "./org-switch.service.js";
 import { PasswordResetService } from "./password-reset.service.js";
-import { type SessionInfo, SessionManagementService } from "./session-management.service.js";
 import { SigninService } from "./signin.service.js";
 import { SignupService } from "./signup.service.js";
-
-// ── Swagger inline schemas ────────────────────────────────────────────────
-
-const S_User = {
-  type: "object",
-  properties: {
-    id: { type: "string", format: "uuid", example: "550e8400-e29b-41d4-a716-446655440000" },
-    email: { type: "string", format: "email", example: "user@example.com" },
-    role: { type: "string", enum: ["user", "admin"], example: "user" },
-    createdAt: { type: "string", format: "date-time", example: "2024-01-01T00:00:00.000Z" },
-  },
-  required: ["id", "email", "role", "createdAt"],
-};
-
-const S_SignResponse = {
-  type: "object",
-  description: "로그인·회원가입·토큰 갱신 공통 응답",
-  properties: {
-    accessToken: {
-      type: "string",
-      description: "JWT Bearer token. Authorization: Bearer <token> 헤더에 포함. 기본 만료: 15분.",
-      example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    },
-    user: S_User,
-    csrfToken: {
-      type: "string",
-      description: "변경성 요청(POST/PATCH/DELETE) 시 X-Csrf-Token 헤더에 포함 필요.",
-      example: "abc123xyz",
-    },
-  },
-  required: ["accessToken", "user", "csrfToken"],
-};
-
-const S_SessionInfo = {
-  type: "object",
-  properties: {
-    id: { type: "string", format: "uuid", example: "550e8400-e29b-41d4-a716-446655440000" },
-    createdAt: { type: "string", format: "date-time", example: "2024-01-01T00:00:00.000Z" },
-    expiresAt: { type: "string", format: "date-time", example: "2024-01-31T00:00:00.000Z" },
-    orgId: {
-      type: "string",
-      format: "uuid",
-      nullable: true,
-      example: "660e8400-e29b-41d4-a716-446655440000",
-      description: "활성 org 컨텍스트 없으면 null.",
-    },
-    current: {
-      type: "boolean",
-      description: "현재 요청을 보낸 세션(refresh_token 쿠키 기준)이면 true.",
-      example: true,
-    },
-  },
-  required: ["id", "createdAt", "expiresAt", "current"],
-};
-
-const S_StatusOk = {
-  type: "object",
-  properties: { status: { type: "string", enum: ["ok"], example: "ok" } },
-  required: ["status"],
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-
-function zodPipe<T>(schema: z.ZodType<T>) {
-  return {
-    transform(value: unknown): T {
-      try {
-        return schema.parse(value);
-      } catch (err) {
-        if (err instanceof ZodError) throw new BadRequestException(err.issues);
-        throw err;
-      }
-    },
-  };
-}
-
-function getContext(req: Request): { ip: string; userAgent: string } {
-  return {
-    ip: req.ip ?? "unknown",
-    userAgent: (req.headers["user-agent"] as string | undefined) ?? "unknown",
-  };
-}
-
-type SignResponse = {
-  accessToken: string;
-  user: Pick<UserRow, "id" | "email" | "role" | "createdAt">;
-  csrfToken: string;
-};
-type SignInResponse = SignResponse | { status: "mfa_required"; mfaChallengeToken: string };
 
 @ApiTags("auth")
 @Controller("auth")
@@ -159,38 +57,12 @@ export class AuthController {
     @Inject(EmailVerifyService) private readonly emailVerifyService: EmailVerifyService,
     @Inject(SigninService) private readonly signinService: SigninService,
     @Inject(SignupService) private readonly signupService: SignupService,
-    @Inject(OrgSwitchService) private readonly orgSwitchService: OrgSwitchService,
-    @Inject(OrgInviteService) private readonly orgInviteService: OrgInviteService,
-    @Inject(OrgMembersService) private readonly orgMembersService: OrgMembersService,
     @Inject(AuthEventBus) private readonly eventBus: AuthEventBus,
     @Inject(AUTH_METRICS) private readonly metrics: AuthMetrics,
     @Optional() @Inject(MfaService) private readonly mfaService: MfaService | undefined,
     @Inject(CSRF_SECRET) private readonly csrfSecret: string,
     @InjectAccountUserStore() private readonly accountUserStore: AccountUserStore,
-    @Inject(SessionManagementService)
-    private readonly sessionManagementService: SessionManagementService,
   ) {}
-
-  @ApiOperation({
-    summary: "CSRF 토큰 발급",
-    description:
-      "이중 쿠키 패턴: `csrf_id`(HttpOnly) + `csrf_token`(JS 읽기 가능) 쿠키를 설정하고, " +
-      "응답 body에도 csrfToken을 반환합니다. 변경성 요청 전 반드시 호출하세요.",
-  })
-  @ApiResponse({
-    status: 200,
-    description: "csrfToken 반환 (X-Csrf-Token 헤더 값으로 사용)",
-    schema: {
-      type: "object",
-      properties: { csrfToken: { type: "string", example: "abc123xyz" } },
-      required: ["csrfToken"],
-    },
-  })
-  @Get("csrf")
-  issueCsrf(@Res({ passthrough: true }) res: Response): { csrfToken: string } {
-    const { csrfToken } = setCsrfCookies(res, this.csrfSecret);
-    return { csrfToken };
-  }
 
   @ApiOperation({
     summary: "이메일·비밀번호 로그인",
@@ -499,141 +371,6 @@ export class AuthController {
   async confirmEmailVerify(@Body() body: unknown): Promise<{ status: "ok" }> {
     const { token } = zodPipe(EmailVerifyConfirm).transform(body);
     await this.emailVerifyService.confirm(token);
-    return { status: "ok" };
-  }
-
-  @Post("org/switch")
-  @UseGuards(AuthGuard)
-  @HttpCode(200)
-  async orgSwitch(
-    @Body() body: unknown,
-    @CurrentUser() user: AuthenticatedUser,
-  ): Promise<{ accessToken: string }> {
-    const { orgId } = zodPipe(OrgSwitchInput).transform(body);
-    return this.orgSwitchService.switch(user.sub, orgId);
-  }
-
-  @Post("org/invite")
-  @UseGuards(AuthGuard, OrgRolesGuard)
-  @OrgRoles("admin", "owner")
-  @HttpCode(200)
-  async orgInvite(
-    @Body() body: unknown,
-    @CurrentUser() user: AuthenticatedUser,
-  ): Promise<{ status: string }> {
-    const { email, role } = zodPipe(OrgInviteInput).transform(body);
-    if (!user.orgId) throw new BadRequestException("no active org");
-    await this.orgInviteService.invite(user.sub, user.orgId, email, role);
-    return { status: "ok" };
-  }
-
-  @Post("org/invite/accept")
-  @UseGuards(AuthGuard)
-  @HttpCode(200)
-  async orgInviteAccept(
-    @Body() body: unknown,
-    @CurrentUser() user: AuthenticatedUser,
-  ): Promise<{ accessToken: string }> {
-    const { token } = zodPipe(OrgInviteAcceptInput).transform(body);
-    return this.orgInviteService.accept(user.sub, token);
-  }
-
-  /** active org 의 멤버 목록 — RLS 가 자동 스코프(spec-17-08 격리 검증 표면). search/role/cursor/limit 지원. */
-  @Get("org/members")
-  @UseGuards(AuthGuard)
-  @HttpCode(200)
-  async orgMembers(
-    @CurrentUser() _user: AuthenticatedUser,
-    @Query("search") search?: string,
-    @Query("role") role?: string,
-    @Query("cursor") cursor?: string,
-    @Query("limit") rawLimit?: string,
-  ): Promise<MemberListResult> {
-    return this.orgMembersService.list({
-      ...(search !== undefined && { search }),
-      ...(role !== undefined && { role }),
-      ...(cursor !== undefined && { cursor }),
-      ...(rawLimit !== undefined && { limit: Number(rawLimit) }),
-    });
-  }
-
-  @ApiOperation({
-    summary: "활성 세션 목록 조회",
-    description:
-      "만료되지 않고 revoke되지 않은 세션 목록을 반환합니다. " +
-      "`current: true` 항목이 현재 브라우저 세션입니다. `refreshTokenHash`는 응답에 포함되지 않습니다.",
-  })
-  @ApiBearerAuth("access-token")
-  @ApiResponse({
-    status: 200,
-    description: "활성 세션 배열",
-    schema: {
-      type: "object",
-      properties: {
-        sessions: { type: "array", items: S_SessionInfo },
-      },
-      required: ["sessions"],
-    },
-  })
-  @ApiResponse({ status: 401, description: "미인증" })
-  @Get("sessions")
-  @UseGuards(AuthGuard)
-  @HttpCode(200)
-  async listSessions(
-    @CurrentUser() user: AuthenticatedUser,
-    @Req() req: Request,
-  ): Promise<{ sessions: SessionInfo[] }> {
-    const token = (req as unknown as import("express").Request).cookies?.refresh_token as
-      | string
-      | undefined;
-    const sessions = await this.sessionManagementService.listSessions(user.sub, token);
-    return { sessions };
-  }
-
-  @ApiOperation({
-    summary: "특정 세션 종료",
-    description:
-      "세션 ID로 단일 세션을 revoke합니다. 자신의 세션만 종료할 수 있습니다. " +
-      "현재 세션 종료도 가능합니다(로그아웃 대용).",
-  })
-  @ApiBearerAuth("access-token")
-  @ApiHeader({ name: "X-Csrf-Token", required: true, description: "GET /auth/csrf 로 발급한 토큰" })
-  @ApiParam({ name: "id", description: "종료할 세션 UUID", format: "uuid" })
-  @ApiResponse({ status: 200, description: "세션 종료 성공", schema: S_StatusOk })
-  @ApiResponse({ status: 401, description: "미인증" })
-  @ApiResponse({ status: 403, description: "타인 세션 접근 불가 또는 세션 미존재" })
-  @Delete("sessions/:id")
-  @UseGuards(AuthGuard, CsrfGuard)
-  @HttpCode(200)
-  async revokeSession(
-    @Param("id") id: string,
-    @CurrentUser() user: AuthenticatedUser,
-  ): Promise<{ status: "ok" }> {
-    await this.sessionManagementService.revokeSession(user.sub, id);
-    return { status: "ok" };
-  }
-
-  @ApiOperation({
-    summary: "다른 세션 전체 종료",
-    description:
-      "현재 `refresh_token` 쿠키에 해당하는 세션을 제외한 모든 활성 세션을 revoke합니다. " +
-      "쿠키가 없으면 전체 세션을 revoke합니다.",
-  })
-  @ApiBearerAuth("access-token")
-  @ApiHeader({ name: "X-Csrf-Token", required: true, description: "GET /auth/csrf 로 발급한 토큰" })
-  @ApiResponse({ status: 200, description: "다른 세션 전체 종료 성공", schema: S_StatusOk })
-  @ApiResponse({ status: 401, description: "미인증" })
-  @Delete("sessions")
-  @UseGuards(AuthGuard, CsrfGuard)
-  @HttpCode(200)
-  async revokeOtherSessions(
-    @CurrentUser() user: AuthenticatedUser,
-    @Req() req: Request,
-  ): Promise<{ status: "ok" }> {
-    const token = (req as unknown as import("express").Request).cookies?.refresh_token as
-      | string
-      | undefined;
-    await this.sessionManagementService.revokeOtherSessions(user.sub, token);
     return { status: "ok" };
   }
 }
