@@ -7,11 +7,13 @@ export interface OAuthTokens {
   accessToken: string;
 }
 
-export interface OAuthUserInfo {
-  providerAccountId: string;
-  email: string;
-  name?: string;
-}
+/**
+ * provider 판별 union — google 은 name(선택) 제공, kakao 는 name 필드 없음.
+ * `provider` 로 narrowing 하면 필드 가용성이 타입으로 보장된다.
+ */
+export type OAuthUserInfo =
+  | { provider: "google"; providerAccountId: string; email: string; name?: string }
+  | { provider: "kakao"; providerAccountId: string; email: string };
 
 export interface ExchangeCodeOptions {
   code: string;
@@ -96,7 +98,12 @@ function extractGoogleUserInfo(data: Record<string, unknown>): OAuthUserInfo {
       statusCode: 502,
     });
   }
-  return { providerAccountId: sub, email, ...(typeof name === "string" ? { name } : {}) };
+  return {
+    provider: "google",
+    providerAccountId: sub,
+    email,
+    ...(typeof name === "string" ? { name } : {}),
+  };
 }
 
 function extractKakaoUserInfo(data: Record<string, unknown>): OAuthUserInfo {
@@ -110,5 +117,5 @@ function extractKakaoUserInfo(data: Record<string, unknown>): OAuthUserInfo {
       statusCode: 502,
     });
   }
-  return { providerAccountId: String(id), email };
+  return { provider: "kakao", providerAccountId: String(id), email };
 }
