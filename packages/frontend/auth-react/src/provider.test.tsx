@@ -111,6 +111,82 @@ describe("AuthProvider + useAuth + useSession", () => {
     expect(sdk.signOut).toHaveBeenCalledTimes(1);
   });
 
+  describe("선제 갱신 (proactive refresh)", () => {
+    it("만료 margin 전 자동 refresh 호출", async () => {
+      vi.useFakeTimers({ now: 1_000_000 });
+      try {
+        const refresh = vi.fn().mockResolvedValue(null);
+        // margin 60s + 5s → delay 5s
+        const sdk = makeSdk({
+          getAccessTokenExpiresAt: vi.fn().mockReturnValue(1_000_000 + 60_000 + 5_000),
+          refresh,
+        });
+        render(
+          <AuthProvider sdk={sdk}>
+            <ShowUser />
+          </AuthProvider>,
+        );
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(0); // mount getCurrentUser → user → schedule
+        });
+        expect(refresh).not.toHaveBeenCalled();
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(5_000);
+        });
+        expect(refresh).toHaveBeenCalledTimes(1);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("refresh 후 새 만료로 재스케줄", async () => {
+      vi.useFakeTimers({ now: 1_000_000 });
+      try {
+        let exp = 1_000_000 + 65_000; // delay 5s
+        const refresh = vi.fn().mockImplementation(async () => {
+          exp = Date.now() + 65_000; // 갱신 후 새 만료
+        });
+        const sdk = makeSdk({ getAccessTokenExpiresAt: vi.fn(() => exp), refresh });
+        render(
+          <AuthProvider sdk={sdk}>
+            <ShowUser />
+          </AuthProvider>,
+        );
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(0);
+        });
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(5_000);
+        });
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(5_000);
+        });
+        expect(refresh).toHaveBeenCalledTimes(2);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("getAccessTokenExpiresAt 미제공(provider 모드) → 타이머 비활성", async () => {
+      vi.useFakeTimers({ now: 1_000_000 });
+      try {
+        const refresh = vi.fn().mockResolvedValue(null);
+        const sdk = makeSdk({ refresh }); // getAccessTokenExpiresAt 없음
+        render(
+          <AuthProvider sdk={sdk}>
+            <ShowUser />
+          </AuthProvider>,
+        );
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(60 * 60_000);
+        });
+        expect(refresh).not.toHaveBeenCalled();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+  });
+
   it("useSession() — user / isLoading 반환 (read-only)", async () => {
     const sdk = makeSdk();
     function SessionDisplay() {
