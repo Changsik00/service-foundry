@@ -167,6 +167,37 @@ describe("AuthProvider + useAuth + useSession", () => {
       }
     });
 
+    it("탭 재포커스 시 만료 경과면 즉시 refresh", async () => {
+      vi.useFakeTimers({ now: 1_000_000 });
+      try {
+        let exp = 1_000_000 + 65_000; // 처음엔 여유(5s 후 예정)
+        const refresh = vi.fn().mockResolvedValue(null);
+        const sdk = makeSdk({ getAccessTokenExpiresAt: vi.fn(() => exp), refresh });
+        render(
+          <AuthProvider sdk={sdk}>
+            <ShowUser />
+          </AuthProvider>,
+        );
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(0);
+        });
+        expect(refresh).not.toHaveBeenCalled();
+        // 백그라운드 동안 만료 경과 → 재포커스
+        exp = Date.now() - 1_000;
+        Object.defineProperty(document, "visibilityState", {
+          configurable: true,
+          get: () => "visible",
+        });
+        await act(async () => {
+          document.dispatchEvent(new Event("visibilitychange"));
+          await vi.advanceTimersByTimeAsync(0);
+        });
+        expect(refresh).toHaveBeenCalledTimes(1);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
     it("getAccessTokenExpiresAt 미제공(provider 모드) → 타이머 비활성", async () => {
       vi.useFakeTimers({ now: 1_000_000 });
       try {

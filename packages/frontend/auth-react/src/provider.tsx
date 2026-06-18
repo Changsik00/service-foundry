@@ -74,10 +74,24 @@ export function AuthProvider({ sdk, children }: AuthProviderProps) {
         if (!cancelled) schedule(); // 새 만료로 재스케줄
       }, delay);
     };
+    // 탭 재포커스: 백그라운드에서 타이머가 스로틀/만료됐을 수 있으니 즉시 재평가.
+    // (만료 임박/경과면 schedule 의 delay 가 0 → 곧바로 refresh)
+    const onVisible = (): void => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        if (timer) clearTimeout(timer);
+        schedule();
+      }
+    };
     schedule();
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", onVisible);
+    }
     return () => {
       cancelled = true;
       if (timer) clearTimeout(timer);
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", onVisible);
+      }
     };
   }, [user, sdk]);
 
