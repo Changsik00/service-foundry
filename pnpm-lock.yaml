@@ -591,6 +591,9 @@ importers:
 
   apps/worker:
     dependencies:
+      '@repo/backend-logger':
+        specifier: workspace:*
+        version: link:../../packages/backend/logger
       '@repo/backend-queue':
         specifier: workspace:*
         version: link:../../packages/backend/queue

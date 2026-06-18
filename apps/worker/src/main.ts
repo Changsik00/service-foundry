@@ -5,20 +5,24 @@
  * (graceful shutdown 정식 처리는 phase-12 spec-12-04. 여기선 기본 SIGTERM close.)
  */
 
+import { createLogger } from "@repo/backend-logger";
 import { type JobHandler, resolveQueueConfig, startBullConsumer } from "@repo/backend-queue";
+
+const logger = createLogger({ level: "info" });
 
 const { connection } = resolveQueueConfig(process.env);
 
 const handlers: Record<string, JobHandler> = {
   // 데모 핸들러 — 실제 작업(예: 이메일 발송)으로 교체.
   demo: async (data) => {
-    console.info("[worker] demo job", data);
+    logger.info({ data }, "[worker] demo job");
   },
 };
 
 const consumer = startBullConsumer("default", handlers, connection);
-console.info(
-  `[worker] consumer started (queue=default, redis=${connection.host}:${connection.port})`,
+logger.info(
+  { queue: "default", redis: `${connection.host}:${connection.port}` },
+  "[worker] consumer started",
 );
 
 const shutdown = async (): Promise<void> => {
