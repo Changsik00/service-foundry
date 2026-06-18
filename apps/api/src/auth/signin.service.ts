@@ -88,9 +88,13 @@ export class SigninService {
     // 3) 성공 — 실패 카운터 리셋 + lockout 해제.
     await recordSuccess(this.rateLimitStore, accountKey);
 
-    const { refreshToken } = await createSession(this.sessionStore, { userId: user.id });
+    // createSession 과 orgClaims 는 서로 독립이므로 병렬 실행.
+    const [{ refreshToken }, claims] = await Promise.all([
+      createSession(this.sessionStore, { userId: user.id }),
+      this.orgClaims(user),
+    ]);
     const accessToken = await signAccessToken(
-      { sub: user.id, role: user.role, ...(await this.orgClaims(user)) },
+      { sub: user.id, role: user.role, ...claims },
       this.jwtService.getKeyStore(),
       { issuer: this.jwtOpts.issuer, audience: this.jwtOpts.audience },
     );

@@ -1,6 +1,6 @@
 import { Inject } from "@nestjs/common";
 import type { NodePgDatabase } from "@repo/nestjs-database";
-import { and, eq, ne } from "drizzle-orm";
+import { and, eq, inArray, ne } from "drizzle-orm";
 
 import { memberships, users } from "../infra/schema/index.js";
 
@@ -85,28 +85,20 @@ export function createAccountUserStore(db: AnyDb): AccountUserStore {
         .select({ orgId: memberships.orgId })
         .from(memberships)
         .where(and(eq(memberships.userId, userId), eq(memberships.role, "owner")));
+      if (ownerOrgs.length === 0) return false;
+
+      // owner org 들의 '다른 멤버'(본인 제외)를 role 과 함께 한 번에 조회 — org 당 2쿼리 N+1 제거.
+      const orgIds = ownerOrgs.map((o) => o.orgId);
+      const others = await typedDb
+        .select({ orgId: memberships.orgId, role: memberships.role })
+        .from(memberships)
+        .where(and(inArray(memberships.orgId, orgIds), ne(memberships.userId, userId)));
 
       for (const { orgId } of ownerOrgs) {
-        const otherOwners = await typedDb
-          .select({ id: memberships.id })
-          .from(memberships)
-          .where(
-            and(
-              eq(memberships.orgId, orgId),
-              eq(memberships.role, "owner"),
-              ne(memberships.userId, userId),
-            ),
-          )
-          .limit(1);
-
-        const otherMembers = await typedDb
-          .select({ id: memberships.id })
-          .from(memberships)
-          .where(and(eq(memberships.orgId, orgId), ne(memberships.userId, userId)))
-          .limit(1);
-
+        const inOrg = others.filter((o) => o.orgId === orgId);
+        const hasOtherOwner = inOrg.some((o) => o.role === "owner");
         // 다른 owner가 없고 + 다른 멤버도 있으면 → sole owner of non-empty org → 차단
-        if (otherOwners.length === 0 && otherMembers.length > 0) return true;
+        if (!hasOtherOwner && inOrg.length > 0) return true;
       }
       return false;
     },
