@@ -47,7 +47,8 @@ docs/
 |---|---|---|
 | 진입점 / Quickstart | `README.md` (루트) | 현관 — `docs/index.md` 로 안내만 |
 | 에이전트 운영 규약 | `CLAUDE.md` (루트) | harness-kit import |
-| **시스템 구조** | `docs/reference/architecture.md` | 루트 `ARCHITECTURE.md` 는 **pointer 전용**(본문 금지) |
+| **시스템 구조** (레이어·패키지·의존그래프) | `docs/reference/architecture.md` | 정본. 루트 `ARCHITECTURE.md` 에 **구조를 중복 서술 금지** — 링크만 |
+| **엔지니어링 원칙** (TS-first·"설치 버전=SoT"·초기 셋업) | `ARCHITECTURE.md` (루트) §0 | ADR-0002/0004 가 참조하는 정본. 구조(§1~)는 두지 않음 |
 | 문서 카탈로그(MOC) | `docs/index.md` | 모든 노트 1줄 등재 |
 | 문서 규약 | `docs/CONVENTIONS.md` | 이 문서 |
 | 패키지/앱 표면 | `docs/reference/**` | 전수 |
