@@ -20,7 +20,7 @@
 
 문서는 두 폴더로 나눈다:
 
-- `apps/` — 실행 가능한 애플리케이션/서비스 (Next.js, Vite, Fastify, BullMQ worker)
+- `apps/` — 실행 가능한 애플리케이션/서비스 (Next.js web, NestJS api, BullMQ worker)
 - `packages/` — 라이브러리와 툴링
 
 원칙(요약): "Never include shared code in Application Packages; use separate Internal Packages instead." 앱은 의존성 그래프의 리프여야 한다.
@@ -128,7 +128,7 @@ Consumer는 `import { ... } from "@repo/logger/errors"`로 import한다.
 | 모드 | 사용 시점 | TS 설정 |
 | --- | --- | --- |
 | **Just-in-Time** | 내부 전용, publish하지 않음; 번들링되는 앱(Next.js, Vite)이 소비 | `exports`가 `./src/index.ts`를 `"types"` AND `"default"`로 직접 가리킴; 빌드 단계 없음 |
-| **Compiled** | publish되는 라이브러리 OR Node 런타임(Fastify api, worker)이 소비 | `exports`가 `./dist`를 가리킴; `tsc` 또는 `tsup`으로 빌드; `declaration: true`, `declarationMap: true` 설정 |
+| **Compiled** | publish되는 라이브러리 OR Node 런타임(NestJS api, worker)이 소비 | `exports`가 `./dist`를 가리킴; `tsc` 또는 `tsup`으로 빌드; `declaration: true`, `declarationMap: true` 설정 |
 
 우리 스택에 적용:
 
@@ -163,7 +163,7 @@ Consumer는 `import { ... } from "@repo/logger/errors"`로 import한다.
 - `packages/config/*` — 빌드 없음 (도구가 읽는 JSON / TS 설정일 뿐).
 - `packages/shared/*`, `packages/frontend/{ui,sdk,auth}` — Just-in-Time, 빌드 없음 (번들링되는 앱이 소비).
 - `packages/backend/*` — `tsup` (ESM only, `--dts`, dev에서 watch). 결과물은 `dist/`로.
-- 앱들 — 각 프레임워크의 빌드를 사용 (Next/Vite/Fastify-as-Node).
+- 앱들 — 각 프레임워크의 빌드를 사용 (Next.js / NestJS-as-Node / worker).
 
 ---
 
@@ -405,9 +405,9 @@ git-default 입력을 잃지 않으면서 정제한다:
 - Vite의 기본 `outDir`은 `dist`다. 일치시킨다.
 - dev에는 특별한 태스크가 필요 없다; 루트 `dev` (cache:false, persistent:true)로 충분하다.
 
-### 5.3 Fastify / Node 앱 (`apps/api`, `apps/worker`)
+### 5.3 NestJS / Node 앱 (`apps/api`, `apps/worker`)
 
-문서에는 Fastify/Node 전용 가이드가 없다. 일반 Node 앱 패턴을 적용한다:
+NestJS/Node 앱은 일반 Node 앱 패턴을 적용한다:
 
 - `build`는 `tsup` (또는 `tsc`) → `dist/` 실행
 - `start`는 `node dist/index.js` 실행
@@ -571,7 +571,7 @@ publishing 가이드에서 ([docs](https://turborepo.dev/docs/guides/publishing-
 | 생성기 | 목적 | 템플릿 위치 |
 | --- | --- | --- |
 | `new-package` | `packages/<category>/<name>`을 `package.json`(name, exports, scripts), `tsconfig.json`, `src/index.ts`, 선택적 `turbo.json`과 함께 스캐폴드 | `turbo/generators/templates/package/**` |
-| `new-app`     | `apps/<name>` 스캐폴드 (프레임워크 파라미터: next \| vite \| fastify \| worker) | `turbo/generators/templates/app/<framework>/**` |
+| `new-app`     | `apps/<name>` 스캐폴드 (프레임워크 파라미터는 generator config 참조: `turbo/generators/config.ts`) | `turbo/generators/**` |
 | `new-backend-package` | `new-package`와 동일하지만 tsup, dist outputs, ESM이 사전 wiring됨 | `turbo/generators/templates/backend-package/**` |
 
 생성기 설정 골격:

@@ -53,7 +53,9 @@
 - [ ] **`@env-kit/node-settings` 의 next 의존 제거/대체** (spec-22-02, 2026-06-17) — slim api/worker 이미지에 `next`(~288MB)가 잔존. `@env-kit/node-settings@1.1.0` 이 `next` 를 직접 의존 → backend-settings 경유 api 까지 끌려옴. 해당 dep 제거/대체 시 이미지 추가 대폭 감소. spec-x 후보
 - [ ] **이미지 추가 슬림** (spec-22-02 후속) — 컴파일(tsup → node 런타임, tsx 제거) + distroless 베이스. 현재 tsx 런타임 유지. 후속 spec 후보
 - [ ] lat.md Phase 2 도입 평가 (지식 그래프 도구)
-- [ ] ARCHITECTURE.md 본체 재작성 (Phase 3 직전, ADR-0005 결정 후)
+- ~~ARCHITECTURE.md 본체 재작성~~ **해소**: `spec-x-docs-ssot` (2026-06-18) — SSOT 정책(CONVENTIONS §2.5) + 루트 ARCHITECTURE→원칙+포인터 + reference 최신화
+- [ ] **turbo generator 앱 템플릿 drift** (spec-x-docs-ssot 발견) — `turbo/generators/config.ts` 가 app 스캐폴딩에 `vite` 옵션 제공하나 `turbo/generators/templates/app/` 디렉토리 부재(web-vite 폐기 잔재). config 옵션 정리 필요. 코드 drift, spec-x 후보
+- [ ] **ci-verify-gate explainer web-vite 잔재** (spec-x-docs-ssot 발견) — `docs/explainers/platform/ci-verify-gate.md` 가 폐기된 web-vite routeTree 빌드 의존을 설명. explainer 갱신 필요(단순 이름치환 아님)
 
 ### 🐛 spec-02-01/02에서 발견된 이슈/주의 사항
 
