@@ -14,7 +14,6 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
-- [ ] spec-x-docs-ssot — docs-ssot
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -143,6 +142,7 @@
 - [x] spec-x-dev-rls-app-runtime (완료)
 - [x] spec-x-ci-tooling-cleanup (완료)
 - [x] spec-x-proactive-token-rotation (완료)
+- [x] spec-x-docs-ssot (완료)
 <!-- sdd:done:end -->
 
 ---
