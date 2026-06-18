@@ -39,13 +39,13 @@ flowchart TD
       worker[apps/worker]
     end
     subgraph nestjs["packages/nestjs (adapter)"]
-      njs[auth · database · http-client · logger · security · settings]
+      njs[auth · auth-firebase · auth-supabase · database · http-client · logger · security · settings]
     end
     subgraph backend["packages/backend (core)"]
-      be[auth-* · database · queue · cache · observability · …]
+      be[auth-* · authz · database · queue · cache · observability · …]
     end
     subgraph frontend["packages/frontend"]
-      fe[ui · http-client · auth-react · auth-firebase · auth-supabase · …]
+      fe[ui · http-client · auth-react · auth-store · auth-firebase · auth-supabase · …]
     end
     subgraph shared["packages/shared"]
       sh[errors · utils · validation · contracts · auth-contracts · factory]
@@ -129,9 +129,9 @@ org 스코프 멀티테넌트. 격리는 **PostgreSQL RLS** 가 정본 강제선
 
 > 카테고리별 역할 (전수 목록·개수는 drift 원천 → 정본은 [[index]] §reference/packages 카탈로그):
 
-- **backend** — node 전용 인프라/도메인 core (auth-* · database · queue · cache · observability · notification · …).
-- **nestjs** — backend core 를 NestJS `@Module` 로 감싼 adapter ([[adr/0016-nestjs-adapter-standard-module-pattern|ADR-0016]], [[explainers/platform/nestjs-adapter-module-pattern]]).
-- **frontend** — UI + http-client + auth SDK 래퍼 (auth-react/store/firebase/supabase 등).
+- **backend** — node 전용 인프라/도메인 core (auth-* · authz(org 권한 정책) · database · queue · cache · observability · notification · …).
+- **nestjs** — backend core 를 NestJS `@Module` 로 감싼 adapter ([[adr/0016-nestjs-adapter-standard-module-pattern|ADR-0016]], [[explainers/platform/nestjs-adapter-module-pattern]]). native(auth) 외 firebase/supabase 모드 검증 모듈(auth-firebase·auth-supabase) 포함 ([[adr/0023-auth-authority-modes|ADR-0023]]).
+- **frontend** — UI + http-client + auth SDK 래퍼 (auth-react · auth-store · auth-firebase · auth-supabase · auth-testing 등).
 - **shared** — errors · utils · validation · contracts · auth-contracts · factory.
 - **config** — typescript/vitest/biome/tsup/tailwind/depcruise/knip preset (런타임 의존 0).
 

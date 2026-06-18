@@ -14,6 +14,7 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
+- [ ] spec-x-docs-code-drift — docs-code-drift
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox

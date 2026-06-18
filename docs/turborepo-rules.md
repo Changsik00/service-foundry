@@ -57,9 +57,11 @@ packages:
   "name": "service-foundry",
   "private": true,
   "packageManager": "pnpm@11.1.2",
-  "engines": { "node": ">=22" }
+  "engines": { "node": ">=24.0.0 <25" }
 }
 ```
+
+> ℹ️ 런타임 정본은 Node 24 LTS (`.nvmrc` = `24`, 루트 `ARCHITECTURE.md` §0 / [[adr/0002-monorepo-foundations|ADR-0002]]).
 
 - `packageManager`는 turbo 2.0부터 필수다 ([docs](https://turborepo.dev/docs/crafting-your-repository/upgrading)).
 - `engines.node`는 이제 글로벌 해시의 일부다 ([docs](https://turborepo.dev/docs/crafting-your-repository/upgrading)): *"The `engines` field in root `package.json` now factors into cache hashing."*
@@ -85,7 +87,7 @@ packages:
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "check-types": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "test": "vitest run"
   }
@@ -144,7 +146,8 @@ Consumer는 `import { ... } from "@repo/logger/errors"`로 import한다.
 
 규칙:
 
-- 루트 `tsconfig.json` 없음. *"Monorepos should avoid root-level `tsconfig.json` files. Each package maintains its own configuration."*
+- turbo 권장: 루트 `tsconfig.json` 회피. *"Monorepos should avoid root-level `tsconfig.json` files. Each package maintains its own configuration."*
+  - ⚠️ **의도적 일탈**: 본 레포는 루트 `tsconfig.json` 을 **둔다** — NestJS 데코레이터(`experimentalDecorators`/`emitDecoratorMetadata`) 등 에디터/툴이 기대하는 루트 설정 때문. 패키지 간 resolution 은 여전히 `paths` 없이 pnpm + `exports` 로만 해결하므로 turbo 권장의 실익(캐싱·resolution)은 보존된다. (`tsconfig.base.json` 은 쓰지 않음 — 각 패키지가 `@repo/typescript-config` 를 extend.)
 - 각 패키지는 `@repo/typescript-config/base.json`을 extend한다.
 - 패키지 간 참조는 pnpm이 `@repo/<pkg>`로 해결한다; 번들러 / `tsc`는 `exports` 맵을 통해 해석한다. `paths` 없음.
 
@@ -224,6 +227,11 @@ git-default 입력을 잃지 않으면서 정제한다:
 
 ### 3.5 이 스택을 위한 구체적인 루트 `turbo.json`
 
+> ⚠️ 아래는 **계획 시점 예시**다. 정본은 실제 루트 [`turbo.json`](../turbo.json). 현재 구현과의 주요 차이:
+> - 타입체크 태스크명은 **`typecheck`** — 루트 스크립트·CI 모두 `turbo run ... typecheck`.
+> - 실제 `globalDependencies` 는 `["**/.env.*local", "pnpm-workspace.yaml", "pnpm-lock.yaml", ".nvmrc"]` — `tsconfig.base.json` 은 없음(미사용).
+> - Biome 는 루트 태스크 `//#format-and-lint` 를 **쓰지 않는다** — 패키지별 `lint`(`biome check .`) + 루트 스크립트 `lint`/`format` 직접 실행. 루트 태스크로는 `//#knip`·`//#depcruise` 가 등록돼 있다.
+
 ```jsonc
 {
   "$schema": "https://turborepo.dev/schema.json",
@@ -254,7 +262,7 @@ git-default 입력을 잃지 않으면서 정제한다:
       "persistent": true,
       "interruptible": true
     },
-    "check-types": {
+    "typecheck": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", "tsconfig.json", "tsconfig.*.json"],
       "outputs": []
@@ -301,7 +309,7 @@ git-default 입력을 잃지 않으면서 정제한다:
 
 참고:
 
-- `lint`, `check-types`, `knip`, `depcruise`는 pass/fail만 산출하므로 `outputs: []`로 선언한다; 그래도 *로그*는 캐시되기를 원하며, turbo는 `outputs`와 무관하게 그렇게 한다.
+- `lint`, `typecheck`, `knip`, `depcruise`는 pass/fail만 산출하므로 `outputs: []`로 선언한다; 그래도 *로그*는 캐시되기를 원하며, turbo는 `outputs`와 무관하게 그렇게 한다.
 - Biome는 공식 Biome 가이드에 따라 **루트 태스크** (`//#format-and-lint`)로 산다 — §6.1 참조.
 - `$TURBO_ROOT$`는 글로브를 워크스페이스 루트 기준으로 만든다, 그래서 공유 biome / vitest 설정을 사용하는 패키지들도 그 파일들이 바뀌면 무효화된다 ([docs](https://turborepo.dev/docs/reference/configuration)).
 
@@ -367,7 +375,9 @@ git-default 입력을 잃지 않으면서 정제한다:
 
 ## 5. 프레임워크 통합
 
-### 5.1 Next.js (`apps/web`, `apps/admin`) ([docs](https://turborepo.dev/docs/guides/frameworks/nextjs))
+### 5.1 Next.js (`apps/web`) ([docs](https://turborepo.dev/docs/guides/frameworks/nextjs))
+
+> 현재 Next.js 앱은 `apps/web` 단일 ([[adr/0025-frontend-app-consolidation|ADR-0025]]). 추가 Next 앱 신설 시 동일 패턴 적용.
 
 ```jsonc
 // apps/web/turbo.json
@@ -530,7 +540,7 @@ publishing 가이드에서 ([docs](https://turborepo.dev/docs/guides/publishing-
 
 공식 가이드 없음. Lefthook은 turbo가 아니라 git hook이 호출한다. 권장 패턴:
 
-- pre-commit에서 hook이 `turbo run lint check-types --filter="[HEAD]"`을 호출 (변경분만 스코핑).
+- pre-commit에서 hook이 `turbo run lint typecheck --filter="[HEAD]"`을 호출 (변경분만 스코핑).
 - Pre-push: `turbo run test --filter="[origin/main...HEAD]"`.
 - Lefthook 자체는 루트의 `lefthook.yml`로 설정되며, `globalDependencies`에 추가하지 않는 한 turbo의 해시에 들어가지 않는다.
 
@@ -617,9 +627,9 @@ jobs:
         with: { fetch-depth: 2 }                  # required for [HEAD^1] filter
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 22, cache: pnpm }
+        with: { node-version: 24, cache: pnpm }
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec turbo run lint check-types test build --output-logs=new-only
+      - run: pnpm exec turbo run lint typecheck test build --output-logs=new-only
 ```
 
 PR에서 affected-only 빌드를 하려면 추가: `--filter="[origin/${{ github.base_ref }}...HEAD]"`.
