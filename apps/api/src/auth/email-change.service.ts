@@ -9,8 +9,7 @@ import type { ConfirmOutcome } from "./confirm-outcome.js";
 import { type EmailChangeTokenStore, InjectEmailChangeTokenStore } from "./email-change.stores.js";
 import { FRONTEND_URL } from "./frontend-url.token.js";
 import { InjectSessionStore } from "./session.stores.js";
-
-const TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
+import { EMAIL_TOKEN_TTL_MS } from "./token-ttl.constants.js";
 
 @Injectable()
 export class EmailChangeService {
@@ -34,7 +33,7 @@ export class EmailChangeService {
 
     const token = generateRefreshToken();
     const tokenHash = hashToken(token);
-    const expiresAt = new Date(Date.now() + TOKEN_TTL_MS);
+    const expiresAt = new Date(Date.now() + EMAIL_TOKEN_TTL_MS);
 
     await this.tokenStore.insert({ userId, newEmail, tokenHash, expiresAt });
 

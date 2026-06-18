@@ -12,7 +12,6 @@ import { canInviteMember } from "@repo/backend-authz";
 import { buildInvitationEmail, type Notifier } from "@repo/backend-notification";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { and, eq } from "drizzle-orm";
-
 import { invitations } from "../infra/schema/invitations.js";
 import { memberships } from "../infra/schema/memberships.js";
 import { organizations } from "../infra/schema/organizations.js";
@@ -22,6 +21,7 @@ import { JwtService } from "../jwt/jwt.service.js";
 import { NOTIFIER } from "../notification/notifier.provider.js";
 import { FRONTEND_URL } from "./frontend-url.token.js";
 import { JWT_SIGN_OPTIONS, type JwtSignOptions } from "./jwt-sign.options.js";
+import { EMAIL_TOKEN_TTL_MS } from "./token-ttl.constants.js";
 
 @Injectable()
 export class OrgInviteService {
@@ -56,7 +56,7 @@ export class OrgInviteService {
 
     const token = generateRefreshToken();
     const tokenHash = hashToken(token);
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + EMAIL_TOKEN_TTL_MS);
 
     await this.database.db.insert(invitations).values({
       orgId,
