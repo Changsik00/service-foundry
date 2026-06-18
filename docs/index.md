@@ -182,6 +182,7 @@ tags: [service-foundry, index, meta]
 - [[adr/0024-tenant-isolation-enforcement|ADR-0024]] — 테넌트 격리(RLS) 강제 + 런타임 role
 - [[adr/0025-frontend-app-consolidation|ADR-0025]] — frontend 앱 단일화 (web-vite 삭제)
 - [[adr/0026-provider-mode-active-org-transport|ADR-0026]] — provider 모드 active org 전송
+- [[adr/0027-error-handling-layering|ADR-0027]] — 에러 처리 레이어링 (HTTP=NestJS 예외 / 도메인=AppError + 전역 필터)
 
 ## 기타 문서
 - `docs/notes/auth-foundation-architecture.md` — Auth Platform 설계 배경

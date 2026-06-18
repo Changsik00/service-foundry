@@ -1,4 +1,5 @@
 import { UnauthorizedException } from "@nestjs/common";
+import { AppError } from "@repo/errors";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { OAuthService } from "./oauth.service.js";
@@ -29,8 +30,10 @@ describe("OAuthService.buildAuthorizationUrl", () => {
     expect(res.codeVerifier).toBeTruthy();
   });
 
-  it("미지원 provider → throw", () => {
-    expect(() => makeService().buildAuthorizationUrl("unknown", "http://localhost/cb")).toThrow();
+  it("미지원 provider → AppError (getProvider 검증, 전역 필터가 404 매핑)", () => {
+    expect(() => makeService().buildAuthorizationUrl("unknown", "http://localhost/cb")).toThrow(
+      AppError,
+    );
   });
 });
 
