@@ -104,6 +104,24 @@ describe("SignupService", () => {
     expect(result.refreshToken).toBe("raw-refresh-token-signup");
   });
 
+  it("accessToken 에 activeOrgId/orgRole 클레임이 정확한 키로 담긴다", async () => {
+    const service = new SignupService(
+      makeUserStore(),
+      makeSessionStore(),
+      jwtService,
+      jwtOpts,
+      makeProvisionService(),
+    );
+
+    const { accessToken } = await service.signUp("new@example.com", "password123");
+
+    // claim 키 표기 회귀 가드 (ACTIVE_ORG_CLAIM/ORG_ROLE_CLAIM 상수와 일치)
+    const payloadPart = accessToken.split(".")[1] ?? "";
+    const payload = JSON.parse(Buffer.from(payloadPart, "base64url").toString());
+    expect(payload.activeOrgId).toBe(MOCK_ORG_ID);
+    expect(payload.orgRole).toBe("owner");
+  });
+
   it("이메일 중복 → ConflictException", async () => {
     const service = new SignupService(
       makeUserStore(mockUserRow),
