@@ -39,7 +39,7 @@
 |---|---|:---:|---|---|
 | `spec-23-01` | test-safety-net | P? | Merged | `specs/spec-23-01-test-safety-net/` |
 | `spec-23-02` | hotpath-fixes | P? | Merged | `specs/spec-23-02-hotpath-fixes/` |
-| `spec-23-03` | constants-and-dedup | P? | Active | `specs/spec-23-03-constants-and-dedup/` |
+| `spec-23-03` | constants-and-dedup | P? | Merged | `specs/spec-23-03-constants-and-dedup/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`

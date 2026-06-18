@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-23** — refactor-hardening — 3 spec — 다음: spec-23-03-constants-and-dedup
+- **phase-23** — refactor-hardening — 3 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
