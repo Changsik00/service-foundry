@@ -37,7 +37,7 @@
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
-| `spec-23-01` | test-safety-net | P? | Active | `specs/spec-23-01-test-safety-net/` |
+| `spec-23-01` | test-safety-net | P? | Merged | `specs/spec-23-01-test-safety-net/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
