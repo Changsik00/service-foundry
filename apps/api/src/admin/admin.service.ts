@@ -1,4 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
+import type { Role } from "@repo/auth-contracts";
 import { type CursorPaginationParams, decodeCursor, encodeCursor } from "@repo/contracts";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { and, asc, gt, ilike, or } from "drizzle-orm";
@@ -21,7 +22,7 @@ export interface AdminUser {
   email: string;
   displayName: string | null;
   /** platform admin role — "admin" = superadmin */
-  role: string;
+  role: Role;
   orgId: string | null;
   createdAt: Date;
 }
