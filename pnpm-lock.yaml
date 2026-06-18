@@ -1002,6 +1002,9 @@ importers:
       '@repo/errors':
         specifier: workspace:*
         version: link:../../shared/errors
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../../shared/utils
       undici:
         specifier: 'catalog:'
         version: 8.3.0
