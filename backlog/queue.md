@@ -56,6 +56,21 @@
 - [ ] **turbo generator 앱 템플릿 drift** (spec-x-docs-ssot 발견) — `turbo/generators/config.ts` 가 app 스캐폴딩에 `vite` 옵션 제공하나 `turbo/generators/templates/app/` 디렉토리 부재(web-vite 폐기 잔재). config 옵션 정리 필요. 코드 drift, spec-x 후보
 - [ ] **ci-verify-gate explainer web-vite 잔재** (spec-x-docs-ssot 발견) — `docs/explainers/platform/ci-verify-gate.md` 가 폐기된 web-vite routeTree 빌드 의존을 설명. explainer 갱신 필요(단순 이름치환 아님)
 
+### 🛠 리팩토링 감사 인벤토리 (2026-06-18, 7차원 코드레벨 스캔)
+
+> spec-x-docs-code-drift 직후 전체 리팩토링 대상 감사. **A 핫패스/F 분할/G 테스트부채는 Phase 승격 후보**, 일부는 착수 전 건별 검증 필요. 첫 퀵윈은 `spec-x-refactor-tidy` 로 분리(상수/데드코드/sleep중복/console).
+
+- **A. 버그성·핫패스 (P1)** — A1 `account.stores.ts:82 isSoleOwnerOfAnyOrg` N+1(+early-exit 누락) → 단일 집계쿼리 / A2 `api-key.service.ts:89` 매 호출 `last_used_at` UPDATE → fire-and-forget / A3 `jwks.controller.ts` 매 요청 JWKS 재계산 → 메모이즈(⚠️ key rotation 무효화 필요) / A4 `signin.service.ts:91` 독립 await 순차 → Promise.all / A5 org-list·feature-flag 목록 limit 부재. ❌반려: tenant.interceptor tx 래핑은 RLS SET LOCAL 필수라 정상.
+- **B. 컨벤션 (P2, 건별 검증)** — B1 `throw new Error()` ~14곳→AppError(ADR-0020, 일부 부트스트랩 의도적) / B2 raw zod `.parse()` ~8곳→`parse()` Result(ADR-0010) + 컨트롤러 검증 3패턴(zodPipe/parseOr400/수동) 통일 / B3 정당화 없는 `as unknown as`(superuser-guard, express req) / B4 worker `console.*`→logger.
+- **C. 상수화 (P1-P2)** — C1 `signup.service.ts:36` `activeOrgId` 문자열 하드코딩→`ACTIVE_ORG_CLAIM`(spec-17-08 drift 클래스, 최우선) / C2 세션 TTL 30d ms·sec 산재(단위불일치) / C3 `["owner","admin"]`→`@repo/backend-authz` 상수 / C4 이메일토큰 24h·비번리셋 15m·페이지네이션 20/100·`"Bearer "`·쿠키/스킴명.
+- **D. 중복 (P1-P2)** — D1 `backend/http-client` `sleep()` 재구현→`@repo/utils`(즉시) / D2 firebase·supabase verifier 공통 claim추출+provision 헬퍼 / D3 frontend auth 어댑터(native/fb/sb) 팩토리 / D4 NestJS `forRoot` DynamicModule 팩토리(6모듈) / D5 `CursorPaginationResult<T>` 공유타입 / D6 Roles/OrgRoles guard 제네릭+bearer 헬퍼.
+- **E. 패키지 이관 (아키텍처급)** — E1 RLS tenant infra(`apps/api/infra/tenant.*`)→backend+nestjs(worker 재사용, P1) / E2 Drizzle 스키마(`apps/api/infra/schema/*`)→`packages/backend/schema`(org도메인 선결, 50+파일) / E3 provision·org 도메인 서비스 auth모듈서 분리 / E4 superuser-guard·feature-flag·cookie/csrf·web jwt decode 패키지화.
+- **F. 복잡도·구조 (P2-P3)** — F1 `auth.controller.ts` 639LOC→Auth/Session/Org 분할(+auth.module 229) / F2 `account.controller.ts` 277 email-change·avatar 분리 / F3 `role:string`→OrgRole/Role enum / F4 OAuthUserInfo discriminated union.
+- **G. 테스트 부채 (P1)** — mfa.service·oauth.service·account.controller·passkey.controller·mfa.controller·jwt.service 등 ~11 모듈 무테스트. 위 리팩토링 회귀 안전망 선결.
+- **H. 데드코드 (안전)** — frontend/ui 미사용 export ~10(CardFooter·HealthCard+types·*Props·buttonVariants, ⚠️knip 재실행 확인) / card-canvas depcruise orphan은 오탐(재실행).
+
+→ **제안 Phase: `리팩토링/하드닝`** — G(테스트 안전망) → A(핫패스) → C·D(상수·중복) → E(이관)/F(분할) 순 spec 분할.
+
 ### 🐛 spec-02-01/02에서 발견된 이슈/주의 사항
 
 - [x] ~~**lefthook typecheck quirk**~~ — 2회 발생(spec-02-01 + spec-02-02) → **RCA-001 작성 + lefthook.yml fix 적용** (2026-05-18 resolved) → `docs/rca/RCA-001-lefthook-typecheck-non-blocking.md`
