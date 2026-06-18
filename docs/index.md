@@ -186,6 +186,8 @@ tags: [service-foundry, index, meta]
 ## 기타 문서
 - `docs/notes/auth-foundation-architecture.md` — Auth Platform 설계 배경
 - `docs/notes/error-handling-paradigms.md` — 에러 패러다임 비교
+- `docs/review/2026-06-01-wiring-audit.md` — wiring 감사 기록
+- `docs/review/2026-06-08-phase-17-review.md` — phase-17 회고 기록
 - [[RCA-001-lefthook-typecheck-non-blocking|RCA-001]] — lefthook typecheck 비차단 RCA
 - [[RCA-002-check-secrets-false-positive|RCA-002]] — check-secrets 오탐 RCA
 - [[RCA-003-phase-ship-success-criteria-unverified|RCA-003]] — phase-ship 성공기준 미검증 RCA

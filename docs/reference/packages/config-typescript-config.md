@@ -21,7 +21,7 @@ tags: [service-foundry, reference, config, typescript]
 | `./library` | `library.json` | `packages/backend/*` 등 라이브러리 | `noEmit: false`, `outDir: ./dist`, `rootDir: ./src` |
 | `./nestjs` | `nestjs.json` | NestJS 어댑터 패키지 | `experimentalDecorators`, `emitDecoratorMetadata`, `useDefineForClassFields: false` |
 | `./node-app` | `node-app.json` | `apps/api`, `apps/worker` | `noEmit: true`, `types: ["node"]` |
-| `./react-app` | `react-app.json` | `apps/web-*`, `apps/admin` | DOM lib, `jsx: react-jsx`, Bundler 모듈 해석, unused 검사 |
+| `./react-app` | `react-app.json` | `apps/web` (및 추가 React/Next 앱) | DOM lib, `jsx: react-jsx`, Bundler 모듈 해석, unused 검사 |
 
 `base.json` 의 핵심 옵션:
 
