@@ -12,6 +12,7 @@ import {
   verifyState,
 } from "@repo/backend-auth-oauth";
 import { createSession } from "@repo/backend-auth-session";
+import { AppError } from "@repo/errors";
 
 import { JwtService } from "../jwt/jwt.service.js";
 import { JWT_SIGN_OPTIONS, type JwtSignOptions } from "./jwt-sign.options.js";
@@ -90,15 +91,24 @@ export class OAuthService {
     return { accessToken, refreshToken, userId: user.id };
   }
 
+  // 도달 시 getProvider 가 이미 검증했으므로 방어적 — raw Error 대신 AppError(전역 필터가 매핑, ADR-0027).
   private getClientId(provider: string): string {
     if (provider === "google") return process.env["GOOGLE_CLIENT_ID"] ?? "";
     if (provider === "kakao") return process.env["KAKAO_CLIENT_ID"] ?? "";
-    throw new Error(`Unknown provider: ${provider}`);
+    throw new AppError({
+      code: "NOT_FOUND",
+      message: `Unknown provider: ${provider}`,
+      statusCode: 404,
+    });
   }
 
   private getClientSecret(provider: string): string {
     if (provider === "google") return process.env["GOOGLE_CLIENT_SECRET"] ?? "";
     if (provider === "kakao") return process.env["KAKAO_CLIENT_SECRET"] ?? "";
-    throw new Error(`Unknown provider: ${provider}`);
+    throw new AppError({
+      code: "NOT_FOUND",
+      message: `Unknown provider: ${provider}`,
+      statusCode: 404,
+    });
   }
 }
