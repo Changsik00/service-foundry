@@ -14,6 +14,7 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
+- [ ] spec-x-proactive-token-rotation — proactive-token-rotation
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
