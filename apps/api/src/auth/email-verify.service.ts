@@ -7,8 +7,7 @@ import type { ConfirmOutcome } from "./confirm-outcome.js";
 import { type EmailVerifyTokenStore, InjectEmailVerifyTokenStore } from "./email-verify.stores.js";
 import { FRONTEND_URL } from "./frontend-url.token.js";
 import { InjectUserStore, type UserStore } from "./password-reset.stores.js";
-
-const TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
+import { EMAIL_TOKEN_TTL_MS } from "./token-ttl.constants.js";
 
 @Injectable()
 export class EmailVerifyService {
@@ -26,7 +25,7 @@ export class EmailVerifyService {
 
     const token = generateRefreshToken();
     const tokenHash = hashToken(token);
-    const expiresAt = new Date(Date.now() + TOKEN_TTL_MS);
+    const expiresAt = new Date(Date.now() + EMAIL_TOKEN_TTL_MS);
 
     await this.tokenStore.insert({ userId: user.id, tokenHash, expiresAt });
 

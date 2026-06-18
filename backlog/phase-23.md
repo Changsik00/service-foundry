@@ -39,6 +39,7 @@
 |---|---|:---:|---|---|
 | `spec-23-01` | test-safety-net | P? | Merged | `specs/spec-23-01-test-safety-net/` |
 | `spec-23-02` | hotpath-fixes | P? | Merged | `specs/spec-23-02-hotpath-fixes/` |
+| `spec-23-03` | constants-and-dedup | P? | Active | `specs/spec-23-03-constants-and-dedup/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
@@ -80,6 +81,7 @@
 | E(패키지 이관) phase 포함 여부 | 포함 / 분리 | **분리(phase-24)** | tenant infra·schema(50+파일)·org 도메인은 아키텍처급. correctness+cleanup 과 리스크·기간 분리 (2026-06-18) |
 | Branch 모드 | base / non-base | **non-base** | 각 spec 이 독립적으로 가치있고 즉시 머지 가능. 절차 단순·저위험 (2026-06-18) |
 | 처리 순서 | 가치순 / 의존순 | **의존순(G先)** | A 핫패스 변경의 회귀 안전망이 G. 테스트 먼저 → 동작 변경 |
+| 23-03 범위 재구성 (§11.3, 2026-06-18) | B+C4+D 한 spec / 분할 | **분할** | B1 throw 15곳 중 대부분 의도적 부트스트랩 fail-fast(전환 소수), B2 는 미테스트 컨트롤러 위험 → 23-03=C4+D5(저위험), 23-04=B(컨트롤러 안전망 선행), 23-05=F |
 
 ## 🧪 통합 테스트 시나리오 (간결)
 

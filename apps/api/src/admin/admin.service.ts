@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { decodeCursor, encodeCursor } from "@repo/contracts";
+import { type CursorPaginationParams, decodeCursor, encodeCursor } from "@repo/contracts";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { and, asc, gt, ilike, or } from "drizzle-orm";
 
@@ -26,22 +26,14 @@ export interface AdminUser {
   createdAt: Date;
 }
 
-export interface OrgListParams {
-  search?: string;
-  cursor?: string;
-  limit?: number;
-}
+export type OrgListParams = CursorPaginationParams;
 
 export interface OrgListResult {
   orgs: AdminOrg[];
   nextCursor: string | null;
 }
 
-export interface UserListParams {
-  search?: string;
-  cursor?: string;
-  limit?: number;
-}
+export type UserListParams = CursorPaginationParams;
 
 export interface UserListResult {
   users: AdminUser[];

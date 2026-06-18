@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { decodeCursor, encodeCursor } from "@repo/contracts";
+import { type CursorPaginationParams, decodeCursor, encodeCursor } from "@repo/contracts";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 
 import { and, asc, eq, gt, ilike, or } from "drizzle-orm";
@@ -15,12 +15,7 @@ export interface OrgMember {
   displayName: string | null;
 }
 
-export interface MemberListParams {
-  search?: string;
-  role?: string;
-  cursor?: string;
-  limit?: number;
-}
+export type MemberListParams = CursorPaginationParams & { role?: string };
 
 export interface MemberListResult {
   members: OrgMember[];
