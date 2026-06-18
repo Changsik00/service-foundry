@@ -1,4 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
+import type { OrgRole } from "@repo/auth-contracts";
 import { type CursorPaginationParams, decodeCursor, encodeCursor } from "@repo/contracts";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 
@@ -10,7 +11,7 @@ import { users } from "../infra/schema/users.js";
 export interface OrgMember {
   userId: string;
   orgId: string;
-  role: string;
+  role: OrgRole;
   email: string;
   displayName: string | null;
 }

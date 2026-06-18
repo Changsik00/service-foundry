@@ -1,4 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
+import type { OrgRole } from "@repo/auth-contracts";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { eq } from "drizzle-orm";
 
@@ -10,7 +11,7 @@ import { runWithSystemTenant, TENANT_ALS, type TenantAls } from "../infra/tenant
 export interface OrgSummary {
   orgId: string;
   name: string;
-  role: string;
+  role: OrgRole;
   isPersonal: boolean;
 }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import type { OrgRole } from "@repo/auth-contracts";
 import {
   Badge,
   Button,
@@ -40,7 +41,7 @@ export function MemberTable() {
     Array<{
       userId: string;
       orgId: string;
-      role: string;
+      role: OrgRole;
       email: string;
       displayName: string | null;
     }>
@@ -131,9 +132,7 @@ export function MemberTable() {
               <TableRow key={m.userId}>
                 <TableCell className="font-medium">{m.email}</TableCell>
                 <TableCell>
-                  <Badge variant={ROLE_VARIANT[m.role as keyof typeof ROLE_VARIANT] ?? "default"}>
-                    {m.role}
-                  </Badge>
+                  <Badge variant={ROLE_VARIANT[m.role] ?? "default"}>{m.role}</Badge>
                 </TableCell>
                 <TableCell className="tnum text-muted-foreground">{m.userId}</TableCell>
               </TableRow>

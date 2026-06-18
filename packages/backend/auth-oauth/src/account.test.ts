@@ -21,7 +21,11 @@ const makeStore = (
 });
 
 describe("findOrCreateOAuthUser", () => {
-  const userInfo: OAuthUserInfo = { providerAccountId: "google-123", email: "new@example.com" };
+  const userInfo: OAuthUserInfo = {
+    provider: "google",
+    providerAccountId: "google-123",
+    email: "new@example.com",
+  };
 
   it("신규 이메일 → users + oauth_accounts 생성 (passwordHash = null, isNew = true)", async () => {
     const store = makeStore();
@@ -47,6 +51,7 @@ describe("findOrCreateOAuthUser", () => {
     const store = makeStore(existing, undefined);
 
     const result = await findOrCreateOAuthUser(store, "google", {
+      provider: "google",
       providerAccountId: "google-456",
       email: "existing@example.com",
     });
@@ -69,6 +74,7 @@ describe("findOrCreateOAuthUser", () => {
     const store = makeStore(existing, { userId: "existing-id" });
 
     const result = await findOrCreateOAuthUser(store, "google", {
+      provider: "google",
       providerAccountId: "google-789",
       email: "linked@example.com",
     });
