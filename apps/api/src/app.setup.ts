@@ -3,6 +3,8 @@ import { requestIdMiddleware } from "@repo/backend-logger";
 import { applySecurity } from "@repo/nestjs-security";
 import cookieParser from "cookie-parser";
 
+import { AppErrorFilter } from "./infra/app-error.filter.js";
+
 export interface ConfigureAppOptions {
   /** CORS 허용 origin (settings.CORS_ORIGIN). e2e 등 생략 시 enableCors 기본(허용). */
   readonly corsOrigin?: string;
@@ -22,4 +24,6 @@ export function configureApp(app: INestApplication, opts: ConfigureAppOptions = 
   app.use(requestIdMiddleware());
   app.use(cookieParser());
   applySecurity(app, { cors: { origin: opts.corsOrigin, credentials: true } });
+  // 도메인/패키지에서 전파된 AppError 를 HTTP 로 변환 (ADR-0027).
+  app.useGlobalFilters(new AppErrorFilter());
 }

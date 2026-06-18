@@ -379,6 +379,9 @@ importers:
       '@repo/contracts':
         specifier: workspace:*
         version: link:../../packages/shared/contracts
+      '@repo/errors':
+        specifier: workspace:*
+        version: link:../../packages/shared/errors
       '@repo/nestjs-auth':
         specifier: workspace:*
         version: link:../../packages/nestjs/auth
