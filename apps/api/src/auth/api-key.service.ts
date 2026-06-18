@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { ForbiddenException, Inject, Injectable } from "@nestjs/common";
+import { ForbiddenException, Inject, Injectable, Logger } from "@nestjs/common";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 
 export interface ApiKeyPublic {
@@ -45,6 +45,8 @@ function hashKey(plain: string): string {
 
 @Injectable()
 export class ApiKeyService {
+  private readonly logger = new Logger(ApiKeyService.name);
+
   constructor(@Inject(DATABASE) private readonly database: Database<Record<string, unknown>>) {}
 
   async create(userId: string, orgId: string, name: string): Promise<ApiKeyCreated> {
@@ -100,9 +102,10 @@ export class ApiKeyService {
     const row = rows[0];
     if (!row) return null;
 
-    await this.database.pool.query(`UPDATE api_keys SET last_used_at = now() WHERE id = $1`, [
-      row.id,
-    ]);
+    // last_used_at 갱신은 인증 핫패스를 막지 않도록 비차단(fire-and-forget). 실패는 로깅만.
+    void this.database.pool
+      .query(`UPDATE api_keys SET last_used_at = now() WHERE id = $1`, [row.id])
+      .catch((err) => this.logger.warn(`api-key last_used_at 갱신 실패: ${err}`));
 
     return toPublic(row);
   }
