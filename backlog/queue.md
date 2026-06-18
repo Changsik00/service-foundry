@@ -14,6 +14,7 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
+- [ ] spec-x-docs-ssot — docs-ssot
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
