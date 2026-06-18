@@ -14,7 +14,6 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
-- [ ] spec-x-refactor-tidy — refactor-tidy
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -160,6 +159,7 @@
 - [x] spec-x-proactive-token-rotation (완료)
 - [x] spec-x-docs-ssot (완료)
 - [x] spec-x-docs-code-drift (완료)
+- [x] spec-x-refactor-tidy (완료)
 <!-- sdd:done:end -->
 
 ---
