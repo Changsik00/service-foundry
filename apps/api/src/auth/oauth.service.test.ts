@@ -37,6 +37,26 @@ describe("OAuthService.buildAuthorizationUrl", () => {
   });
 });
 
+describe("OAuthService 자격증명 fail-fast (Wa)", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("known provider 인데 client_id env 가 비면 throw (빈 문자열 진행 금지)", () => {
+    vi.stubEnv("GOOGLE_CLIENT_ID", "");
+    expect(() => makeService().buildAuthorizationUrl("google", "http://localhost/cb")).toThrow(
+      AppError,
+    );
+  });
+
+  it("known provider 인데 client_id env 가 undefined 면 throw", () => {
+    vi.stubEnv("GOOGLE_CLIENT_ID", undefined as unknown as string);
+    expect(() => makeService().buildAuthorizationUrl("google", "http://localhost/cb")).toThrow(
+      AppError,
+    );
+  });
+});
+
 describe("OAuthService.handleCallback", () => {
   it("state 불일치 → UnauthorizedException (네트워크 도달 전 거부)", async () => {
     await expect(
