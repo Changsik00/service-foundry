@@ -30,10 +30,10 @@
 
 ## Task 4: org + provider-org 컨트롤러 테스트
 
-- [ ] 작성: `apps/api/src/auth/org.controller.test.ts` — org 라우트 위임 + @OrgRoles(admin/owner) 메타 보존
-- [ ] 작성: `apps/api/src/auth/provider-org.controller.test.ts` — provider 모드 org 위임 + 가드 메타
-- [ ] 실행 → PASS
-- [ ] Commit: `test(spec-24-01): add org/provider-org controller unit tests`
+- [x] 작성: `apps/api/src/auth/org.controller.test.ts` — org 라우트 위임 + no-org 거부 (6 tests). @OrgRoles 메타는 route-inventory(T7) 에 위임
+- [x] 작성: `apps/api/src/auth/provider-org.controller.test.ts` — provider 모드 org 위임 + no-org 거부 (6 tests)
+- [x] 실행 → PASS
+- [x] Commit: `test(spec-24-01): add org/provider-org controller unit tests`
 
 ---
 
