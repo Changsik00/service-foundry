@@ -57,10 +57,10 @@
 
 ## Task 7: route-inventory 스냅샷 보강 (필요 시)
 
-- [ ] `apps/api/src/auth/route-inventory.test.ts` 확인 — 8개 컨트롤러 라우트+가드 전수 포함 여부
-- [ ] 누락분 EXPECTED 스냅샷 보강 (전부 포함되어 있으면 `[-]` pass 처리 + 사유 기록)
-- [ ] 실행 → PASS
-- [ ] Commit: `test(spec-24-01): extend route-inventory snapshot for untested controllers`
+- [x] `apps/api/src/auth/route-inventory.test.ts` 확인 — 기존엔 Auth/Session/Org 만 커버, 나머지 6개 누락 확인
+- [x] 누락분 EXPECTED_OTHER_ROUTES 스냅샷 보강 (account/passkey/mfa/oauth/provider-org/provider-me 22 라우트+가드)
+- [x] 실행 → PASS
+- [x] Commit: `test(spec-24-01): extend route-inventory snapshot for untested controllers`
 
 ---
 
