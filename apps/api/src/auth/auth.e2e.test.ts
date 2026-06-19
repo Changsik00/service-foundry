@@ -7,6 +7,11 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 process.env.NODE_ENV ??= "test";
 process.env.DATABASE_URL ??= "postgres://postgres:test@localhost:5434/test";
 process.env.HTTP_CLIENT_BASE_URL ??= "http://localhost:9999";
+// OAuth authorize 흐름은 client id 가 필수다 (spec-24-02 Wa fail-fast). 테스트 자격증명 주입.
+process.env.GOOGLE_CLIENT_ID ??= "test-google-client";
+process.env.GOOGLE_CLIENT_SECRET ??= "test-google-secret";
+process.env.KAKAO_CLIENT_ID ??= "test-kakao-client";
+process.env.KAKAO_CLIENT_SECRET ??= "test-kakao-secret";
 
 const { AppModule } = await import("../app.module.js");
 const { configureApp } = await import("../app.setup.js");
