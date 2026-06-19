@@ -3,8 +3,14 @@ import { RequestMethod } from "@nestjs/common";
 import { ORG_ROLES_KEY } from "@repo/nestjs-auth";
 import { describe, expect, it } from "vitest";
 
+import { AccountController } from "./account.controller.js";
 import { AuthController } from "./auth.controller.js";
+import { MfaController } from "./mfa.controller.js";
+import { OAuthController } from "./oauth.controller.js";
 import { OrgController } from "./org.controller.js";
+import { PasskeyController } from "./passkey.controller.js";
+import { ProviderMeController } from "./provider-me.controller.js";
+import { ProviderOrgController } from "./provider-org.controller.js";
 import { SessionController } from "./session.controller.js";
 
 // NestJS 가 메타데이터를 거는 키 (PATH/METHOD/GUARDS_METADATA 의 값).
@@ -69,5 +75,56 @@ describe("auth 라우트 인벤토리 (분할 회귀 가드)", () => {
   it("auth 컨트롤러들의 라우트 합집합 == 17 스냅샷 (URL 보존)", () => {
     const actual = AUTH_CONTROLLERS.flatMap(routesOf).sort();
     expect(actual).toEqual(EXPECTED_AUTH_ROUTES);
+  });
+});
+
+/**
+ * 나머지 인증 컨트롤러(account/passkey/mfa/oauth/provider-org/provider-me)의 라우트+가드 스냅샷.
+ * spec-24-03 의 account.controller 분할 전 라우트·가드 보존 계약을 확보한다 (spec-24-01).
+ */
+const EXPECTED_OTHER_ROUTES = [
+  // account.controller (spec-24-03 분할 예정 — 분할 후 본 스냅샷 보존 필수)
+  "DELETE /auth/account// [AuthGuard,CsrfGuard]", // @Delete() 빈 경로 → 리플렉션상 `//` (라우팅 시 collapse)
+  "PATCH /auth/account/password [AuthGuard]",
+  "PATCH /auth/account/profile [AuthGuard]",
+  "POST /auth/account/avatar [AuthGuard]",
+  "POST /auth/account/email/change-confirm [CsrfGuard]",
+  "POST /auth/account/email/change-request [AuthGuard,CsrfGuard]",
+  // passkey.controller
+  "POST /auth/passkey/authenticate/options [CsrfGuard]",
+  "POST /auth/passkey/authenticate/verify [CsrfGuard]",
+  "POST /auth/passkey/register/options [AuthGuard,CsrfGuard]",
+  "POST /auth/passkey/register/verify [AuthGuard,CsrfGuard]",
+  // mfa.controller
+  "POST /auth/mfa/totp/disable [AuthGuard,CsrfGuard]",
+  "POST /auth/mfa/totp/enroll [AuthGuard,CsrfGuard]",
+  "POST /auth/mfa/totp/enroll/confirm [AuthGuard,CsrfGuard]",
+  "POST /auth/mfa/totp/verify [CsrfGuard]",
+  // oauth.controller (가드 없음 — state/pkce 쿠키 + provider 검증으로 보호)
+  "GET /auth/oauth/:provider []",
+  "GET /auth/oauth/:provider/callback []",
+  // provider-org.controller (provider 모드 org 표면)
+  "GET /auth/org/members [AuthGuard]",
+  "GET /auth/orgs [AuthGuard]",
+  "POST /auth/org/invite [AuthGuard]",
+  "POST /auth/org/invite/accept [AuthGuard]",
+  "POST /auth/org/switch [AuthGuard]",
+  // provider-me.controller
+  "GET /auth/me [AuthGuard]",
+].sort();
+
+const OTHER_CONTROLLERS: Ctor[] = [
+  AccountController,
+  PasskeyController,
+  MfaController,
+  OAuthController,
+  ProviderOrgController,
+  ProviderMeController,
+];
+
+describe("기타 인증 컨트롤러 라우트 인벤토리 (분할 회귀 가드)", () => {
+  it("account/passkey/mfa/oauth/provider-org/provider-me 라우트+가드 스냅샷", () => {
+    const actual = OTHER_CONTROLLERS.flatMap(routesOf).sort();
+    expect(actual).toEqual(EXPECTED_OTHER_ROUTES);
   });
 });
