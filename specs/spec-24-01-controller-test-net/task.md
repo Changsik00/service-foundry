@@ -48,10 +48,10 @@
 
 ## Task 6: oauth + provider-me 컨트롤러 테스트
 
-- [ ] 작성: `apps/api/src/auth/oauth.controller.test.ts` — authorize/callback 위임 + 가드
-- [ ] 작성: `apps/api/src/auth/provider-me.controller.test.ts` — provider me 위임
-- [ ] 실행 → PASS
-- [ ] Commit: `test(spec-24-01): add oauth/provider-me controller unit tests`
+- [x] 작성: `apps/api/src/auth/oauth.controller.test.ts` — authorize/callback 위임 + 쿠키 처리 (3 tests)
+- [x] 작성: `apps/api/src/auth/provider-me.controller.test.ts` — provider me 위임 + null 폴백 (2 tests)
+- [x] 실행 → PASS
+- [x] Commit: `test(spec-24-01): add oauth/provider-me controller unit tests`
 
 ---
 
