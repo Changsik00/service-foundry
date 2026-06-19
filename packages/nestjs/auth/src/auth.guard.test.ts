@@ -76,6 +76,24 @@ describe("AuthGuard", () => {
     expect((req.user as { orgRole: string | null }).orgRole).toBeNull();
   });
 
+  it("무효 orgRole 클레임(enum 외 값) → null 폴백 (We, fail-closed)", async () => {
+    const token = await signToken({ role: "user", activeOrgId: "org-abc", orgRole: "superadmin" });
+    const { ctx, req } = makeCtx(`Bearer ${token}`);
+    const guard = new AuthGuard(new NativeVerifier(opts));
+    // biome-ignore lint/suspicious/noExplicitAny: ExecutionContext mock
+    await guard.canActivate(ctx as any);
+    expect((req.user as { orgRole: string | null }).orgRole).toBeNull();
+  });
+
+  it("유효 orgRole 클레임(member) → 보존 (We)", async () => {
+    const token = await signToken({ role: "user", activeOrgId: "org-abc", orgRole: "member" });
+    const { ctx, req } = makeCtx(`Bearer ${token}`);
+    const guard = new AuthGuard(new NativeVerifier(opts));
+    // biome-ignore lint/suspicious/noExplicitAny: ExecutionContext mock
+    await guard.canActivate(ctx as any);
+    expect((req.user as { orgRole: string | null }).orgRole).toBe("member");
+  });
+
   it("구 클레임명 orgId 만 있으면 무시(null) — 표류 방지", async () => {
     const token = await signToken({ role: "user", orgId: "org-legacy" });
     const { ctx, req } = makeCtx(`Bearer ${token}`);
