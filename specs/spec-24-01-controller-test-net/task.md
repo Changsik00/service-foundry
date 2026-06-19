@@ -39,10 +39,10 @@
 
 ## Task 5: passkey + mfa 컨트롤러 테스트
 
-- [ ] 작성: `apps/api/src/auth/passkey.controller.test.ts` — 등록/인증 옵션·검증 위임
-- [ ] 작성: `apps/api/src/auth/mfa.controller.test.ts` — enroll/verify/disable 위임
-- [ ] 실행 → PASS
-- [ ] Commit: `test(spec-24-01): add passkey/mfa controller unit tests`
+- [x] 작성: `apps/api/src/auth/passkey.controller.test.ts` — 등록/인증 옵션·검증 위임 + zod 거부 (6 tests)
+- [x] 작성: `apps/api/src/auth/mfa.controller.test.ts` — enroll/verify/disable 위임 + code 거부 (5 tests)
+- [x] 실행 → PASS
+- [x] Commit: `test(spec-24-01): add passkey/mfa controller unit tests`
 
 ---
 
