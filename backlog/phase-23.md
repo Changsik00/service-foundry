@@ -43,7 +43,7 @@
 | `spec-23-04` | error-handling-convention | P? | Merged | `specs/spec-23-04-error-handling-convention/` |
 | `spec-23-05` | type-design | P? | Merged | `specs/spec-23-05-type-design/` |
 | `spec-23-06` | controller-split | P? | Merged | `specs/spec-23-06-controller-split/` |
-| `spec-23-07` | phase-review-fixes | P? | Active | `specs/spec-23-07-phase-review-fixes/` |
+| `spec-23-07` | phase-review-fixes | P? | Merged | `specs/spec-23-07-phase-review-fixes/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
