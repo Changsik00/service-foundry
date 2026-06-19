@@ -14,14 +14,14 @@
 ## Task 2: Wa — OAuth 빈 시크릿 fail-fast
 
 ### 2-1. 테스트 (TDD)
-- [ ] `oauth.service` 테스트에 케이스 추가: known provider(google) env 미설정 → throw (빈 문자열 진행 아님)
-- [ ] 실행 → Fail 확인
-- [ ] Commit: `test(spec-24-02): add failing test for oauth empty-secret fail-fast`
+- [x] `oauth.service` 테스트에 케이스 추가: known provider(google) env 미설정/빈값 → throw (2 cases)
+- [x] 실행 → Fail 확인
+- [x] Commit: `test(spec-24-02): add failing test for oauth empty-secret fail-fast` (b86e4df)
 
 ### 2-2. 구현
-- [ ] `apps/api/src/auth/oauth.service.ts` `getClientId`/`getClientSecret`: env 누락 시 `?? ""` → `AppError` throw
-- [ ] 실행 → Pass
-- [ ] Commit: `fix(spec-24-02): fail-fast on missing oauth client credentials (Wa)`
+- [x] `apps/api/src/auth/oauth.service.ts`: `requireEnv` 헬퍼로 env 누락 시 `AppError(INTERNAL/500)` throw
+- [x] 실행 → Pass (5/5), typecheck PASS
+- [x] Commit: `fix(spec-24-02): fail-fast on missing oauth client credentials (Wa)`
 
 ---
 
