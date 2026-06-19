@@ -68,15 +68,15 @@
 
 ### 🚦 Pre-Push Quality Gate
 
-- [ ] **전체 검증**: `turbo run test lint typecheck` → 모두 PASS (회귀 0)
+- [x] **전체 검증**: 단위 243 PASS + e2e 95 PASS(로컬 5434 DB 기동) + lint/typecheck PASS (회귀 0)
 
 ### 📝 산출물 작성
 
-- [ ] **walkthrough.md 작성** (발견 사항·결함 보고·carry-over 포함)
-- [ ] **pr_description.md 작성**
-- [ ] Commit: `docs(spec-24-01): ship walkthrough and pr description`
+- [x] **walkthrough.md 작성** (e2e 원인규명·route-inventory 보강·carry-over 포함)
+- [x] **pr_description.md 작성**
+- [x] Commit: `docs(spec-24-01): ship walkthrough and pr description`
 
 ### 🚀 Push & PR
 
-- [ ] `git push -u origin spec-24-01-controller-test-net`
-- [ ] PR 생성 (base: `phase-24-refactor-hardening-2`, `/hk-pr-gh`)
+- [x] `git push -u origin spec-24-01-controller-test-net`
+- [x] PR 생성 (base: `phase-24-refactor-hardening-2`)
