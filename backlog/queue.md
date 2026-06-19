@@ -59,6 +59,9 @@
 ### 🛠 리팩토링 감사 인벤토리 (2026-06-18, 7차원 코드레벨 스캔)
 
 > spec-x-docs-code-drift 직후 전체 리팩토링 대상 감사. **A 핫패스/F 분할/G 테스트부채는 Phase 승격 후보**, 일부는 착수 전 건별 검증 필요. 첫 퀵윈은 `spec-x-refactor-tidy` 로 분리(상수/데드코드/sleep중복/console).
+>
+> **✅ phase-23 반영 (2026-06-19)**: A1·A2·A3·A4(spec-23-02) · B(실태 재해석 → ADR-0027 전역 AppError 필터 + oauth, spec-23-04 / 23-07 필터 하드닝) · C(spec-x-refactor-tidy + spec-23-03) · D1·D5(refactor-tidy·23-03) · F1 auth.controller 3분할(23-06) · F3·F4(23-05).
+> **🧊 이월 (다음 phase/후속)**: **A5** 목록 limit · **B2** 컨트롤러 zod 3패턴 통일(미테스트 컨트롤러 안전망 선행) · **D2/D3/D4/D6** verifier·adapter·forRoot·guard 팩토리 · **E** 패키지 이관 → **phase-24** · **F2** account.controller(277) 분할 → spec-23-07 회고서 식별 · **G** 컨트롤러 단위테스트(account/mfa/oauth/passkey/session/org) · **로컬 e2e DB setup**(검증 공백 해소) · **Serena 일관 적용**(grep 회귀 방지).
 
 - **A. 버그성·핫패스 (P1)** — A1 `account.stores.ts:82 isSoleOwnerOfAnyOrg` N+1(+early-exit 누락) → 단일 집계쿼리 / A2 `api-key.service.ts:89` 매 호출 `last_used_at` UPDATE → fire-and-forget / A3 `jwks.controller.ts` 매 요청 JWKS 재계산 → 메모이즈(⚠️ key rotation 무효화 필요) / A4 `signin.service.ts:91` 독립 await 순차 → Promise.all / A5 org-list·feature-flag 목록 limit 부재. ❌반려: tenant.interceptor tx 래핑은 RLS SET LOCAL 필수라 정상.
 - **B. 컨벤션 (P2, 건별 검증)** — B1 `throw new Error()` ~14곳→AppError(ADR-0020, 일부 부트스트랩 의도적) / B2 raw zod `.parse()` ~8곳→`parse()` Result(ADR-0010) + 컨트롤러 검증 3패턴(zodPipe/parseOr400/수동) 통일 / B3 정당화 없는 `as unknown as`(superuser-guard, express req) / B4 worker `console.*`→logger.
