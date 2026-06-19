@@ -8,23 +8,23 @@
 
 ## Task 1: 브랜치 생성
 
-- [ ] `git checkout -b spec-24-01-controller-test-net` (base: `phase-24-refactor-hardening-2`)
+- [x] `git checkout -b spec-24-01-controller-test-net` (base: `phase-24-refactor-hardening-2`)
 
 ---
 
 ## Task 2: account.controller 테스트
 
-- [ ] 작성: `apps/api/src/auth/account.controller.test.ts` — 라우트별 서비스 위임 인자 + 검증/에러 분기 가드
-- [ ] 실행 → PASS (`cd apps/api && npm run test -- account.controller`)
-- [ ] Commit: `test(spec-24-01): add account.controller unit tests`
+- [x] 작성: `apps/api/src/auth/account.controller.test.ts` — 라우트별 서비스 위임 인자 + 검증/에러 분기 가드 (7 tests)
+- [x] 실행 → PASS (`cd apps/api && npm run test -- account.controller`)
+- [x] Commit: `test(spec-24-01): add account.controller unit tests` (bb7a4af)
 
 ---
 
 ## Task 3: session.controller 테스트
 
-- [ ] 작성: `apps/api/src/auth/session.controller.test.ts` — 세션 목록/취소/전체 로그아웃 위임 + AuthGuard/CsrfGuard 메타
-- [ ] 실행 → PASS
-- [ ] Commit: `test(spec-24-01): add session.controller unit tests`
+- [x] 작성: `apps/api/src/auth/session.controller.test.ts` — issueCsrf/세션 목록/취소/전체 로그아웃 위임 (5 tests)
+- [x] 실행 → PASS
+- [x] Commit: `test(spec-24-01): add session.controller unit tests`
 
 ---
 
