@@ -36,4 +36,38 @@ describe("AppErrorFilter", () => {
       expect.objectContaining({ code: "VALIDATION", statusCode: 400, details: err.details }),
     );
   });
+
+  it("비정상 statusCode(0) → 500 으로 클램프", () => {
+    const json = vi.fn();
+    const status = vi.fn(() => ({ json }));
+    const err = new AppError({ code: "NETWORK", message: "fetch failed", statusCode: 0 });
+
+    new AppErrorFilter().catch(err, makeHost({ status }));
+
+    expect(status).toHaveBeenCalledWith(500);
+  });
+
+  it("5xx → 내부 message/details 미노출 (일반화)", () => {
+    const json = vi.fn();
+    const status = vi.fn(() => ({ json }));
+    const err = new AppError({
+      code: "INTERNAL",
+      message: "drizzleSessionStore: insert returned no row",
+      statusCode: 500,
+      details: { table: "sessions" },
+    });
+
+    new AppErrorFilter().catch(err, makeHost({ status }));
+
+    expect(status).toHaveBeenCalledWith(500);
+    expect(json).toHaveBeenCalledWith({
+      code: "INTERNAL",
+      message: "Internal error",
+      statusCode: 500,
+    });
+    // 내부 message·details 가 본문에 없어야 한다.
+    const body = (json.mock.calls[0] as [Record<string, unknown>])[0];
+    expect(body.message).not.toContain("drizzleSessionStore");
+    expect(body.details).toBeUndefined();
+  });
 });

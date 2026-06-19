@@ -11,6 +11,15 @@ import type { Response } from "express";
 export class AppErrorFilter implements ExceptionFilter {
   catch(exception: AppError, host: ArgumentsHost): void {
     const res = host.switchToHttp().getResponse<Response>();
-    res.status(exception.statusCode).json(exception.toJSON());
+    // 비정상 statusCode(예: http-client NETWORK 의 0)는 500 으로 클램프.
+    const status =
+      exception.statusCode >= 400 && exception.statusCode <= 599 ? exception.statusCode : 500;
+    const body = exception.toJSON();
+    // 5xx 는 내부 message/details 를 클라이언트에 노출하지 않는다 (정보 노출 방지, ADR-0027).
+    if (status >= 500) {
+      res.status(status).json({ code: body.code, message: "Internal error", statusCode: status });
+      return;
+    }
+    res.status(status).json({ ...body, statusCode: status });
   }
 }
