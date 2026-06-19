@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import { RequestMethod } from "@nestjs/common";
+import { ORG_ROLES_KEY } from "@repo/nestjs-auth";
 import { describe, expect, it } from "vitest";
 
 import { AuthController } from "./auth.controller.js";
@@ -33,7 +34,10 @@ function routesOf(ctrl: Ctor): string[] {
         .map((g) => (typeof g === "function" ? g.name : (g as object)?.constructor?.name))
         .sort()
         .join(",");
-      return [`${RequestMethod[method]} /${prefix}/${path} [${guardNames}]`];
+      // @OrgRoles 메타도 포함 — OrgRolesGuard 는 메타 없으면 fail-open 이라 데코 누락 회귀를 가드.
+      const orgRoles = Reflect.getMetadata(ORG_ROLES_KEY, handler) as string[] | undefined;
+      const rolesSig = orgRoles ? ` @roles(${[...orgRoles].sort().join(",")})` : "";
+      return [`${RequestMethod[method]} /${prefix}/${path} [${guardNames}]${rolesSig}`];
     });
 }
 
@@ -47,7 +51,7 @@ const EXPECTED_AUTH_ROUTES = [
   "GET /auth/sessions [AuthGuard]",
   "POST /auth/email/verify/confirm [CsrfGuard]",
   "POST /auth/email/verify/request [CsrfGuard]",
-  "POST /auth/org/invite [AuthGuard,OrgRolesGuard]",
+  "POST /auth/org/invite [AuthGuard,OrgRolesGuard] @roles(admin,owner)",
   "POST /auth/org/invite/accept [AuthGuard]",
   "POST /auth/org/switch [AuthGuard]",
   "POST /auth/password/reset [CsrfGuard]",

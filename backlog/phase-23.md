@@ -43,6 +43,7 @@
 | `spec-23-04` | error-handling-convention | P? | Merged | `specs/spec-23-04-error-handling-convention/` |
 | `spec-23-05` | type-design | P? | Merged | `specs/spec-23-05-type-design/` |
 | `spec-23-06` | controller-split | P? | Merged | `specs/spec-23-06-controller-split/` |
+| `spec-23-07` | phase-review-fixes | P? | Active | `specs/spec-23-07-phase-review-fixes/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
@@ -130,6 +131,24 @@ pnpm --filter @apps/api test
 - [ ] 성공 기준 정량 측정 결과 기록
 - [ ] 사용자 최종 승인 (`/hk-phase-ship`)
 
-## 📊 검증 결과 (phase 완료 시 작성)
+## 📊 검증 결과 (2026-06-19, /hk-phase-review 후)
 
-<!-- 통합 테스트 로그, 성공 기준 측정값, 회귀 점검 결과 -->
+### 성공 기준 정량 측정 (정직 기록)
+| # | 기준 | 결과 | 측정 |
+|---|---|:---:|---|
+| 1 | 보안 무테스트 모듈 ~11개 테스트 | **△ 부분** | service 4개 신규(account.stores·jwt.service·mfa.service·oauth.service, 23-01/23-07 보강). **컨트롤러(account/mfa/oauth/passkey/session/org)는 미커버 → 이월**. "~11개" 미달 |
+| 2 | 핫패스 (N+1·동기쓰기·JWKS캐시·무제한쿼리0) | **△ 대부분** | N+1제거✅·api-key fire-and-forget✅·JWKS 메모이즈✅(23-07 spy 검증). **무제한 limit(A5) 미적용 → 이월** |
+| 3 | 회귀 0 (CI green) | **✅ 충족** | PR #165~170 전부 verify+e2e SUCCESS(gh 실측). 시나리오 1·2 e2e green |
+| 4 | 컨벤션/중복/복잡도 (auth.controller 분할·role enum) | **✅ 충족** | 639→3분할(23-06)·role enum(23-05)·상수/dedup(23-03)·에러레이어링 ADR-0027(23-04). B2만 이월 |
+
+### 통합 테스트 (시나리오 1·2)
+- 로컬 e2e 는 DB 미셋업으로 미실행(위험표 인지) → **CI e2e 가 증거**: #170 e2e pass(1m54s) 등 전 머지 commit green. 인증 풀사이클·테넌트 격리 회귀 없음.
+
+### /hk-phase-review 회고 결함 (spec-23-07 에서 수정 완료)
+- C1 AppErrorFilter status 클램프 + 5xx 새니타이즈 ✅
+- C2 route-inventory 에 @OrgRoles 메타 단언(권한 라우트 fail-open 회귀 가드) ✅
+- 테스트 무결성: JWKS 메모이즈 실검증 + MFA verifyMfa reject/backup 경로 ✅
+- C3 장부 정합성(본 갱신 + queue.md 이월 승격) ✅
+
+### 잔여 (이월 — queue.md 🧊 인벤토리 반영)
+A5·B2·D2/3/4/6·E(→phase-24)·F2·G 컨트롤러 테스트·로컬 e2e DB setup·Serena 일관.
