@@ -28,16 +28,16 @@
 ## Task 3: We — orgRole 런타임 검증
 
 ### 3-1. 테스트 (TDD)
-- [ ] `packages/nestjs/auth` AuthGuard 테스트: 무효 orgRole claim → null 폴백, 유효 → 보존
-- [ ] 실행 → Fail 확인
-- [ ] Commit: `test(spec-24-02): add failing test for orgRole runtime validation`
+- [x] AuthGuard 테스트: 무효 orgRole→null 폴백, 유효(member)→보존 (2 cases)
+- [x] 실행 → Fail 확인
+- [x] Commit: `test(spec-24-02): add failing test for orgRole runtime validation` (feef272)
 
 ### 3-2. 구현
-- [ ] `auth.guard.ts`: `OrgRole.safeParse` 검증 + `AuthenticatedUser.orgRole: OrgRole | null`
-- [ ] `org-roles.guard.ts`: `as OrgRole` 캐스트 제거
-- [ ] `verifier.ts`: 주석 갱신
-- [ ] 실행 → Pass, typecheck 회귀 0
-- [ ] Commit: `fix(spec-24-02): validate orgRole claim at auth boundary (We)`
+- [x] `auth.guard.ts`: `OrgRole.safeParse` 검증 + `AuthenticatedUser.orgRole: OrgRole | null`
+- [x] `org-roles.guard.ts`: `as OrgRole` 캐스트 제거
+- [x] `verifier.ts`: 주석 갱신
+- [x] 실행 → Pass (28/28), nestjs-auth + apps/api typecheck PASS
+- [x] Commit: `fix(spec-24-02): validate orgRole claim at auth boundary (We)`
 
 ---
 

@@ -5,7 +5,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
-import { Role } from "@repo/auth-contracts";
+import { OrgRole, Role } from "@repo/auth-contracts";
 
 import { NESTJS_AUTH_OPTIONS, type NestjsAuthOptions } from "./options.js";
 import { ACCESS_TOKEN_VERIFIER, type AccessTokenVerifier } from "./verifier.js";
@@ -16,7 +16,7 @@ export type AuthenticatedUser = {
   sub: string;
   role: Role;
   orgId: string | null;
-  orgRole: string | null;
+  orgRole: OrgRole | null;
 };
 
 function extractBearer(headers: Record<string, string | undefined>): string | null {
@@ -44,11 +44,16 @@ export class AuthGuard implements CanActivate {
     const roleResult = Role.safeParse(identity.role);
     if (!roleResult.success) throw new UnauthorizedException("missing or invalid role claim");
 
+    // orgRole 도 런타임 검증 (We, spec-24-02): null 은 그대로, 비-null 인데 enum 외 값이면
+    // null 폴백(fail-closed) — 위조/손상 orgRole 이 org 스코프 권한을 얻지 못하게 한다.
+    const orgRole =
+      identity.orgRole == null ? null : (OrgRole.safeParse(identity.orgRole).data ?? null);
+
     req.user = {
       sub: identity.sub,
       role: roleResult.data,
       orgId: identity.orgId,
-      orgRole: identity.orgRole,
+      orgRole,
     };
     return true;
   }
