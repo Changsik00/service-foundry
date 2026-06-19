@@ -51,15 +51,14 @@
 ## Task 5: Ship (필수)
 
 ### 🚦 Pre-Push Quality Gate
-- [ ] 단위 테스트(oauth.service + nestjs-auth) PASS
-- [ ] `npx turbo run lint typecheck` PASS
-- [ ] (회귀) 로컬 5434 DB 기동 후 e2e PASS (`reference_local_e2e_db_recipe`)
+- [x] 전체 게이트: `turbo run lint typecheck test`(로컬 5434 DB) → 142/142 task, apps/api 340 + nestjs-auth 28 PASS, 회귀 0
+- [x] Wa 깬 e2e 정정(client env 주입) → 별도 커밋 f3b2756
 
 ### 📝 산출물 작성
-- [ ] **walkthrough.md 작성**
-- [ ] **pr_description.md 작성**
-- [ ] Commit: `docs(spec-24-02): ship walkthrough and pr description`
+- [x] **walkthrough.md 작성**
+- [x] **pr_description.md 작성**
+- [x] Commit: `docs(spec-24-02): ship walkthrough and pr description`
 
 ### 🚀 Push & PR
-- [ ] `git push -u origin spec-24-02-retro-defects`
-- [ ] PR 생성 (base: `phase-24-refactor-hardening-2`)
+- [x] `git push -u origin spec-24-02-retro-defects`
+- [x] PR 생성 (base: `phase-24-refactor-hardening-2`)
