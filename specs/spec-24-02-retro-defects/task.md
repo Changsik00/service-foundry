@@ -43,8 +43,8 @@
 
 ## Task 4: Wf — ADR-0027 보강 (docs)
 
-- [ ] `docs/adr/0027-error-handling-layering.md`: AppErrorFilter 하드닝(statusCode 클램프 + 5xx 본문 message/details 억제) 동작 명문화
-- [ ] Commit: `docs(spec-24-02): document AppErrorFilter hardening in ADR-0027 (Wf)`
+- [x] `docs/adr/0027-error-handling-layering.md`: Decision §3 + Consequences 에 하드닝(클램프 + 5xx 본문 억제) 명문화
+- [x] Commit: `docs(spec-24-02): document AppErrorFilter hardening in ADR-0027 (Wf)`
 
 ---
 
