@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import * as authJwt from "@repo/backend-auth-jwt";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { JwtService } from "./jwt.service.js";
 
 describe("JwtService", () => {
@@ -20,9 +21,13 @@ describe("JwtService", () => {
     expect(jwks.keys[0]?.kid).toBeTruthy();
   });
 
-  it("getJwks() — 반복 호출 시 동일 kid (메모이즈 회귀 가드)", async () => {
+  it("getJwks() — 반복 호출 시 toJwks 1회만 (메모이즈 실검증)", async () => {
+    const toJwksSpy = vi.spyOn(authJwt, "toJwks");
     const a = await service.getJwks();
     const b = await service.getJwks();
+    // 캐시 적중 — 두 번째 호출은 toJwks 재계산 없음.
+    expect(toJwksSpy).toHaveBeenCalledTimes(1);
     expect(b.keys.map((k) => k.kid)).toEqual(a.keys.map((k) => k.kid));
+    toJwksSpy.mockRestore();
   });
 });

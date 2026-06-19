@@ -13,7 +13,12 @@ vi.mock("@repo/backend-auth-mfa", () => ({
   verifyTotp: vi.fn(() => false),
 }));
 
-import { verifyTotp } from "@repo/backend-auth-mfa";
+vi.mock("@repo/backend-auth-session", async (importOriginal) => {
+  const mod = await importOriginal<typeof import("@repo/backend-auth-session")>();
+  return { ...mod, createSession: vi.fn(async () => ({ refreshToken: "rt" })) };
+});
+
+import { verifyBackupCode, verifyTotp } from "@repo/backend-auth-mfa";
 
 type Cfg = { secret: string; enabled: boolean; backupCodeHashes: string[] } | null;
 
@@ -100,5 +105,33 @@ describe("MfaService", () => {
     await expect(service.verifyMfa("garbage.token.value", "123456")).rejects.toBeInstanceOf(
       UnauthorizedException,
     );
+  });
+
+  it("verifyMfa — 유효 challenge + 잘못된 TOTP·backup → Unauthorized", async () => {
+    const { service, jwtService } = makeService({
+      secret: "S",
+      enabled: true,
+      backupCodeHashes: ["h1"],
+    });
+    await jwtService.onModuleInit();
+    vi.mocked(verifyTotp).mockReturnValue(false);
+    vi.mocked(verifyBackupCode).mockResolvedValue(-1);
+    const token = await service.signMfaChallengeToken(USER);
+    await expect(service.verifyMfa(token, "000000")).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it("verifyMfa — 유효 backup code → 소모(updateEnabled) + accessToken", async () => {
+    const { service, jwtService, mfaStore } = makeService({
+      secret: "S",
+      enabled: true,
+      backupCodeHashes: ["h1", "h2"],
+    });
+    await jwtService.onModuleInit();
+    vi.mocked(verifyTotp).mockReturnValue(false);
+    vi.mocked(verifyBackupCode).mockResolvedValue(0); // index 0 유효 → 소모
+    const token = await service.signMfaChallengeToken(USER);
+    const res = await service.verifyMfa(token, "backup-1");
+    expect(mfaStore.updateEnabled).toHaveBeenCalledWith(USER, true, ["h2"]); // h1 소모됨
+    expect(res.accessToken).toBeTruthy();
   });
 });
