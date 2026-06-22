@@ -47,7 +47,7 @@ phase-23(refactor-hardening) 1차에서 7차원 코드 감사(2026-06-18, `backl
 |---|---|:---:|---|---|
 | `spec-24-01` | controller-test-net | P1 | Merged | `specs/spec-24-01-controller-test-net/` |
 | `spec-24-02` | retro-defects | P2 | Merged | `specs/spec-24-02-retro-defects/` |
-| `spec-24-03` | account-controller-split | P? | Active | `specs/spec-24-03-account-controller-split/` |
+| `spec-24-03` | account-controller-split | P2 | Merged | `specs/spec-24-03-account-controller-split/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
