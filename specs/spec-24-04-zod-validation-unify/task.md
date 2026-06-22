@@ -30,9 +30,9 @@
 
 ## Task 4: passkey try/catch+`.parse()` → `zodPipe`
 
-- [ ] `passkey.controller.ts`: 2 콜사이트 try/catch 제거 → `zodPipe`, 불필요 import(BadRequestException/ZodError) 정리
-- [ ] 실행 → `passkey` 단위 PASS, typecheck PASS
-- [ ] Commit: `refactor(spec-24-04): unify passkey validation to zodPipe (B2)`
+- [x] `passkey.controller.ts`: 2 콜사이트 try/catch 제거 → `zodPipe`, BadRequestException/ZodError import 제거
+- [x] 실행 → passkey 6 PASS, typecheck PASS
+- [x] Commit: `refactor(spec-24-04): unify passkey validation to zodPipe (B2)`
 
 ---
 
