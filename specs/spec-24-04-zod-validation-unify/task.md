@@ -22,9 +22,9 @@
 
 ## Task 3: mfa raw `.parse()` → `zodPipe`
 
-- [ ] `mfa.controller.ts`: 3 콜사이트 `Schema.parse(body)` → `zodPipe(Schema).transform(body)`
-- [ ] 실행 → `mfa` 단위 PASS, typecheck PASS
-- [ ] Commit: `refactor(spec-24-04): unify mfa validation to zodPipe (B2)`
+- [x] `mfa.controller.ts`: 3 콜사이트 `.parse()` → `zodPipe().transform()`
+- [x] 실행 → mfa 5 PASS
+- [x] Commit: `refactor(spec-24-04): unify mfa validation to zodPipe (B2)`
 
 ---
 
