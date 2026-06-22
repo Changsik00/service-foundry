@@ -46,6 +46,7 @@ phase-23(refactor-hardening) 1차에서 7차원 코드 감사(2026-06-18, `backl
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
 | `spec-24-01` | controller-test-net | P1 | Merged | `specs/spec-24-01-controller-test-net/` |
+| `spec-24-02` | retro-defects | P? | Active | `specs/spec-24-02-retro-defects/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`

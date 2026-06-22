@@ -93,8 +93,8 @@ export class OAuthService {
 
   // 도달 시 getProvider 가 이미 검증했으므로 방어적 — raw Error 대신 AppError(전역 필터가 매핑, ADR-0027).
   private getClientId(provider: string): string {
-    if (provider === "google") return process.env["GOOGLE_CLIENT_ID"] ?? "";
-    if (provider === "kakao") return process.env["KAKAO_CLIENT_ID"] ?? "";
+    if (provider === "google") return this.requireEnv(provider, "GOOGLE_CLIENT_ID");
+    if (provider === "kakao") return this.requireEnv(provider, "KAKAO_CLIENT_ID");
     throw new AppError({
       code: "NOT_FOUND",
       message: `Unknown provider: ${provider}`,
@@ -103,12 +103,28 @@ export class OAuthService {
   }
 
   private getClientSecret(provider: string): string {
-    if (provider === "google") return process.env["GOOGLE_CLIENT_SECRET"] ?? "";
-    if (provider === "kakao") return process.env["KAKAO_CLIENT_SECRET"] ?? "";
+    if (provider === "google") return this.requireEnv(provider, "GOOGLE_CLIENT_SECRET");
+    if (provider === "kakao") return this.requireEnv(provider, "KAKAO_CLIENT_SECRET");
     throw new AppError({
       code: "NOT_FOUND",
       message: `Unknown provider: ${provider}`,
       statusCode: 404,
     });
+  }
+
+  /**
+   * 설정된 provider 의 자격증명 env 를 읽되, 누락(undefined/빈 문자열)이면 fail-fast (Wa, spec-24-02).
+   * 빈 시크릿으로 authorize/exchange 가 진행돼 provider 측 모호한 오류·디버깅 곤란을 막는다.
+   */
+  private requireEnv(provider: string, key: string): string {
+    const value = process.env[key];
+    if (!value) {
+      throw new AppError({
+        code: "INTERNAL",
+        message: `OAuth provider '${provider}' misconfigured: ${key} is not set`,
+        statusCode: 500,
+      });
+    }
+    return value;
   }
 }

@@ -8,6 +8,7 @@ export type VerifiedIdentity = {
   /** raw string — 호출자(AuthGuard)가 Role.safeParse 로 검증 */
   role: string;
   orgId: string | null;
+  /** raw string — 호출자(AuthGuard)가 OrgRole.safeParse 로 검증 (We, spec-24-02) */
   orgRole: string | null;
 };
 
