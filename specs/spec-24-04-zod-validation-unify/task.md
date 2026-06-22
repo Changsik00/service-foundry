@@ -39,13 +39,13 @@
 ## Task 5: Ship (필수)
 
 ### 🚦 Pre-Push Quality Gate
-- [ ] `turbo run lint typecheck test` (로컬 5434 DB) → 회귀 0 (mfa/passkey/oauth e2e 포함)
+- [x] `turbo run lint typecheck test`(로컬 5434 DB) → 142/142, apps/api 340 tests, 회귀 0
 
 ### 📝 산출물 작성
-- [ ] **walkthrough.md 작성**
-- [ ] **pr_description.md 작성**
-- [ ] Commit: `docs(spec-24-04): ship walkthrough and pr description`
+- [x] **walkthrough.md 작성**
+- [x] **pr_description.md 작성**
+- [x] Commit: `docs(spec-24-04): ship walkthrough and pr description`
 
 ### 🚀 Push & PR
-- [ ] `git push -u origin spec-24-04-zod-validation-unify`
-- [ ] PR 생성 (base: `phase-24-refactor-hardening-2`)
+- [x] `git push -u origin spec-24-04-zod-validation-unify`
+- [x] PR 생성 (base: `phase-24-refactor-hardening-2`)
