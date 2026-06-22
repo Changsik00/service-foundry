@@ -22,6 +22,7 @@ import { ApiKeyController } from "./api-key.controller.js";
 import { ApiKeyGuard } from "./api-key.guard.js";
 import { ApiKeyService } from "./api-key.service.js";
 import { CSRF_SECRET, CsrfGuard } from "./csrf.guard.js";
+import { EmailChangeController } from "./email-change.controller.js";
 import { EmailChangeService } from "./email-change.service.js";
 import { createEmailChangeTokenStore, EMAIL_CHANGE_TOKEN_STORE } from "./email-change.stores.js";
 import { FRONTEND_URL } from "./frontend-url.token.js";
@@ -59,6 +60,7 @@ export class ProviderAuthModule {
         ProviderMeController,
         ProviderOrgController,
         AccountController,
+        EmailChangeController,
         ApiKeyController,
         AdminController,
       ],

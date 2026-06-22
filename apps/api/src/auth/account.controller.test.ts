@@ -19,22 +19,13 @@ function makeAccountService() {
   };
 }
 
-function makeEmailChangeService() {
-  return {
-    requestEmailChange: vi.fn().mockResolvedValue(undefined),
-    confirmEmailChange: vi.fn().mockResolvedValue("confirmed"),
-  };
-}
-
 describe("AccountController", () => {
   let accountService: ReturnType<typeof makeAccountService>;
-  let emailChangeService: ReturnType<typeof makeEmailChangeService>;
   let controller: AccountController;
 
   beforeEach(() => {
     accountService = makeAccountService();
-    emailChangeService = makeEmailChangeService();
-    controller = new AccountController(accountService as never, emailChangeService as never);
+    controller = new AccountController(accountService as never);
   });
 
   it("changePassword → accountService.changePassword(sub, current, new) 위임", async () => {
@@ -56,22 +47,6 @@ describe("AccountController", () => {
     const result = await controller.deleteAccount(user);
     expect(accountService.deleteAccount).toHaveBeenCalledWith("user-001");
     expect(result).toEqual({ status: "ok" });
-  });
-
-  it("requestEmailChange → emailChangeService.requestEmailChange(sub, newEmail) 위임", async () => {
-    const result = await controller.requestEmailChange({ newEmail: "new@example.com" }, user);
-    expect(emailChangeService.requestEmailChange).toHaveBeenCalledWith(
-      "user-001",
-      "new@example.com",
-    );
-    expect(result).toEqual({ status: "ok" });
-  });
-
-  it("confirmEmailChange → emailChangeService 결과(outcome)를 status 로 그대로 반환", async () => {
-    emailChangeService.confirmEmailChange.mockResolvedValueOnce("expired");
-    const result = await controller.confirmEmailChange({ token: "t".repeat(20) });
-    expect(emailChangeService.confirmEmailChange).toHaveBeenCalledWith("t".repeat(20));
-    expect(result).toEqual({ status: "expired" });
   });
 
   describe("uploadAvatar", () => {

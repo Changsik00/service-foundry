@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import { AccountController } from "./account.controller.js";
 import { AuthController } from "./auth.controller.js";
+import { EmailChangeController } from "./email-change.controller.js";
 import { MfaController } from "./mfa.controller.js";
 import { OAuthController } from "./oauth.controller.js";
 import { OrgController } from "./org.controller.js";
@@ -79,15 +80,16 @@ describe("auth 라우트 인벤토리 (분할 회귀 가드)", () => {
 });
 
 /**
- * 나머지 인증 컨트롤러(account/passkey/mfa/oauth/provider-org/provider-me)의 라우트+가드 스냅샷.
- * spec-24-03 의 account.controller 분할 전 라우트·가드 보존 계약을 확보한다 (spec-24-01).
+ * 나머지 인증 컨트롤러(account/email-change/passkey/mfa/oauth/provider-org/provider-me)의 라우트+가드 스냅샷.
+ * spec-24-03 의 account.controller 분할 후에도 URL·가드 계약이 보존됨을 검증한다 (안전망 spec-24-01).
  */
 const EXPECTED_OTHER_ROUTES = [
-  // account.controller (spec-24-03 분할 예정 — 분할 후 본 스냅샷 보존 필수)
+  // account.controller (password/profile/delete/avatar — AccountService)
   "DELETE /auth/account// [AuthGuard,CsrfGuard]", // @Delete() 빈 경로 → 리플렉션상 `//` (라우팅 시 collapse)
   "PATCH /auth/account/password [AuthGuard]",
   "PATCH /auth/account/profile [AuthGuard]",
   "POST /auth/account/avatar [AuthGuard]",
+  // email-change.controller (spec-24-03 분할 — EmailChangeService, prefix 동일)
   "POST /auth/account/email/change-confirm [CsrfGuard]",
   "POST /auth/account/email/change-request [AuthGuard,CsrfGuard]",
   // passkey.controller
@@ -115,6 +117,7 @@ const EXPECTED_OTHER_ROUTES = [
 
 const OTHER_CONTROLLERS: Ctor[] = [
   AccountController,
+  EmailChangeController,
   PasskeyController,
   MfaController,
   OAuthController,
