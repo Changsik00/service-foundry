@@ -27,14 +27,14 @@
 ## Task 3: Ship (필수)
 
 ### 🚦 Pre-Push Quality Gate
-- [ ] `turbo run lint typecheck test` (로컬 5434 DB) → 회귀 0 (account/email-change e2e 포함)
-- [ ] account.controller LOC < 200 확인
+- [x] `turbo run lint typecheck test`(로컬 5434 DB) → 142/142, apps/api 340 tests/61 files, 회귀 0
+- [x] account.controller **188 LOC** (< 200)
 
 ### 📝 산출물 작성
-- [ ] **walkthrough.md 작성**
-- [ ] **pr_description.md 작성**
-- [ ] Commit: `docs(spec-24-03): ship walkthrough and pr description`
+- [x] **walkthrough.md 작성**
+- [x] **pr_description.md 작성**
+- [x] Commit: `docs(spec-24-03): ship walkthrough and pr description`
 
 ### 🚀 Push & PR
-- [ ] `git push -u origin spec-24-03-account-controller-split`
-- [ ] PR 생성 (base: `phase-24-refactor-hardening-2`)
+- [x] `git push -u origin spec-24-03-account-controller-split`
+- [x] PR 생성 (base: `phase-24-refactor-hardening-2`)
