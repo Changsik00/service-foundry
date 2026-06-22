@@ -33,7 +33,7 @@ phase-23(refactor-hardening) 1차에서 7차원 코드 감사(2026-06-18, `backl
 1. phase-23 G 대상 무테스트 모듈(~11) 중 컨트롤러/서비스 핵심 경로에 단위 테스트 추가 — 신규 테스트 전부 PASS.
 2. 회고 잔여 Warning(Wa/We/Wf) 해소 — empty-secret fail-fast, role 런타임 검증, ADR-0027 문서화 완료.
 3. `account.controller.ts`(277 LOC) 책임 분리 — 단일 컨트롤러 LOC 200 이하.
-4. RLS tenant infra(E1) 패키지 이관 후 기존 격리 e2e(spec-17-08 경로) 전부 PASS — 회귀 0.
+4. RLS tenant infra(E1, spec-24-05) 패키지 이관 후 기존 격리 e2e(spec-17-08 경로) 전부 PASS — 회귀 0.
 5. 전체 `turbo run test` / lint / typecheck PASS — 회귀 0.
 
 ## 🧩 작업 단위 (SPEC + phase-FF)
@@ -47,6 +47,7 @@ phase-23(refactor-hardening) 1차에서 7차원 코드 감사(2026-06-18, `backl
 |---|---|:---:|---|---|
 | `spec-24-01` | controller-test-net | P1 | Merged | `specs/spec-24-01-controller-test-net/` |
 | `spec-24-02` | retro-defects | P2 | Merged | `specs/spec-24-02-retro-defects/` |
+| `spec-24-03` | account-controller-split | P? | Active | `specs/spec-24-03-account-controller-split/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
@@ -69,16 +70,23 @@ phase-23(refactor-hardening) 1차에서 7차원 코드 감사(2026-06-18, `backl
   - phase-23 회고 §Wa/We/Wf, `docs/decisions/ADR-0027-*` (AppError 전역 필터)
 - **연관 모듈**: `apps/api/src/auth/oauth/oauth.service.ts`, role enum, `ADR-0027`
 
-### spec-24-03 — account.controller 분할 + zod 패턴 통일 (F2/B2)
+### spec-24-03 — account.controller 분할 (F2)
 
-- **요점**: 277 LOC 컨트롤러를 책임별로 쪼개고, 컨트롤러 검증 3패턴을 하나로 통일.
-- **방향성**: F2 account.controller 의 email-change·avatar 등을 분리(F1 Auth/Session/Org 분할 패턴 재사용). B2 raw `.parse()` ~8곳을 `parse()` Result(ADR-0010) 로, zodPipe/parseOr400/수동 3패턴을 단일 패턴으로 통일. **spec-24-01 안전망 위에서 수행.**
+- **요점**: 277 LOC account.controller 를 책임별로 분리(이메일 변경 추출).
+- **방향성**: EmailChangeController(이메일 변경 request/confirm, EmailChangeService) 추출 → AccountController 는 password/profile/delete/avatar(AccountService)만. F1(auth.controller 3분할, spec-23-06) 패턴 재사용. `auth.module` + `provider-auth.module` 양쪽 등록 갱신 + route-inventory 스냅샷 보존. **spec-24-01 안전망 위에서 수행.**
 - **참조**:
-  - `backlog/queue.md` 감사 §F2/§B2, `docs/decisions/ADR-0010-*` (Result parse)
-  - spec-23-06 (auth.controller 3분할 선례)
-- **연관 모듈**: `apps/api/src/auth/account/account.controller.ts`, 컨트롤러 zod 검증부
+  - `backlog/queue.md` 감사 §F2, spec-23-06 (auth.controller 3분할 선례), `reference_route_inventory_pattern`
+- **연관 모듈**: `apps/api/src/auth/account.controller.ts`, `auth.module.ts`, `provider-auth.module.ts`
 
-### spec-24-04 — RLS tenant infra 패키지 이관 (E1)
+### spec-24-04 — 컨트롤러 zod 검증 패턴 통일 (B2)
+
+- **요점**: 컨트롤러 검증 3패턴(`zodPipe`/`parseOr400`/raw `.parse()`)을 표준 `zodPipe` 로 수렴.
+- **방향성**: provider-org 의 `parseOr400` 로컬헬퍼 제거, mfa(3)·passkey(2) 의 raw `.parse()`+try/catch 를 `zodPipe` 로 치환. 기존 BadRequest 매핑 동작 보존. (account 는 분할 후 별도 — zod 부재라 통일 대상 아님, 필요 시 후속.)
+- **참조**:
+  - `backlog/queue.md` 감사 §B2, `docs/decisions/ADR-0010-*` (Result parse), `auth-controller.shared.ts` (`zodPipe`)
+- **연관 모듈**: `provider-org.controller.ts`, `mfa.controller.ts`, `passkey.controller.ts`
+
+### spec-24-05 — RLS tenant infra 패키지 이관 (E1)
 
 - **요점**: `apps/api/infra/tenant.*` 의 RLS tenant 인프라를 backend+nestjs 패키지로 이관(worker 재사용 가능).
 - **방향성**: tenant interceptor/ALS tx/SET LOCAL 흐름을 platform-agnostic core(`packages/backend/*`) + nestjs adapter(`packages/nestjs/*`) 로 분리(ADR-0015/0016 패턴). 이관 후 격리 e2e(spec-17-08 실 HTTP 경로) 회귀 0 필수.
@@ -87,15 +95,15 @@ phase-23(refactor-hardening) 1차에서 7차원 코드 감사(2026-06-18, `backl
   - `feedback_platform_agnostic_packages`, `feedback_isolation_test_real_path`
 - **연관 모듈**: `apps/api/infra/tenant.*` → `packages/backend/*` + `packages/nestjs/*`
 
-### spec-24-05 — Drizzle 스키마 패키지 이관 (E2)
+### spec-24-06 — Drizzle 스키마 패키지 이관 (E2)
 
 - **요점**: `apps/api/infra/schema/*` Drizzle 스키마를 `packages/backend/schema` 로 이관(50+ 파일).
-- **방향성**: org 도메인 경계 정리 선결. 마이그레이션 저널 정합 유지(`feedback_drizzle_migration_journal`). 규모가 크므로 spec-24-04 결과 보고 후 §11.3 재검증으로 범위 확정 — 필요 시 분할.
+- **방향성**: org 도메인 경계 정리 선결. 마이그레이션 저널 정합 유지(`feedback_drizzle_migration_journal`). 규모가 크므로 spec-24-05 결과 보고 후 §11.3 재검증으로 범위 확정 — 필요 시 분할.
 - **참조**:
   - `backlog/queue.md` 감사 §E2, `feedback_drizzle_migration_journal`
 - **연관 모듈**: `apps/api/infra/schema/*` → `packages/backend/schema`
 
-> **후속 후보(미배치)**: D2/D3/D4/D6 팩토리 중복 제거, E3(provision·org 도메인 분리)/E4(superuser-guard·feature-flag·cookie/csrf 패키지화). spec-24-04/05 진행 결과를 보고 phase 내 추가 spec 또는 다음 phase 로 판단.
+> **후속 후보(미배치)**: D2/D3/D4/D6 팩토리 중복 제거, E3(provision·org 도메인 분리)/E4(superuser-guard·feature-flag·cookie/csrf 패키지화). spec-24-05/06 진행 결과를 보고 phase 내 추가 spec 또는 다음 phase 로 판단.
 
 ### phase-FF 예정 항목 (spec 미생성)
 
@@ -120,10 +128,10 @@ phase-23(refactor-hardening) 1차에서 7차원 코드 감사(2026-06-18, `backl
 > 본 phase 는 리팩토링/하드닝 중심이라 통합 테스트의 핵심은 **회귀 0** 검증이다.
 
 ### 시나리오 1: 패키지 이관 후 멀티테넌트 격리 유지
-- **Given**: spec-24-04 로 RLS tenant infra 가 패키지로 이관된 상태
+- **Given**: spec-24-05 로 RLS tenant infra 가 패키지로 이관된 상태
 - **When**: 실 HTTP(토큰→guard→interceptor→RLS) 경로로 cross-org 접근 시도
 - **Then**: spec-17-08 격리 e2e 시나리오 전부 PASS (격리 회귀 0)
-- **연관 SPEC**: spec-24-04, spec-24-05
+- **연관 SPEC**: spec-24-05, spec-24-06
 
 ### 시나리오 2: 컨트롤러 분할/검증 통일 후 동작 보존
 - **Given**: spec-24-03 으로 account.controller 분할 + zod 통일 적용
@@ -152,7 +160,7 @@ turbo run lint typecheck
 | E 이관 중 RLS 격리 깨짐 | 보안(테넌트 누수) | 이관 전 spec-24-01 안전망 + 이관 후 실 HTTP 격리 e2e 필수(`feedback_isolation_test_real_path`) |
 | Drizzle 스키마 이관 시 마이그레이션 저널 drift | CI 500/컬럼 누락 | `db:generate` 사용, `_journal.json` 정합 확인(`feedback_drizzle_migration_journal`) |
 | 테스트가 신구현 거울이 되어 독립성 상실(Wb) | 거짓 GREEN | 동작 가드로 작성, 가드 대상 코드와 동일 커밋 재작성 금지 |
-| E 범위 과대(50+ 파일) | 일정 지연 | §11.3 재검증으로 spec-24-05 범위 확정, 필요 시 분할/후속 phase 이월 |
+| E 범위 과대(50+ 파일) | 일정 지연 | §11.3 재검증으로 spec-24-06 범위 확정, 필요 시 분할/후속 phase 이월 |
 
 ## 🏁 Phase Done 조건
 
