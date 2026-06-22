@@ -11,21 +11,12 @@ import {
 } from "@nestjs/common";
 import { OrgInviteAcceptInput, OrgInviteInput, OrgSwitchInput } from "@repo/auth-contracts";
 import { type AuthenticatedUser, AuthGuard, CurrentUser } from "@repo/nestjs-auth";
-import { ZodError, type z } from "zod";
 
+import { zodPipe } from "./auth-controller.shared.js";
 import { OrgInviteService } from "./org-invite.service.js";
 import { OrgListService, type OrgSummary } from "./org-list.service.js";
 import { type MemberListResult, type OrgMember, OrgMembersService } from "./org-members.service.js";
 import { ProviderOrgSwitchService } from "./provider-org-switch.service.js";
-
-function parseOr400<T>(schema: z.ZodType<T>, value: unknown): T {
-  try {
-    return schema.parse(value);
-  } catch (err) {
-    if (err instanceof ZodError) throw new BadRequestException(err.issues);
-    throw err;
-  }
-}
 
 /** provider 모드 org 표면 — native auth.controller 의 org 엔드포인트와 분리 (spec-x-org-api) */
 @Controller("auth")
@@ -52,7 +43,7 @@ export class ProviderOrgController {
     @Body() body: unknown,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ orgId: string }> {
-    const { orgId } = parseOr400(OrgSwitchInput, body);
+    const { orgId } = zodPipe(OrgSwitchInput).transform(body);
     return this.orgSwitch.switch(user.sub, orgId);
   }
 
@@ -81,7 +72,7 @@ export class ProviderOrgController {
     @Body() body: unknown,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ status: string }> {
-    const { email, role } = parseOr400(OrgInviteInput, body);
+    const { email, role } = zodPipe(OrgInviteInput).transform(body);
     if (!user.orgId) throw new BadRequestException("no active org");
     await this.orgInvite.inviteForProvider(user.sub, user.orgId, email, role);
     return { status: "ok" };
@@ -95,7 +86,7 @@ export class ProviderOrgController {
     @Body() body: unknown,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ orgId: string }> {
-    const { token } = parseOr400(OrgInviteAcceptInput, body);
+    const { token } = zodPipe(OrgInviteAcceptInput).transform(body);
     return this.orgInvite.acceptForProvider(user.sub, token);
   }
 }

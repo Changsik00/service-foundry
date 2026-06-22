@@ -1,17 +1,9 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  HttpCode,
-  Inject,
-  Post,
-  Res,
-  UseGuards,
-} from "@nestjs/common";
+import { Body, Controller, HttpCode, Inject, Post, Res, UseGuards } from "@nestjs/common";
 import { type AuthenticatedUser, AuthGuard, CurrentUser } from "@repo/nestjs-auth";
 import type { Response } from "express";
-import { ZodError, z } from "zod";
+import { z } from "zod";
 
+import { zodPipe } from "./auth-controller.shared.js";
 import { setRefreshTokenCookie } from "./cookie.helper.js";
 import { CsrfGuard } from "./csrf.guard.js";
 import { PasskeyService } from "./passkey.service.js";
@@ -47,14 +39,9 @@ export class PasskeyController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() body: unknown,
   ): Promise<{ status: "ok" }> {
-    try {
-      const { challengeToken, credential } = RegisterVerifyInput.parse(body);
-      await this.passkeyService.verifyRegister(user.sub, challengeToken, credential as never);
-      return { status: "ok" };
-    } catch (err) {
-      if (err instanceof ZodError) throw new BadRequestException(err.issues);
-      throw err;
-    }
+    const { challengeToken, credential } = zodPipe(RegisterVerifyInput).transform(body);
+    await this.passkeyService.verifyRegister(user.sub, challengeToken, credential as never);
+    return { status: "ok" };
   }
 
   @Post("authenticate/options")
@@ -71,18 +58,13 @@ export class PasskeyController {
     @Body() body: unknown,
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
-    try {
-      const { challengeToken, credentialId, credential } = AuthVerifyInput.parse(body);
-      const { accessToken, refreshToken } = await this.passkeyService.verifyAuth(
-        challengeToken,
-        credentialId,
-        credential as never,
-      );
-      setRefreshTokenCookie(res, refreshToken);
-      return { accessToken };
-    } catch (err) {
-      if (err instanceof ZodError) throw new BadRequestException(err.issues);
-      throw err;
-    }
+    const { challengeToken, credentialId, credential } = zodPipe(AuthVerifyInput).transform(body);
+    const { accessToken, refreshToken } = await this.passkeyService.verifyAuth(
+      challengeToken,
+      credentialId,
+      credential as never,
+    );
+    setRefreshTokenCookie(res, refreshToken);
+    return { accessToken };
   }
 }
