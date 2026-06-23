@@ -1,11 +1,9 @@
 import { Inject, Injectable } from "@nestjs/common";
 import type { OrgRole } from "@repo/auth-contracts";
+import { memberships, organizations, users } from "@repo/backend-schema";
 import { runWithSystemTenant, TENANT_ALS, type TenantAls } from "@repo/backend-tenant";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { eq } from "drizzle-orm";
-import { memberships } from "../infra/schema/memberships.js";
-import { organizations } from "../infra/schema/organizations.js";
-import { users } from "../infra/schema/users.js";
 
 export interface OrgSummary {
   orgId: string;

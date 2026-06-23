@@ -1,8 +1,8 @@
 import { Inject } from "@nestjs/common";
+import type { PasskeyChallengeRow, PasskeyCredentialRow } from "@repo/backend-schema";
+import { passkeyChallenges, passkeyCredentials } from "@repo/backend-schema";
 import type { NodePgDatabase } from "@repo/nestjs-database";
 import { and, eq, gt } from "drizzle-orm";
-import type { PasskeyChallengeRow, PasskeyCredentialRow } from "../infra/schema/index.js";
-import { passkeyChallenges, passkeyCredentials } from "../infra/schema/index.js";
 
 export interface PasskeyStore {
   findCredentialsByUserId(userId: string): Promise<PasskeyCredentialRow[]>;

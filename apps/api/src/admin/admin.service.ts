@@ -1,11 +1,10 @@
 import { Inject, Injectable } from "@nestjs/common";
 import type { Role } from "@repo/auth-contracts";
+import { organizations, users } from "@repo/backend-schema";
 import { runWithSystemTenant, TENANT_ALS, type TenantAls } from "@repo/backend-tenant";
 import { type CursorPaginationParams, decodeCursor, encodeCursor } from "@repo/contracts";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { and, asc, gt, ilike, or } from "drizzle-orm";
-import { organizations } from "../infra/schema/organizations.js";
-import { users } from "../infra/schema/users.js";
 
 export interface AdminOrg {
   id: string;

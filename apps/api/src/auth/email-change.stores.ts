@@ -1,9 +1,8 @@
 import { Inject } from "@nestjs/common";
+import type { EmailChangeTokenInsert, EmailChangeTokenRow } from "@repo/backend-schema";
+import { emailChangeTokens } from "@repo/backend-schema";
 import type { NodePgDatabase } from "@repo/nestjs-database";
 import { eq } from "drizzle-orm";
-
-import type { EmailChangeTokenInsert, EmailChangeTokenRow } from "../infra/schema/index.js";
-import { emailChangeTokens } from "../infra/schema/index.js";
 
 export const EMAIL_CHANGE_TOKEN_STORE = Symbol("EMAIL_CHANGE_TOKEN_STORE");
 export const InjectEmailChangeTokenStore = () => Inject(EMAIL_CHANGE_TOKEN_STORE);

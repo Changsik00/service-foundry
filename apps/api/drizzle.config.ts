@@ -4,7 +4,7 @@ import { defineConfig } from "drizzle-kit";
 config({ path: "../../.env", override: false });
 
 export default defineConfig({
-  schema: "./src/infra/schema/local.ts",
+  schema: "../../packages/backend/schema/src/local.ts",
   out: "./drizzle",
   dialect: "postgresql",
   // 마이그레이션은 owner/superuser 로 실행 — DATABASE_MIGRATE_URL 우선, 없으면 DATABASE_URL 폴백.
