@@ -50,6 +50,7 @@ phase-23(refactor-hardening) 1차에서 7차원 코드 감사(2026-06-18, `backl
 | `spec-24-03` | account-controller-split | P2 | Merged | `specs/spec-24-03-account-controller-split/` |
 | `spec-24-04` | zod-validation-unify | P2 | Merged | `specs/spec-24-04-zod-validation-unify/` |
 | `spec-24-05` | tenant-infra-package | P1 | Merged | `specs/spec-24-05-tenant-infra-package/` |
+| `spec-24-06` | drizzle-schema-package | P? | Active | `specs/spec-24-06-drizzle-schema-package/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`

@@ -1,8 +1,7 @@
 import { Inject } from "@nestjs/common";
+import { memberships, users } from "@repo/backend-schema";
 import type { NodePgDatabase } from "@repo/nestjs-database";
 import { and, eq, inArray, ne } from "drizzle-orm";
-
-import { memberships, users } from "../infra/schema/index.js";
 
 export const ACCOUNT_USER_STORE = Symbol("ACCOUNT_USER_STORE");
 export const InjectAccountUserStore = () => Inject(ACCOUNT_USER_STORE);

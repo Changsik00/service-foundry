@@ -1,8 +1,7 @@
 import { BadRequestException } from "@nestjs/common";
+import type { UserRow } from "@repo/backend-schema";
 import type { Request } from "express";
 import { ZodError, type z } from "zod";
-
-import type { UserRow } from "../infra/schema/index.js";
 
 // ── Swagger inline schemas (auth 컨트롤러 군 공유) ────────────────────────────
 

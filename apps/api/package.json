@@ -36,6 +36,7 @@
     "@repo/backend-logger": "workspace:*",
     "@repo/backend-notification": "workspace:*",
     "@repo/backend-observability": "workspace:*",
+    "@repo/backend-schema": "workspace:*",
     "@repo/backend-settings": "workspace:*",
     "@repo/backend-tenant": "workspace:*",
     "@repo/nestjs-auth": "workspace:*",

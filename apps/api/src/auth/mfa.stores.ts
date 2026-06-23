@@ -1,8 +1,8 @@
 import { Inject } from "@nestjs/common";
+import type { MfaConfigRow } from "@repo/backend-schema";
+import { mfaConfigs } from "@repo/backend-schema";
 import type { NodePgDatabase } from "@repo/nestjs-database";
 import { eq } from "drizzle-orm";
-import type { MfaConfigRow } from "../infra/schema/index.js";
-import { mfaConfigs } from "../infra/schema/index.js";
 
 export interface MfaStore {
   findByUserId(userId: string): Promise<MfaConfigRow | undefined>;

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { type FeatureFlagRow, featureFlags } from "@repo/backend-schema";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { asc, eq } from "drizzle-orm";
-import { type FeatureFlagRow, featureFlags } from "../infra/schema/index.js";
 
 export type { FeatureFlagRow };
 

@@ -20,10 +20,10 @@ import {
   revokeSession as revokeSessionFn,
   rotateSession,
 } from "@repo/backend-auth-session";
+import type { UserRow } from "@repo/backend-schema";
+import { memberships } from "@repo/backend-schema";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { and, eq } from "drizzle-orm";
-import type { UserRow } from "../infra/schema/index.js";
-import { memberships } from "../infra/schema/memberships.js";
 import { JwtService } from "../jwt/jwt.service.js";
 import { JWT_SIGN_OPTIONS, type JwtSignOptions } from "./jwt-sign.options.js";
 import { InjectUserStore, type UserStore } from "./password-reset.stores.js";

@@ -1,9 +1,8 @@
 import { Inject } from "@nestjs/common";
+import type { EmailVerifyTokenInsert, EmailVerifyTokenRow } from "@repo/backend-schema";
+import { emailVerifyTokens } from "@repo/backend-schema";
 import type { NodePgDatabase } from "@repo/nestjs-database";
 import { eq } from "drizzle-orm";
-
-import type { EmailVerifyTokenInsert, EmailVerifyTokenRow } from "../infra/schema/index.js";
-import { emailVerifyTokens } from "../infra/schema/index.js";
 
 export const EMAIL_VERIFY_TOKEN_STORE = Symbol("EMAIL_VERIFY_TOKEN_STORE");
 
