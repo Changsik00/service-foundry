@@ -102,6 +102,34 @@ describe("Tenant isolation via real HTTP (guard→interceptor→RLS)", () => {
     expect(memberUserIds).not.toContain(b.userId); // 타 org 는 차단 (현재 RED — 컨텍스트 미설정)
   });
 
+  it("인증됐지만 orgId 없는 토큰 → GET /auth/org/members 는 전 테넌트 누수 없이 0건 (fail-closed, spec-x-null-org-isolation-failclose)", async () => {
+    const stamp = Date.now();
+    // 다른 org 들이 존재하는 상태를 만든다 (누수 시 이들이 보여야 함).
+    const a = await signup(`nullorg-a-${stamp}@example.com`);
+    const b = await signup(`nullorg-b-${stamp}@example.com`);
+
+    // 앱 keystore 로 activeOrgId claim 없는(=orgId null) 인증 토큰 서명 — OAuth 로그인 토큰과 동형.
+    const { signAccessToken } = await import("@repo/backend-auth-jwt");
+    const { JwtService } = await import("../jwt/jwt.service.js");
+    const { JWT_SIGN_OPTIONS } = await import("./jwt-sign.options.js");
+    const jwt = app.get(JwtService);
+    const opts = app.get(JWT_SIGN_OPTIONS) as { issuer: string; audience: string };
+    const nullOrgToken = await signAccessToken({ sub: a.userId, role: "user" }, jwt.getKeyStore(), {
+      issuer: opts.issuer,
+      audience: opts.audience,
+    });
+
+    const res = await request(server)
+      .get("/auth/org/members")
+      .set("Authorization", `Bearer ${nullOrgToken}`);
+    expect(res.status).toBe(200);
+    // fail-closed: org 컨텍스트 없음 → RLS 가 전 행 차단 → 어떤 org 의 멤버도 안 보임.
+    const ids = (res.body.members as { userId: string }[]).map((m) => m.userId);
+    expect(ids).not.toContain(a.userId);
+    expect(ids).not.toContain(b.userId);
+    expect(ids).toHaveLength(0);
+  });
+
   it("org A 가 B 를 초대 → B 가 accept → B 가 org A 멤버가 된다 (cross-org, 시스템 컨텍스트 C-4)", async () => {
     const stamp = Date.now();
     const a = await signup(`inv-a-${stamp}@example.com`);
