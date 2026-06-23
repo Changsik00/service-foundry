@@ -166,6 +166,7 @@
 - [x] spec-x-refactor-tidy (완료)
 - **phase-23** — refactor-hardening — completed 2026-06-19
 - **phase-24** — refactor-hardening-2 — completed 2026-06-23
+- [x] spec-x-null-org-isolation-failclose (완료)
 <!-- sdd:done:end -->
 
 ---
