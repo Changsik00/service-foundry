@@ -13,7 +13,11 @@ export interface OrgMember {
   displayName: string | null;
 }
 
-export type MemberListParams = CursorPaginationParams & { role?: string };
+export type MemberListParams = CursorPaginationParams & {
+  role?: string;
+  /** active org — 명시 스코프(defense-in-depth, spec-x-org-members-defensive-scope). null 이면 fail-closed. */
+  orgId?: string | null;
+};
 
 export interface MemberListResult {
   members: OrgMember[];
