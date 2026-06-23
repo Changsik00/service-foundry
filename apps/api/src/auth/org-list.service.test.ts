@@ -10,12 +10,14 @@ const ROWS = [
 ];
 
 function makeDatabase(rows = ROWS) {
-  const where = vi.fn().mockResolvedValue(rows);
+  const limit = vi.fn().mockResolvedValue(rows);
+  const orderBy = vi.fn().mockReturnValue({ limit });
+  const where = vi.fn().mockReturnValue({ orderBy });
   const innerJoin2 = vi.fn().mockReturnValue({ where });
   const innerJoin1 = vi.fn().mockReturnValue({ innerJoin: innerJoin2 });
   const from = vi.fn().mockReturnValue({ innerJoin: innerJoin1 });
   const select = vi.fn().mockReturnValue({ from });
-  return { database: { db: { select } }, mocks: { select, where } };
+  return { database: { db: { select } }, mocks: { select, where, orderBy, limit } };
 }
 
 // tx 없는 ALS — runWithSystemTenant 가 fn 직접 실행하는 경로
@@ -36,5 +38,15 @@ describe("OrgListService", () => {
     const service = new OrgListService(database as never, als);
 
     expect(await service.listForProviderUid(PROVIDER_UID)).toEqual([]);
+  });
+
+  it("상한 LIMIT 으로 무제한 스캔 방지 (A5)", async () => {
+    const { database, mocks } = makeDatabase();
+    const service = new OrgListService(database as never, als);
+    await service.listForProviderUid(PROVIDER_UID);
+    expect(mocks.limit).toHaveBeenCalled();
+    const [n] = mocks.limit.mock.calls[0] as number[];
+    expect(typeof n).toBe("number");
+    expect(n).toBeGreaterThan(0);
   });
 });

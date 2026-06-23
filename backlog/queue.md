@@ -14,6 +14,7 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
+- [ ] spec-x-list-query-bounds — list-query-bounds
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
