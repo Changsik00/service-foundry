@@ -40,7 +40,25 @@ describe("TenantContextInterceptor", () => {
     expect(seen.tx).toBe(mockTx);
   });
 
-  it("orgId 없으면 tx 미개시 + 핸들러는 context NULL 을 본다", async () => {
+  it("인증 + orgId null → fail-closed: nil-uuid 컨텍스트 tx 로 격리 (spec-x-null-org-isolation-failclose)", async () => {
+    const als = new TenantAls();
+    const { db, execute, transaction, mockTx } = makeDb();
+    const interceptor = new TenantContextInterceptor(als, db as never);
+
+    const handler: CallHandler = { handle: () => of(als.getStore()) };
+
+    const seen = (await lastValueFrom(
+      interceptor.intercept(makeCtx({ orgId: null }), handler),
+    )) as TenantContext;
+
+    // 인증됐는데 org 없음 → permissive 가 아니라 불가능 컨텍스트(nil-uuid)로 tx → RLS 전면 차단
+    expect(transaction).toHaveBeenCalledOnce();
+    expect(execute).toHaveBeenCalledOnce(); // set_config(nil-uuid)
+    expect(seen.orgId).toBe("00000000-0000-0000-0000-000000000000");
+    expect(seen.tx).toBe(mockTx);
+  });
+
+  it("미인증(req.user 없음) → tx 미개시 + 핸들러는 context NULL 을 본다 (bootstrap permissive)", async () => {
     const als = new TenantAls();
     const { db, transaction } = makeDb();
     const interceptor = new TenantContextInterceptor(als, db as never);
