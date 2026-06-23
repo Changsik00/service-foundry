@@ -24,23 +24,29 @@ export interface MemberListResult {
   nextCursor: string | null;
 }
 
+/** 어떤 org 와도 매칭 안 되는 값 — orgId 없으면 fail-closed (0건). interceptor 와 동일 철학. */
+const NIL_ORG = "00000000-0000-0000-0000-000000000000";
+
 /**
  * 현재 active org 의 멤버 목록.
  *
- * **명시적 `WHERE org_id` 를 두지 않는다** — RLS(`app.current_org`)가 자동 스코프하는 것이
- * 의도이며, 본 endpoint 는 그 격리가 실제 요청 경로에서 작동함을 검증하는 표면이다 (spec-17-08).
+ * **명시적 `WHERE memberships.org_id = activeOrg`** 로 스코프한다(defense-in-depth,
+ * spec-x-org-members-defensive-scope). RLS(`app.current_org`) + interceptor fail-close 에 더해
+ * 애플리케이션 레이어에도 명시 스코프를 둬, 단일 계층이 어긋나도 cross-org 누수가 없게 한다.
+ * orgId 가 없으면 nil-uuid 로 0건(fail-closed).
  */
 @Injectable()
 export class OrgMembersService {
   constructor(@Inject(DATABASE) private readonly database: Database<Record<string, unknown>>) {}
 
   async list(params: MemberListParams = {}): Promise<MemberListResult> {
-    const { search, role, cursor, limit: rawLimit } = params;
+    const { search, role, cursor, limit: rawLimit, orgId } = params;
     const limit = rawLimit ?? 20;
 
     const cursorData = cursor ? decodeCursor<{ userId: string }>(cursor) : null;
 
     const conditions = and(
+      eq(memberships.orgId, orgId ?? NIL_ORG),
       search
         ? or(ilike(users.email, `%${search}%`), ilike(users.displayName, `%${search}%`))
         : undefined,
