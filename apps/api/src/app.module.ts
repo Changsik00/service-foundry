@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { APP_INTERCEPTOR } from "@nestjs/core";
+import { createTenantDb } from "@repo/backend-tenant";
 import { NestjsAuthModule } from "@repo/nestjs-auth";
 import { NestjsFirebaseAuthModule } from "@repo/nestjs-auth-firebase";
 import { NestjsSupabaseAuthModule } from "@repo/nestjs-auth-supabase";
@@ -8,15 +9,13 @@ import { HttpClientModule } from "@repo/nestjs-http-client";
 import { BackendLoggerModule } from "@repo/nestjs-logger";
 import { BackendThrottlerModule } from "@repo/nestjs-security";
 import { BackendSettingsModule } from "@repo/nestjs-settings";
+import { TenantContextInterceptor, TenantModule, tenantAls } from "@repo/nestjs-tenant";
 
 import { AuthModule } from "./auth/auth.module.js";
 import { ProviderAuthModule } from "./auth/provider-auth.module.js";
 import { HealthController } from "./health/health.controller.js";
 import { appSchema } from "./infra/schema/index.js";
 import { SuperuserGuard } from "./infra/superuser-guard.provider.js";
-import { TenantContextInterceptor } from "./infra/tenant.interceptor.js";
-import { createTenantDb } from "./infra/tenant.js";
-import { TenantModule, tenantAls } from "./infra/tenant.module.js";
 import { JwtModule } from "./jwt/jwt.module.js";
 import { JwtService } from "./jwt/jwt.service.js";
 import { LifecycleModule } from "./lifecycle/lifecycle.module.js";

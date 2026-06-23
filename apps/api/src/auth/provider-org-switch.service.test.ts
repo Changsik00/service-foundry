@@ -1,7 +1,6 @@
 import { ForbiddenException } from "@nestjs/common";
+import type { TenantAls } from "@repo/backend-tenant";
 import { describe, expect, it, vi } from "vitest";
-
-import type { TenantAls } from "../infra/tenant.js";
 import { ProviderOrgSwitchService } from "./provider-org-switch.service.js";
 
 const PROVIDER_UID = "supabase-uid-123";

@@ -376,6 +376,9 @@ importers:
       '@repo/backend-storage':
         specifier: workspace:*
         version: link:../../packages/backend/storage
+      '@repo/backend-tenant':
+        specifier: workspace:*
+        version: link:../../packages/backend/tenant
       '@repo/contracts':
         specifier: workspace:*
         version: link:../../packages/shared/contracts
@@ -406,6 +409,9 @@ importers:
       '@repo/nestjs-settings':
         specifier: workspace:*
         version: link:../../packages/nestjs/settings
+      '@repo/nestjs-tenant':
+        specifier: workspace:*
+        version: link:../../packages/nestjs/tenant
       '@supabase/supabase-js':
         specifier: 'catalog:'
         version: 2.106.1

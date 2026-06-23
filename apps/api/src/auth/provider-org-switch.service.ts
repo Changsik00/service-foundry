@@ -1,10 +1,9 @@
 import { ForbiddenException, Inject, Injectable } from "@nestjs/common";
+import { runWithSystemTenant, TENANT_ALS, type TenantAls } from "@repo/backend-tenant";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { and, eq } from "drizzle-orm";
-
 import { memberships } from "../infra/schema/memberships.js";
 import { users } from "../infra/schema/users.js";
-import { runWithSystemTenant, TENANT_ALS, type TenantAls } from "../infra/tenant.js";
 
 /**
  * provider 모드 org 전환 — `users.orgId` UPDATE (ADR-0026).

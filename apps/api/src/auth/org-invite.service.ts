@@ -10,13 +10,13 @@ import { ACTIVE_ORG_CLAIM, ORG_ROLE_CLAIM, signAccessToken } from "@repo/backend
 import { generateRefreshToken, hashToken } from "@repo/backend-auth-session";
 import { canInviteMember } from "@repo/backend-authz";
 import { buildInvitationEmail, type Notifier } from "@repo/backend-notification";
+import { runWithSystemTenant, TENANT_ALS, type TenantAls } from "@repo/backend-tenant";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { and, eq } from "drizzle-orm";
 import { invitations } from "../infra/schema/invitations.js";
 import { memberships } from "../infra/schema/memberships.js";
 import { organizations } from "../infra/schema/organizations.js";
 import { users } from "../infra/schema/users.js";
-import { runWithSystemTenant, TENANT_ALS, type TenantAls } from "../infra/tenant.js";
 import { JwtService } from "../jwt/jwt.service.js";
 import { NOTIFIER } from "../notification/notifier.provider.js";
 import { FRONTEND_URL } from "./frontend-url.token.js";

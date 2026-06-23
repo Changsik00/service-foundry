@@ -1,6 +1,5 @@
+import type { TenantAls } from "@repo/backend-tenant";
 import { describe, expect, it, vi } from "vitest";
-
-import type { TenantAls } from "../infra/tenant.js";
 import { OrgListService } from "./org-list.service.js";
 
 const PROVIDER_UID = "supabase-uid-123";
