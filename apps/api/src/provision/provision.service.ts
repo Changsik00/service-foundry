@@ -1,11 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { Inject, Injectable } from "@nestjs/common";
+import { memberships, organizations, users } from "@repo/backend-schema";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { eq } from "drizzle-orm";
-
-import { memberships } from "../infra/schema/memberships.js";
-import { organizations } from "../infra/schema/organizations.js";
-import { users } from "../infra/schema/users.js";
 
 export const PROVISION_SERVICE = Symbol("PROVISION_SERVICE");
 

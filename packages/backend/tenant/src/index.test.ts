@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { describe, expect, it } from "vitest";
 
-import { createTenantDb, runWithSystemTenant, TenantAls } from "./tenant.js";
+import { createTenantDb, runWithSystemTenant, TenantAls } from "./index.js";
 
 /** select().from().where() 체인을 흉내내는 최소 mock db. label 로 base/tx 를 구분. */
 function makeDb(label: string) {

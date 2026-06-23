@@ -24,9 +24,26 @@ if [ -f "$HARNESS_HOOKS/check-secrets.sh" ]; then
   HARNESS_GIT_HOOK_MODE=1 bash "$HARNESS_HOOKS/check-secrets.sh" || exit 1
 fi
 
+# scope 검사 (경고 모드 — staged diff 가 spec 범위 밖이면 stderr 경고, 커밋은 진행).
+# 도구 무관(MCP/Serena 편집 포착) blast-radius 노출. mode 무관. (spec-24-02)
+if [ -f "$HARNESS_HOOKS/check-scope.sh" ]; then
+  HARNESS_GIT_HOOK_MODE=1 bash "$HARNESS_HOOKS/check-scope.sh" || true
+fi
+
+# test-trust 검증 0단계 검사 (경고 모드 — 가짜 green 휴리스틱: 구현 변경에 테스트 동반했나 /
+# 단언 없는 테스트인가). mode 무관. (spec-25-02, GitHub #212 검증 0단계)
+if [ -f "$HARNESS_HOOKS/check-test-trust.sh" ]; then
+  HARNESS_GIT_HOOK_MODE=1 bash "$HARNESS_HOOKS/check-test-trust.sh" || true
+fi
+
 # Plan Accept 검사
 STATE_FILE="$HARNESS_ROOT/.claude/state/current.json"
 [ -f "$STATE_FILE" ] || exit 0
+
+# turbo/auto: Plan Accept 게이트 면제 (위 lint/secret 검사는 유지).
+# check-plan-accept.sh(Edit/Write 매처)와 일관 — 편집은 통과시키면서 커밋만 막던 불일치 해소.
+mode="$(jq -r '.mode // "governed"' "$STATE_FILE" 2>/dev/null || echo "governed")"
+{ [ "$mode" = "turbo" ] || [ "$mode" = "auto" ]; } && exit 0
 
 plan_accepted="$(jq -r '.planAccepted // false' "$STATE_FILE" 2>/dev/null || echo "false")"
 [ "$plan_accepted" = "true" ] && exit 0

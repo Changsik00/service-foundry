@@ -32,6 +32,7 @@ import { ApiKeyService } from "./api-key.service.js";
 import { AuditEventListener } from "./audit.event-listener.js";
 import { AuthController } from "./auth.controller.js";
 import { CSRF_SECRET, CsrfGuard } from "./csrf.guard.js";
+import { EmailChangeController } from "./email-change.controller.js";
 import { EmailChangeService } from "./email-change.service.js";
 import { createEmailChangeTokenStore, EMAIL_CHANGE_TOKEN_STORE } from "./email-change.stores.js";
 import { EmailVerifyService } from "./email-verify.service.js";
@@ -222,6 +223,7 @@ const settings: AppSettings = loadSettings(process.env);
     SessionController,
     OrgController,
     AccountController,
+    EmailChangeController,
     ApiKeyController,
     OAuthController,
     MfaController,

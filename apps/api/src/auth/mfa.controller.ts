@@ -3,6 +3,7 @@ import { type AuthenticatedUser, AuthGuard, CurrentUser } from "@repo/nestjs-aut
 import type { Response } from "express";
 import { z } from "zod";
 
+import { zodPipe } from "./auth-controller.shared.js";
 import { setRefreshTokenCookie } from "./cookie.helper.js";
 import { CsrfGuard } from "./csrf.guard.js";
 import { MfaService } from "./mfa.service.js";
@@ -32,7 +33,7 @@ export class MfaController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() body: unknown,
   ): Promise<{ backupCodes: string[] }> {
-    const { code } = ConfirmEnrollInput.parse(body);
+    const { code } = zodPipe(ConfirmEnrollInput).transform(body);
     return this.mfaService.confirmEnroll(user.sub, code);
   }
 
@@ -43,7 +44,7 @@ export class MfaController {
     @Body() body: unknown,
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
-    const { mfaChallengeToken, code } = VerifyInput.parse(body);
+    const { mfaChallengeToken, code } = zodPipe(VerifyInput).transform(body);
     const { accessToken, refreshToken } = await this.mfaService.verifyMfa(mfaChallengeToken, code);
     setRefreshTokenCookie(res, refreshToken);
     return { accessToken };
@@ -56,7 +57,7 @@ export class MfaController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() body: unknown,
   ): Promise<{ status: "ok" }> {
-    const { code } = DisableInput.parse(body);
+    const { code } = zodPipe(DisableInput).transform(body);
     await this.mfaService.disable(user.sub, code);
     return { status: "ok" };
   }

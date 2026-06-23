@@ -69,7 +69,14 @@
       "Read(**)",
       "Write"
     ],
-    "ask": ["Bash(gh pr merge)", "Bash(gh pr merge:*)", "Bash(git merge)", "Bash(git merge:*)"],
+    "ask": [
+      "Bash(gh pr merge)",
+      "Bash(gh pr merge:*)",
+      "Bash(git merge)",
+      "Bash(git merge:*)",
+      "Bash(git push)",
+      "Bash(git push:*)"
+    ],
     "deny": [
       "Bash(curl * | bash:*)",
       "Bash(curl * | sh:*)",
@@ -133,6 +140,15 @@
   "hooks": {
     "PreToolUse": [
       {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".harness-kit/hooks/check-askquestion-auto.sh"
+          }
+        ]
+      },
+      {
         "matcher": "Bash",
         "hooks": [
           {
@@ -158,6 +174,10 @@
           {
             "type": "command",
             "command": ".harness-kit/hooks/check-task-checkbox.sh"
+          },
+          {
+            "type": "command",
+            "command": ".harness-kit/hooks/check-irreversible.sh"
           }
         ]
       },

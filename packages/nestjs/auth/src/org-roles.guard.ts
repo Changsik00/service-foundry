@@ -25,8 +25,9 @@ export class OrgRolesGuard implements CanActivate {
     if (!roles || roles.length === 0) return true;
 
     const req = ctx.switchToHttp().getRequest<{ user?: AuthenticatedUser }>();
+    // orgRole 은 AuthGuard 에서 OrgRole | null 로 검증됨 (We, spec-24-02) — 캐스트 불필요.
     const orgRole = req.user?.orgRole ?? null;
-    if (!orgRole || !roles.includes(orgRole as OrgRole)) {
+    if (!orgRole || !roles.includes(orgRole)) {
       throw new ForbiddenException("insufficient org role");
     }
     return true;

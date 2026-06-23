@@ -19,14 +19,16 @@ status: accepted
 
 1. **HTTP 경계(controller·guard·interceptor)에서 발생한 에러**는 **NestJS 예외**로 던진다 (현행 유지).
 2. **도메인·framework-agnostic 패키지(`packages/backend/*`, `packages/shared/*`)**는 **`Result` + `AppError`** 로 표현한다 (NestJS 의존 금지, ADR-0008/0009).
-3. **경계로 전파된 `AppError`** 는 apps/api 의 **전역 `AppErrorFilter`**(`@Catch(AppError)`, `apps/api/src/infra/app-error.filter.ts`)가 `err.statusCode` + `err.toJSON()` 으로 HTTP 응답에 변환한다. 등록 SoT 는 `apps/api/src/app.setup.ts` 의 `configureApp`.
+3. **경계로 전파된 `AppError`** 는 apps/api 의 **전역 `AppErrorFilter`**(`@Catch(AppError)`, `apps/api/src/infra/app-error.filter.ts`)가 `err.statusCode` + `err.toJSON()` 으로 HTTP 응답에 변환한다. 등록 SoT 는 `apps/api/src/app.setup.ts` 의 `configureApp`. 필터는 두 가지 하드닝을 적용한다 (구현 spec-23-07, 문서화 spec-24-02 Wf):
+   - **statusCode 클램프**: `statusCode` 가 HTTP 범위(400–599) 밖이면(예: http-client `NETWORK` 의 `0`) **500 으로 클램프**한다 — 무효 상태코드가 wire 로 새지 않게.
+   - **5xx 본문 억제**: 5xx 응답은 내부 `message`/`details` 를 클라이언트에 노출하지 않고 `{ code, message: "Internal error", statusCode }` 만 반환한다 (정보 노출 방지). 4xx 는 `toJSON()` 본문을 그대로 노출한다.
 4. **예외(의도적 raw throw 유지)**: 프로세스 기동 fail-fast(`apps/api/src/settings.ts` 설정 검증, `apps/api/src/infra/superuser-guard.provider.ts`)와 "절대 발생 안 해야 하는" invariant 가드(`insert returned no row`)는 HTTP 의미가 없으므로 NestJS 예외/AppError 로 바꾸지 않는다.
 
 ## 📊 Consequences
 
 - **긍정**: 도메인 `AppError` 가 의미상 상태코드(400/404/409…)로 정확히 노출됨 — 잠재 500 버그(예: 잘못된 OAuth provider) 일괄 수정. 도메인 코드는 NestJS 비의존 유지(`AppError` 만 던지면 됨). 에러 HTTP 노출 단일 지점.
 - **부정**: 전역 필터 도입은 **동작 변경** — 기존에 500 으로 나가던 전파 AppError 가 statusCode 로 바뀜(회귀 점검 필요). 두 표현(NestJS 예외 + AppError)이 공존하므로 "경계 발생 vs 전파" 구분을 작성자가 인지해야 함.
-- **중립**: `AppError.toJSON()` 이 wire 응답 형태(`{ code, message, statusCode, details? }`)가 됨 — `cause` 는 제외(보안).
+- **중립**: `AppError.toJSON()` 이 wire 응답 형태(`{ code, message, statusCode, details? }`)가 됨 — `cause` 는 제외(보안). 단 5xx 는 위 본문 억제로 `code` + 일반 message 만 노출.
 
 ## 🔀 Alternatives
 

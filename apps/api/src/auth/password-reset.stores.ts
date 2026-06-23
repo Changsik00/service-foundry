@@ -1,14 +1,13 @@
 import { Inject } from "@nestjs/common";
-import type { NodePgDatabase } from "@repo/nestjs-database";
-import { eq } from "drizzle-orm";
-
 import type {
   PasswordResetTokenInsert,
   PasswordResetTokenRow,
   UserInsert,
   UserRow,
-} from "../infra/schema/index.js";
-import { passwordResetTokens, users } from "../infra/schema/index.js";
+} from "@repo/backend-schema";
+import { passwordResetTokens, users } from "@repo/backend-schema";
+import type { NodePgDatabase } from "@repo/nestjs-database";
+import { eq } from "drizzle-orm";
 
 export const USER_STORE = Symbol("USER_STORE");
 export const PASSWORD_RESET_TOKEN_STORE = Symbol("PASSWORD_RESET_TOKEN_STORE");

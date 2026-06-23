@@ -180,9 +180,9 @@ For **EVERY** Task in the approved Plan, the Agent MUST:
 When the Strict Loop runs under director mode, the director MUST delegate
 task execution to a worker sub-agent via a scoped brief (target files,
 expected behaviour, test command, commit format). The worker's commit scope
-MUST include planning artifact files (spec/plan/task). Three invariants apply:
+MUST include planning artifact files (spec/task). Three invariants apply:
 ① Plan Accept and Ship gates are NOT delegated — held by director + user.
-② Worker commit scope MUST include spec/plan/task artifact files.
+② Worker commit scope MUST include spec/task artifact files.
 ③ Verification follows §6.8 rule 4 — action/distillation only, no transcript re-ingestion.
 
 ### 6.2 Task Status Management
@@ -290,7 +290,7 @@ Generic agent behavior patterns that improve UX, latency, and cost without per-t
 
 **Version + CHANGELOG paired update**: When `version.json` changes, `CHANGELOG.md` MUST gain a corresponding entry in the same commit. Conversely, never bump version without summarizing changes since the last release.
 
-**Review orchestration**: Under director mode, review commands (`/hk-code-review`, `/hk-spec-critique`, `/hk-phase-review`) support an optional persona panel — parallel worker sub-agents with distinct lenses (correctness / security / perf / test-coverage) whose findings the director consolidates. For small diffs, a single reviewer is sufficient. See each command for activation criteria.
+**Review orchestration**: Under director mode, review commands (`/hk-code-review`, `/hk-spec-critique`, `/hk-phase-review`) support an optional persona panel — parallel worker sub-agents with distinct lenses (correctness / security / perf / test-coverage) whose findings the director consolidates. For small diffs, a single reviewer is sufficient. See each command for activation criteria. **Risk-proportional refute (`/hk-refute`, 검증 2단계)**: for high-risk/irreversible changes, run an adversarial pass anchored to `spec.md` *intent* (not code) — "find cases where all tests pass yet the agreed intent breaks" — to catch direction errors test-coverage misses (GitHub #212, spec-25-02).
 
 ### 6.8 Director Mode Protocol
 
@@ -348,7 +348,7 @@ All file and directory paths in Agent output MUST use paths relative to `$HARNES
 - Correct: `specs/spec-x-foo/spec.md`, `backlog/phase-01.md`
 - Wrong: `/Users/alice/projects/myapp/specs/spec-x-foo/spec.md`
 
-This applies to: spec/plan/task references, `sdd` command output, `doctor.sh` output, and any inline path mentions in chat.
+This applies to: spec/task references, `sdd` command output, `doctor.sh` output, and any inline path mentions in chat.
 
 When listing multiple spec artifact files, output each file as a standalone full relative path on its own line — never as indented filenames under a directory heading. This makes paths clickable in Claude Code.
 
@@ -410,6 +410,8 @@ At key decision points requiring user input, the Agent SHOULD use the `AskUserQu
 
 To change: `sdd config ux-mode [interactive|text|toggle]` (or run `/hk-ask-mode` — toggles the current value).
 
+**Auto mode (non-blocking decisions)**: In `auto` mode the Agent MUST NOT block on `AskUserQuestion`. Resolve ask-mode via `sdd config ux-mode effective` (auto → `text`): adopt a reasonable default, log it with `sdd decision add "<issue>" "<choice>" "<reason>"`, and proceed without waiting. STOP only on stop-rule ① — genuine ambiguity where no default is defensible (→ ADR-009 auto rule 2/3; ②③ are mechanical, → spec-24-03). Mechanically backstopped: `check-askquestion-auto.sh` (PreToolUse) blocks `AskUserQuestion` in auto and redirects here (spec-25-01).
+
 **Usage notes**: `AskUserQuestion` is Claude Code-specific. Keep options to 2–4, use concise labels, and put trade-offs in the description field.
 
 ### 8.5 Choice Presentation Protocol (Mandatory)
@@ -418,7 +420,7 @@ Whenever the Agent presents multiple options to the User and requests a decision
 
 **Applies to**:
 - Alignment Phase work mode selection (§3).
-- Hard Stop for Review after spec/plan/task (§4.4).
+- Hard Stop for Review after spec/task (§4.4).
 - Task decomposition proposals mid-loop.
 - Implementation strategy A/B/C choices.
 - Unexpected edge case handling decisions.

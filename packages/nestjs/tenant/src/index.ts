@@ -1,24 +1,26 @@
 import {
   type CallHandler,
   type ExecutionContext,
+  Global,
   Inject,
   Injectable,
+  Module,
   type NestInterceptor,
 } from "@nestjs/common";
-import type { AuthenticatedUser } from "@repo/nestjs-auth";
+import { TENANT_ALS, TenantAls } from "@repo/backend-tenant";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { sql } from "drizzle-orm";
 import { defaultIfEmpty, from, lastValueFrom, Observable } from "rxjs";
 
-import { TENANT_ALS, type TenantAls } from "./tenant.js";
-
 /**
- * 요청의 org 컨텍스트를 DB 에 주입한다 (spec-17-07).
+ * 요청의 org 컨텍스트를 DB 에 주입한다 (spec-17-07, 패키지 이관 spec-24-05).
  *
  * - `user.orgId` 있으면: 요청을 트랜잭션으로 감싸 `SET LOCAL app.current_org` 발행 →
  *   ALS 에 tx 바인딩 → DATABASE proxy 가 모든 쿼리를 그 tx 로 라우팅 → RLS 격리 적용.
  *   tx-local 이므로 응답 후 자동 해제(커넥션 풀 오염 없음).
  * - orgId 없으면(미인증/부트스트랩): tx 없이 ALS 만 설정 → context NULL → 퍼미시브(기존 동작).
+ *
+ * 요청 user 형태는 `{ orgId?: string | null }` 만 의존(인라인) — nestjs-auth 비의존.
  */
 @Injectable()
 export class TenantContextInterceptor implements NestInterceptor {
@@ -28,7 +30,7 @@ export class TenantContextInterceptor implements NestInterceptor {
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-    const req = context.switchToHttp().getRequest<{ user?: AuthenticatedUser }>();
+    const req = context.switchToHttp().getRequest<{ user?: { orgId?: string | null } }>();
     const orgId = req.user?.orgId ?? null;
 
     if (!orgId) {
@@ -48,3 +50,18 @@ export class TenantContextInterceptor implements NestInterceptor {
     );
   }
 }
+
+/**
+ * 요청 스코프 테넌트 컨텍스트(ALS)의 **공유 단일 인스턴스**.
+ *
+ * DATABASE proxy(wrapDb)·TenantContextInterceptor·org 서비스(invite accept 의 시스템 컨텍스트)가
+ * 모두 *같은* 인스턴스를 써야 컨텍스트가 일관되므로 모듈 레벨 싱글톤으로 둔다.
+ */
+export const tenantAls = new TenantAls();
+
+@Global()
+@Module({
+  providers: [{ provide: TENANT_ALS, useValue: tenantAls }],
+  exports: [TENANT_ALS],
+})
+export class TenantModule {}

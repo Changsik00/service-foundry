@@ -3,7 +3,7 @@ import { ACTIVE_ORG_CLAIM, ORG_ROLE_CLAIM, signAccessToken } from "@repo/backend
 import { hashPassword } from "@repo/backend-auth-password";
 import { createSession } from "@repo/backend-auth-session";
 
-import type { UserRow } from "../infra/schema/index.js";
+import type { UserRow } from "@repo/backend-schema";
 import { JwtService } from "../jwt/jwt.service.js";
 import { type IProvisionService, PROVISION_SERVICE } from "../provision/provision.service.js";
 import { JWT_SIGN_OPTIONS, type JwtSignOptions } from "./jwt-sign.options.js";

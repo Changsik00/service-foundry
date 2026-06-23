@@ -5,13 +5,15 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { createInMemoryKeyStore } from "@repo/backend-auth-jwt";
+import { TenantAls } from "@repo/backend-tenant";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-import { TenantAls } from "../infra/tenant.js";
 import type { JwtService } from "../jwt/jwt.service.js";
 import { OrgInviteService } from "./org-invite.service.js";
 
-vi.mock("@repo/backend-auth-session", () => ({
+// 실제 export(sessions 테이블 등)는 보존하고 토큰 함수만 stub — @repo/backend-schema barrel 이
+// 같은 패키지의 sessions 를 재export 하므로 부분 mock 필수 (spec-24-06).
+vi.mock("@repo/backend-auth-session", async (orig) => ({
+  ...(await orig<typeof import("@repo/backend-auth-session")>()),
   generateRefreshToken: vi.fn().mockReturnValue("a".repeat(32)),
   hashToken: vi.fn((t: string) => `hash:${t}`),
 }));
