@@ -3,7 +3,10 @@ import type { OrgRole } from "@repo/auth-contracts";
 import { memberships, organizations, users } from "@repo/backend-schema";
 import { runWithSystemTenant, TENANT_ALS, type TenantAls } from "@repo/backend-tenant";
 import { DATABASE, type Database } from "@repo/nestjs-database";
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
+
+/** 무제한 스캔 방지 상한 (A5). 1인 소속 org 수는 소수 — 운영 충분, 병리적 증가만 차단. */
+const ORG_LIST_MAX = 100;
 
 export interface OrgSummary {
   orgId: string;
@@ -38,7 +41,9 @@ export class OrgListService {
         .from(memberships)
         .innerJoin(organizations, eq(memberships.orgId, organizations.id))
         .innerJoin(users, eq(memberships.userId, users.id))
-        .where(eq(users.providerUid, providerUid));
+        .where(eq(users.providerUid, providerUid))
+        .orderBy(asc(memberships.createdAt))
+        .limit(ORG_LIST_MAX);
       return rows as OrgSummary[];
     });
   }
