@@ -56,6 +56,16 @@
 - [ ] **turbo generator 앱 템플릿 drift** (spec-x-docs-ssot 발견) — `turbo/generators/config.ts` 가 app 스캐폴딩에 `vite` 옵션 제공하나 `turbo/generators/templates/app/` 디렉토리 부재(web-vite 폐기 잔재). config 옵션 정리 필요. 코드 drift, spec-x 후보
 - [ ] **ci-verify-gate explainer web-vite 잔재** (spec-x-docs-ssot 발견) — `docs/explainers/platform/ci-verify-gate.md` 가 폐기된 web-vite routeTree 빌드 의존을 설명. explainer 갱신 필요(단순 이름치환 아님)
 
+#### 🔁 phase-24 회고 이월 (2026-06-23, `docs/review/2026-06-23-phase-24-review.md`)
+
+- [ ] **🔒 테넌트 격리 방어선 보강 (defense-in-depth, 보안)** — spec-x-null-org-isolation-failclose(#179)로 누수는 차단했으나 방어선이 얇은 3건: **(A)** `0013` 이 인증 인프라(users·sessions·failed_logins·lockouts·auth_audit_logs) RLS 를 *비활성* → 이들은 WHERE+엔드포인트노출 통제에만 의존(interceptor fail-close 무력). 비-admin 의 무-WHERE `users` 읽기 audit 필요. **(B)** raw `pool.query` 경로(org-switch·api-key)는 interceptor 컨텍스트 밖 — 명시 WHERE 가 유일 방어. **(C)** `org-members.service` 는 방어적 `WHERE org_id` 없이 RLS 단일 의존. → spec-x/phase 후보
+- [ ] **A5 목록 limit** (phase-24 phase-FF 미착수, 유일한 실 잔여) — `feature-flag.service.ts:13` 무제한 `select().from(featureFlags)`, org-list 도 limit 부재. 페이지네이션 보강. (B4 worker logger·knip ignore 는 이미 완료 확인)
+- [ ] **auto 모드 거버넌스 정식화** — constitution 에 "Mode E — Auto"(ADR-009) 미정의. Turbo 는 cross-cutting/아키텍처 명시 금지인데 auto 로 E1(RLS)·E2(schema) 수행함. 적용 범위 + "보안/cross-cutting 은 auto 라도 종료 전 독립검증(/hk-refute) 1회" 규칙 명문화. (harness 본체 변경 — kit 이슈/로컬)
+- [ ] **route-inventory Wd 근본 개선** — `route-inventory.test.ts` 가 컨트롤러 미인스턴스화(리플렉션만) → DI·가드 실행순서·body 검증 미확인. 17 하드코딩 brittle. (phase-23 Wd 이월 지속)
+- [ ] **신규 패키지 reference 문서** — `@repo/backend-tenant`·`@repo/nestjs-tenant`·`@repo/backend-schema` 3종 `docs/reference/packages/` 항목 미작성
+- [ ] **sdd ship post-sync 본체 개선** (RCA 후보, 3회+ 반복) — spec 표 Merged 동기화 커밋이 매 spec 수동 반복(P? 우선순위 정정 포함). `sdd ship` commit scope 에 phase.md 표+본문 포함하도록 harness 개선
+- [ ] **E3/E4 패키지 이관** — E3(provision·org 도메인 서비스 분리), E4(superuser-guard·feature-flag·cookie/csrf 패키지화). D2/D3/D4/D6 팩토리 중복 제거. → 다음 리팩토링 phase 후보
+
 ### 🛠 리팩토링 감사 인벤토리 (2026-06-18, 7차원 코드레벨 스캔)
 
 > spec-x-docs-code-drift 직후 전체 리팩토링 대상 감사. **A 핫패스/F 분할/G 테스트부채는 Phase 승격 후보**, 일부는 착수 전 건별 검증 필요. 첫 퀵윈은 `spec-x-refactor-tidy` 로 분리(상수/데드코드/sleep중복/console).
