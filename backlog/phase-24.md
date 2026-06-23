@@ -10,9 +10,9 @@
 | 항목 | 값 |
 |---|---|
 | **Phase ID** | `phase-24` |
-| **상태** | Planning |
+| **상태** | Done (2026-06-23, PR #178) |
 | **시작일** | 2026-06-19 |
-| **목표 종료일** | (미정) |
+| **목표 종료일** | 2026-06-23 |
 | **소유자** | dennis |
 | **Base Branch** | `phase-24-refactor-hardening-2` (opt-in, 첫 hk-ship 시 자동 생성) |
 
@@ -124,7 +124,10 @@ phase-23(refactor-hardening) 1차에서 7차원 코드 감사(2026-06-18, `backl
 
 | 이슈 | 선택지 | 결정 | 이유 |
 |---|---|---|---|
-| (없음 — 진행 중 추가) | | | |
+| B2 분리 (24-03) | F2+B2 한 spec / 분리 | 분리 → 24-04 | 파일 비중복·단일 관심사 |
+| E2 스키마 경계 (24-06, auto) | 스키마+마이그레이션 통째 / 스키마만 | 스키마 소스만 패키지, migrations+config apps/api 잔류 | 저널 정합·deploy 관심사 |
+| E2 파일 이동 (24-06, auto) | 복사 / git mv | git mv | 히스토리 보존 |
+| 보안 누수 대응 (회고) | 이월 / 즉시 hotfix | 즉시 hotfix(spec-x #179) | cross-tenant 이메일 노출은 deferral 불가 |
 
 ## 🧪 통합 테스트 시나리오 (간결)
 
@@ -167,11 +170,14 @@ turbo run lint typecheck
 
 ## 🏁 Phase Done 조건
 
-- [ ] 모든 SPEC 이 merge (base branch 모드: `phase-24-refactor-hardening-2` → main)
-- [ ] 통합 테스트 전 시나리오 PASS (격리 회귀 0)
-- [ ] 성공 기준 정량 측정 결과 (하단 "검증 결과" 섹션에 기록)
-- [ ] 사용자 최종 승인
+- [x] 모든 SPEC 이 merge (base branch 모드: `phase-24-refactor-hardening-2` → main, PR #178)
+- [x] 통합 테스트 전 시나리오 PASS (격리 회귀 0)
+- [x] 성공 기준 정량 측정 결과 (하단 "검증 결과" 섹션에 기록)
+- [x] 사용자 최종 승인 (2026-06-23 Go)
 
 ## 📊 검증 결과 (phase 완료 시 작성)
 
-<!-- 통합 테스트 로그, 성공 기준 측정값, 회귀 점검 결과 등을 여기 첨부 -->
+- **성공 기준**: 5/5 PASS — 무테스트 컨트롤러 8개 단위+route-inventory(24-01) / Wa·We·Wf(24-02) / account.controller 188 LOC<200(24-03) / RLS 이관 후 격리 e2e 6/6(24-05) / 전체 `turbo run lint typecheck test` **151/151 task**.
+- **통합 테스트**: 2/2 — 멀티테넌트 격리 유지(tenant-isolation.http.e2e, 실 HTTP) / 컨트롤러 분할·검증 후 동작 보존(account·email-change e2e).
+- **신규 패키지 3**: `@repo/backend-tenant`, `@repo/nestjs-tenant`, `@repo/backend-schema`.
+- **회고**: `docs/review/2026-06-23-phase-24-review.md` — 보안 패널이 cross-tenant 누수 발견 → hotfix `spec-x-null-org-isolation-failclose`(#179) 로 해소.

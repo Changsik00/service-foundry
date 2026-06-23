@@ -18,7 +18,7 @@ tags: [service-foundry, explainer, backend, drizzle]
 ```mermaid
 sequenceDiagram
     participant Dev as 개발자
-    participant Schema as apps/api/src/infra/schema/
+    participant Schema as @repo/backend-schema
     participant Kit as drizzle-kit CLI
     participant Migrator as migrate() helper
     participant Pool as pg.Pool
@@ -38,7 +38,7 @@ sequenceDiagram
     Pool->>DB: pool.end() — 모든 커넥션 정상 종료
 ```
 
-`createDatabase<TSchema>(options)` 는 `pg.Pool` 을 생성하고 `drizzle(pool, { schema })` 로 감싼다. 스키마 정의는 **앱 레벨**(`apps/<app>/src/infra/schema/`)에서 가지며, 패키지는 generic `TSchema` 인자로만 받는다. 이 덕분에 서비스별로 다른 schema 를 쓰면서 타입 안전 쿼리 API 를 유지할 수 있다.
+`createDatabase<TSchema>(options)` 는 `pg.Pool` 을 생성하고 `drizzle(pool, { schema })` 로 감싼다. 스키마 정의는 **공유 패키지**(`@repo/backend-schema`, spec-24-06 이관)에서 가지며, 마이그레이션 러너(drizzle.config + SQL + journal)는 앱(`apps/api/drizzle/`)에 잔류한다. database 패키지는 generic `TSchema` 인자로만 받는다. 이 덕분에 서비스별로 다른 schema 를 쓰면서 타입 안전 쿼리 API 를 유지할 수 있다.
 
 `migrate(db, options)` 는 `drizzle-orm/node-postgres/migrator` 의 `migrate` 를 얇게 감싸 에러를 `AppError(MIGRATION_FAILED)` 로 변환한다. drizzle-kit 이 생성한 SQL 파일 디렉터리를 인자로 받아 pending 마이그레이션만 순서대로 적용한다.
 
