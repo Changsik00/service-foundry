@@ -1,7 +1,8 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import type { NodePgDatabase } from "@repo/nestjs-database";
 import { sql } from "drizzle-orm";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
+/** DI 토큰 — adapter(nestjs-tenant)·소비처가 공유 ALS 인스턴스를 주입받는 데 쓴다. */
 export const TENANT_ALS = Symbol("TENANT_ALS");
 
 /** 요청 스코프 테넌트 컨텍스트. `tx` 가 있으면 해당 요청의 모든 쿼리가 그 트랜잭션으로 라우팅된다. */

@@ -5,9 +5,8 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { createInMemoryKeyStore } from "@repo/backend-auth-jwt";
+import { TenantAls } from "@repo/backend-tenant";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-import { TenantAls } from "../infra/tenant.js";
 import type { JwtService } from "../jwt/jwt.service.js";
 import { OrgInviteService } from "./org-invite.service.js";
 

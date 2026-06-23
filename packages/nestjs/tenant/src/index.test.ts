@@ -1,9 +1,9 @@
 import type { CallHandler, ExecutionContext } from "@nestjs/common";
+import { TenantAls, type TenantContext } from "@repo/backend-tenant";
 import { lastValueFrom, of } from "rxjs";
 import { describe, expect, it, vi } from "vitest";
 
-import { TenantContextInterceptor } from "./tenant.interceptor.js";
-import { TenantAls, type TenantContext } from "./tenant.js";
+import { TenantContextInterceptor } from "./index.js";
 
 function makeCtx(user: { orgId: string | null } | undefined): ExecutionContext {
   return {
