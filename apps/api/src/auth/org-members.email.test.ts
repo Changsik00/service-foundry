@@ -20,6 +20,6 @@ describe("OrgMembersService — email join (spec-x-org-api)", () => {
     const result = await service.list();
 
     expect(result.members).toEqual(ROWS);
-    expect(innerJoin).toHaveBeenCalled(); // RLS 검증 표면 유지 — 명시 WHERE org_id 없음
+    expect(innerJoin).toHaveBeenCalled(); // memberships ⋈ users (email join)
   });
 });

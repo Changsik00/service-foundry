@@ -96,6 +96,30 @@ describe("OrgMembersService — search/filter/cursor (spec-20-03)", () => {
     expect(mocks.limit).toHaveBeenCalled();
   });
 
+  it("orgId 전달 시 명시 org_id 조건이 항상 where 에 적용된다 (defense-in-depth, spec-x-org-members-defensive-scope)", async () => {
+    const { db, mocks } = makeMockDb();
+    const service = new OrgMembersService({ db } as never);
+
+    // search/role/cursor 전부 없음 — org 조건만으로도 where 가 정의된 조건을 받아야 함.
+    await service.list({ orgId: "org-1" });
+
+    expect(mocks.where).toHaveBeenCalled();
+    const [condition] = mocks.where.mock.calls[0] as unknown[];
+    // 수정 전: 빈 params → and(undefined×N) = undefined → where(undefined) (RED)
+    expect(condition).toBeDefined();
+  });
+
+  it("orgId 없으면(null) 0건 fail-closed — nil-uuid 스코프 (spec-x-org-members-defensive-scope)", async () => {
+    const { db, mocks } = makeMockDb();
+    const service = new OrgMembersService({ db } as never);
+
+    await service.list({ orgId: null });
+
+    // org 컨텍스트 없으면 nil-uuid 조건 → 정의된 where (전 org 노출 아님)
+    const [condition] = mocks.where.mock.calls[0] as unknown[];
+    expect(condition).toBeDefined();
+  });
+
   it("기존 list() 호출 시그니처 (파라미터 없음) 하위 호환", async () => {
     const { db } = makeMockDb();
     const service = new OrgMembersService({ db } as never);

@@ -44,9 +44,20 @@ describe("ProviderOrgController — GET /auth/org/members (spec-20-03)", () => {
         },
       ],
     })
-      // AuthGuard를 mock으로 대체 — JWT 없이도 통과
+      // AuthGuard를 mock으로 대체 — JWT 없이 통과 + 실 AuthGuard 처럼 req.user 세팅
+      // (컨트롤러가 user.orgId 로 명시 스코프하므로 user 필수, spec-x-org-members-defensive-scope)
       .overrideGuard(AuthGuard)
-      .useValue({ canActivate: () => true })
+      .useValue({
+        canActivate: (ctx: { switchToHttp: () => { getRequest: () => { user?: unknown } } }) => {
+          ctx.switchToHttp().getRequest().user = {
+            sub: "u-1",
+            role: "user",
+            orgId: "org-1",
+            orgRole: "owner",
+          };
+          return true;
+        },
+      })
       .compile();
 
     app = moduleRef.createNestApplication();

@@ -76,6 +76,7 @@ describe("OrgController", () => {
   it("orgMembers → 제공된 쿼리만 list() 인자로 전달 (limit 은 숫자 변환)", async () => {
     await controller.orgMembers(user, "kim", "member", "cur-1", "10");
     expect(orgMembers.list).toHaveBeenCalledWith({
+      orgId: "org-001",
       search: "kim",
       role: "member",
       cursor: "cur-1",
@@ -85,6 +86,6 @@ describe("OrgController", () => {
 
   it("orgMembers → 미지정 쿼리는 list() 인자에서 생략", async () => {
     await controller.orgMembers(user);
-    expect(orgMembers.list).toHaveBeenCalledWith({});
+    expect(orgMembers.list).toHaveBeenCalledWith({ orgId: "org-001" });
   });
 });

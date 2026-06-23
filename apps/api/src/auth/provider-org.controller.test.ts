@@ -63,6 +63,7 @@ describe("ProviderOrgController", () => {
   it("members → 제공된 쿼리만 전달 (limit 숫자 변환)", async () => {
     await controller.members(user, "kim", "member", "cur-1", "20");
     expect(orgMembers.list).toHaveBeenCalledWith({
+      orgId: "org-001",
       search: "kim",
       role: "member",
       cursor: "cur-1",

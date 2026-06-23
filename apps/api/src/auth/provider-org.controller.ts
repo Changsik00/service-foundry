@@ -47,17 +47,18 @@ export class ProviderOrgController {
     return this.orgSwitch.switch(user.sub, orgId);
   }
 
-  /** active org 멤버 목록 — RLS 자동 스코프, search/role/cursor/limit 쿼리 파라미터 지원 */
+  /** active org 멤버 목록 — 명시 org 스코프(defense-in-depth) + RLS, search/role/cursor/limit 지원 */
   @Get("org/members")
   @UseGuards(AuthGuard)
   async members(
-    @CurrentUser() _user: AuthenticatedUser,
+    @CurrentUser() user: AuthenticatedUser,
     @Query("search") search?: string,
     @Query("role") role?: string,
     @Query("cursor") cursor?: string,
     @Query("limit") rawLimit?: string,
   ): Promise<MemberListResult> {
     return this.orgMembers.list({
+      orgId: user.orgId,
       ...(search !== undefined && { search }),
       ...(role !== undefined && { role }),
       ...(cursor !== undefined && { cursor }),

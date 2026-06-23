@@ -14,6 +14,7 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
+- [ ] spec-x-org-members-defensive-scope — org-members-defensive-scope
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
