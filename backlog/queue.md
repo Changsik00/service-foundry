@@ -14,6 +14,7 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
+- [ ] spec-x-web-drop-native-session-ui — web-drop-native-session-ui
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
