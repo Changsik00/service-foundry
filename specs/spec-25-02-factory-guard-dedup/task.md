@@ -12,10 +12,8 @@
 - [ ] 실행 → nestjs-auth 단위(roles/org-roles guard) PASS, typecheck
 - [ ] Commit: `refactor(spec-25-02): unify RolesGuard/OrgRolesGuard via generic factory (D6)`
 
-## Task 3: D2 — verifier 공통 헬퍼
-- [ ] provision-fallback + identity 구성 공통 헬퍼 추출 → firebase/supabase verifier 수렴 (firebase 라이트백 콜백 보존)
-- [ ] 실행 → firebase/supabase verifier 단위 PASS, typecheck
-- [ ] Commit: `refactor(spec-25-02): extract shared provider identity resolution (D2)`
+## Task 3: D2 — verifier 공통 헬퍼 → [-] 드롭 (per-item 검증 결과)
+- [-] **드롭**: supabase/firebase verifier 의 공통 표면이 ~5줄뿐이고 seam(디코딩·sub 교체·라이트백·port 타입)이 provider별로 달라, 공유 헬퍼는 어댑터 독립성(ADR-0015) 훼손 + 타입 손실. 이득<비용 → 비채택 (사용자 승인 2026-06-24). queue Icebox 미이월(재추진 가치 낮음).
 
 ## Task 4: Ship
 ### 🚦 Pre-Push Quality Gate
