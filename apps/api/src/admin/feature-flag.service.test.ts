@@ -18,10 +18,11 @@ const FLAG_B = {
 };
 
 function makeSelectChain(rows: unknown[]) {
-  const orderBy = vi.fn().mockResolvedValue(rows);
+  const limit = vi.fn().mockResolvedValue(rows);
+  const orderBy = vi.fn().mockReturnValue({ limit });
   const from = vi.fn().mockReturnValue({ orderBy });
   const select = vi.fn().mockReturnValue({ from });
-  return { db: { select }, mocks: { select, from, orderBy } };
+  return { db: { select }, mocks: { select, from, orderBy, limit } };
 }
 
 function makeDb(overrides: Record<string, unknown> = {}) {
@@ -48,6 +49,16 @@ describe("FeatureFlagService — list", () => {
     const service = new FeatureFlagService({ db } as never);
     const result = await service.list();
     expect(result).toEqual([]);
+  });
+
+  it("상한 LIMIT 으로 무제한 스캔 방지 (A5)", async () => {
+    const { db, mocks } = makeSelectChain([FLAG_A]);
+    const service = new FeatureFlagService({ db } as never);
+    await service.list();
+    expect(mocks.limit).toHaveBeenCalled();
+    const [n] = mocks.limit.mock.calls[0] as number[];
+    expect(typeof n).toBe("number");
+    expect(n).toBeGreaterThan(0);
   });
 });
 

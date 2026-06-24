@@ -5,12 +5,19 @@ import { asc, eq } from "drizzle-orm";
 
 export type { FeatureFlagRow };
 
+/** 무제한 스캔 방지 상한 (A5). 플래그는 소수 — 운영상 충분, 병리적 증가만 차단. */
+const FEATURE_FLAG_LIST_MAX = 500;
+
 @Injectable()
 export class FeatureFlagService {
   constructor(@Inject(DATABASE) private readonly database: Database<Record<string, unknown>>) {}
 
   async list(): Promise<FeatureFlagRow[]> {
-    return this.database.db.select().from(featureFlags).orderBy(asc(featureFlags.createdAt));
+    return this.database.db
+      .select()
+      .from(featureFlags)
+      .orderBy(asc(featureFlags.createdAt))
+      .limit(FEATURE_FLAG_LIST_MAX);
   }
 
   async isEnabled(key: string): Promise<boolean> {
