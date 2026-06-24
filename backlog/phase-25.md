@@ -8,9 +8,9 @@
 | 항목 | 값 |
 |---|---|
 | **Phase ID** | `phase-25` |
-| **상태** | Planning |
+| **상태** | Done (2026-06-24, 범위 재조정 — E3/E4 이월) |
 | **시작일** | 2026-06-24 |
-| **목표 종료일** | (미정) |
+| **목표 종료일** | 2026-06-24 |
 | **소유자** | dennis |
 | **Base Branch** | `phase-25-refactor-hardening-3` (opt-in, 첫 hk-ship 시 자동 생성) |
 
@@ -28,13 +28,14 @@ phase-23(1차)·phase-24(2차)에서 핫패스·결함·컨트롤러 분할·ten
 
 남은 중복(D)을 제거하고 도메인/인프라 경계(E3/E4)를 패키지로 정리해, auth 모듈을 얇게 만들고 재사용성을 높인다. route-inventory 를 실제 DI 통과 검증으로 강화. 전 과정 기존 e2e 회귀 0.
 
-### 성공 기준 (Success Criteria) — 정량 우선
+### 성공 기준 (Success Criteria) — 정량 우선 (2026-06-24 범위 재조정)
 
-1. D2/D3/D4/D6 중복 제거 — 중복 구현 N→1 수렴, 신규 공통 모듈에 단위 테스트.
-2. E3 — provision·org 도메인 서비스가 auth 모듈에서 분리(별 모듈/디렉토리), DI 회귀 0.
-3. E4 — superuser-guard·feature-flag·cookie/csrf 중 최소 1군 패키지화(재사용 경계).
-4. route-inventory 가 컨트롤러 인스턴스화 + 가드 순서 검증(Wd 해소).
-5. 전체 `turbo run lint typecheck test` + 격리 e2e 회귀 0.
+> 진행 중 §11.3 건별 검증으로 범위를 right-size 했다: D6 채택, **D2·D4 드롭(substance 없는 묶음)**, **E3·E4 이월(구조-only·DI 수술 risk>payoff)**. 고가치(E1/E2 패키지·컨트롤러 분할·보안)는 phase-24 에서 완료.
+
+1. ✅ route-inventory Wd 해소 — 가드 **선언 순서** 검증 + AppModule **DI-compile smoke**(이후 이관 안전망). (spec-25-01)
+2. ✅ D6 가드 중복 제거 — RolesGuard/OrgRolesGuard → 공유 `checkRoles`. D2/D4 는 per-item 검증 후 드롭. (spec-25-02)
+3. ⏭ **이월**: E3(provision·org 도메인 분리)·E4(인프라 패키지화)·D2 — 다음 리팩토링 phase 후보(queue Icebox). 구조-only·공유 토큰 DI 수술이라 별도 appetite 시 진행.
+4. ✅ 전체 `turbo run lint typecheck test` + 격리 e2e 회귀 0.
 
 ## 🧩 작업 단위 (SPEC + phase-FF)
 
@@ -63,14 +64,18 @@ phase-23(1차)·phase-24(2차)에서 핫패스·결함·컨트롤러 분할·ten
 - **참조**: `backlog/queue.md` 감사 §D
 - **연관 모듈**: nestjs/auth guards, verifier, forRoot 모듈군
 
-### spec-25-03 — provision·org 도메인 분리 (E3)
+### spec-25-03 — provision·org 도메인 분리 (E3) — ⏭ 이월 (2026-06-24)
+
+> 다음 리팩토링 phase 후보. org 서비스가 공유 토큰(JWT/NOTIFIER/FRONTEND_URL)에 깊게 의존 → 모듈 추출 시 공유 config DI 수술 필요, 구조-only payoff. queue Icebox 등재.
 
 - **요점**: provision·org 도메인 서비스를 auth 모듈에서 별 모듈/경계로 분리.
 - **방향성**: 도메인 서비스 그룹화 → 모듈 분리(또는 패키지 후보). DI 회귀 0 (e2e 가드).
 - **참조**: 감사 §E3
 - **연관 모듈**: `apps/api/src/provision/*`, `apps/api/src/auth/org-*.service.ts`
 
-### spec-25-04 — 인프라 패키지화 (E4)
+### spec-25-04 — 인프라 패키지화 (E4) — ⏭ 이월 (2026-06-24)
+
+> 다음 리팩토링 phase 후보(E3 와 묶어). queue Icebox 등재.
 
 - **요점**: superuser-guard·feature-flag·cookie/csrf 중 재사용 가치 높은 1군 패키지화.
 - **방향성**: E1/E2 패키지 경계 패턴(ADR-0015/0016) 재사용. spec-25-03 결과 보고 후 §11.3 으로 대상 확정.
@@ -128,11 +133,13 @@ turbo run lint typecheck test
 
 ## 🏁 Phase Done 조건
 
-- [ ] 모든 SPEC merge (base: `phase-25-refactor-hardening-3` → main)
-- [ ] 통합 테스트 시나리오 PASS (격리 회귀 0)
-- [ ] 성공 기준 정량 측정 결과 기록
-- [ ] 사용자 최종 승인
+- [x] 착수 SPEC(25-01·25-02) merge (base: `phase-25-refactor-hardening-3` → main). E3/E4 는 이월.
+- [x] 통합 테스트 시나리오 PASS (격리 회귀 0)
+- [x] 성공 기준 정량 측정 결과 기록 (하단)
+- [x] 사용자 최종 승인 (2026-06-24)
 
 ## 📊 검증 결과 (phase 완료 시 작성)
 
-<!-- 통합 테스트 로그, 성공 기준 측정값, 회귀 점검 결과 -->
+- **성공 기준**: 채택 범위 3/3 PASS — Wd 해소(가드 순서+DI smoke, 25-01) / D6 가드 dedup(25-02) / 전체 `turbo run lint typecheck test` **151/151**, 격리·rbac e2e 회귀 0.
+- **범위 재조정(2026-06-24)**: D2·D4 per-item 검증 후 드롭(substance 부재), E3·E4 이월(구조-only·DI 수술 risk>payoff). queue Icebox 등재.
+- **Spec**: 25-01·25-02 Merged. 25-03·25-04 이월.
