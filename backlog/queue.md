@@ -14,7 +14,6 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
-- [ ] spec-x-web-drop-native-session-ui — web-drop-native-session-ui
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -182,6 +181,7 @@
 - [x] spec-x-org-members-defensive-scope (완료)
 - [x] spec-x-list-query-bounds (완료)
 - **phase-25** — refactor-hardening-3 — completed 2026-06-24
+- [x] spec-x-web-drop-native-session-ui (완료)
 <!-- sdd:done:end -->
 
 ---
