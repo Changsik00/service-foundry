@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-25** — refactor-hardening-3 — 2 spec — 다음: (spec 없음)
+(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -179,6 +179,7 @@
 - [x] spec-x-null-org-isolation-failclose (완료)
 - [x] spec-x-org-members-defensive-scope (완료)
 - [x] spec-x-list-query-bounds (완료)
+- **phase-25** — refactor-hardening-3 — completed 2026-06-24
 <!-- sdd:done:end -->
 
 ---
