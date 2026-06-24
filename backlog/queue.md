@@ -14,7 +14,6 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
-- [ ] spec-x-list-query-bounds — list-query-bounds
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -179,6 +178,7 @@
 - **phase-24** — refactor-hardening-2 — completed 2026-06-23
 - [x] spec-x-null-org-isolation-failclose (완료)
 - [x] spec-x-org-members-defensive-scope (완료)
+- [x] spec-x-list-query-bounds (완료)
 <!-- sdd:done:end -->
 
 ---
