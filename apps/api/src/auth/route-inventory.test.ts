@@ -37,9 +37,9 @@ function routesOf(ctrl: Ctor): string[] {
       if (path === undefined) return [];
       const method = Reflect.getMetadata(METHOD_METADATA, handler) as RequestMethod;
       const guards = (Reflect.getMetadata(GUARDS_METADATA, handler) as unknown[] | undefined) ?? [];
+      // 선언 순서 보존(정렬 금지) — 가드 실행 순서 회귀를 탐지 (Wd, spec-25-01).
       const guardNames = guards
         .map((g) => (typeof g === "function" ? g.name : (g as object)?.constructor?.name))
-        .sort()
         .join(",");
       // @OrgRoles 메타도 포함 — OrgRolesGuard 는 메타 없으면 fail-open 이라 데코 누락 회귀를 가드.
       const orgRoles = Reflect.getMetadata(ORG_ROLES_KEY, handler) as string[] | undefined;
