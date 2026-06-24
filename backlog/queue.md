@@ -55,6 +55,7 @@
 - ~~ARCHITECTURE.md 본체 재작성~~ **해소**: `spec-x-docs-ssot` (2026-06-18) — SSOT 정책(CONVENTIONS §2.5) + 루트 ARCHITECTURE→원칙+포인터 + reference 최신화
 - [ ] **turbo generator 앱 템플릿 drift** (spec-x-docs-ssot 발견) — `turbo/generators/config.ts` 가 app 스캐폴딩에 `vite` 옵션 제공하나 `turbo/generators/templates/app/` 디렉토리 부재(web-vite 폐기 잔재). config 옵션 정리 필요. 코드 drift, spec-x 후보
 - [ ] **ci-verify-gate explainer web-vite 잔재** (spec-x-docs-ssot 발견) — `docs/explainers/platform/ci-verify-gate.md` 가 폐기된 web-vite routeTree 빌드 의존을 설명. explainer 갱신 필요(단순 이름치환 아님)
+- [ ] **🔌 web ↔ native 모드 라우트 부정합 — `/auth/orgs` 갭** (2026-06-24 로컬 dev 확인) — 웹(apps/web)이 org 목록/스위처로 `GET /auth/orgs` 호출하는데 이는 **provider 모드 전용**(`ProviderOrgController.orgs` → `org-list.service.listForProviderUid`). **native 모드 `OrgController` 엔 list-my-orgs 엔드포인트 없음**(org/members·switch·invite 만) → native dev 에서 스위처 404. 역으로 provider 모드엔 웹이 쓰는 `/auth/csrf`·`/auth/sessions`(native 전용)가 없음 → 웹이 단일 모드로 완전 동작 안 함. 수정안: native `OrgController` 에 `GET /auth/orgs`(내 멤버십 org 목록, `OrgListService` 를 native sub 키로 재사용) 추가 → 웹이 native 에서 완전 동작. spec-x 후보(작음). 관련 wiring audit.
 
 #### 🔁 phase-24 회고 이월 (2026-06-23, `docs/review/2026-06-23-phase-24-review.md`)
 
