@@ -44,6 +44,7 @@ phase-23(1차)·phase-24(2차)에서 핫패스·결함·컨트롤러 분할·ten
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
 | `spec-25-01` | route-inventory-di | P1 | Merged | `specs/spec-25-01-route-inventory-di/` |
+| `spec-25-02` | factory-guard-dedup | P? | Active | `specs/spec-25-02-factory-guard-dedup/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
