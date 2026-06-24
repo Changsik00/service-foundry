@@ -32,7 +32,7 @@ phase-23(1차)·phase-24(2차)에서 핫패스·결함·컨트롤러 분할·ten
 
 > 진행 중 §11.3 건별 검증으로 범위를 right-size 했다: D6 채택, **D2·D4 드롭(substance 없는 묶음)**, **E3·E4 이월(구조-only·DI 수술 risk>payoff)**. 고가치(E1/E2 패키지·컨트롤러 분할·보안)는 phase-24 에서 완료.
 
-1. ✅ route-inventory Wd 해소 — 가드 **선언 순서** 검증 + AppModule **DI-compile smoke**(이후 이관 안전망). (spec-25-01)
+1. ✅ route-inventory Wd 해소 — AppModule **DI-compile smoke**(이관 안전망, 효력 실증) + 가드 **선언 순서** 검증(`.sort()` 제거). ⚠️ 단 현 가드가 전부 알파벳순이라 순서검증은 **현재 latent**(미래 reorder 회귀 대비) — 탐지력은 잠재적. brittle EXPECTED 동적화는 미해소(이월). (spec-25-01)
 2. ✅ D6 가드 중복 제거 — RolesGuard/OrgRolesGuard → 공유 `checkRoles`. D2/D4 는 per-item 검증 후 드롭. (spec-25-02)
 3. ⏭ **이월**: E3(provision·org 도메인 분리)·E4(인프라 패키지화)·D2 — 다음 리팩토링 phase 후보(queue Icebox). 구조-only·공유 토큰 DI 수술이라 별도 appetite 시 진행.
 4. ✅ 전체 `turbo run lint typecheck test` + 격리 e2e 회귀 0.
