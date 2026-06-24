@@ -3,5 +3,4 @@ export { AccountCard } from "./AccountCard";
 export { DeleteSection } from "./DeleteSection";
 export { PasswordForm } from "./PasswordForm";
 export { ProfileForm } from "./ProfileForm";
-export { accountQueries, sessionQueries } from "./queries";
-export { SessionsCard } from "./SessionsCard";
+export { accountQueries } from "./queries";

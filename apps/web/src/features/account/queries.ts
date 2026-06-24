@@ -1,4 +1,4 @@
-import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { httpClient } from "@/lib/http-client";
@@ -14,20 +14,6 @@ const MeSchema = z.object({
   }),
 });
 
-const SessionSchema = z.object({
-  id: z.string(),
-  createdAt: z.string(),
-  expiresAt: z.string(),
-  orgId: z.string().nullable(),
-  current: z.boolean(),
-});
-
-const SessionListSchema = z.object({
-  sessions: z.array(SessionSchema),
-});
-
-export type SessionItem = z.infer<typeof SessionSchema>;
-
 export const accountQueries = {
   me: () =>
     queryOptions({
@@ -37,28 +23,6 @@ export const accountQueries = {
     }),
 };
 
-export const sessionQueries = {
-  list: () =>
-    queryOptions({
-      queryKey: ["auth", "sessions"],
-      queryFn: () =>
-        httpClient.get("/auth/sessions", { schema: SessionListSchema, requiresAuth: true }),
-      staleTime: 30_000,
-    }),
-};
-
-export function useRevokeSession() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => httpClient.delete(`/auth/sessions/${id}`, { requiresAuth: true }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["auth", "sessions"] }),
-  });
-}
-
-export function useRevokeOtherSessions() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: () => httpClient.delete("/auth/sessions", { requiresAuth: true }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["auth", "sessions"] }),
-  });
-}
+// 세션/기기 관리는 native 전용 기능이다. 본 웹은 Supabase(provider) 인증 전용(env 필수)이라
+// 세션은 Supabase 가 관리 → 우리 API `/auth/sessions`(native 전용)를 호출하지 않는다.
+// (native 모드 웹 지원 시 env optional + 모드 분기로 재도입 — spec-x-web-drop-native-session-ui)

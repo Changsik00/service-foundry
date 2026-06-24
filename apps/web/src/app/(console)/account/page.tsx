@@ -2,7 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/frontend-ui";
 
-import { DeleteSection, PasswordForm, ProfileForm, SessionsCard } from "@/features/account";
+import { DeleteSection, PasswordForm, ProfileForm } from "@/features/account";
 
 export default function AccountPage() {
   return (
@@ -23,10 +23,6 @@ export default function AccountPage() {
             <section>
               <h2 className="mb-4 text-sm font-medium text-muted-foreground">비밀번호 변경</h2>
               <PasswordForm />
-            </section>
-            <section>
-              <h2 className="mb-4 text-sm font-medium text-muted-foreground">활성 세션</h2>
-              <SessionsCard />
             </section>
             <DeleteSection />
           </div>
