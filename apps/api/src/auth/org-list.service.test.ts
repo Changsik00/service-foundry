@@ -49,4 +49,21 @@ describe("OrgListService", () => {
     expect(typeof n).toBe("number");
     expect(n).toBeGreaterThan(0);
   });
+
+  // native: select().from().innerJoin(organizations).where().orderBy().limit() — 단일 join, userId 키
+  it("listForUserId → 내부 userId 로 내 org 목록 반환 + limit (spec-x-native-list-orgs)", async () => {
+    const limit = vi.fn().mockResolvedValue(ROWS);
+    const orderBy = vi.fn().mockReturnValue({ limit });
+    const where = vi.fn().mockReturnValue({ orderBy });
+    const innerJoin = vi.fn().mockReturnValue({ where });
+    const from = vi.fn().mockReturnValue({ innerJoin });
+    const select = vi.fn().mockReturnValue({ from });
+    const service = new OrgListService({ db: { select } } as never, als);
+
+    const result = await service.listForUserId("user-internal-1");
+
+    expect(result).toEqual(ROWS);
+    expect(where).toHaveBeenCalled();
+    expect(limit).toHaveBeenCalled();
+  });
 });

@@ -21,10 +21,11 @@ import {
 
 import { zodPipe } from "./auth-controller.shared.js";
 import { OrgInviteService } from "./org-invite.service.js";
+import { OrgListService, type OrgSummary } from "./org-list.service.js";
 import { type MemberListResult, OrgMembersService } from "./org-members.service.js";
 import { OrgSwitchService } from "./org-switch.service.js";
 
-/** org 전환·초대·멤버 — auth.controller 에서 분리 (spec-23-06). URL prefix 동일(`auth`). */
+/** org 전환·초대·멤버·목록 — auth.controller 에서 분리 (spec-23-06). URL prefix 동일(`auth`). */
 @ApiTags("auth")
 @Controller("auth")
 export class OrgController {
@@ -32,7 +33,16 @@ export class OrgController {
     @Inject(OrgSwitchService) private readonly orgSwitchService: OrgSwitchService,
     @Inject(OrgInviteService) private readonly orgInviteService: OrgInviteService,
     @Inject(OrgMembersService) private readonly orgMembersService: OrgMembersService,
+    @Inject(OrgListService) private readonly orgListService: OrgListService,
   ) {}
+
+  /** 내 org 목록 — 테넌트 스위처 데이터. native sub=내부 userId 로 스코프 (spec-x-native-list-orgs). */
+  @Get("orgs")
+  @UseGuards(AuthGuard)
+  @HttpCode(200)
+  async orgs(@CurrentUser() user: AuthenticatedUser): Promise<{ orgs: OrgSummary[] }> {
+    return { orgs: await this.orgListService.listForUserId(user.sub) };
+  }
 
   @Post("org/switch")
   @UseGuards(AuthGuard)
