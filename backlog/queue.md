@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-26** — id-scheme-public-id — 0/0 spec — (다음: 첫 spec 생성 대기)
+- **phase-26** — id-scheme-public-id — 1 spec — 다음: spec-26-01-id-util-and-audit
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
