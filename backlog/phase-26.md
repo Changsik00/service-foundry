@@ -26,14 +26,15 @@
 
 ADR-0028 의 3-티어 체계(내부 uuid v7 PK + 불투명 prefixed public_id + provider_uid 매핑)를 시행한다. 경계(verifier/guard)에서 식별자를 내부 `userId` 로 정규화해 컨슈머를 단일화하고, 외부 표면에 내부 uuid 가 일절 노출되지 않음을 스냅샷 테스트로 강제한다. 전 과정 기존 e2e 회귀 0, 멀티테넌트 격리 보존.
 
-### 성공 기준 (Success Criteria)
+### 성공 기준 (Success Criteria) — *spec-26-08 회고 정직화*
 
-1. `public_id` 생성기 + prefix 레지스트리 + uuidv7 default 유틸 확립 (순수 단위 테스트). 외부 노출 root 감사 리스트 확정.
-2. users·organizations·api-keys·sessions 등 확정 root 에 `public_id`(UK) 도입 + 백필 마이그레이션(3-step).
-3. 경계 정규화 — native JWT `sub`=public_id, guard resolve→`AuthenticatedUser.userId`(내부 PK). API 응답의 식별자=public_id. `listForUserId` 로 수렴(모드 분기 제거).
-4. org RLS 정합 — interceptor 에서 active_org public→내부 id 해석, 격리 e2e 회귀 0.
-5. **누출 감사 스냅샷** — API 응답·JWT 에 내부 uuid 노출 0 (불변식 안전망).
+1. `public_id` 생성기 + prefix 레지스트리 확립 + 외부 노출 root 감사. **(정정: `uuidv7()` 유틸은 구현했으나 미배선 — PK 는 v4 유지, ADR-0028 §3 후속 이월.)**
+2. users·organizations·api-keys·sessions 확정 root 에 `public_id`(UK) 도입 + 백필. **(정정: 3-step 아닌 VOLATILE default 단일 ADD COLUMN 자동 백필.)**
+3. **외부 노출 전환** — 응답 식별자=public_id(JWT `sub` 는 §1 예외로 내부 id 유지). org/switch 입력 public_id 해석+멤버십 게이트. **(정정: "`listForUserId` 수렴/모드 분기 제거"는 sub 정규화 후속 이월 — phase-26 미시행.)**
+4. org RLS 정합 — JWT active_org·SET LOCAL·RLS 는 내부 uuid 유지, 외부만 public. 격리 e2e 회귀 0.
+5. **누출 감사 스냅샷** — API 응답에 내부 uuid 노출 0 (불변식 안전망). cursor base64 디코드까지 스캔(26-08).
 6. 전체 `turbo run lint typecheck test` + 격리 e2e 회귀 0.
+7. **보안(26-04, scope 추가)** — provider active_org 멤버십 게이트(fail-close) + api_keys RLS backstop.
 
 ## 🧩 작업 단위 (SPEC + phase-FF)
 
@@ -49,6 +50,7 @@ ADR-0028 의 3-티어 체계(내부 uuid v7 PK + 불투명 prefixed public_id + 
 | `spec-26-05` | org-public-id-rls | P2 | Merged | `specs/spec-26-05-org-public-id-rls/` |
 | `spec-26-06` | remaining-roots-public-id | P2 | Merged | `specs/spec-26-06-remaining-roots-public-id/` |
 | `spec-26-07` | leak-audit-snapshot | P1 | Merged | `specs/spec-26-07-leak-audit-snapshot/` |
+| `spec-26-08` | retro-hardening | P? | Active | `specs/spec-26-08-retro-hardening/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
@@ -115,7 +117,7 @@ ADR-0028 의 3-티어 체계(내부 uuid v7 PK + 불투명 prefixed public_id + 
 | public_id 형식 | 불투명 랜덤 / ULID / uuidv7 | **불투명 랜덤+prefix** | 정보 비노출(timestamp·순서 X), 정렬성은 내부 PK(v7)에서 취함 |
 | 적용 범위 | users만 / users+org / 전 root | **전 aggregate root** | org id 의 URL·JWT 노출 누수까지 제거 (단계적 시행) |
 | 표기 | prefix / bare | **prefix(usr_/org_/key_)** | 로그 자기설명·타입 혼동 방지 |
-| 내부 PK | v4 유지 / v7 전환 | **v7 default(신규)** | 정렬·인덱스 지역성, 기존 v4 행 호환 유지 |
+| 내부 PK | v4 유지 / v7 전환 | **v4 유지 (v7 후속 이월)** | ⚠️ 정정(spec-26-08): v7 전환은 PG16 native 부재로 phase-26 미시행. `uuidv7()` 유틸만 확립, PK 는 `gen_random_uuid` 유지 → Icebox |
 
 ## 🧪 통합 테스트 시나리오 (간결)
 

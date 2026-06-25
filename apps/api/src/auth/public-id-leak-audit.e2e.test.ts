@@ -93,12 +93,14 @@ describe("public_id 누출 감사 — 응답 body 내부 uuid 0 (ADR-0028 §1)",
 
     const orgs = await request(server).get("/auth/orgs").set("Authorization", `Bearer ${token}`);
     expectNoInternalUuid(orgs.body, "orgs");
+    expect(orgs.body.orgs.length).toBeGreaterThanOrEqual(1); // 빈 배열 가짜 GREEN 방지
     expect(orgs.body.orgs[0]?.orgId).toMatch(/^org_/);
 
     const members = await request(server)
       .get("/auth/org/members")
       .set("Authorization", `Bearer ${token}`);
     expectNoInternalUuid(members.body, "org/members");
+    expect(members.body.members.length).toBeGreaterThanOrEqual(1);
     expect(members.body.members[0]?.userId).toMatch(/^usr_/);
 
     const keyCreate = await post("/auth/api-keys", { name: "audit" }, token);
@@ -115,6 +117,7 @@ describe("public_id 누출 감사 — 응답 body 내부 uuid 0 (ADR-0028 §1)",
       .get("/auth/sessions")
       .set("Authorization", `Bearer ${token}`);
     expectNoInternalUuid(sessions.body, "sessions");
+    expect(sessions.body.sessions.length).toBeGreaterThanOrEqual(1);
     expect(sessions.body.sessions[0]?.id).toMatch(/^ses_/);
   });
 
@@ -132,6 +135,7 @@ describe("public_id 누출 감사 — 응답 body 내부 uuid 0 (ADR-0028 §1)",
       .set("Authorization", `Bearer ${adminToken}`);
     expect(adminOrgs.status).toBe(200);
     expectNoInternalUuid(adminOrgs.body, "admin/orgs");
+    expect(adminOrgs.body.orgs.length).toBeGreaterThanOrEqual(1);
     expect(adminOrgs.body.orgs[0]?.id).toMatch(/^org_/);
     expect(adminOrgs.body.orgs[0]?.ownerId).toMatch(/^usr_/);
 
@@ -140,6 +144,15 @@ describe("public_id 누출 감사 — 응답 body 내부 uuid 0 (ADR-0028 §1)",
       .set("Authorization", `Bearer ${adminToken}`);
     expect(adminUsers.status).toBe(200);
     expectNoInternalUuid(adminUsers.body, "admin/users");
+    expect(adminUsers.body.users.length).toBeGreaterThanOrEqual(1);
     expect(adminUsers.body.users[0]?.id).toMatch(/^usr_/);
+
+    // nextCursor 도 base64 디코드 시 내부 uuid 0 (spec-26-08 — cursor 누출 차단).
+    const paged = await request(server)
+      .get("/admin/users?limit=1")
+      .set("Authorization", `Bearer ${adminToken}`);
+    expect(paged.body.nextCursor).toBeTruthy(); // admin 다수 → 다음 페이지 존재
+    const decoded = decodeURIComponent(atob(paged.body.nextCursor as string));
+    expect(decoded, "admin/users nextCursor 내부 uuid 노출").not.toMatch(UUID_RE);
   });
 });

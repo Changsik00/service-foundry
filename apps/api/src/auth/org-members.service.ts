@@ -43,7 +43,17 @@ export class OrgMembersService {
     const { search, role, cursor, limit: rawLimit, orgId } = params;
     const limit = rawLimit ?? 20;
 
+    // cursor 는 user public_id 운반(내부 uuid 미노출, spec-26-08) — decode 시 내부 id 로 해석.
     const cursorData = cursor ? decodeCursor<{ userId: string }>(cursor) : null;
+    const cursorInternalId = cursorData?.userId
+      ? (
+          await this.database.db
+            .select({ id: users.id })
+            .from(users)
+            .where(eq(users.publicId, cursorData.userId))
+            .limit(1)
+        )[0]?.id
+      : undefined;
 
     const conditions = and(
       eq(memberships.orgId, orgId ?? NIL_ORG),
@@ -51,7 +61,7 @@ export class OrgMembersService {
         ? or(ilike(users.email, `%${search}%`), ilike(users.displayName, `%${search}%`))
         : undefined,
       role ? eq(memberships.role, role as "owner" | "admin" | "member") : undefined,
-      cursorData?.userId ? gt(users.id, cursorData.userId) : undefined,
+      cursorInternalId ? gt(users.id, cursorInternalId) : undefined,
     );
 
     const rows = await this.database.db
@@ -74,9 +84,8 @@ export class OrgMembersService {
     const hasMore = rows.length > limit;
     const sliced = hasMore ? rows.slice(0, limit) : rows;
     const lastMember = sliced[sliced.length - 1];
-    // 커서는 내부 user id 기반(불투명, 페이지네이션 정렬키) — 응답엔 미노출.
-    const nextCursor =
-      hasMore && lastMember ? encodeCursor({ userId: lastMember.internalUserId }) : null;
+    // cursor = 마지막 멤버의 user public_id (내부 uuid 미노출, spec-26-08).
+    const nextCursor = hasMore && lastMember ? encodeCursor({ userId: lastMember.userId }) : null;
     const members = sliced.map(({ internalUserId: _omit, ...m }) => m);
 
     return { members: members as OrgMember[], nextCursor };

@@ -49,17 +49,21 @@ export class AdminService {
   async listOrgs(params: OrgListParams = {}): Promise<OrgListResult> {
     const { search, cursor, limit: rawLimit } = params;
     const limit = rawLimit ?? 20;
+    // cursor 는 org public_id 운반(내부 uuid 미노출, spec-26-08) — decode 시 내부 id 로 해석.
     const cursorData = cursor ? decodeCursor<{ orgId: string }>(cursor) : null;
 
-    const conditions = and(
-      search
-        ? or(ilike(organizations.name, `%${search}%`), ilike(organizations.slug, `%${search}%`))
-        : undefined,
-      cursorData?.orgId ? gt(organizations.id, cursorData.orgId) : undefined,
-    );
-
     return runWithSystemTenant(this.als, async () => {
-      // 외부 식별자 = public_id (ADR-0028). id=org public, ownerId=owner public. cursor 는 내부 id(불투명).
+      const cursorInternalId = cursorData?.orgId
+        ? await this.resolveOrgInternalId(cursorData.orgId)
+        : undefined;
+      const conditions = and(
+        search
+          ? or(ilike(organizations.name, `%${search}%`), ilike(organizations.slug, `%${search}%`))
+          : undefined,
+        cursorInternalId ? gt(organizations.id, cursorInternalId) : undefined,
+      );
+
+      // 외부 식별자 = public_id (ADR-0028). id=org public, ownerId=owner public.
       const rows = await this.database.db
         .select({
           id: organizations.publicId,
@@ -79,27 +83,50 @@ export class AdminService {
       const hasMore = rows.length > limit;
       const sliced = hasMore ? rows.slice(0, limit) : rows;
       const last = sliced[sliced.length - 1];
-      const nextCursor = hasMore && last ? encodeCursor({ orgId: last.internalId }) : null;
+      // cursor = 마지막 org 의 public_id (내부 uuid 미노출).
+      const nextCursor = hasMore && last ? encodeCursor({ orgId: last.id }) : null;
       const orgs = sliced.map(({ internalId: _omit, ...o }) => o);
 
       return { orgs: orgs as AdminOrg[], nextCursor };
     });
   }
 
+  private async resolveOrgInternalId(publicId: string): Promise<string | undefined> {
+    const r = await this.database.db
+      .select({ id: organizations.id })
+      .from(organizations)
+      .where(eq(organizations.publicId, publicId))
+      .limit(1);
+    return r[0]?.id;
+  }
+
+  private async resolveUserInternalId(publicId: string): Promise<string | undefined> {
+    const r = await this.database.db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.publicId, publicId))
+      .limit(1);
+    return r[0]?.id;
+  }
+
   async listUsers(params: UserListParams = {}): Promise<UserListResult> {
     const { search, cursor, limit: rawLimit } = params;
     const limit = rawLimit ?? 20;
+    // cursor 는 user public_id 운반(내부 uuid 미노출, spec-26-08).
     const cursorData = cursor ? decodeCursor<{ userId: string }>(cursor) : null;
 
-    const conditions = and(
-      search
-        ? or(ilike(users.email, `%${search}%`), ilike(users.displayName, `%${search}%`))
-        : undefined,
-      cursorData?.userId ? gt(users.id, cursorData.userId) : undefined,
-    );
-
     return runWithSystemTenant(this.als, async () => {
-      // 외부 식별자 = public_id. id=user public, orgId=org public(없으면 null). cursor 는 내부 id(불투명).
+      const cursorInternalId = cursorData?.userId
+        ? await this.resolveUserInternalId(cursorData.userId)
+        : undefined;
+      const conditions = and(
+        search
+          ? or(ilike(users.email, `%${search}%`), ilike(users.displayName, `%${search}%`))
+          : undefined,
+        cursorInternalId ? gt(users.id, cursorInternalId) : undefined,
+      );
+
+      // 외부 식별자 = public_id. id=user public, orgId=org public(없으면 null).
       const rows = await this.database.db
         .select({
           id: users.publicId,
@@ -119,7 +146,8 @@ export class AdminService {
       const hasMore = rows.length > limit;
       const sliced = hasMore ? rows.slice(0, limit) : rows;
       const last = sliced[sliced.length - 1];
-      const nextCursor = hasMore && last ? encodeCursor({ userId: last.internalId }) : null;
+      // cursor = 마지막 user 의 public_id (내부 uuid 미노출).
+      const nextCursor = hasMore && last ? encodeCursor({ userId: last.id }) : null;
       const userList = sliced.map(({ internalId: _omit, ...u }) => u);
 
       return { users: userList as AdminUser[], nextCursor };
