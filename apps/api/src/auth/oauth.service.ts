@@ -88,7 +88,8 @@ export class OAuthService {
       { issuer: this.jwtOpts.issuer, audience: this.jwtOpts.audience },
     );
 
-    return { accessToken, refreshToken, userId: user.id };
+    // 외부 노출 식별자는 public_id (ADR-0028). 내부 세션/토큰은 user.id 사용.
+    return { accessToken, refreshToken, userId: user.publicId };
   }
 
   // 도달 시 getProvider 가 이미 검증했으므로 방어적 — raw Error 대신 AppError(전역 필터가 매핑, ADR-0027).

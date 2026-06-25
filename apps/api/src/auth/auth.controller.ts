@@ -154,7 +154,7 @@ export class AuthController {
     return {
       accessToken,
       user: {
-        id: user.id,
+        id: user.publicId,
         email: user.email,
         role: user.role,
         createdAt: user.createdAt,
@@ -219,7 +219,7 @@ export class AuthController {
     return {
       accessToken,
       user: {
-        id: user.id,
+        id: user.publicId,
         email: user.email,
         role: user.role,
         createdAt: user.createdAt,
@@ -280,7 +280,7 @@ export class AuthController {
     return {
       accessToken,
       user: {
-        id: user.id,
+        id: user.publicId,
         email: user.email,
         role: user.role,
         createdAt: user.createdAt,
@@ -329,11 +329,28 @@ export class AuthController {
   @ApiResponse({ status: 401, description: "토큰 없음·만료·서명 불일치" })
   @Get("me")
   @UseGuards(AuthGuard)
-  async me(
-    @CurrentUser() currentUser: AuthenticatedUser,
-  ): Promise<{ user: AuthenticatedUser & { displayName: string | null } }> {
+  async me(@CurrentUser() currentUser: AuthenticatedUser): Promise<{
+    user: {
+      id: string | null;
+      email: string | null;
+      role: AuthenticatedUser["role"];
+      orgId: string | null;
+      orgRole: AuthenticatedUser["orgRole"];
+      displayName: string | null;
+    };
+  }> {
+    // sub(=내부 users.id, 서버 전용)은 응답에 노출하지 않는다 — 외부 식별자는 public_id (ADR-0028).
     const row = await this.accountUserStore.findById(currentUser.sub);
-    return { user: { ...currentUser, displayName: row?.displayName ?? null } };
+    return {
+      user: {
+        id: row?.publicId ?? null,
+        email: row?.email ?? null,
+        role: currentUser.role,
+        orgId: currentUser.orgId,
+        orgRole: currentUser.orgRole,
+        displayName: row?.displayName ?? null,
+      },
+    };
   }
 
   // --- existing endpoints ---

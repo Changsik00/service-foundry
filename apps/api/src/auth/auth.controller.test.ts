@@ -20,6 +20,7 @@ import { SignupService } from "./signup.service.js";
 
 const mockUserRow = {
   id: "00000000-0000-0000-0000-000000000001",
+  publicId: "usr_MOCK00000000000000000000AB",
   email: "test@example.com",
   role: "user" as const,
   passwordHash: "$argon2id$fake",
@@ -111,6 +112,7 @@ describe("AuthController", () => {
           useValue: {
             findById: vi.fn().mockResolvedValue({
               id: mockUserRow.id,
+              publicId: mockUserRow.publicId,
               email: mockUserRow.email,
               passwordHash: null,
               displayName: null,
@@ -254,7 +256,17 @@ describe("AuthController", () => {
         orgRole: null,
       };
       const result = await controller.me(currentUser);
-      expect(result).toEqual({ user: { ...currentUser, displayName: null } });
+      // sub(내부 id) 미노출, 외부 식별자 = public_id (ADR-0028).
+      expect(result).toEqual({
+        user: {
+          id: mockUserRow.publicId,
+          email: mockUserRow.email,
+          role: "user",
+          orgId: null,
+          orgRole: null,
+          displayName: null,
+        },
+      });
     });
   });
 });

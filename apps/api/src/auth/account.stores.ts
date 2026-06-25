@@ -6,15 +6,20 @@ import { and, eq, inArray, ne } from "drizzle-orm";
 export const ACCOUNT_USER_STORE = Symbol("ACCOUNT_USER_STORE");
 export const InjectAccountUserStore = () => Inject(ACCOUNT_USER_STORE);
 
+export interface AccountUserProfile {
+  id: string;
+  publicId: string;
+  email: string;
+  passwordHash: string | null;
+  displayName: string | null;
+  providerUid: string | null;
+  avatarUrl: string | null;
+}
+
 export interface AccountUserStore {
-  findById(id: string): Promise<{
-    id: string;
-    email: string;
-    passwordHash: string | null;
-    displayName: string | null;
-    providerUid: string | null;
-    avatarUrl: string | null;
-  } | null>;
+  findById(id: string): Promise<AccountUserProfile | null>;
+  /** provider 모드(sub=providerUid) /me 해석용 — 내부 id 로 못 찾을 때 fallback. */
+  findByProviderUid(providerUid: string): Promise<AccountUserProfile | null>;
   findByEmail(email: string): Promise<{ id: string } | null>;
   updateDisplayName(id: string, displayName: string | null): Promise<void>;
   updatePasswordHash(id: string, passwordHash: string): Promise<void>;
@@ -34,6 +39,7 @@ export function createAccountUserStore(db: AnyDb): AccountUserStore {
       const rows = await typedDb
         .select({
           id: users.id,
+          publicId: users.publicId,
           email: users.email,
           passwordHash: users.passwordHash,
           displayName: users.displayName,
@@ -42,6 +48,23 @@ export function createAccountUserStore(db: AnyDb): AccountUserStore {
         })
         .from(users)
         .where(eq(users.id, id))
+        .limit(1);
+      return rows[0] ?? null;
+    },
+
+    async findByProviderUid(providerUid) {
+      const rows = await typedDb
+        .select({
+          id: users.id,
+          publicId: users.publicId,
+          email: users.email,
+          passwordHash: users.passwordHash,
+          displayName: users.displayName,
+          providerUid: users.providerUid,
+          avatarUrl: users.avatarUrl,
+        })
+        .from(users)
+        .where(eq(users.providerUid, providerUid))
         .limit(1);
       return rows[0] ?? null;
     },

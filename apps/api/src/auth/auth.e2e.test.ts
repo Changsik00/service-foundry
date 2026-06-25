@@ -263,12 +263,12 @@ describe("Auth E2E (real PG)", () => {
       accessToken = res.body.accessToken as string;
     });
 
-    it("GET /auth/me (Bearer accessToken) → 200, sub + role 반환", async () => {
+    it("GET /auth/me (Bearer accessToken) → 200, public_id + role 반환", async () => {
       const res = await request(server)
         .get("/auth/me")
         .set("Authorization", `Bearer ${accessToken}`);
       expect(res.status).toBe(200);
-      expect(res.body.user.sub).toBe(userId);
+      expect(res.body.user.id).toBe(userId); // userId = signup 응답의 public_id
       expect(res.body.user.role).toBe("user");
     });
 
@@ -304,7 +304,7 @@ describe("Auth E2E (real PG)", () => {
         .get("/auth/me")
         .set("Authorization", `Bearer ${accessToken}`);
       expect(res.status).toBe(200);
-      expect(res.body.user.sub).toBe(userId);
+      expect(res.body.user.id).toBe(userId);
       expect(res.body.user.role).toBe("user");
     });
   });

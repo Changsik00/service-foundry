@@ -4,6 +4,8 @@ import type { OAuthUserInfo } from "./token.js";
 
 export interface OAuthUserRow {
   id: string;
+  /** 외부 노출 불투명 식별자 (ADR-0028). */
+  publicId: string;
   email: string;
   passwordHash: string | null;
   role: string;

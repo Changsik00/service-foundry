@@ -65,13 +65,15 @@ describe("auth responses expose public_id (not internal uuid)", () => {
     expect(user.id).not.toMatch(UUID_RE);
   });
 
-  it("GET /auth/me 식별자 = public_id, 응답에 내부 uuid 부재", async () => {
+  it("GET /auth/me 사용자 식별자 = public_id, 내부 sub 미노출", async () => {
     const { accessToken } = await signup(`expose-me-${Date.now()}@example.com`);
     const res = await request(server).get("/auth/me").set("Authorization", `Bearer ${accessToken}`);
     expect(res.status).toBe(200);
     const user = res.body.user as { id?: string; sub?: string };
     expect(user.id).toMatch(PUBLIC_ID_RE);
-    // 내부 uuid 가 응답 어디에도 없어야 한다 (sub 등)
-    expect(JSON.stringify(res.body)).not.toMatch(UUID_RE);
+    expect(user.id).not.toMatch(UUID_RE);
+    // 내부 users.id 를 담던 sub 필드는 응답에서 제거됨.
+    expect(user.sub).toBeUndefined();
+    // 참고: orgId(내부 org uuid)는 26-04 에서 public_id 전환 — 전체 uuid 부재는 26-06 스냅샷에서 강제.
   });
 });
