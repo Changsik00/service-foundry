@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { Inject, Injectable } from "@nestjs/common";
 import { memberships, organizations, users } from "@repo/backend-schema";
 import { DATABASE, type Database } from "@repo/nestjs-database";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export const PROVISION_SERVICE = Symbol("PROVISION_SERVICE");
 
@@ -12,6 +12,7 @@ export interface IProvisionService {
     uid: string,
     email: string,
   ): Promise<{ orgId: string; orgRole: string; internalUserId: string }>;
+  getOrgMembership(providerUid: string, orgId: string): Promise<{ orgRole: string } | null>;
 }
 
 @Injectable()
@@ -82,6 +83,21 @@ export class ProvisionService implements IProvisionService {
 
       return { orgId: org!.id, orgRole: "owner", internalUserId: userId };
     });
+  }
+
+  /**
+   * providerUid 가 orgId 의 멤버인지 확인 (active_org 클레임 게이트, spec-26-04 A).
+   * verifier 단계(인터셉터 이전)라 RLS 컨텍스트가 없어 permissive — 시스템 레벨 멤버십 조회로 동작.
+   */
+  async getOrgMembership(providerUid: string, orgId: string): Promise<{ orgRole: string } | null> {
+    const rows = await this.database.db
+      .select({ role: memberships.role })
+      .from(memberships)
+      .innerJoin(users, eq(memberships.userId, users.id))
+      .where(and(eq(users.providerUid, providerUid), eq(memberships.orgId, orgId)))
+      .limit(1);
+    const row = rows[0];
+    return row ? { orgRole: row.role } : null;
   }
 
   async provisionUser(userId: string, email: string): Promise<{ orgId: string; orgRole: string }> {
