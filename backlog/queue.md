@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-26** — id-scheme-public-id — 1 spec — 다음: spec-26-01-id-util-and-audit
+- **phase-26** — id-scheme-public-id — 3 spec — 다음: spec-26-03-auth-boundary-normalize
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기

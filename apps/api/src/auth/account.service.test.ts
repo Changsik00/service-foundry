@@ -8,6 +8,7 @@ import type { SessionStore } from "./session.stores.js";
 function makeStore(overrides: Partial<AccountUserStore> = {}): AccountUserStore {
   return {
     findById: vi.fn().mockResolvedValue(null),
+    findByProviderUid: vi.fn().mockResolvedValue(null),
     findByEmail: vi.fn().mockResolvedValue(null),
     updateDisplayName: vi.fn().mockResolvedValue(undefined),
     updatePasswordHash: vi.fn().mockResolvedValue(undefined),

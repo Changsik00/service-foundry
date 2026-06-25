@@ -62,9 +62,13 @@ describe("Tenant isolation via real HTTP (guard→interceptor→RLS)", () => {
   }> {
     const res = await postCsrf("/auth/signup", { body: { email, password: "Passw0rd!123" } });
     expect(res.status).toBe(201);
+    // 응답 user.id 는 public_id — 멤버 비교/토큰 sub 용 내부 users.id 는 이메일로 해석.
+    const internal = await owner.query<{ id: string }>("SELECT id FROM users WHERE email = $1", [
+      email,
+    ]);
     return {
       accessToken: res.body.accessToken as string,
-      userId: res.body.user.id as string,
+      userId: internal.rows[0]?.id as string,
       email,
     };
   }

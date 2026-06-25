@@ -53,7 +53,7 @@ export function AccountCard() {
           </p>
         ) : (
           <>
-            <Row label="사용자 ID" value={data.user.sub} />
+            <Row label="사용자 ID" value={data.user.id ?? "—"} />
             <Row label="역할" value={data.user.role} />
             <Row label="조직" value={data.user.orgId ?? "—"} />
           </>

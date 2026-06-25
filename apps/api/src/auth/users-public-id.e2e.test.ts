@@ -43,7 +43,11 @@ describe("users.public_id (DB gen_public_id default)", () => {
       .set("Cookie", idCookie)
       .send({ email, password: "Passw0rd!123" });
     expect(res.status).toBe(201);
-    return res.body.user.id as string;
+    // 응답 user.id 는 public_id — 내부 users.id 는 이메일로 해석.
+    const internal = await owner.query<{ id: string }>("SELECT id FROM users WHERE email = $1", [
+      email,
+    ]);
+    return internal.rows[0]?.id as string;
   }
 
   beforeAll(async () => {

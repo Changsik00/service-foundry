@@ -8,7 +8,11 @@ import { ZodError, type z } from "zod";
 export const S_User = {
   type: "object",
   properties: {
-    id: { type: "string", format: "uuid", example: "550e8400-e29b-41d4-a716-446655440000" },
+    id: {
+      type: "string",
+      description: "public_id (외부 식별자)",
+      example: "usr_3K9QW7M2YB8X4N6P0V1HJ5TCDE",
+    },
     email: { type: "string", format: "email", example: "user@example.com" },
     role: { type: "string", enum: ["user", "admin"], example: "user" },
     createdAt: { type: "string", format: "date-time", example: "2024-01-01T00:00:00.000Z" },
