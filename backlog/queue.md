@@ -14,6 +14,7 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
+- [ ] spec-x-native-list-orgs — native-list-orgs
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
