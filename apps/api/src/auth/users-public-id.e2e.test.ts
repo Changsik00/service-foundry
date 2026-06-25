@@ -1,5 +1,6 @@
 import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
+import { ID_PREFIX, publicId } from "@repo/backend-id";
 import { createDatabase } from "@repo/nestjs-database";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -78,6 +79,18 @@ describe("users.public_id (DB gen_public_id default)", () => {
       [`rawins-${Date.now()}@example.com`],
     );
     expect(r.rows[0]?.public_id).toMatch(PUBLIC_ID_RE);
+  });
+
+  it("SQL gen_public_id 와 TS publicId 의 출력 구조가 동일하다 (포맷 parity)", async () => {
+    const shape = (s: string) => {
+      const [prefix, body = ""] = s.split("_");
+      return { prefix, len: body.length, crockford: /^[0-9A-HJKMNP-TV-Z]+$/.test(body) };
+    };
+    const sql = await owner.query<{ v: string }>("SELECT gen_public_id('usr') AS v");
+    const sqlId = sql.rows[0]?.v ?? "";
+    const tsId = publicId(ID_PREFIX.user);
+    expect(shape(sqlId)).toEqual(shape(tsId)); // 같은 prefix/길이/문자집합
+    expect(shape(sqlId)).toEqual({ prefix: "usr", len: 26, crockford: true });
   });
 
   it("서로 다른 user 의 public_id 는 유일하다", async () => {
