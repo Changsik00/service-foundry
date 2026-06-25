@@ -10,6 +10,7 @@ function makeStore(overrides: Partial<AccountUserStore> = {}): AccountUserStore 
     findById: vi.fn().mockResolvedValue(null),
     findByProviderUid: vi.fn().mockResolvedValue(null),
     findByEmail: vi.fn().mockResolvedValue(null),
+    findOrgPublicId: vi.fn().mockResolvedValue(null),
     updateDisplayName: vi.fn().mockResolvedValue(undefined),
     updatePasswordHash: vi.fn().mockResolvedValue(undefined),
     updateEmail: vi.fn().mockResolvedValue(undefined),

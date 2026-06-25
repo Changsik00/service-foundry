@@ -54,21 +54,23 @@ describe("Tenant isolation via real HTTP (guard→interceptor→RLS)", () => {
     return r.send(opts.body ?? {});
   }
 
-  /** signup(고유 email) → { accessToken, userId, email }. 각 signup 은 개인 org + owner 멤버십 생성. */
+  /** signup → { accessToken, userId(내부), publicUserId(외부), email }. 각 signup 은 개인 org + owner 멤버십. */
   async function signup(email: string): Promise<{
     accessToken: string;
     userId: string;
+    publicUserId: string;
     email: string;
   }> {
     const res = await postCsrf("/auth/signup", { body: { email, password: "Passw0rd!123" } });
     expect(res.status).toBe(201);
-    // 응답 user.id 는 public_id — 멤버 비교/토큰 sub 용 내부 users.id 는 이메일로 해석.
+    // 응답 user.id 는 public_id(외부); 토큰 sub 서명용 내부 users.id 는 이메일로 해석.
     const internal = await owner.query<{ id: string }>("SELECT id FROM users WHERE email = $1", [
       email,
     ]);
     return {
       accessToken: res.body.accessToken as string,
       userId: internal.rows[0]?.id as string,
+      publicUserId: res.body.user.id as string,
       email,
     };
   }
@@ -103,6 +105,45 @@ describe("Tenant isolation via real HTTP (guard→interceptor→RLS)", () => {
     expect(Array.isArray(orgs)).toBe(true);
     expect(orgs.length).toBeGreaterThanOrEqual(1); // 가입 시 개인 org 자동 생성
     expect(orgs.some((o) => o.isPersonal)).toBe(true);
+    expect(orgs[0]?.orgId).toMatch(/^org_[0-9A-HJKMNP-TV-Z]{26}$/); // 외부 식별자=org public_id
+  });
+
+  it("org/switch 는 org public_id 를 받아 멤버십 검증 후 전환 (비멤버/미존재 403, spec-26-05)", async () => {
+    const stamp = Date.now();
+    const a = await signup(`switch-a-${stamp}@example.com`);
+    const b = await signup(`switch-b-${stamp}@example.com`);
+
+    // a 의 org public_id 조회
+    const aOrgs = await request(server)
+      .get("/auth/orgs")
+      .set("Authorization", `Bearer ${a.accessToken}`);
+    const aOrgPublicId = (aOrgs.body.orgs as { orgId: string }[])[0]?.orgId as string;
+    const bOrgs = await request(server)
+      .get("/auth/orgs")
+      .set("Authorization", `Bearer ${b.accessToken}`);
+    const bOrgPublicId = (bOrgs.body.orgs as { orgId: string }[])[0]?.orgId as string;
+
+    // 내 org public_id → 200
+    const ok = await postCsrf("/auth/org/switch", {
+      bearer: a.accessToken,
+      body: { orgId: aOrgPublicId },
+    });
+    expect(ok.status).toBe(200);
+    expect(ok.body.accessToken).toBeTruthy();
+
+    // 타 org public_id(비멤버) → 403
+    const forbidden = await postCsrf("/auth/org/switch", {
+      bearer: a.accessToken,
+      body: { orgId: bOrgPublicId },
+    });
+    expect(forbidden.status).toBe(403);
+
+    // 미존재 public_id → 403 (fail-close, ADR-0029)
+    const notFound = await postCsrf("/auth/org/switch", {
+      bearer: a.accessToken,
+      body: { orgId: "org_ZZZZZZZZZZZZZZZZZZZZZZ9999" },
+    });
+    expect(notFound.status).toBe(403);
   });
 
   it("org A 토큰의 GET /auth/org/members 는 org A 멤버만 보이고 org B 는 차단된다", async () => {
@@ -115,9 +156,10 @@ describe("Tenant isolation via real HTTP (guard→interceptor→RLS)", () => {
       .set("Authorization", `Bearer ${a.accessToken}`);
     expect(res.status).toBe(200);
 
+    // members.userId 는 user public_id (spec-26-05)
     const memberUserIds = (res.body.members as { userId: string }[]).map((m) => m.userId);
-    expect(memberUserIds).toContain(a.userId); // 자기 org 는 보임
-    expect(memberUserIds).not.toContain(b.userId); // 타 org 는 차단 (현재 RED — 컨텍스트 미설정)
+    expect(memberUserIds).toContain(a.publicUserId); // 자기 org 는 보임
+    expect(memberUserIds).not.toContain(b.publicUserId); // 타 org 는 차단
   });
 
   it("인증됐지만 orgId 없는 토큰 → GET /auth/org/members 는 전 테넌트 누수 없이 0건 (fail-closed, spec-x-null-org-isolation-failclose)", async () => {
@@ -183,7 +225,7 @@ describe("Tenant isolation via real HTTP (guard→interceptor→RLS)", () => {
       .set("Authorization", `Bearer ${acceptRes.body.accessToken}`);
     expect(members.status).toBe(200);
     const ids = (members.body.members as { userId: string }[]).map((m) => m.userId);
-    expect(ids).toContain(b.userId);
-    expect(ids).toContain(a.userId); // 같은 org A 의 owner(A)도 함께 보임
+    expect(ids).toContain(b.publicUserId);
+    expect(ids).toContain(a.publicUserId); // 같은 org A 의 owner(A)도 함께 보임
   });
 });

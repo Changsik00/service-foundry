@@ -58,22 +58,25 @@ const BASE_USERS = [
 ];
 
 function makeOrgMockDb(rows = BASE_ORGS) {
-  // Drizzle 체인: .select().from().where().orderBy().limit()
+  // Drizzle 체인: .select().from().innerJoin(users owner).where().orderBy().limit()
   const limit = vi.fn().mockResolvedValue(rows);
   const orderBy = vi.fn().mockReturnValue({ limit });
   const where = vi.fn().mockReturnValue({ orderBy });
-  const from = vi.fn().mockReturnValue({ where });
+  const innerJoin = vi.fn().mockReturnValue({ where });
+  const from = vi.fn().mockReturnValue({ innerJoin });
   const select = vi.fn().mockReturnValue({ from });
-  return { db: { select }, mocks: { select, from, where, orderBy, limit } };
+  return { db: { select }, mocks: { select, from, innerJoin, where, orderBy, limit } };
 }
 
 function makeUserMockDb(rows = BASE_USERS) {
+  // Drizzle 체인: .select().from().leftJoin(organizations).where().orderBy().limit()
   const limit = vi.fn().mockResolvedValue(rows);
   const orderBy = vi.fn().mockReturnValue({ limit });
   const where = vi.fn().mockReturnValue({ orderBy });
-  const from = vi.fn().mockReturnValue({ where });
+  const leftJoin = vi.fn().mockReturnValue({ where });
+  const from = vi.fn().mockReturnValue({ leftJoin });
   const select = vi.fn().mockReturnValue({ from });
-  return { db: { select }, mocks: { select, from, where, orderBy, limit } };
+  return { db: { select }, mocks: { select, from, leftJoin, where, orderBy, limit } };
 }
 
 // als mock: runWithSystemTenant → fn() 직접 호출

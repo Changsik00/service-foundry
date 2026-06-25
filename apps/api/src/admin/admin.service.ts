@@ -4,7 +4,7 @@ import { organizations, users } from "@repo/backend-schema";
 import { runWithSystemTenant, TENANT_ALS, type TenantAls } from "@repo/backend-tenant";
 import { type CursorPaginationParams, decodeCursor, encodeCursor } from "@repo/contracts";
 import { DATABASE, type Database } from "@repo/nestjs-database";
-import { and, asc, gt, ilike, or } from "drizzle-orm";
+import { and, asc, eq, gt, ilike, or } from "drizzle-orm";
 
 export interface AdminOrg {
   id: string;
@@ -59,24 +59,28 @@ export class AdminService {
     );
 
     return runWithSystemTenant(this.als, async () => {
+      // 외부 식별자 = public_id (ADR-0028). id=org public, ownerId=owner public. cursor 는 내부 id(불투명).
       const rows = await this.database.db
         .select({
-          id: organizations.id,
+          id: organizations.publicId,
+          internalId: organizations.id,
           name: organizations.name,
           slug: organizations.slug,
           isPersonal: organizations.isPersonal,
-          ownerId: organizations.ownerId,
+          ownerId: users.publicId,
           createdAt: organizations.createdAt,
         })
         .from(organizations)
+        .innerJoin(users, eq(organizations.ownerId, users.id))
         .where(conditions)
         .orderBy(asc(organizations.createdAt), asc(organizations.id))
         .limit(limit + 1);
 
       const hasMore = rows.length > limit;
-      const orgs = hasMore ? rows.slice(0, limit) : rows;
-      const last = orgs[orgs.length - 1];
-      const nextCursor = hasMore && last ? encodeCursor({ orgId: last.id }) : null;
+      const sliced = hasMore ? rows.slice(0, limit) : rows;
+      const last = sliced[sliced.length - 1];
+      const nextCursor = hasMore && last ? encodeCursor({ orgId: last.internalId }) : null;
+      const orgs = sliced.map(({ internalId: _omit, ...o }) => o);
 
       return { orgs: orgs as AdminOrg[], nextCursor };
     });
@@ -95,24 +99,28 @@ export class AdminService {
     );
 
     return runWithSystemTenant(this.als, async () => {
+      // 외부 식별자 = public_id. id=user public, orgId=org public(없으면 null). cursor 는 내부 id(불투명).
       const rows = await this.database.db
         .select({
-          id: users.id,
+          id: users.publicId,
+          internalId: users.id,
           email: users.email,
           displayName: users.displayName,
           role: users.role,
-          orgId: users.orgId,
+          orgId: organizations.publicId,
           createdAt: users.createdAt,
         })
         .from(users)
+        .leftJoin(organizations, eq(users.orgId, organizations.id))
         .where(conditions)
         .orderBy(asc(users.createdAt), asc(users.id))
         .limit(limit + 1);
 
       const hasMore = rows.length > limit;
-      const userList = hasMore ? rows.slice(0, limit) : rows;
-      const last = userList[userList.length - 1];
-      const nextCursor = hasMore && last ? encodeCursor({ userId: last.id }) : null;
+      const sliced = hasMore ? rows.slice(0, limit) : rows;
+      const last = sliced[sliced.length - 1];
+      const nextCursor = hasMore && last ? encodeCursor({ userId: last.internalId }) : null;
+      const userList = sliced.map(({ internalId: _omit, ...u }) => u);
 
       return { users: userList as AdminUser[], nextCursor };
     });
