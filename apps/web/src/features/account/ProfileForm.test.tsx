@@ -19,7 +19,13 @@ vi.mock("./mutations", () => ({
 import { useUpdateProfile, useUploadAvatar } from "./mutations";
 
 const meData = {
-  user: { sub: "u-1", role: "user", orgId: "org-1", displayName: "홍길동" },
+  user: {
+    id: "usr_TEST00000000000000000000XY",
+    email: "u@example.com",
+    role: "user",
+    orgId: "org-1",
+    displayName: "홍길동",
+  },
 };
 
 function makeWrapper(qc: QueryClient) {

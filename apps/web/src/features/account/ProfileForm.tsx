@@ -13,7 +13,7 @@ function AvatarSection() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const avatarUrl = data?.user.avatarUrl ?? null;
-  const initial = data?.user.displayName?.[0] ?? data?.user.sub?.[0] ?? "?";
+  const initial = data?.user.displayName?.[0] ?? data?.user.email?.[0] ?? "?";
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
