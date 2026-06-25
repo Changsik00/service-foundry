@@ -29,17 +29,16 @@ status: accepted
 1. **내부 PK 는 외부 표면(응답 body·URL)에 노출하지 않는다.** 누출 불변식의 대상은 **API 응답 body 와 URL** 이며, phase 종료 시 스냅샷 테스트로 강제한다(26-06).
    - **JWT `sub` 예외 (spec-26-03 완화)**: JWT `sub` 클레임은 **내부 `users.id` 를 유지**한다. JWT 는 사용자 *본인*이 들고 다니는 self-bearer 자격증명이라 타인에게 열거·상관되지 않고, `sub` 를 public_id 로 바꾸면 native 매 요청에 `public_id→내부 id` lookup 이 추가되기 때문이다(성능). 따라서 불변식의 검사 범위에서 **JWT payload 는 제외**한다. 서버 내부 `AuthenticatedUser.sub` 도 내부 id 유지(조인용).
 2. **public_id = 불투명 랜덤 + prefix.** 형식: `<prefix>_<base32(Crockford, 모호문자 제외) 랜덤 128bit>` (예: `usr_…`, `org_…`, `key_…`). prefix 는 중앙 레지스트리로 관리(타입 혼동 방지·로그 자기설명). **timestamp·순서 정보를 담지 않는다** — "정보 비노출" 의도(정렬가능 ULID/uuidv7을 public에 쓰지 않는 이유). 적용 범위는 **전 aggregate root**(외부 노출되는 root: users·organizations·api-keys·sessions 등 — 대상은 감사로 확정).
-3. **내부 PK 는 uuid v7 default 로 전환.** 정렬성·인덱스 지역성은 *내부* PK 에서 취하고, *외부* public_id 는 불투명 랜덤으로 분리한다. v7 은 timestamp 를 품지만 내부 전용이라 노출 문제 없음.
+3. **(후속, phase-26 미배선)** 내부 PK 의 uuid v7 전환 — 정렬성·인덱스 지역성을 *내부* PK 에서 취하고 *외부* public_id 는 불투명 랜덤으로 분리한다는 방향은 유효하나, **phase-26 에서는 시행하지 않았다.** 현 PK 는 `gen_random_uuid()`(v4) 유지. `@repo/backend-id.uuidv7()` 유틸은 구현·테스트만 완료된 **미배선 유틸**(PG16 = native `uuidv7()` 없음 → plpgsql `gen_uuidv7()` 필요). 실제 배선은 별도 appetite 시 후속 spec. (정정: spec-26-08 회고 — 본 §3 는 당초 Decision 으로 적혔으나 미시행이라 "후속"으로 강등.)
 4. **외부 응답 식별자 = public_id, JWT sub = 내부 id.** signin/signup/refresh/oauth/`/auth/me` 등 응답의 사용자 식별자는 `public_id`(필드명 `id`)로 노출하고, 내부 `users.id`(=JWT sub)는 직렬화하지 않는다(spec-26-03). JWT `sub`·`AuthenticatedUser.sub` 는 native=내부 id, provider=providerUid 그대로 유지(§1 예외).
    - **(후속, 본 phase 미채택)** 경계 정규화 — Supabase verifier 가 providerUid→내부 id 를 해석해 `AuthenticatedUser.sub` 를 모드 무관 내부 id 로 통일하고 `listForProviderUid`/`listForUserId` 를 단일화하는 리팩토링은 별도 spec 후보. native 무비용·noscope-creep 을 위해 본 phase 에서는 응답 노출 전환만 수행한다.
 5. **org RLS 정합.** organizations 에 public_id 도입 시, JWT `active_org` 클레임과 `SET LOCAL app.current_org` 는 RLS 술어(`memberships.org_id` = 내부 uuid)와 비교되므로 interceptor 에서 public→내부 org id 를 해석해 **RLS 는 내부 id 로 작동**시킨다.
 
 ## 📊 Consequences
 
-- **긍정**: 내부/외부 디커플링(재키잉·표현 변경 자유), `sub` 다형성 제거 → 컨슈머 단일화·쿼리 중복 소멸, prefix 로 로그/디버깅 자기설명, public 정보 비노출(생성시각·순서 추정 불가).
-- **부정 (성능)**: 경계 정규화로 요청당 `public_id|providerUid → 내부 id` lookup 1회 추가. provider 는 이미 매 요청 provision DB 트랜잭션을 타므로(ADR-0026) 추가 비용 작음; native 는 캐시 가능. 내부 PK lookup 은 UK 인덱스로 O(1)에 가깝다.
-- **부정 (마이그레이션)**: public_id 는 NOT NULL UK → 3-step 마이그레이션(추가→백필→제약). 다운스트림 데이터 보유를 가정해 백필 필수.
-- **중립**: native JWT `sub` 계약 변경(=public_id) — 클라이언트가 토큰의 sub 를 내부 id 로 쓰던 곳이 있으면 public_id 로 이행. 본 파운드리는 web 이 provider 전용이라 영향 국소.
+- **긍정**: 내부/외부 디커플링(재키잉·표현 변경 자유), prefix 로 로그/디버깅 자기설명, public 정보 비노출(생성시각·순서 추정 불가). (`sub` 다형성 제거/컨슈머 단일화는 §4 후속 — phase-26 미시행.)
+- **부정 (마이그레이션)**: public_id 는 NOT NULL UK. 시행은 **VOLATILE default 단일 ADD COLUMN**(`gen_public_id`)으로, PG 가 ADD COLUMN 시 기존 행을 행별 평가해 자동 백필 — 별도 backfill UPDATE 불요(당초 "3-step" 서술을 1-step 으로 정정, spec-26-02). 다운스트림 데이터 보유 가정.
+- **중립**: native JWT `sub` 는 §1 예외로 **내부 id 유지**(self-bearer). 응답·URL 만 public_id. 클라가 토큰 sub 를 직접 안 쓰므로 영향 국소(web 은 provider 전용).
 
 ## 🔀 Alternatives
 
