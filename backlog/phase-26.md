@@ -45,9 +45,10 @@ ADR-0028 의 3-티어 체계(내부 uuid v7 PK + 불투명 prefixed public_id + 
 | `spec-26-01` | id-util-and-audit | P1 | Merged | `specs/spec-26-01-id-util-and-audit/` |
 | `spec-26-02` | users-public-id | P1 | Merged | `specs/spec-26-02-users-public-id/` |
 | `spec-26-03` | auth-boundary-normalize | P1 | Merged | `specs/spec-26-03-auth-boundary-normalize/` |
-| `spec-26-04` | org-public-id-rls | P2 | Backlog | `specs/spec-26-04-org-public-id-rls/` |
-| `spec-26-05` | remaining-roots-public-id | P2 | Backlog | `specs/spec-26-05-remaining-roots-public-id/` |
-| `spec-26-06` | leak-audit-snapshot | P1 | Backlog | `specs/spec-26-06-leak-audit-snapshot/` |
+| `spec-26-04` | active-org-membership-gate | P1 | Merged | `specs/spec-26-04-active-org-membership-gate/` |
+| `spec-26-05` | org-public-id-rls | P2 | Backlog | `specs/spec-26-05-org-public-id-rls/` |
+| `spec-26-06` | remaining-roots-public-id | P2 | Backlog | `specs/spec-26-06-remaining-roots-public-id/` |
+| `spec-26-07` | leak-audit-snapshot | P1 | Backlog | `specs/spec-26-07-leak-audit-snapshot/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
@@ -73,21 +74,28 @@ ADR-0028 의 3-티어 체계(내부 uuid v7 PK + 불투명 prefixed public_id + 
 - **참조**: ADR-0028 §4, ADR-0023/0026
 - **연관 모듈**: `packages/nestjs/auth/*`(verifier·guard), `packages/nestjs/auth-supabase/*`, `apps/api/src/auth/org-list.service.ts`·`org.controller.ts`·`provider-org.controller.ts`
 
-### spec-26-04 — organizations.public_id + RLS 정합
+### spec-26-04 — active_org 멤버십 게이트 + api_keys RLS backstop (보안 하드닝)
 
-- **요점**: `organizations.public_id` + JWT `active_org`·`SET LOCAL app.current_org` 를 public→내부 id 해석으로 운반, RLS 는 내부 id 로 작동.
-- **방향성**: interceptor 해석 추가, 콘솔/URL 의 org 식별자 public_id 화. 격리 e2e 필수.
-- **참조**: ADR-0028 §5, ADR-0024(RLS), ADR-0026(active-org 운반)
-- **연관 모듈**: `packages/nestjs/tenant/*`(interceptor), `organizations.ts`, 콘솔 라우트
+- **요점**: 조사로 드러난 사전존재 High 보안 갭 — (A) provider verifier 가 active_org 를 멤버십 검증 없이 신뢰 → 검증 후 채택·fail-close. (B) api_keys raw pool → RLS 적용 db 경유.
+- **방향성**: 사용자 지시 "보안 먼저" → org public_id 선행. `/hk-refute` 로 fail-OPEN 결함(S3) 수정.
+- **참조**: ADR-0029(신설), ADR-0024(RLS)
+- **연관 모듈**: provider verifier(supabase/firebase), provision 포트, `api-key.service.ts`
 
-### spec-26-05 — 나머지 root public_id 일괄
+### spec-26-05 — organizations.public_id + RLS 정합
 
-- **요점**: api-keys·sessions·invitations 등 확정 root 에 public_id + DTO 일괄 적용.
+- **요점**: `organizations.public_id` + JWT `active_org`·`SET LOCAL app.current_org` 는 내부 id 유지, 외부 응답·URL 만 public→내부 해석으로 public_id 노출.
+- **방향성**: 응답 직렬화 변환 + (필요 시) 입력 resolve. RLS 는 내부 id 로 작동. 격리 e2e 필수.
+- **참조**: ADR-0028 §5, ADR-0024(RLS), ADR-0026(active-org 운반), ADR-0029
+- **연관 모듈**: `packages/nestjs/tenant/*`(interceptor), `organizations.ts`, org-list/members/admin, 콘솔 라우트
+
+### spec-26-06 — 나머지 root public_id 일괄
+
+- **요점**: api-keys·sessions 등 확정 root 에 public_id + DTO 일괄 적용.
 - **방향성**: 26-01 감사 리스트 기준. DTO/응답 식별자 public_id 화.
 - **참조**: ADR-0028
-- **연관 모듈**: api-key·session·invitation 컨트롤러/스토어/DTO
+- **연관 모듈**: api-key·session 컨트롤러/스토어/DTO
 
-### spec-26-06 — 누출 감사 스냅샷 (불변식 안전망)
+### spec-26-07 — 누출 감사 스냅샷 (불변식 안전망)
 
 - **요점**: API 응답·JWT 페이로드에 내부 uuid 가 노출되지 않음을 자동 검증하는 스냅샷/스캔 테스트.
 - **방향성**: 주요 엔드포인트 응답을 순회해 내부 uuid 패턴 부재 단언. 회귀 시 즉시 RED.
