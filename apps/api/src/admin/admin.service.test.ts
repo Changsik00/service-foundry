@@ -57,26 +57,24 @@ const BASE_USERS = [
   },
 ];
 
-function makeOrgMockDb(rows = BASE_ORGS) {
-  // Drizzle 체인: .select().from().innerJoin(users owner).where().orderBy().limit()
+// 통합 체인: 메인쿼리(from→join→where→orderBy→limit) + cursor resolve(from→where→limit) 모두 지원.
+function makeChainDb(rows: unknown[]) {
   const limit = vi.fn().mockResolvedValue(rows);
   const orderBy = vi.fn().mockReturnValue({ limit });
-  const where = vi.fn().mockReturnValue({ orderBy });
-  const innerJoin = vi.fn().mockReturnValue({ where });
-  const from = vi.fn().mockReturnValue({ innerJoin });
+  const where = vi.fn().mockReturnValue({ orderBy, limit });
+  const join = vi.fn().mockReturnValue({ where });
+  const from = vi.fn().mockReturnValue({ innerJoin: join, leftJoin: join, where });
   const select = vi.fn().mockReturnValue({ from });
-  return { db: { select }, mocks: { select, from, innerJoin, where, orderBy, limit } };
+  return {
+    db: { select },
+    mocks: { select, from, innerJoin: join, leftJoin: join, where, orderBy, limit },
+  };
 }
-
+function makeOrgMockDb(rows = BASE_ORGS) {
+  return makeChainDb(rows);
+}
 function makeUserMockDb(rows = BASE_USERS) {
-  // Drizzle 체인: .select().from().leftJoin(organizations).where().orderBy().limit()
-  const limit = vi.fn().mockResolvedValue(rows);
-  const orderBy = vi.fn().mockReturnValue({ limit });
-  const where = vi.fn().mockReturnValue({ orderBy });
-  const leftJoin = vi.fn().mockReturnValue({ where });
-  const from = vi.fn().mockReturnValue({ leftJoin });
-  const select = vi.fn().mockReturnValue({ from });
-  return { db: { select }, mocks: { select, from, leftJoin, where, orderBy, limit } };
+  return makeChainDb(rows);
 }
 
 // als mock: runWithSystemTenant → fn() 직접 호출

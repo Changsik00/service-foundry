@@ -9,15 +9,14 @@ const BASE_ROWS = [
 ];
 
 function makeMockDb(rows = BASE_ROWS) {
-  // Drizzle 체인: .select().from().innerJoin(users).innerJoin(organizations).where().orderBy().limit()
-  // innerJoin 은 여러 번(users + organizations) 호출되므로 self-ref 로 체인 유지.
+  // 메인쿼리(from→innerJoin×2→where→orderBy→limit) + cursor resolve(from→where→limit) 모두 지원.
   const limit = vi.fn().mockResolvedValue(rows);
   const orderBy = vi.fn().mockReturnValue({ limit });
-  const where = vi.fn().mockReturnValue({ orderBy });
+  const where = vi.fn().mockReturnValue({ orderBy, limit });
   const joinChain: Record<string, unknown> = { where };
   const innerJoin = vi.fn().mockReturnValue(joinChain);
   joinChain.innerJoin = innerJoin;
-  const from = vi.fn().mockReturnValue({ innerJoin });
+  const from = vi.fn().mockReturnValue({ innerJoin, where });
   const select = vi.fn().mockReturnValue({ from });
   return { db: { select }, mocks: { select, from, innerJoin, where, orderBy, limit } };
 }
