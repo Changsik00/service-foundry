@@ -23,13 +23,15 @@ status: accepted
 | 티어 | 식별자 | 타입 | 노출 | 규칙 |
 |---|---|---|---|---|
 | 내부 PK | `id` | uuid (**v7 default**) | ❌ 절대 외부로 안 나감 | 모든 FK·조인의 유일 타깃. 기존 v4 행은 유지(uuid 호환), 신규 행만 v7 |
-| 외부 | `public_id` | text **UK** | ✅ API·URL·JWT | **불투명 랜덤** + 타입 prefix. 정렬·timestamp 정보 비노출 |
+| 외부 | `public_id` | text **UK** | ✅ API 응답·URL | **불투명 랜덤** + 타입 prefix. 정렬·timestamp 정보 비노출. (JWT `sub` 는 예외 — §1 참조: 내부 id 유지) |
 | IdP 매핑 | `provider_uid` | text UK | ❌ lookup 전용 | Supabase/Firebase → 내부 user 해석 (기존 유지) |
 
-1. **내부 PK 는 절대 외부 표면에 노출하지 않는다.** API 응답·URL·JWT 어디에도 내부 uuid 가 나가지 않는 것을 phase 종료 시 스냅샷 테스트로 강제한다(불변식).
+1. **내부 PK 는 외부 표면(응답 body·URL)에 노출하지 않는다.** 누출 불변식의 대상은 **API 응답 body 와 URL** 이며, phase 종료 시 스냅샷 테스트로 강제한다(26-06).
+   - **JWT `sub` 예외 (spec-26-03 완화)**: JWT `sub` 클레임은 **내부 `users.id` 를 유지**한다. JWT 는 사용자 *본인*이 들고 다니는 self-bearer 자격증명이라 타인에게 열거·상관되지 않고, `sub` 를 public_id 로 바꾸면 native 매 요청에 `public_id→내부 id` lookup 이 추가되기 때문이다(성능). 따라서 불변식의 검사 범위에서 **JWT payload 는 제외**한다. 서버 내부 `AuthenticatedUser.sub` 도 내부 id 유지(조인용).
 2. **public_id = 불투명 랜덤 + prefix.** 형식: `<prefix>_<base32(Crockford, 모호문자 제외) 랜덤 128bit>` (예: `usr_…`, `org_…`, `key_…`). prefix 는 중앙 레지스트리로 관리(타입 혼동 방지·로그 자기설명). **timestamp·순서 정보를 담지 않는다** — "정보 비노출" 의도(정렬가능 ULID/uuidv7을 public에 쓰지 않는 이유). 적용 범위는 **전 aggregate root**(외부 노출되는 root: users·organizations·api-keys·sessions 등 — 대상은 감사로 확정).
 3. **내부 PK 는 uuid v7 default 로 전환.** 정렬성·인덱스 지역성은 *내부* PK 에서 취하고, *외부* public_id 는 불투명 랜덤으로 분리한다. v7 은 timestamp 를 품지만 내부 전용이라 노출 문제 없음.
-4. **경계에서 식별자 정규화.** verifier/guard 가 native 의 `sub`(=public_id) 와 provider 의 `sub`(=providerUid) 를 **내부 `users.id` 로 해석**해 `AuthenticatedUser.userId`(서버 전용, 내부 PK) 로 통일한다. 클라이언트 표면에는 `public_id` 만 나간다. 결과적으로 컨슈머의 모드 분기가 사라지고 `listForUserId` 하나로 수렴한다.
+4. **외부 응답 식별자 = public_id, JWT sub = 내부 id.** signin/signup/refresh/oauth/`/auth/me` 등 응답의 사용자 식별자는 `public_id`(필드명 `id`)로 노출하고, 내부 `users.id`(=JWT sub)는 직렬화하지 않는다(spec-26-03). JWT `sub`·`AuthenticatedUser.sub` 는 native=내부 id, provider=providerUid 그대로 유지(§1 예외).
+   - **(후속, 본 phase 미채택)** 경계 정규화 — Supabase verifier 가 providerUid→내부 id 를 해석해 `AuthenticatedUser.sub` 를 모드 무관 내부 id 로 통일하고 `listForProviderUid`/`listForUserId` 를 단일화하는 리팩토링은 별도 spec 후보. native 무비용·noscope-creep 을 위해 본 phase 에서는 응답 노출 전환만 수행한다.
 5. **org RLS 정합.** organizations 에 public_id 도입 시, JWT `active_org` 클레임과 `SET LOCAL app.current_org` 는 RLS 술어(`memberships.org_id` = 내부 uuid)와 비교되므로 interceptor 에서 public→내부 org id 를 해석해 **RLS 는 내부 id 로 작동**시킨다.
 
 ## 📊 Consequences
