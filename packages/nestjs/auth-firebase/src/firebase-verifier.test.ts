@@ -27,7 +27,7 @@ beforeEach(() => {
 });
 
 describe("FirebaseVerifier", () => {
-  it("유효 token + activeOrgId 클레임 → VerifiedIdentity 반환", async () => {
+  it("claim + provision 포트 없음 → 검증 불가라 fail-close(orgId null) (spec-26-04 S3)", async () => {
     mockVerifyIdToken.mockResolvedValue({
       uid: "firebase-uid-123",
       email: "user@example.com",
@@ -36,10 +36,11 @@ describe("FirebaseVerifier", () => {
     });
     const verifier = makeVerifier();
     const result = await verifier.verify("valid-token");
+    // 포트 미배선 시 클레임 불신(silent fail-OPEN 방지).
     expect(result).toEqual({
       sub: "firebase-uid-123",
       role: "user",
-      orgId: "org-abc",
+      orgId: null,
       orgRole: null,
     });
     expect(mockSetCustomUserClaims).not.toHaveBeenCalled();

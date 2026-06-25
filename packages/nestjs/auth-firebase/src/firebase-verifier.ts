@@ -42,9 +42,10 @@ export class FirebaseVerifier implements AccessTokenVerifier {
         [ACTIVE_ORG_CLAIM]: orgId,
         org_role: orgRole,
       });
-    } else if (orgId && this.provision) {
+    } else if (orgId) {
       // active_org 클레임은 멤버십 검증 후에만 신뢰 — 비멤버면 fail-close(spec-26-04 A).
-      const membership = await this.provision.getOrgMembership(uid, orgId);
+      // 검증 수단(provision 포트) 부재 시도 클레임 불신 → fail-close(포트 미배선 silent fail-OPEN 방지).
+      const membership = this.provision ? await this.provision.getOrgMembership(uid, orgId) : null;
       if (membership) {
         orgRole = membership.orgRole;
       } else {

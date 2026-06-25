@@ -61,9 +61,11 @@ export class SupabaseVerifier implements AccessTokenVerifier {
       const provisioned = await this.provision.provisionFromProvider(sub, email);
       orgId = provisioned.orgId;
       orgRole = provisioned.orgRole ?? null;
-    } else if (orgId && this.provision) {
+    } else if (orgId) {
       // active_org 클레임은 멤버십 검증 후에만 신뢰 — 비멤버면 fail-close(spec-26-04 A).
-      const membership = await this.provision.getOrgMembership(sub, orgId);
+      // 검증 수단(provision 포트)이 없으면 클레임을 신뢰할 수 없으므로 역시 fail-close
+      // (포트 미배선 다운스트림에서 게이트가 silent fail-OPEN 되는 것 방지).
+      const membership = this.provision ? await this.provision.getOrgMembership(sub, orgId) : null;
       if (membership) {
         orgRole = membership.orgRole;
       } else {

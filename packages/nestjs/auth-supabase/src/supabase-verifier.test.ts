@@ -24,7 +24,7 @@ beforeEach(() => {
 });
 
 describe("SupabaseVerifier", () => {
-  it("유효 token + activeOrgId 클레임 (top-level) → VerifiedIdentity 반환", async () => {
+  it("claim(top-level) + provision 포트 없음 → 검증 불가라 fail-close(orgId null) (spec-26-04 S3)", async () => {
     const token = await makeToken({
       sub: "supabase-uid-123",
       email: "user@example.com",
@@ -33,28 +33,33 @@ describe("SupabaseVerifier", () => {
     });
     const verifier = makeVerifier();
     const result = await verifier.verify(token);
+    // 포트 미배선 시 클레임을 신뢰하지 않는다(silent fail-OPEN 방지).
     expect(result).toEqual({
       sub: "supabase-uid-123",
       role: "user",
-      orgId: "org-abc",
+      orgId: null,
       orgRole: null,
     });
   });
 
-  it("유효 token + app_metadata.activeOrgId → orgId 추출", async () => {
+  it("claim(app_metadata) + 멤버 검증 통과 → orgId 채택", async () => {
     const token = await makeToken({
       sub: "supabase-uid-456",
       email: "user2@example.com",
       role: "authenticated",
       app_metadata: { [ACTIVE_ORG_CLAIM]: "org-meta" },
     });
-    const verifier = makeVerifier();
-    const result = await verifier.verify(token);
+    const mockProvision: SupabaseProvisionPort = {
+      provisionFromProvider: vi.fn(),
+      getOrgMembership: vi.fn().mockResolvedValue({ orgRole: "member" }),
+    };
+    const result = await makeVerifier(mockProvision).verify(token);
+    expect(mockProvision.getOrgMembership).toHaveBeenCalledWith("supabase-uid-456", "org-meta");
     expect(result).toEqual({
       sub: "supabase-uid-456",
       role: "user",
       orgId: "org-meta",
-      orgRole: null,
+      orgRole: "member",
     });
   });
 
