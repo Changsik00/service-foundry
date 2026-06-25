@@ -1,7 +1,10 @@
+import { sql } from "drizzle-orm";
 import { boolean, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
+  /** 외부 노출 불투명 식별자 (ADR-0028). 생성 권위 = DB `gen_public_id('usr')`. */
+  publicId: text("public_id").notNull().unique().default(sql`gen_public_id('usr')`),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash"),
   /** @deprecated global role — OrgRole(owner|admin|member)로 대체 예정 (spec-17-05 이후 제거) */
