@@ -53,6 +53,10 @@ export function drizzleSessionStore(db: NodePgDatabase<typeof schema>): SessionS
       const rows = await db.select().from(sessions).where(eq(sessions.id, id)).limit(1);
       return rows[0] ?? null;
     },
+    async findByPublicId(publicId) {
+      const rows = await db.select().from(sessions).where(eq(sessions.publicId, publicId)).limit(1);
+      return rows[0] ?? null;
+    },
     async listActiveByUser(userId) {
       const now = new Date();
       return db

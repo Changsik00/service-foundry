@@ -107,6 +107,8 @@ describe("Session Management E2E (real PG)", () => {
       const current = res.body.sessions.find((s: { current: boolean }) => s.current);
       expect(current).toBeDefined();
       expect(current).not.toHaveProperty("refreshTokenHash");
+      // 외부 식별자 = session public_id (spec-26-06), 내부 uuid 아님.
+      expect(current.id).toMatch(/^ses_[0-9A-HJKMNP-TV-Z]{26}$/);
     });
   });
 

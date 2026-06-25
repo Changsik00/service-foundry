@@ -31,6 +31,7 @@ const mockUserRow = {
 const mockSessionResult = {
   session: {
     id: "sess-0002",
+    publicId: "ses_SIGNUP0000000000000000002",
     userId: mockUserRow.id,
     refreshTokenHash: "hash456",
     refreshTokenFamily: "fam-0002",
@@ -60,6 +61,7 @@ function makeSessionStore(): SessionStore {
     bulkRevokeByFamily: vi.fn(),
     revokeAllByUser: vi.fn(),
     findById: vi.fn(),
+    findByPublicId: vi.fn(),
     listActiveByUser: vi.fn(),
     revokeOthers: vi.fn(),
   };

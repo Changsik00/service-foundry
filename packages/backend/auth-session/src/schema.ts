@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 /**
@@ -9,6 +10,8 @@ import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
  */
 export const sessions = pgTable("sessions", {
   id: uuid("id").primaryKey().defaultRandom(),
+  /** 외부 노출 불투명 식별자 (ADR-0028). */
+  publicId: text("public_id").notNull().unique().default(sql`gen_public_id('ses')`),
   userId: uuid("user_id").notNull(),
   refreshTokenHash: text("refresh_token_hash").notNull().unique(),
   refreshTokenFamily: uuid("refresh_token_family").notNull(),

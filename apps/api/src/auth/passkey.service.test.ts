@@ -64,6 +64,7 @@ function makeSessionStore(): SessionStore {
     bulkRevokeByFamily: vi.fn(),
     revokeAllByUser: vi.fn(),
     findById: vi.fn(),
+    findByPublicId: vi.fn(),
     listActiveByUser: vi.fn(),
     revokeOthers: vi.fn(),
   };
