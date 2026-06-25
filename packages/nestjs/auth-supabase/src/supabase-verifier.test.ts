@@ -75,6 +75,7 @@ describe("SupabaseVerifier", () => {
     });
     const mockProvision: SupabaseProvisionPort = {
       provisionFromProvider: vi.fn().mockResolvedValue({ orgId: "org-new", orgRole: "owner" }),
+      getOrgMembership: vi.fn().mockResolvedValue(null),
     };
     const verifier = makeVerifier(mockProvision);
     const result = await verifier.verify(token);
@@ -86,6 +87,47 @@ describe("SupabaseVerifier", () => {
       sub: "supabase-uid-new",
       role: "user",
       orgId: "org-new",
+      orgRole: null,
+    });
+  });
+
+  it("claim orgId + provision + 멤버 → orgId 채택 + orgRole 채움 (spec-26-04)", async () => {
+    const token = await makeToken({
+      sub: "uid-member",
+      email: "m@example.com",
+      role: "authenticated",
+      [ACTIVE_ORG_CLAIM]: "org-member",
+    });
+    const mockProvision: SupabaseProvisionPort = {
+      provisionFromProvider: vi.fn(),
+      getOrgMembership: vi.fn().mockResolvedValue({ orgRole: "admin" }),
+    };
+    const result = await makeVerifier(mockProvision).verify(token);
+    expect(mockProvision.getOrgMembership).toHaveBeenCalledWith("uid-member", "org-member");
+    expect(result).toEqual({
+      sub: "uid-member",
+      role: "user",
+      orgId: "org-member",
+      orgRole: "admin",
+    });
+  });
+
+  it("claim orgId + provision + 비멤버 → fail-close(orgId/orgRole null) (spec-26-04)", async () => {
+    const token = await makeToken({
+      sub: "uid-attacker",
+      email: "a@example.com",
+      role: "authenticated",
+      [ACTIVE_ORG_CLAIM]: "org-not-mine",
+    });
+    const mockProvision: SupabaseProvisionPort = {
+      provisionFromProvider: vi.fn(),
+      getOrgMembership: vi.fn().mockResolvedValue(null),
+    };
+    const result = await makeVerifier(mockProvision).verify(token);
+    expect(result).toEqual({
+      sub: "uid-attacker",
+      role: "user",
+      orgId: null,
       orgRole: null,
     });
   });

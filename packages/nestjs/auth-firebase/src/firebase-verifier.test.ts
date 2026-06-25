@@ -69,6 +69,7 @@ describe("FirebaseVerifier", () => {
         orgRole: "owner",
         internalUserId: "internal-uuid-789",
       }),
+      getOrgMembership: vi.fn().mockResolvedValue(null),
     };
 
     const verifier = makeVerifier(mockProvision);
@@ -100,6 +101,40 @@ describe("FirebaseVerifier", () => {
     const verifier = makeVerifier();
     const result = await verifier.verify("valid-token");
     expect(result.role).toBe("user");
+  });
+
+  it("claim orgId + provision + 멤버 → orgId 채택 + orgRole 채움 (spec-26-04)", async () => {
+    mockVerifyIdToken.mockResolvedValue({
+      uid: "fb-member",
+      email: "m@example.com",
+      role: "user",
+      [ACTIVE_ORG_CLAIM]: "org-member",
+    });
+    const mockProvision: FirebaseProvisionPort = {
+      provisionFromProvider: vi.fn(),
+      getOrgMembership: vi.fn().mockResolvedValue({ orgRole: "admin" }),
+    };
+    const result = await makeVerifier(mockProvision).verify("valid-token");
+    expect(mockProvision.getOrgMembership).toHaveBeenCalledWith("fb-member", "org-member");
+    expect(result.orgId).toBe("org-member");
+    expect(result.orgRole).toBe("admin");
+    expect(mockProvision.provisionFromProvider).not.toHaveBeenCalled();
+  });
+
+  it("claim orgId + provision + 비멤버 → fail-close(orgId/orgRole null) (spec-26-04)", async () => {
+    mockVerifyIdToken.mockResolvedValue({
+      uid: "fb-attacker",
+      email: "a@example.com",
+      role: "user",
+      [ACTIVE_ORG_CLAIM]: "org-not-mine",
+    });
+    const mockProvision: FirebaseProvisionPort = {
+      provisionFromProvider: vi.fn(),
+      getOrgMembership: vi.fn().mockResolvedValue(null),
+    };
+    const result = await makeVerifier(mockProvision).verify("valid-token");
+    expect(result.orgId).toBeNull();
+    expect(result.orgRole).toBeNull();
   });
 
   it("무효 token (verifyIdToken throw) → UnauthorizedException", async () => {
