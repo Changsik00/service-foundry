@@ -47,4 +47,26 @@ export class OrgListService {
       return rows as OrgSummary[];
     });
   }
+
+  /**
+   * native 모드용 — user.sub = 내부 userId 이므로 `memberships.userId` 로 직접 스코프.
+   * provider 변형과 동일 계약(`OrgSummary[]`). (spec-x-native-list-orgs)
+   */
+  async listForUserId(userId: string): Promise<OrgSummary[]> {
+    return runWithSystemTenant(this.als, async () => {
+      const rows = await this.database.db
+        .select({
+          orgId: memberships.orgId,
+          name: organizations.name,
+          role: memberships.role,
+          isPersonal: organizations.isPersonal,
+        })
+        .from(memberships)
+        .innerJoin(organizations, eq(memberships.orgId, organizations.id))
+        .where(eq(memberships.userId, userId))
+        .orderBy(asc(memberships.createdAt))
+        .limit(ORG_LIST_MAX);
+      return rows as OrgSummary[];
+    });
+  }
 }

@@ -87,6 +87,20 @@ describe("Tenant isolation via real HTTP (guard→interceptor→RLS)", () => {
     if (owner) await owner.end();
   });
 
+  it("GET /auth/orgs → 내 멤버십 org 목록 반환 (native list-my-orgs, spec-x-native-list-orgs)", async () => {
+    const a = await signup(`orgs-${Date.now()}@example.com`);
+
+    const res = await request(server)
+      .get("/auth/orgs")
+      .set("Authorization", `Bearer ${a.accessToken}`);
+    expect(res.status).toBe(200); // native 에 라우트 존재 (이전엔 404)
+
+    const orgs = res.body.orgs as { orgId: string; isPersonal: boolean }[];
+    expect(Array.isArray(orgs)).toBe(true);
+    expect(orgs.length).toBeGreaterThanOrEqual(1); // 가입 시 개인 org 자동 생성
+    expect(orgs.some((o) => o.isPersonal)).toBe(true);
+  });
+
   it("org A 토큰의 GET /auth/org/members 는 org A 멤버만 보이고 org B 는 차단된다", async () => {
     const stamp = Date.now();
     const a = await signup(`iso-a-${stamp}@example.com`);

@@ -55,6 +55,7 @@ const EXPECTED_AUTH_ROUTES = [
   "GET /auth/csrf []",
   "GET /auth/me [AuthGuard]",
   "GET /auth/org/members [AuthGuard]",
+  "GET /auth/orgs [AuthGuard]",
   "GET /auth/sessions [AuthGuard]",
   "POST /auth/email/verify/confirm [CsrfGuard]",
   "POST /auth/email/verify/request [CsrfGuard]",

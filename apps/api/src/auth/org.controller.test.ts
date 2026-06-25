@@ -24,18 +24,40 @@ function makeInvite() {
 function makeMembers() {
   return { list: vi.fn().mockResolvedValue({ members: [], nextCursor: null }) };
 }
+function makeOrgList() {
+  return {
+    listForUserId: vi
+      .fn()
+      .mockResolvedValue([{ orgId: "org-001", name: "Acme", role: "owner", isPersonal: false }]),
+  };
+}
 
 describe("OrgController", () => {
   let orgSwitch: ReturnType<typeof makeSwitch>;
   let orgInvite: ReturnType<typeof makeInvite>;
   let orgMembers: ReturnType<typeof makeMembers>;
+  let orgList: ReturnType<typeof makeOrgList>;
   let controller: OrgController;
 
   beforeEach(() => {
     orgSwitch = makeSwitch();
     orgInvite = makeInvite();
     orgMembers = makeMembers();
-    controller = new OrgController(orgSwitch as never, orgInvite as never, orgMembers as never);
+    orgList = makeOrgList();
+    controller = new OrgController(
+      orgSwitch as never,
+      orgInvite as never,
+      orgMembers as never,
+      orgList as never,
+    );
+  });
+
+  it("orgs → listForUserId(sub) 위임 (native list-my-orgs)", async () => {
+    const result = await controller.orgs(user);
+    expect(orgList.listForUserId).toHaveBeenCalledWith("user-001");
+    expect(result).toEqual({
+      orgs: [{ orgId: "org-001", name: "Acme", role: "owner", isPersonal: false }],
+    });
   });
 
   it("orgSwitch → 검증된 orgId 로 switch(sub, orgId) 위임", async () => {
