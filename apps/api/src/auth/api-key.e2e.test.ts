@@ -89,7 +89,9 @@ describe("API Key E2E (real PG)", () => {
         .send({ name: "Test Key" });
       expect(res.status).toBe(201);
       expect(res.body.plain).toMatch(/^sk_[0-9a-f]{64}$/);
-      expect(res.body.id).toBeDefined();
+      // 외부 식별자 = api-key public_id (spec-26-06), orgId = org public_id 상속.
+      expect(res.body.id).toMatch(/^key_[0-9A-HJKMNP-TV-Z]{26}$/);
+      expect(res.body.orgId).toMatch(/^org_[0-9A-HJKMNP-TV-Z]{26}$/);
       keyId = res.body.id as string;
       plainKey = res.body.plain as string;
     });

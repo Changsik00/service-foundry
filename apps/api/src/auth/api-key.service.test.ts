@@ -22,10 +22,9 @@ describe("ApiKeyService", () => {
   describe("create", () => {
     it("평문 키(sk_ 접두사) + preview + id 반환", async () => {
       const insertedRow = {
-        id: "key-id-001",
-        org_id: "org-001",
+        public_id: "key_AAAAAAAAAAAAAAAAAAAAAA0001",
+        org_public_id: "org_AAAAAAAAAAAAAAAAAAAAAA0001",
         name: "CI Key",
-        key_hash: "hash",
         key_preview: "abcd1234",
         last_used_at: null,
         revoked_at: null,
@@ -38,7 +37,8 @@ describe("ApiKeyService", () => {
 
       expect(result.plain).toMatch(/^sk_[0-9a-f]{64}$/);
       expect(result.preview).toBe(result.plain.slice(3, 11));
-      expect(result.id).toBe("key-id-001");
+      expect(result.id).toBe("key_AAAAAAAAAAAAAAAAAAAAAA0001");
+      expect(result.orgId).toBe("org_AAAAAAAAAAAAAAAAAAAAAA0001");
       expect(result.name).toBe("CI Key");
     });
   });
