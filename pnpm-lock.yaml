@@ -358,6 +358,9 @@ importers:
       '@repo/backend-authz':
         specifier: workspace:*
         version: link:../../packages/backend/authz
+      '@repo/backend-id':
+        specifier: workspace:*
+        version: link:../../packages/backend/id
       '@repo/backend-lifecycle':
         specifier: workspace:*
         version: link:../../packages/backend/lifecycle
