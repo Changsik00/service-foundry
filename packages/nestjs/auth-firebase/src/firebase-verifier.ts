@@ -28,23 +28,30 @@ export class FirebaseVerifier implements AccessTokenVerifier {
     const { uid, email = "" } = decoded;
     const role = (decoded.role as string | undefined) ?? "user";
     let orgId = (decoded[ACTIVE_ORG_CLAIM] as string | undefined) ?? null;
+    let orgRole: string | null = null;
     // Firebase UID는 UUID가 아니므로 internal UUID로 교체. provision 없으면 uid 그대로 사용.
     let sub = uid;
 
     if (!orgId && this.provision) {
-      const {
-        orgId: newOrgId,
-        orgRole,
-        internalUserId,
-      } = await this.provision.provisionFromProvider(uid, email);
-      orgId = newOrgId;
-      sub = internalUserId;
+      // active_org 없음 → 개인 org 프로비저닝(멤버 보장).
+      const provisioned = await this.provision.provisionFromProvider(uid, email);
+      orgId = provisioned.orgId;
+      orgRole = provisioned.orgRole ?? null;
+      sub = provisioned.internalUserId;
       await getAuth(this.app).setCustomUserClaims(uid, {
         [ACTIVE_ORG_CLAIM]: orgId,
         org_role: orgRole,
       });
+    } else if (orgId && this.provision) {
+      // active_org 클레임은 멤버십 검증 후에만 신뢰 — 비멤버면 fail-close(spec-26-04 A).
+      const membership = await this.provision.getOrgMembership(uid, orgId);
+      if (membership) {
+        orgRole = membership.orgRole;
+      } else {
+        orgId = null;
+      }
     }
 
-    return { sub, role, orgId, orgRole: null };
+    return { sub, role, orgId, orgRole };
   }
 }

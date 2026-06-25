@@ -54,12 +54,23 @@ export class SupabaseVerifier implements AccessTokenVerifier {
       (payload[ACTIVE_ORG_CLAIM] as string | undefined) ??
       (appMeta?.[ACTIVE_ORG_CLAIM] as string | undefined) ??
       null;
+    let orgRole: string | null = null;
 
     if (!orgId && this.provision) {
-      const { orgId: newOrgId } = await this.provision.provisionFromProvider(sub, email);
-      orgId = newOrgId;
+      // active_org 없음 → 개인 org 프로비저닝(멤버 보장).
+      const provisioned = await this.provision.provisionFromProvider(sub, email);
+      orgId = provisioned.orgId;
+      orgRole = provisioned.orgRole ?? null;
+    } else if (orgId && this.provision) {
+      // active_org 클레임은 멤버십 검증 후에만 신뢰 — 비멤버면 fail-close(spec-26-04 A).
+      const membership = await this.provision.getOrgMembership(sub, orgId);
+      if (membership) {
+        orgRole = membership.orgRole;
+      } else {
+        orgId = null;
+      }
     }
 
-    return { sub, role, orgId, orgRole: null };
+    return { sub, role, orgId, orgRole };
   }
 }

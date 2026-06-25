@@ -87,7 +87,7 @@ describe("SupabaseVerifier", () => {
       sub: "supabase-uid-new",
       role: "user",
       orgId: "org-new",
-      orgRole: null,
+      orgRole: "owner",
     });
   });
 

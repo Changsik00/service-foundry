@@ -88,7 +88,7 @@ describe("FirebaseVerifier", () => {
       sub: "internal-uuid-789",
       role: "user",
       orgId: "org-new",
-      orgRole: null,
+      orgRole: "owner",
     });
   });
 
