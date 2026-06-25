@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-26** — id-scheme-public-id — 6 spec — 다음: spec-26-06-remaining-roots-public-id
+- **phase-26** — id-scheme-public-id — 7 spec — 다음: spec-26-07-leak-audit-snapshot
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기

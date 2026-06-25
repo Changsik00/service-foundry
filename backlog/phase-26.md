@@ -48,7 +48,7 @@ ADR-0028 의 3-티어 체계(내부 uuid v7 PK + 불투명 prefixed public_id + 
 | `spec-26-04` | active-org-membership-gate | P1 | Merged | `specs/spec-26-04-active-org-membership-gate/` |
 | `spec-26-05` | org-public-id-rls | P2 | Merged | `specs/spec-26-05-org-public-id-rls/` |
 | `spec-26-06` | remaining-roots-public-id | P2 | Merged | `specs/spec-26-06-remaining-roots-public-id/` |
-| `spec-26-07` | leak-audit-snapshot | P1 | Backlog | `specs/spec-26-07-leak-audit-snapshot/` |
+| `spec-26-07` | leak-audit-snapshot | P? | Active | `specs/spec-26-07-leak-audit-snapshot/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
