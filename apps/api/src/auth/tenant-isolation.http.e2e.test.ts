@@ -105,6 +105,45 @@ describe("Tenant isolation via real HTTP (guard→interceptor→RLS)", () => {
     expect(Array.isArray(orgs)).toBe(true);
     expect(orgs.length).toBeGreaterThanOrEqual(1); // 가입 시 개인 org 자동 생성
     expect(orgs.some((o) => o.isPersonal)).toBe(true);
+    expect(orgs[0]?.orgId).toMatch(/^org_[0-9A-HJKMNP-TV-Z]{26}$/); // 외부 식별자=org public_id
+  });
+
+  it("org/switch 는 org public_id 를 받아 멤버십 검증 후 전환 (비멤버/미존재 403, spec-26-05)", async () => {
+    const stamp = Date.now();
+    const a = await signup(`switch-a-${stamp}@example.com`);
+    const b = await signup(`switch-b-${stamp}@example.com`);
+
+    // a 의 org public_id 조회
+    const aOrgs = await request(server)
+      .get("/auth/orgs")
+      .set("Authorization", `Bearer ${a.accessToken}`);
+    const aOrgPublicId = (aOrgs.body.orgs as { orgId: string }[])[0]?.orgId as string;
+    const bOrgs = await request(server)
+      .get("/auth/orgs")
+      .set("Authorization", `Bearer ${b.accessToken}`);
+    const bOrgPublicId = (bOrgs.body.orgs as { orgId: string }[])[0]?.orgId as string;
+
+    // 내 org public_id → 200
+    const ok = await postCsrf("/auth/org/switch", {
+      bearer: a.accessToken,
+      body: { orgId: aOrgPublicId },
+    });
+    expect(ok.status).toBe(200);
+    expect(ok.body.accessToken).toBeTruthy();
+
+    // 타 org public_id(비멤버) → 403
+    const forbidden = await postCsrf("/auth/org/switch", {
+      bearer: a.accessToken,
+      body: { orgId: bOrgPublicId },
+    });
+    expect(forbidden.status).toBe(403);
+
+    // 미존재 public_id → 403 (fail-close, ADR-0029)
+    const notFound = await postCsrf("/auth/org/switch", {
+      bearer: a.accessToken,
+      body: { orgId: "org_ZZZZZZZZZZZZZZZZZZZZZZ9999" },
+    });
+    expect(notFound.status).toBe(403);
   });
 
   it("org A 토큰의 GET /auth/org/members 는 org A 멤버만 보이고 org B 는 차단된다", async () => {

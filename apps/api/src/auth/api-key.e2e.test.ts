@@ -131,7 +131,13 @@ describe("API Key E2E (real PG)", () => {
       const meRes = await request(server)
         .get("/auth/me")
         .set("Authorization", `Bearer ${owner.accessToken}`);
-      ownerOrgId = meRes.body.user.orgId as string;
+      ownerOrgId = meRes.body.user.orgId as string; // org public_id (switch 입력)
+      // raw INSERT 용 내부 org id 해석
+      const orgRow = await pool.query<{ id: string }>(
+        "SELECT id FROM organizations WHERE public_id = $1",
+        [ownerOrgId],
+      );
+      const ownerInternalOrgId = orgRow.rows[0]?.id as string;
 
       const member = await signUp(`${BASE}-member@example.com`);
 
@@ -140,7 +146,7 @@ describe("API Key E2E (real PG)", () => {
          SELECT u.id, $2, 'member'
          FROM users u WHERE u.email = $1
          ON CONFLICT (user_id, org_id) DO UPDATE SET role = 'member'`,
-        [`${BASE}-member@example.com`, ownerOrgId],
+        [`${BASE}-member@example.com`, ownerInternalOrgId],
       );
 
       const switchRes = await postCsrf("/auth/org/switch", {
@@ -194,9 +200,14 @@ describe("API Key E2E (real PG)", () => {
     // RLS 계층 단독 실증: WHERE org_id 동어반복이 아니라, app.current_org 컨텍스트만으로
     // api_keys 가 스코프되는지 검증(WHERE 절 없는 raw SELECT). B(database.db 경유)가 의존하는 backstop.
     it("app.current_org 설정 시 WHERE 없이도 api_keys 가 그 org 로 스코프됨 (RLS backstop)", async () => {
-      // org A 의 내부 org uuid (/auth/me 의 orgId — org public_id 전환 전이라 내부 uuid)
+      // /me 의 orgId 는 org public_id (spec-26-05) — RLS 는 내부 uuid 기준이므로 내부 id 로 해석.
       const me = await request(server).get("/auth/me").set("Authorization", `Bearer ${tokenA}`);
-      const orgAInternal = me.body.user.orgId as string;
+      const orgAPublic = me.body.user.orgId as string;
+      const orgRow = await pool.query<{ id: string }>(
+        "SELECT id FROM organizations WHERE public_id = $1",
+        [orgAPublic],
+      );
+      const orgAInternal = orgRow.rows[0]?.id as string;
       expect(orgAInternal).toBeTruthy();
 
       // app_runtime(RLS 적용 주체) 연결에서 tx-local 컨텍스트 설정 후 WHERE 없이 조회.

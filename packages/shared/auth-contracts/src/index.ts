@@ -166,7 +166,8 @@ export const InvitationRow = z.object({
 });
 export type InvitationRow = z.output<typeof InvitationRow>;
 
-export const OrgSwitchInput = z.object({ orgId: Uuid });
+// orgId 는 외부 식별자(org public_id, 예: `org_…`) — 서버가 내부 id 로 해석 후 멤버십 검증(ADR-0028/0029).
+export const OrgSwitchInput = z.object({ orgId: z.string().min(1).max(64) });
 export type OrgSwitchInput = z.output<typeof OrgSwitchInput>;
 
 export const OrgInviteInput = z.object({ email: Email, role: InviteRole });

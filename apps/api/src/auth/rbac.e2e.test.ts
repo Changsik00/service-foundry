@@ -75,18 +75,25 @@ describe("RBAC E2E (real PG)", () => {
 
   describe("POST /auth/org/invite RBAC", () => {
     let ownerToken: string;
-    let ownerOrgId: string;
+    let ownerOrgId: string; // org public_id (switch 입력·외부 식별자)
+    let ownerInternalOrgId: string; // 내부 org uuid (raw membership INSERT 용)
 
     beforeAll(async () => {
       // owner 계정 생성
       const owner = await signUp(`${BASE}-owner@example.com`);
       ownerToken = owner.accessToken;
 
-      // owner의 orgId 조회
+      // owner의 org public_id 조회 (/me 는 public_id 노출, spec-26-05)
       const meRes = await request(server)
         .get("/auth/me")
         .set("Authorization", `Bearer ${ownerToken}`);
       ownerOrgId = meRes.body.user.orgId as string;
+      // raw SQL 시드용 내부 org id 해석
+      const r = await pool.query<{ id: string }>(
+        "SELECT id FROM organizations WHERE public_id = $1",
+        [ownerOrgId],
+      );
+      ownerInternalOrgId = r.rows[0]?.id as string;
     });
 
     it("owner 토큰 → 초대 성공 (200)", async () => {
@@ -107,7 +114,7 @@ describe("RBAC E2E (real PG)", () => {
          SELECT u.id, $2, 'member'
          FROM users u WHERE u.email = $1
          ON CONFLICT (user_id, org_id) DO UPDATE SET role = 'member'`,
-        [`${BASE}-member@example.com`, ownerOrgId],
+        [`${BASE}-member@example.com`, ownerInternalOrgId],
       );
 
       // org switch → ownerOrgId로 전환된 토큰 발급 (orgRole=member)
@@ -133,7 +140,7 @@ describe("RBAC E2E (real PG)", () => {
          SELECT u.id, $2, 'admin'
          FROM users u WHERE u.email = $1
          ON CONFLICT (user_id, org_id) DO UPDATE SET role = 'admin'`,
-        [`${BASE}-admin@example.com`, ownerOrgId],
+        [`${BASE}-admin@example.com`, ownerInternalOrgId],
       );
 
       const switchRes = await postCsrf("/auth/org/switch", {

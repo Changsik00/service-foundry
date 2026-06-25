@@ -17,9 +17,16 @@ export class OrgSwitchService implements IOrgSwitchService {
     @Inject(JWT_SIGN_OPTIONS) private readonly jwtOpts: JwtSignOptions,
   ) {}
 
-  async switch(userId: string, newOrgId: string): Promise<{ accessToken: string }> {
-    // 멤버십 조회는 raw pool 로 실행 — ALS 트랜잭션의 app.current_org RLS 컨텍스트를
-    // 우회해야 다른 org 로의 전환이 가능하다 (테넌트 격리가 대상 org 행을 차단함).
+  async switch(userId: string, newOrgPublicId: string): Promise<{ accessToken: string }> {
+    // 입력은 org public_id(외부 식별자) — 내부 org id 로 해석(없으면 fail-close, ADR-0029).
+    // raw pool: org 전환은 현재 active org RLS 컨텍스트를 우회해야 대상 org 행이 보인다.
+    const { rows: orgRows } = await this.database.pool.query<{ id: string }>(
+      `SELECT id FROM organizations WHERE public_id = $1`,
+      [newOrgPublicId],
+    );
+    const newOrgId = orgRows[0]?.id;
+    if (!newOrgId) throw new ForbiddenException("org not found");
+
     const { rows: memberRows } = await this.database.pool.query<{ role: OrgRole }>(
       `SELECT role FROM memberships WHERE user_id = $1 AND org_id = $2`,
       [userId, newOrgId],
