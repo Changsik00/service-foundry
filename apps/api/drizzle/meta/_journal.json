@@ -162,6 +162,13 @@
       "when": 1782368931925,
       "tag": "0022_careful_tombstone",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1782371723434,
+      "tag": "0023_abandoned_the_captain",
+      "breakpoints": true
     }
   ]
 }
