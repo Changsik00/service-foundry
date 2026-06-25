@@ -12,7 +12,8 @@ function makeService() {
     handleCallback: vi.fn().mockResolvedValue({
       accessToken: "at-1",
       refreshToken: "rt-1",
-      userId: "user-001",
+      // oauth.service 는 user.publicId 를 반환(타입: OAuthUserRow.publicId) — 외부 식별자=public_id(spec-26-03/08).
+      userId: "usr_OAUTH00000000000000000001",
     }),
   };
 }
@@ -66,7 +67,9 @@ describe("OAuthController", () => {
     );
     expect(res.clearCookie).toHaveBeenCalledTimes(2);
     expect(res.cookie).toHaveBeenCalled();
-    expect(result).toEqual({ accessToken: "at-1", userId: "user-001" });
+    // 콜백 응답 userId 는 public_id(usr_) — 내부 uuid 미노출.
+    expect(result).toEqual({ accessToken: "at-1", userId: "usr_OAUTH00000000000000000001" });
+    expect(result.userId).toMatch(/^usr_/);
   });
 
   it("callback → 쿠키 없으면 빈 문자열로 위임", async () => {
