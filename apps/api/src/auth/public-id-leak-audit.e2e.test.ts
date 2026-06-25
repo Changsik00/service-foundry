@@ -141,5 +141,13 @@ describe("public_id 누출 감사 — 응답 body 내부 uuid 0 (ADR-0028 §1)",
     expect(adminUsers.status).toBe(200);
     expectNoInternalUuid(adminUsers.body, "admin/users");
     expect(adminUsers.body.users[0]?.id).toMatch(/^usr_/);
+
+    // nextCursor 도 base64 디코드 시 내부 uuid 0 (spec-26-08 — cursor 누출 차단).
+    const paged = await request(server)
+      .get("/admin/users?limit=1")
+      .set("Authorization", `Bearer ${adminToken}`);
+    expect(paged.body.nextCursor).toBeTruthy(); // admin 다수 → 다음 페이지 존재
+    const decoded = decodeURIComponent(atob(paged.body.nextCursor as string));
+    expect(decoded, "admin/users nextCursor 내부 uuid 노출").not.toMatch(UUID_RE);
   });
 });
