@@ -158,4 +158,37 @@ describe("API Key E2E (real PG)", () => {
       expect(res.status).toBe(403);
     });
   });
+
+  // RLS backstop (spec-26-04): org-scoped api_keys 연산은 tenant tx(RLS) 경유 — 교차-org 격리 보존.
+  describe("교차-org 격리 (RLS backstop)", () => {
+    let tokenA: string;
+    let tokenB: string;
+    let keyIdA: string;
+
+    beforeAll(async () => {
+      tokenA = (await signUp(`${BASE}-iso-a@example.com`)).accessToken;
+      tokenB = (await signUp(`${BASE}-iso-b@example.com`)).accessToken;
+      const created = await request(server)
+        .post("/auth/api-keys")
+        .set("Authorization", `Bearer ${tokenA}`)
+        .send({ name: "A's Key" });
+      expect(created.status).toBe(201);
+      keyIdA = created.body.id as string;
+    });
+
+    it("org B 의 GET /auth/api-keys 는 org A 의 키를 포함하지 않는다", async () => {
+      const res = await request(server)
+        .get("/auth/api-keys")
+        .set("Authorization", `Bearer ${tokenB}`);
+      expect(res.status).toBe(200);
+      expect(res.body.some((k: { id: string }) => k.id === keyIdA)).toBe(false);
+    });
+
+    it("org B 가 org A 의 키 revoke 시도 → 실패(403)", async () => {
+      const res = await request(server)
+        .delete(`/auth/api-keys/${keyIdA}`)
+        .set("Authorization", `Bearer ${tokenB}`);
+      expect(res.status).toBe(403);
+    });
+  });
 });
