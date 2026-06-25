@@ -44,7 +44,7 @@ ADR-0028 의 3-티어 체계(내부 uuid v7 PK + 불투명 prefixed public_id + 
 |---|---|:---:|---|---|
 | `spec-26-01` | id-util-and-audit | P1 | Merged | `specs/spec-26-01-id-util-and-audit/` |
 | `spec-26-02` | users-public-id | P1 | Merged | `specs/spec-26-02-users-public-id/` |
-| `spec-26-03` | auth-boundary-normalize | P? | Active | `specs/spec-26-03-auth-boundary-normalize/` |
+| `spec-26-03` | auth-boundary-normalize | P1 | Merged | `specs/spec-26-03-auth-boundary-normalize/` |
 | `spec-26-04` | org-public-id-rls | P2 | Backlog | `specs/spec-26-04-org-public-id-rls/` |
 | `spec-26-05` | remaining-roots-public-id | P2 | Backlog | `specs/spec-26-05-remaining-roots-public-id/` |
 | `spec-26-06` | leak-audit-snapshot | P1 | Backlog | `specs/spec-26-06-leak-audit-snapshot/` |
