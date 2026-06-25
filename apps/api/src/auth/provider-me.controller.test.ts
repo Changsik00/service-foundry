@@ -10,7 +10,11 @@ const user: AuthenticatedUser = {
 };
 
 function makeStore() {
-  return { findById: vi.fn(), findByProviderUid: vi.fn() };
+  return {
+    findById: vi.fn(),
+    findByProviderUid: vi.fn(),
+    findOrgPublicId: vi.fn().mockResolvedValue("org_PUBLICAAAAAAAAAAAAAAAA01"),
+  };
 }
 
 describe("ProviderMeController", () => {
@@ -31,11 +35,12 @@ describe("ProviderMeController", () => {
     });
     const result = await controller.me(user);
     expect(store.findById).toHaveBeenCalledWith("user-001");
+    expect(store.findOrgPublicId).toHaveBeenCalledWith("org-001");
     expect(result.user).toEqual({
       id: "usr_ABCDEFGHJKMNPQRSTVWXYZ0123",
       email: "u@example.com",
       role: "user",
-      orgId: "org-001",
+      orgId: "org_PUBLICAAAAAAAAAAAAAAAA01", // 내부 org-001 → org public_id 해석
       orgRole: "owner",
       displayName: "홍길동",
       avatarUrl: "https://cdn/a.png",

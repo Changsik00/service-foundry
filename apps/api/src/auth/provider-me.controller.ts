@@ -25,12 +25,13 @@ export class ProviderMeController {
     const profile =
       (await this.userStore.findById(user.sub)) ??
       (await this.userStore.findByProviderUid(user.sub));
+    const orgPublicId = user.orgId ? await this.userStore.findOrgPublicId(user.orgId) : null;
     return {
       user: {
         id: profile?.publicId ?? null,
         email: profile?.email ?? null,
         role: user.role,
-        orgId: user.orgId,
+        orgId: orgPublicId,
         orgRole: user.orgRole,
         displayName: profile?.displayName ?? null,
         avatarUrl: profile?.avatarUrl ?? null,

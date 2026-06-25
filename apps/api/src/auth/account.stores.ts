@@ -1,5 +1,5 @@
 import { Inject } from "@nestjs/common";
-import { memberships, users } from "@repo/backend-schema";
+import { memberships, organizations, users } from "@repo/backend-schema";
 import type { NodePgDatabase } from "@repo/nestjs-database";
 import { and, eq, inArray, ne } from "drizzle-orm";
 
@@ -21,6 +21,8 @@ export interface AccountUserStore {
   /** provider 모드(sub=providerUid) /me 해석용 — 내부 id 로 못 찾을 때 fallback. */
   findByProviderUid(providerUid: string): Promise<AccountUserProfile | null>;
   findByEmail(email: string): Promise<{ id: string } | null>;
+  /** 내부 org id → org public_id (외부 노출용, ADR-0028). 미존재 시 null. */
+  findOrgPublicId(orgId: string): Promise<string | null>;
   updateDisplayName(id: string, displayName: string | null): Promise<void>;
   updatePasswordHash(id: string, passwordHash: string): Promise<void>;
   updateEmail(id: string, email: string): Promise<void>;
@@ -32,7 +34,11 @@ export interface AccountUserStore {
 type AnyDb = NodePgDatabase<Record<string, unknown>>;
 
 export function createAccountUserStore(db: AnyDb): AccountUserStore {
-  const typedDb = db as NodePgDatabase<{ users: typeof users; memberships: typeof memberships }>;
+  const typedDb = db as NodePgDatabase<{
+    users: typeof users;
+    memberships: typeof memberships;
+    organizations: typeof organizations;
+  }>;
 
   return {
     async findById(id) {
@@ -76,6 +82,15 @@ export function createAccountUserStore(db: AnyDb): AccountUserStore {
         .where(eq(users.email, email))
         .limit(1);
       return rows[0] ?? null;
+    },
+
+    async findOrgPublicId(orgId) {
+      const rows = await typedDb
+        .select({ publicId: organizations.publicId })
+        .from(organizations)
+        .where(eq(organizations.id, orgId))
+        .limit(1);
+      return rows[0]?.publicId ?? null;
     },
 
     async updateDisplayName(id, displayName) {

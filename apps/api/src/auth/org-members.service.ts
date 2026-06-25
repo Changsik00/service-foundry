@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import type { OrgRole } from "@repo/auth-contracts";
-import { memberships, users } from "@repo/backend-schema";
+import { memberships, organizations, users } from "@repo/backend-schema";
 import { type CursorPaginationParams, decodeCursor, encodeCursor } from "@repo/contracts";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { and, asc, eq, gt, ilike, or } from "drizzle-orm";
@@ -56,22 +56,28 @@ export class OrgMembersService {
 
     const rows = await this.database.db
       .select({
-        userId: memberships.userId,
-        orgId: memberships.orgId,
+        // 외부 식별자 = public_id. internalUserId 는 커서 페이지네이션(내부 정렬)에만 사용.
+        userId: users.publicId,
+        internalUserId: users.id,
+        orgId: organizations.publicId,
         role: memberships.role,
         email: users.email,
         displayName: users.displayName,
       })
       .from(memberships)
       .innerJoin(users, eq(memberships.userId, users.id))
+      .innerJoin(organizations, eq(memberships.orgId, organizations.id))
       .where(conditions)
       .orderBy(asc(memberships.createdAt), asc(users.id))
       .limit(limit + 1);
 
     const hasMore = rows.length > limit;
-    const members = hasMore ? rows.slice(0, limit) : rows;
-    const lastMember = members[members.length - 1];
-    const nextCursor = hasMore && lastMember ? encodeCursor({ userId: lastMember.userId }) : null;
+    const sliced = hasMore ? rows.slice(0, limit) : rows;
+    const lastMember = sliced[sliced.length - 1];
+    // 커서는 내부 user id 기반(불투명, 페이지네이션 정렬키) — 응답엔 미노출.
+    const nextCursor =
+      hasMore && lastMember ? encodeCursor({ userId: lastMember.internalUserId }) : null;
+    const members = sliced.map(({ internalUserId: _omit, ...m }) => m);
 
     return { members: members as OrgMember[], nextCursor };
   }

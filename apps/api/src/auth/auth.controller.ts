@@ -339,14 +339,17 @@ export class AuthController {
       displayName: string | null;
     };
   }> {
-    // sub(=내부 users.id, 서버 전용)은 응답에 노출하지 않는다 — 외부 식별자는 public_id (ADR-0028).
+    // sub(=내부 users.id, 서버 전용)·active_org(내부 org id)은 응답에 노출하지 않는다 — 외부 식별자는 public_id (ADR-0028).
     const row = await this.accountUserStore.findById(currentUser.sub);
+    const orgPublicId = currentUser.orgId
+      ? await this.accountUserStore.findOrgPublicId(currentUser.orgId)
+      : null;
     return {
       user: {
         id: row?.publicId ?? null,
         email: row?.email ?? null,
         role: currentUser.role,
-        orgId: currentUser.orgId,
+        orgId: orgPublicId,
         orgRole: currentUser.orgRole,
         displayName: row?.displayName ?? null,
       },

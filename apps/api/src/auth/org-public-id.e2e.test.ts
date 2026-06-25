@@ -74,6 +74,27 @@ describe("organizations.public_id (DB gen_public_id default)", () => {
     expect(r.rows[0]?.public_id).toMatch(ORG_PUBLIC_ID_RE);
   });
 
+  it("GET /auth/orgs 응답의 orgId 는 org public_id (uuid 아님)", async () => {
+    const email = `org-resp-${Date.now()}@example.com`;
+    const csrf = await request(server).get("/auth/csrf");
+    const token = csrf.body.csrfToken as string;
+    const idCookie = extractCookie(csrf.headers["set-cookie"], "csrf_id");
+    const su = await request(server)
+      .post("/auth/signup")
+      .set("X-Csrf-Token", token)
+      .set("Cookie", idCookie)
+      .send({ email, password: "Passw0rd!123" });
+    expect(su.status).toBe(201);
+    const res = await request(server)
+      .get("/auth/orgs")
+      .set("Authorization", `Bearer ${su.body.accessToken}`);
+    expect(res.status).toBe(200);
+    const orgs = res.body.orgs as { orgId: string }[];
+    expect(orgs.length).toBeGreaterThanOrEqual(1);
+    expect(orgs[0]?.orgId).toMatch(ORG_PUBLIC_ID_RE);
+    expect(orgs[0]?.orgId).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}/i);
+  });
+
   it("raw INSERT (public_id 미지정) 도 DEFAULT 로 채워진다", async () => {
     // owner 시드용 — ownerId 는 임의 user 필요. 직전 signup 의 user 재사용.
     const email = `org-rawins-${Date.now()}@example.com`;
