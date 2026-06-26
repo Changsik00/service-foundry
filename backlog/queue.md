@@ -30,6 +30,8 @@
 - [ ] **api_keys drizzle `local.ts` 미등록**: hand-written 관리(0018~)라 `db:generate` 가 api_keys 변경 누락 위험. schema 엔트리 등록 검토.
 - [ ] **firebase-token 내부 uuid 임베드**: custom token 에 `sub`/`active_org_id` 내부 uuid (외부 Firebase SDK 전달) — §1 self-bearer 논리 약함. public_id 전환 검토 (phase-26 회고 W2).
 - [ ] **provider role→admin 클레임 신뢰**: supabase `service_role`→admin (IdP 설정 의존, 코드 방어 없음). active_org 는 멤버십 게이트했으나 전역 role 미게이트 (spec-26-04 C 항목).
+- [ ] **keyset cursor 정렬키 불일치 (사전존재 데이터정확성 버그)**: admin/org-members 가 `orderBy(createdAt, id)` 인데 cursor 술어는 `gt(id)` 단독 → 페이지 경계 skip/중복 가능. cursor 를 `(createdAt, id)` 복합 비교로 정정 + 실DB page-2 추적 e2e (단위 mock 은 못 잡음) (최종 회고 W1/W2).
+- [ ] **leak-audit cursor 디코드 스캔 확장**: 현재 `/admin/users` cursor 만 base64 디코드 검사 — `/admin/orgs`·`/auth/org/members` cursor 도 디코드 스캔 추가 (최종 회고 W4).
 
 - ~~apps/admin 별도 앱 여부 결정~~ **해소**: 별도 admin 앱 없음 — `apps/web` 단일 앱이 콘솔(어드민 성격) 역할 (ADR-0025, 2026-06-10)
 - [ ] tailwind를 packages/frontend/ui에만 둘지 각 앱에도 설치할지 (phase-04)
