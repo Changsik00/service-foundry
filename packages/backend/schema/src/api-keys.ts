@@ -1,8 +1,11 @@
+import { sql } from "drizzle-orm";
 import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { organizations } from "./organizations.js";
 
 export const apiKeys = pgTable("api_keys", {
   id: uuid("id").primaryKey().defaultRandom(),
+  /** 외부 노출 불투명 식별자 (ADR-0028). */
+  publicId: text("public_id").notNull().unique().default(sql`gen_public_id('key')`),
   orgId: uuid("org_id")
     .notNull()
     .references(() => organizations.id, { onDelete: "cascade" }),

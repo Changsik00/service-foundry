@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
+- **phase-26** — id-scheme-public-id — 8 spec — 다음: spec-26-08-retro-hardening
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -20,6 +20,18 @@
 
 > 아이디어·보류 항목 보관소. 실행 불가. 관련 항목이 쌓이면 Phase로, 단발이면 spec-x로 승격.
 > 이 섹션은 sdd가 건드리지 않습니다. 자유롭게 편집하세요.
+
+#### 🔁 phase-26 회고 이월 (2026-06-25, ID 체계/public_id)
+
+- [ ] **sub 다형성 제거 / 경계 정규화**: provider verifier 가 providerUid→내부 id 해석해 `AuthenticatedUser.sub` 를 모드 무관 내부 id 로 통일, `listForProviderUid`/`listForUserId` 단일화 (ADR-0028 §4 후속). 성공기준 #3 의 미시행 부분.
+- [ ] **내부 PK uuid v7 전환**: 현 PK 는 `gen_random_uuid`(v4). `@repo/backend-id.uuidv7()` 유틸은 구현됐으나 미배선(dead code). PG16 = native `uuidv7()` 없어 plpgsql `gen_uuidv7()` 필요 (ADR-0028 §3 후속).
+- [ ] **RLS NULL-permissive → fail-close flip**: `current_setting('app.current_org') IS NULL → 전체 허용` 구조적 fail-OPEN. system-context 토글 방식 재설계 필요 (ADR-0029 비고).
+- [ ] **web uuid-가정 잠재 부채**: web 이 식별자를 `z.string()`(format-agnostic)로 다뤄 public_id 와 우연 호환. 향후 uuid 포맷 가정 코드 유입 시 silent break (spec-26-05 refute #1).
+- [ ] **api_keys drizzle `local.ts` 미등록**: hand-written 관리(0018~)라 `db:generate` 가 api_keys 변경 누락 위험. schema 엔트리 등록 검토.
+- [ ] **firebase-token 내부 uuid 임베드**: custom token 에 `sub`/`active_org_id` 내부 uuid (외부 Firebase SDK 전달) — §1 self-bearer 논리 약함. public_id 전환 검토 (phase-26 회고 W2).
+- [ ] **provider role→admin 클레임 신뢰**: supabase `service_role`→admin (IdP 설정 의존, 코드 방어 없음). active_org 는 멤버십 게이트했으나 전역 role 미게이트 (spec-26-04 C 항목).
+- [ ] **keyset cursor 정렬키 불일치 (사전존재 데이터정확성 버그)**: admin/org-members 가 `orderBy(createdAt, id)` 인데 cursor 술어는 `gt(id)` 단독 → 페이지 경계 skip/중복 가능. cursor 를 `(createdAt, id)` 복합 비교로 정정 + 실DB page-2 추적 e2e (단위 mock 은 못 잡음) (최종 회고 W1/W2).
+- [ ] **leak-audit cursor 디코드 스캔 확장**: 현재 `/admin/users` cursor 만 base64 디코드 검사 — `/admin/orgs`·`/auth/org/members` cursor 도 디코드 스캔 추가 (최종 회고 W4).
 
 - ~~apps/admin 별도 앱 여부 결정~~ **해소**: 별도 admin 앱 없음 — `apps/web` 단일 앱이 콘솔(어드민 성격) 역할 (ADR-0025, 2026-06-10)
 - [ ] tailwind를 packages/frontend/ui에만 둘지 각 앱에도 설치할지 (phase-04)

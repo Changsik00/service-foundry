@@ -49,9 +49,13 @@ describe("Email Change E2E (real PG)", () => {
   async function signUp(email: string, password: string) {
     const res = await postCsrf("/auth/signup", { body: { email, password } });
     expect(res.status).toBe(201);
+    // 응답 user.id 는 public_id — DB 시드/쿼리용 내부 users.id 는 이메일로 해석.
+    const internal = await pool.query<{ id: string }>("SELECT id FROM users WHERE email = $1", [
+      email,
+    ]);
     return {
       accessToken: res.body.accessToken as string,
-      userId: res.body.user.id as string,
+      userId: internal.rows[0]?.id as string,
       refreshCookie: extractCookie(res.headers["set-cookie"], "refresh_token"),
     };
   }

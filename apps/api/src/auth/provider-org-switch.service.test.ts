@@ -7,12 +7,20 @@ const PROVIDER_UID = "supabase-uid-123";
 const USER_ID = "00000000-0000-0000-0000-000000000001";
 const ORG_ID = "00000000-0000-0000-0000-000000000099";
 
-function makeDatabase({ user = [{ id: USER_ID }], membership = [{ id: "m-1" }] } = {}) {
-  // select 순서: 1) users(providerUid), 2) memberships(userId+orgId)
+function makeDatabase({
+  org = [{ id: ORG_ID }],
+  user = [{ id: USER_ID }],
+  membership = [{ id: "m-1" }],
+}: {
+  org?: { id: string }[];
+  user?: { id: string }[];
+  membership?: { id: string }[];
+} = {}) {
+  // select 순서: 1) organizations(public_id→id), 2) users(providerUid), 3) memberships(userId+orgId)
   let n = 0;
   const select = vi.fn().mockImplementation(() => {
     n++;
-    const rows = n === 1 ? user : membership;
+    const rows = n === 1 ? org : n === 2 ? user : membership;
     return { from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(rows) }) };
   });
   const updateWhere = vi.fn().mockResolvedValue(undefined);

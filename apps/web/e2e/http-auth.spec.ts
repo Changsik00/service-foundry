@@ -61,7 +61,9 @@ test("로그인 후 GET /auth/me → apps/api가 Bearer 검증 후 사용자 정
 
   expect(response.status()).toBe(200);
   const body = await response.json();
-  expect(body.user.sub).toBeTruthy();
+  // 외부 식별자 = public_id(`usr_…`), 내부 sub 미노출 (ADR-0028, spec-26-03).
+  expect(body.user.id).toBeTruthy();
+  expect(body.user.sub).toBeUndefined();
   // provision 발화 증명 — null 이면 PROVISION_PORT 주입 단선 (provider-auth.module exports 참조)
   expect(body.user.orgId).toBeTruthy();
 });

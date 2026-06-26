@@ -33,6 +33,7 @@
     "@repo/backend-lifecycle": "workspace:*",
     "@repo/backend-storage": "workspace:*",
     "@supabase/supabase-js": "catalog:",
+    "@repo/backend-id": "workspace:*",
     "@repo/backend-logger": "workspace:*",
     "@repo/backend-notification": "workspace:*",
     "@repo/backend-observability": "workspace:*",

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import type { OrgRole } from "@repo/auth-contracts";
-import { memberships, users } from "@repo/backend-schema";
+import { memberships, organizations, users } from "@repo/backend-schema";
 import { type CursorPaginationParams, decodeCursor, encodeCursor } from "@repo/contracts";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { and, asc, eq, gt, ilike, or } from "drizzle-orm";
@@ -43,7 +43,17 @@ export class OrgMembersService {
     const { search, role, cursor, limit: rawLimit, orgId } = params;
     const limit = rawLimit ?? 20;
 
+    // cursor 는 user public_id 운반(내부 uuid 미노출, spec-26-08) — decode 시 내부 id 로 해석.
     const cursorData = cursor ? decodeCursor<{ userId: string }>(cursor) : null;
+    const cursorInternalId = cursorData?.userId
+      ? (
+          await this.database.db
+            .select({ id: users.id })
+            .from(users)
+            .where(eq(users.publicId, cursorData.userId))
+            .limit(1)
+        )[0]?.id
+      : undefined;
 
     const conditions = and(
       eq(memberships.orgId, orgId ?? NIL_ORG),
@@ -51,27 +61,32 @@ export class OrgMembersService {
         ? or(ilike(users.email, `%${search}%`), ilike(users.displayName, `%${search}%`))
         : undefined,
       role ? eq(memberships.role, role as "owner" | "admin" | "member") : undefined,
-      cursorData?.userId ? gt(users.id, cursorData.userId) : undefined,
+      cursorInternalId ? gt(users.id, cursorInternalId) : undefined,
     );
 
     const rows = await this.database.db
       .select({
-        userId: memberships.userId,
-        orgId: memberships.orgId,
+        // 외부 식별자 = public_id. internalUserId 는 커서 페이지네이션(내부 정렬)에만 사용.
+        userId: users.publicId,
+        internalUserId: users.id,
+        orgId: organizations.publicId,
         role: memberships.role,
         email: users.email,
         displayName: users.displayName,
       })
       .from(memberships)
       .innerJoin(users, eq(memberships.userId, users.id))
+      .innerJoin(organizations, eq(memberships.orgId, organizations.id))
       .where(conditions)
       .orderBy(asc(memberships.createdAt), asc(users.id))
       .limit(limit + 1);
 
     const hasMore = rows.length > limit;
-    const members = hasMore ? rows.slice(0, limit) : rows;
-    const lastMember = members[members.length - 1];
+    const sliced = hasMore ? rows.slice(0, limit) : rows;
+    const lastMember = sliced[sliced.length - 1];
+    // cursor = 마지막 멤버의 user public_id (내부 uuid 미노출, spec-26-08).
     const nextCursor = hasMore && lastMember ? encodeCursor({ userId: lastMember.userId }) : null;
+    const members = sliced.map(({ internalUserId: _omit, ...m }) => m);
 
     return { members: members as OrgMember[], nextCursor };
   }

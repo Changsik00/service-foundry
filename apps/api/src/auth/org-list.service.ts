@@ -33,7 +33,7 @@ export class OrgListService {
     return runWithSystemTenant(this.als, async () => {
       const rows = await this.database.db
         .select({
-          orgId: memberships.orgId,
+          orgId: organizations.publicId, // 외부 식별자 = org public_id (ADR-0028)
           name: organizations.name,
           role: memberships.role,
           isPersonal: organizations.isPersonal,
@@ -56,7 +56,7 @@ export class OrgListService {
     return runWithSystemTenant(this.als, async () => {
       const rows = await this.database.db
         .select({
-          orgId: memberships.orgId,
+          orgId: organizations.publicId, // 외부 식별자 = org public_id (ADR-0028)
           name: organizations.name,
           role: memberships.role,
           isPersonal: organizations.isPersonal,

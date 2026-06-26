@@ -11,6 +11,7 @@ const makeStore = (
   findOAuthAccount: vi.fn(async () => existingAccount),
   createUser: vi.fn(async (email: string) => ({
     id: "new-user-id",
+    publicId: "usr_NEWUSERIDXXXXXXXXXXXXXXXXX",
     email,
     passwordHash: null,
     role: "user" as const,
@@ -42,6 +43,7 @@ describe("findOrCreateOAuthUser", () => {
   it("기존 이메일 + 미연결 → oauth_accounts만 추가 (link, isNew = false)", async () => {
     const existing: OAuthUserRow = {
       id: "existing-id",
+      publicId: "usr_EXISTINGIDXXXXXXXXXXXXXXXX",
       email: "existing@example.com",
       passwordHash: "hash",
       role: "user",
@@ -65,6 +67,7 @@ describe("findOrCreateOAuthUser", () => {
   it("기존 연결 계정 → 기존 user 반환 (no-op, insert 없음)", async () => {
     const existing: OAuthUserRow = {
       id: "existing-id",
+      publicId: "usr_EXISTINGIDXXXXXXXXXXXXXXXX",
       email: "linked@example.com",
       passwordHash: "hash",
       role: "user",

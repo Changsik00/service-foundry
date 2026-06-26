@@ -1,5 +1,5 @@
 import { ForbiddenException, Inject, Injectable } from "@nestjs/common";
-import { memberships, users } from "@repo/backend-schema";
+import { memberships, organizations, users } from "@repo/backend-schema";
 import { runWithSystemTenant, TENANT_ALS, type TenantAls } from "@repo/backend-tenant";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { and, eq } from "drizzle-orm";
@@ -18,8 +18,16 @@ export class ProviderOrgSwitchService {
     @Inject(TENANT_ALS) private readonly als: TenantAls,
   ) {}
 
-  async switch(providerUid: string, newOrgId: string): Promise<{ orgId: string }> {
+  async switch(providerUid: string, newOrgPublicId: string): Promise<{ orgId: string }> {
     return runWithSystemTenant(this.als, async () => {
+      // 입력 org public_id → 내부 id 해석(없으면 fail-close, ADR-0029).
+      const [org] = await this.database.db
+        .select({ id: organizations.id })
+        .from(organizations)
+        .where(eq(organizations.publicId, newOrgPublicId));
+      if (!org) throw new ForbiddenException("org not found");
+      const newOrgId = org.id;
+
       const [user] = await this.database.db
         .select({ id: users.id })
         .from(users)
@@ -33,7 +41,8 @@ export class ProviderOrgSwitchService {
       if (!membership) throw new ForbiddenException("membership not found");
 
       await this.database.db.update(users).set({ orgId: newOrgId }).where(eq(users.id, user.id));
-      return { orgId: newOrgId };
+      // 응답은 외부 식별자(public_id) 그대로 echo.
+      return { orgId: newOrgPublicId };
     });
   }
 }

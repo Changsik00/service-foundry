@@ -11,7 +11,9 @@ function makePool(rows: Record<string, unknown>[] = []) {
     callCount++;
     return Promise.resolve({ rows: set });
   });
-  return { pool: { query: mockQuery }, mockQuery };
+  // org-scoped 연산은 database.db.execute(RLS tx) 경유(spec-26-04). verifyKey 만 pool 사용.
+  const mockExecute = vi.fn().mockResolvedValue({ rows });
+  return { pool: { query: mockQuery }, db: { execute: mockExecute }, mockQuery, mockExecute };
 }
 
 describe("ApiKeyService", () => {
@@ -20,23 +22,23 @@ describe("ApiKeyService", () => {
   describe("create", () => {
     it("평문 키(sk_ 접두사) + preview + id 반환", async () => {
       const insertedRow = {
-        id: "key-id-001",
-        org_id: "org-001",
+        public_id: "key_AAAAAAAAAAAAAAAAAAAAAA0001",
+        org_public_id: "org_AAAAAAAAAAAAAAAAAAAAAA0001",
         name: "CI Key",
-        key_hash: "hash",
         key_preview: "abcd1234",
         last_used_at: null,
         revoked_at: null,
         created_at: new Date(),
       };
-      const { pool } = makePool([insertedRow]);
-      service = new ApiKeyService({ pool } as never);
+      const { pool, db } = makePool([insertedRow]);
+      service = new ApiKeyService({ pool, db } as never);
 
       const result = await service.create("user-001", "org-001", "CI Key");
 
       expect(result.plain).toMatch(/^sk_[0-9a-f]{64}$/);
       expect(result.preview).toBe(result.plain.slice(3, 11));
-      expect(result.id).toBe("key-id-001");
+      expect(result.id).toBe("key_AAAAAAAAAAAAAAAAAAAAAA0001");
+      expect(result.orgId).toBe("org_AAAAAAAAAAAAAAAAAAAAAA0001");
       expect(result.name).toBe("CI Key");
     });
   });
@@ -63,8 +65,8 @@ describe("ApiKeyService", () => {
           revoked_at: null,
         },
       ];
-      const { pool } = makePool(rows);
-      service = new ApiKeyService({ pool } as never);
+      const { pool, db } = makePool(rows);
+      service = new ApiKeyService({ pool, db } as never);
 
       const result = await service.list("org-001");
       expect(result).toHaveLength(2);
@@ -74,16 +76,16 @@ describe("ApiKeyService", () => {
 
   describe("revoke", () => {
     it("id + orgId 매칭 시 취소", async () => {
-      const { pool, mockQuery } = makePool([{ id: "k1" }]);
-      service = new ApiKeyService({ pool } as never);
+      const { pool, db, mockExecute } = makePool([{ id: "k1" }]);
+      service = new ApiKeyService({ pool, db } as never);
 
       await service.revoke("k1", "org-001");
-      expect(mockQuery).toHaveBeenCalledOnce();
+      expect(mockExecute).toHaveBeenCalledOnce();
     });
 
     it("매칭 없음 → ForbiddenException", async () => {
-      const { pool } = makePool([]);
-      service = new ApiKeyService({ pool } as never);
+      const { pool, db } = makePool([]);
+      service = new ApiKeyService({ pool, db } as never);
 
       await expect(service.revoke("k-unknown", "org-001")).rejects.toBeInstanceOf(
         ForbiddenException,

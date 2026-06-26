@@ -13,6 +13,8 @@ export interface SessionStore {
   insert(row: SessionInsert): Promise<SessionRow>;
   findByHash(refreshTokenHash: string): Promise<SessionRow | null>;
   findById(id: string): Promise<SessionRow | null>;
+  /** 외부 식별자(public_id)로 조회 — DELETE /auth/sessions/:id(public_id) 경로 (spec-26-06). */
+  findByPublicId(publicId: string): Promise<SessionRow | null>;
   updateRevoked(id: string, revokedAt: Date): Promise<void>;
   bulkRevokeByFamily(refreshTokenFamily: string, revokedAt: Date): Promise<number>;
   revokeAllByUser(userId: string): Promise<void>;

@@ -88,13 +88,19 @@ export class OrgInviteService {
   async acceptForProvider(providerUid: string, token: string): Promise<{ orgId: string }> {
     const userId = await this.resolveInternalUserId(providerUid);
     const accepted = await this.acceptCore(userId, token);
-    await runWithSystemTenant(this.als, async () => {
+    const orgPublicId = await runWithSystemTenant(this.als, async () => {
       await this.database.db
         .update(users)
         .set({ orgId: accepted.orgId })
         .where(eq(users.id, userId));
+      // 외부 식별자(public_id) 로 응답 (ADR-0028).
+      const [org] = await this.database.db
+        .select({ publicId: organizations.publicId })
+        .from(organizations)
+        .where(eq(organizations.id, accepted.orgId));
+      return org?.publicId ?? accepted.orgId;
     });
-    return { orgId: accepted.orgId };
+    return { orgId: orgPublicId };
   }
 
   /** provider 모드 초대 — providerUid 를 내부 유저로 해석 후 위임 */

@@ -14,6 +14,7 @@ function createFakeStore(): SessionStore & { rows: Map<string, SessionRow> } {
     async insert(row: SessionInsert): Promise<SessionRow> {
       const inserted: SessionRow = {
         id: row.id ?? randomUUID(),
+        publicId: row.publicId ?? `ses_${randomUUID().replace(/-/g, "").slice(0, 26)}`,
         userId: row.userId,
         refreshTokenHash: row.refreshTokenHash,
         refreshTokenFamily: row.refreshTokenFamily,
@@ -55,6 +56,9 @@ function createFakeStore(): SessionStore & { rows: Map<string, SessionRow> } {
     },
     async findById(id: string): Promise<SessionRow | null> {
       return rows.get(id) ?? null;
+    },
+    async findByPublicId(publicId: string): Promise<SessionRow | null> {
+      return [...rows.values()].find((r) => r.publicId === publicId) ?? null;
     },
     async listActiveByUser(userId: string): Promise<SessionRow[]> {
       const now = new Date();
