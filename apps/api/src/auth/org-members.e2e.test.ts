@@ -36,7 +36,7 @@ describe("ProviderOrgController — GET /auth/org/members (spec-20-03)", () => {
         { provide: ProviderOrgSwitchService, useValue: { switch: vi.fn() } },
         {
           provide: OrgInviteService,
-          useValue: { inviteForProvider: vi.fn(), acceptForProvider: vi.fn() },
+          useValue: { invite: vi.fn(), acceptForProvider: vi.fn() },
         },
         {
           provide: AuthGuard,

@@ -183,3 +183,41 @@ describe("ProvisionService.provisionFromProvider — uid 재링크 (spec-x-org-a
     expect(mockInsert).not.toHaveBeenCalled(); // 유저/오그 신규 생성 없음
   });
 });
+
+describe("ProvisionService.resolveInternalUserId / getOrgMembership (spec-x-auth-sub-normalize)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  function makeSelectDb(rows: Record<string, unknown>[]) {
+    const limit = vi.fn().mockResolvedValue(rows);
+    const where = vi.fn().mockReturnValue({ limit });
+    const innerJoin = vi.fn().mockReturnValue({ where });
+    const from = vi.fn().mockReturnValue({ where, innerJoin });
+    const select = vi.fn().mockReturnValue({ from });
+    return { database: { db: { select } } };
+  }
+
+  it("resolveInternalUserId → providerUid 의 내부 users.id 반환", async () => {
+    const service = new ProvisionService(makeSelectDb([{ id: INTERNAL_UUID }]).database as never);
+    expect(await service.resolveInternalUserId("uid-1")).toBe(INTERNAL_UUID);
+  });
+
+  it("resolveInternalUserId → 미존재 시 null", async () => {
+    const service = new ProvisionService(makeSelectDb([]).database as never);
+    expect(await service.resolveInternalUserId("uid-x")).toBeNull();
+  });
+
+  it("getOrgMembership → 멤버면 {orgRole, internalUserId}", async () => {
+    const service = new ProvisionService(
+      makeSelectDb([{ role: "admin", userId: INTERNAL_UUID }]).database as never,
+    );
+    expect(await service.getOrgMembership("uid-1", ORG_ID)).toEqual({
+      orgRole: "admin",
+      internalUserId: INTERNAL_UUID,
+    });
+  });
+
+  it("getOrgMembership → 비멤버면 null", async () => {
+    const service = new ProvisionService(makeSelectDb([]).database as never);
+    expect(await service.getOrgMembership("uid-1", ORG_ID)).toBeNull();
+  });
+});
