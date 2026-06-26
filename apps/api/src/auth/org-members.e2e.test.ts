@@ -32,7 +32,7 @@ describe("ProviderOrgController — GET /auth/org/members (spec-20-03)", () => {
       controllers: [ProviderOrgController],
       providers: [
         { provide: OrgMembersService, useValue: { list: listMock } },
-        { provide: OrgListService, useValue: { listForProviderUid: vi.fn() } },
+        { provide: OrgListService, useValue: { listForUserId: vi.fn() } },
         { provide: ProviderOrgSwitchService, useValue: { switch: vi.fn() } },
         {
           provide: OrgInviteService,

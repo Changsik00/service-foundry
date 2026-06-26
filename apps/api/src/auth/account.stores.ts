@@ -18,8 +18,6 @@ export interface AccountUserProfile {
 
 export interface AccountUserStore {
   findById(id: string): Promise<AccountUserProfile | null>;
-  /** provider 모드(sub=providerUid) /me 해석용 — 내부 id 로 못 찾을 때 fallback. */
-  findByProviderUid(providerUid: string): Promise<AccountUserProfile | null>;
   findByEmail(email: string): Promise<{ id: string } | null>;
   /** 내부 org id → org public_id (외부 노출용, ADR-0028). 미존재 시 null. */
   findOrgPublicId(orgId: string): Promise<string | null>;
@@ -54,23 +52,6 @@ export function createAccountUserStore(db: AnyDb): AccountUserStore {
         })
         .from(users)
         .where(eq(users.id, id))
-        .limit(1);
-      return rows[0] ?? null;
-    },
-
-    async findByProviderUid(providerUid) {
-      const rows = await typedDb
-        .select({
-          id: users.id,
-          publicId: users.publicId,
-          email: users.email,
-          passwordHash: users.passwordHash,
-          displayName: users.displayName,
-          providerUid: users.providerUid,
-          avatarUrl: users.avatarUrl,
-        })
-        .from(users)
-        .where(eq(users.providerUid, providerUid))
         .limit(1);
       return rows[0] ?? null;
     },

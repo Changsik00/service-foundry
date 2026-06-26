@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import type { OrgRole } from "@repo/auth-contracts";
-import { memberships, organizations, users } from "@repo/backend-schema";
+import { memberships, organizations } from "@repo/backend-schema";
 import { runWithSystemTenant, TENANT_ALS, type TenantAls } from "@repo/backend-tenant";
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { asc, eq } from "drizzle-orm";
@@ -20,7 +20,7 @@ export interface OrgSummary {
  *
  * 교차-org 조회: memberships 는 org-RLS 스코프라 active org 컨텍스트로는 내 다른 조직이
  * 가려진다 → 시스템 컨텍스트로 실행 (invite accept 와 같은 정당한 cross-org 패턴, ADR-0026).
- * provider 모드의 user.sub = provider uid — users.providerUid 로 내부 유저를 해석한다.
+ * sub 가 모드 무관 내부 users.id 로 정규화됨(spec-x-auth-sub-normalize) → 단일 listForUserId.
  */
 @Injectable()
 export class OrgListService {
@@ -28,25 +28,6 @@ export class OrgListService {
     @Inject(DATABASE) private readonly database: Database<Record<string, unknown>>,
     @Inject(TENANT_ALS) private readonly als: TenantAls,
   ) {}
-
-  async listForProviderUid(providerUid: string): Promise<OrgSummary[]> {
-    return runWithSystemTenant(this.als, async () => {
-      const rows = await this.database.db
-        .select({
-          orgId: organizations.publicId, // 외부 식별자 = org public_id (ADR-0028)
-          name: organizations.name,
-          role: memberships.role,
-          isPersonal: organizations.isPersonal,
-        })
-        .from(memberships)
-        .innerJoin(organizations, eq(memberships.orgId, organizations.id))
-        .innerJoin(users, eq(memberships.userId, users.id))
-        .where(eq(users.providerUid, providerUid))
-        .orderBy(asc(memberships.createdAt))
-        .limit(ORG_LIST_MAX);
-      return rows as OrgSummary[];
-    });
-  }
 
   /**
    * native 모드용 — user.sub = 내부 userId 이므로 `memberships.userId` 로 직접 스코프.

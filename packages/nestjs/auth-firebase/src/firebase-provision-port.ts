@@ -8,7 +8,12 @@ export interface FirebaseProvisionPort {
   ): Promise<{ orgId: string; orgRole: string; internalUserId: string }>;
   /**
    * providerUid(Firebase UID) 가 orgId 의 멤버인지 확인 (active_org 클레임 게이트, spec-26-04).
-   * 멤버면 orgRole, 아니면 null → verifier 가 fail-close(orgId=null) 한다.
+   * 멤버면 {orgRole, internalUserId}, 아니면 null → verifier 가 fail-close(orgId=null) 한다.
    */
-  getOrgMembership(providerUid: string, orgId: string): Promise<{ orgRole: string } | null>;
+  getOrgMembership(
+    providerUid: string,
+    orgId: string,
+  ): Promise<{ orgRole: string; internalUserId: string } | null>;
+  /** providerUid → 내부 users.id (순수 조회, sub 정규화용). 미존재 시 null. */
+  resolveInternalUserId(providerUid: string): Promise<string | null>;
 }

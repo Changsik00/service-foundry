@@ -71,6 +71,7 @@ describe("FirebaseVerifier", () => {
         internalUserId: "internal-uuid-789",
       }),
       getOrgMembership: vi.fn().mockResolvedValue(null),
+      resolveInternalUserId: vi.fn().mockResolvedValue(null),
     };
 
     const verifier = makeVerifier(mockProvision);
@@ -113,12 +114,14 @@ describe("FirebaseVerifier", () => {
     });
     const mockProvision: FirebaseProvisionPort = {
       provisionFromProvider: vi.fn(),
-      getOrgMembership: vi.fn().mockResolvedValue({ orgRole: "admin" }),
+      getOrgMembership: vi.fn().mockResolvedValue({ orgRole: "admin", internalUserId: "int-fb" }),
+      resolveInternalUserId: vi.fn().mockResolvedValue(null),
     };
     const result = await makeVerifier(mockProvision).verify("valid-token");
     expect(mockProvision.getOrgMembership).toHaveBeenCalledWith("fb-member", "org-member");
     expect(result.orgId).toBe("org-member");
     expect(result.orgRole).toBe("admin");
+    expect(result.sub).toBe("int-fb"); // sub 정규화(spec-x-auth-sub-normalize)
     expect(mockProvision.provisionFromProvider).not.toHaveBeenCalled();
   });
 
@@ -132,10 +135,12 @@ describe("FirebaseVerifier", () => {
     const mockProvision: FirebaseProvisionPort = {
       provisionFromProvider: vi.fn(),
       getOrgMembership: vi.fn().mockResolvedValue(null),
+      resolveInternalUserId: vi.fn().mockResolvedValue("int-fb-x"),
     };
     const result = await makeVerifier(mockProvision).verify("valid-token");
     expect(result.orgId).toBeNull();
     expect(result.orgRole).toBeNull();
+    expect(result.sub).toBe("int-fb-x"); // 비멤버도 sub 정규화
   });
 
   it("무효 token (verifyIdToken throw) → UnauthorizedException", async () => {

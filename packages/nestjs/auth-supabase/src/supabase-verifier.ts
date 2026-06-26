@@ -43,7 +43,7 @@ export class SupabaseVerifier implements AccessTokenVerifier {
       throw new UnauthorizedException("invalid supabase token");
     }
 
-    const sub = payload.sub ?? "";
+    const providerUid = payload.sub ?? "";
     const email = (payload.email as string | undefined) ?? "";
     // Supabase role 클레임 ("authenticated" | "service_role") → 내부 Role 매핑
     const supabaseRole = (payload.role as string | undefined) ?? "";
@@ -55,23 +55,27 @@ export class SupabaseVerifier implements AccessTokenVerifier {
       (appMeta?.[ACTIVE_ORG_CLAIM] as string | undefined) ??
       null;
     let orgRole: string | null = null;
+    // sub 는 모드 무관 내부 users.id 로 정규화(spec-x-auth-sub-normalize). provision 미배선 시 providerUid 폴백.
+    let sub = providerUid;
 
     if (!orgId && this.provision) {
-      // active_org 없음 → 개인 org 프로비저닝(멤버 보장).
-      const provisioned = await this.provision.provisionFromProvider(sub, email);
+      // active_org 없음 → 개인 org 프로비저닝(멤버 보장) + 내부 id 획득.
+      const provisioned = await this.provision.provisionFromProvider(providerUid, email);
       orgId = provisioned.orgId;
       orgRole = provisioned.orgRole ?? null;
-    } else if (orgId) {
+      sub = provisioned.internalUserId;
+    } else if (orgId && this.provision) {
       // active_org 클레임은 멤버십 검증 후에만 신뢰 — 비멤버면 fail-close(spec-26-04 A).
-      // 검증 수단(provision 포트)이 없으면 클레임을 신뢰할 수 없으므로 역시 fail-close
-      // (포트 미배선 다운스트림에서 게이트가 silent fail-OPEN 되는 것 방지).
-      const membership = this.provision ? await this.provision.getOrgMembership(sub, orgId) : null;
+      const membership = await this.provision.getOrgMembership(providerUid, orgId);
       if (membership) {
         orgRole = membership.orgRole;
+        sub = membership.internalUserId;
       } else {
         orgId = null;
+        sub = (await this.provision.resolveInternalUserId(providerUid)) ?? providerUid;
       }
     }
+    // provision 부재 + orgId claim: sub 는 providerUid 유지(해석 수단 없음 — 운영선 provision 항상 배선).
 
     return { sub, role, orgId, orgRole };
   }

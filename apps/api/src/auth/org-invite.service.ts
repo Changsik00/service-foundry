@@ -85,8 +85,12 @@ export class OrgInviteService {
   }
 
   /** provider 모드 수락 — 멤버십 생성 + active org 전환(users.orgId, ADR-0026). 토큰 불변 */
-  async acceptForProvider(providerUid: string, token: string): Promise<{ orgId: string }> {
-    const userId = await this.resolveInternalUserId(providerUid);
+  /**
+   * provider 모드 초대 수락 — 멤버십 생성 + users.orgId UPDATE, **토큰 재발급 없음**(ADR-0026).
+   * sub 정규화로 userId 는 내부 id (spec-x-auth-sub-normalize) — providerUid resolve 불필요.
+   * native `accept()` 와의 유일 차이는 토큰 모델(provider 는 IdP 토큰이라 재발급 불가).
+   */
+  async acceptForProvider(userId: string, token: string): Promise<{ orgId: string }> {
     const accepted = await this.acceptCore(userId, token);
     const orgPublicId = await runWithSystemTenant(this.als, async () => {
       await this.database.db
@@ -101,28 +105,6 @@ export class OrgInviteService {
       return org?.publicId ?? accepted.orgId;
     });
     return { orgId: orgPublicId };
-  }
-
-  /** provider 모드 초대 — providerUid 를 내부 유저로 해석 후 위임 */
-  async inviteForProvider(
-    providerUid: string,
-    orgId: string,
-    email: string,
-    role: "admin" | "member",
-  ): Promise<void> {
-    const userId = await this.resolveInternalUserId(providerUid);
-    return this.invite(userId, orgId, email, role);
-  }
-
-  private async resolveInternalUserId(providerUid: string): Promise<string> {
-    return runWithSystemTenant(this.als, async () => {
-      const [user] = await this.database.db
-        .select({ id: users.id })
-        .from(users)
-        .where(eq(users.providerUid, providerUid));
-      if (!user) throw new ForbiddenException("user not found");
-      return user.id;
-    });
   }
 
   /**

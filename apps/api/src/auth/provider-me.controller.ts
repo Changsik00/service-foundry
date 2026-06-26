@@ -20,11 +20,9 @@ export class ProviderMeController {
       avatarUrl: string | null;
     };
   }> {
-    // sub 의미가 모드별로 다름(native=내부 id, supabase=providerUid) → 둘 다 시도해 내부 user 해석.
+    // sub 는 내부 users.id 로 정규화됨(spec-x-auth-sub-normalize) → findById 단일.
     // 응답엔 내부 id 미노출 — 외부 식별자는 public_id (ADR-0028).
-    const profile =
-      (await this.userStore.findById(user.sub)) ??
-      (await this.userStore.findByProviderUid(user.sub));
+    const profile = await this.userStore.findById(user.sub);
     const orgPublicId = user.orgId ? await this.userStore.findOrgPublicId(user.orgId) : null;
     return {
       user: {

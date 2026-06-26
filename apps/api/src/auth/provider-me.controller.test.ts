@@ -12,7 +12,6 @@ const user: AuthenticatedUser = {
 function makeStore() {
   return {
     findById: vi.fn(),
-    findByProviderUid: vi.fn(),
     findOrgPublicId: vi.fn().mockResolvedValue("org_PUBLICAAAAAAAAAAAAAAAA01"),
   };
 }
@@ -48,22 +47,8 @@ describe("ProviderMeController", () => {
     expect((result.user as Record<string, unknown>).sub).toBeUndefined();
   });
 
-  it("me → findById 실패 시 providerUid 로 fallback 해석", async () => {
-    store.findById.mockResolvedValueOnce(null);
-    store.findByProviderUid.mockResolvedValueOnce({
-      publicId: "usr_ZZZZZZZZZZZZZZZZZZZZZZ9999",
-      email: "p@example.com",
-      displayName: null,
-      avatarUrl: null,
-    });
-    const result = await controller.me(user);
-    expect(store.findByProviderUid).toHaveBeenCalledWith("user-001");
-    expect(result.user.id).toBe("usr_ZZZZZZZZZZZZZZZZZZZZZZ9999");
-  });
-
   it("me → 프로필 없으면 id/displayName/avatarUrl null 폴백", async () => {
     store.findById.mockResolvedValueOnce(null);
-    store.findByProviderUid.mockResolvedValueOnce(null);
     const result = await controller.me(user);
     expect(result.user.id).toBeNull();
     expect(result.user.displayName).toBeNull();
