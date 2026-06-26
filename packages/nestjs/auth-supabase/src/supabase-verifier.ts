@@ -74,8 +74,10 @@ export class SupabaseVerifier implements AccessTokenVerifier {
         orgId = null;
         sub = (await this.provision.resolveInternalUserId(providerUid)) ?? providerUid;
       }
+    } else if (orgId) {
+      // provision 미배선 + claim → 검증 불가, fail-close (26-04 S3: silent fail-OPEN 방지).
+      orgId = null;
     }
-    // provision 부재 + orgId claim: sub 는 providerUid 유지(해석 수단 없음 — 운영선 provision 항상 배선).
 
     return { sub, role, orgId, orgRole };
   }
