@@ -12,7 +12,11 @@ export interface IProvisionService {
     uid: string,
     email: string,
   ): Promise<{ orgId: string; orgRole: string; internalUserId: string }>;
-  getOrgMembership(providerUid: string, orgId: string): Promise<{ orgRole: string } | null>;
+  getOrgMembership(
+    providerUid: string,
+    orgId: string,
+  ): Promise<{ orgRole: string; internalUserId: string } | null>;
+  resolveInternalUserId(providerUid: string): Promise<string | null>;
 }
 
 @Injectable()
@@ -89,15 +93,28 @@ export class ProvisionService implements IProvisionService {
    * providerUid 가 orgId 의 멤버인지 확인 (active_org 클레임 게이트, spec-26-04 A).
    * verifier 단계(인터셉터 이전)라 RLS 컨텍스트가 없어 permissive — 시스템 레벨 멤버십 조회로 동작.
    */
-  async getOrgMembership(providerUid: string, orgId: string): Promise<{ orgRole: string } | null> {
+  async getOrgMembership(
+    providerUid: string,
+    orgId: string,
+  ): Promise<{ orgRole: string; internalUserId: string } | null> {
     const rows = await this.database.db
-      .select({ role: memberships.role })
+      .select({ role: memberships.role, userId: users.id })
       .from(memberships)
       .innerJoin(users, eq(memberships.userId, users.id))
       .where(and(eq(users.providerUid, providerUid), eq(memberships.orgId, orgId)))
       .limit(1);
     const row = rows[0];
-    return row ? { orgRole: row.role } : null;
+    return row ? { orgRole: row.role, internalUserId: row.userId } : null;
+  }
+
+  /** providerUid → 내부 users.id (sub 정규화용, spec-x-auth-sub-normalize). 미존재 시 null. */
+  async resolveInternalUserId(providerUid: string): Promise<string | null> {
+    const rows = await this.database.db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.providerUid, providerUid))
+      .limit(1);
+    return rows[0]?.id ?? null;
   }
 
   async provisionUser(userId: string, email: string): Promise<{ orgId: string; orgRole: string }> {

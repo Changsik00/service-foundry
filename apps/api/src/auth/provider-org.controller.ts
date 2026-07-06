@@ -32,7 +32,8 @@ export class ProviderOrgController {
   @Get("orgs")
   @UseGuards(AuthGuard)
   async orgs(@CurrentUser() user: AuthenticatedUser): Promise<{ orgs: OrgSummary[] }> {
-    return { orgs: await this.orgList.listForProviderUid(user.sub) };
+    // sub 는 내부 users.id 로 정규화됨(spec-x-auth-sub-normalize) → native 와 동일 메서드.
+    return { orgs: await this.orgList.listForUserId(user.sub) };
   }
 
   /** active org 전환 — users.orgId UPDATE, 토큰 불변 (ADR-0026). 클라는 쿼리 invalidate 만 */
@@ -75,7 +76,8 @@ export class ProviderOrgController {
   ): Promise<{ status: string }> {
     const { email, role } = zodPipe(OrgInviteInput).transform(body);
     if (!user.orgId) throw new BadRequestException("no active org");
-    await this.orgInvite.inviteForProvider(user.sub, user.orgId, email, role);
+    // sub=내부 id → native invite 와 동일(providerUid resolve 불필요).
+    await this.orgInvite.invite(user.sub, user.orgId, email, role);
     return { status: "ok" };
   }
 

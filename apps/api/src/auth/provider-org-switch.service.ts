@@ -4,6 +4,8 @@ import { runWithSystemTenant, TENANT_ALS, type TenantAls } from "@repo/backend-t
 import { DATABASE, type Database } from "@repo/nestjs-database";
 import { and, eq } from "drizzle-orm";
 
+// provider 모드 org 전환. sub 가 내부 users.id 로 정규화됨(spec-x-auth-sub-normalize) → userId 직접 사용.
+
 /**
  * provider 모드 org 전환 — `users.orgId` UPDATE (ADR-0026).
  *
@@ -18,7 +20,7 @@ export class ProviderOrgSwitchService {
     @Inject(TENANT_ALS) private readonly als: TenantAls,
   ) {}
 
-  async switch(providerUid: string, newOrgPublicId: string): Promise<{ orgId: string }> {
+  async switch(userId: string, newOrgPublicId: string): Promise<{ orgId: string }> {
     return runWithSystemTenant(this.als, async () => {
       // 입력 org public_id → 내부 id 해석(없으면 fail-close, ADR-0029).
       const [org] = await this.database.db
@@ -28,19 +30,13 @@ export class ProviderOrgSwitchService {
       if (!org) throw new ForbiddenException("org not found");
       const newOrgId = org.id;
 
-      const [user] = await this.database.db
-        .select({ id: users.id })
-        .from(users)
-        .where(eq(users.providerUid, providerUid));
-      if (!user) throw new ForbiddenException("user not found");
-
       const [membership] = await this.database.db
         .select({ id: memberships.id })
         .from(memberships)
-        .where(and(eq(memberships.userId, user.id), eq(memberships.orgId, newOrgId)));
+        .where(and(eq(memberships.userId, userId), eq(memberships.orgId, newOrgId)));
       if (!membership) throw new ForbiddenException("membership not found");
 
-      await this.database.db.update(users).set({ orgId: newOrgId }).where(eq(users.id, user.id));
+      await this.database.db.update(users).set({ orgId: newOrgId }).where(eq(users.id, userId));
       // 응답은 외부 식별자(public_id) 그대로 echo.
       return { orgId: newOrgPublicId };
     });

@@ -12,8 +12,9 @@ const user: AuthenticatedUser = {
   orgRole: "owner",
 };
 
+// sub 정규화(spec-x-auth-sub-normalize) → provider 컨트롤러가 내부-id 메서드(listForUserId/invite) 호출.
 function makeList() {
-  return { listForProviderUid: vi.fn().mockResolvedValue([{ id: "org-001", name: "Acme" }]) };
+  return { listForUserId: vi.fn().mockResolvedValue([{ id: "org-001", name: "Acme" }]) };
 }
 function makeSwitch() {
   return { switch: vi.fn().mockResolvedValue({ orgId: ORG_ID }) };
@@ -23,7 +24,7 @@ function makeMembers() {
 }
 function makeInvite() {
   return {
-    inviteForProvider: vi.fn().mockResolvedValue(undefined),
+    invite: vi.fn().mockResolvedValue(undefined),
     acceptForProvider: vi.fn().mockResolvedValue({ orgId: ORG_ID }),
   };
 }
@@ -48,9 +49,9 @@ describe("ProviderOrgController", () => {
     );
   });
 
-  it("orgs → listForProviderUid(sub) 위임", async () => {
+  it("orgs → listForUserId(sub=내부 id) 위임", async () => {
     const result = await controller.orgs(user);
-    expect(orgList.listForProviderUid).toHaveBeenCalledWith("user-001");
+    expect(orgList.listForUserId).toHaveBeenCalledWith("user-001");
     expect(result).toEqual({ orgs: [{ id: "org-001", name: "Acme" }] });
   });
 
@@ -71,9 +72,9 @@ describe("ProviderOrgController", () => {
     });
   });
 
-  it("invite → inviteForProvider(sub, orgId, email, role) 위임", async () => {
+  it("invite → invite(sub, orgId, email, role) 위임", async () => {
     const result = await controller.invite({ email: "invitee@example.com", role: "admin" }, user);
-    expect(orgInvite.inviteForProvider).toHaveBeenCalledWith(
+    expect(orgInvite.invite).toHaveBeenCalledWith(
       "user-001",
       "org-001",
       "invitee@example.com",
@@ -87,7 +88,7 @@ describe("ProviderOrgController", () => {
     await expect(
       controller.invite({ email: "invitee@example.com", role: "admin" }, noOrg),
     ).rejects.toBeInstanceOf(BadRequestException);
-    expect(orgInvite.inviteForProvider).not.toHaveBeenCalled();
+    expect(orgInvite.invite).not.toHaveBeenCalled();
   });
 
   it("inviteAccept → acceptForProvider(sub, token) 위임", async () => {

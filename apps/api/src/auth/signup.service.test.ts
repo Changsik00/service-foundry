@@ -76,6 +76,7 @@ function makeProvisionService(): IProvisionService {
       .fn()
       .mockResolvedValue({ orgId: MOCK_ORG_ID, orgRole: "owner", internalUserId: "internal-uuid" }),
     getOrgMembership: vi.fn().mockResolvedValue(null),
+    resolveInternalUserId: vi.fn().mockResolvedValue(null),
   };
 }
 
