@@ -21,6 +21,8 @@
 > 아이디어·보류 항목 보관소. 실행 불가. 관련 항목이 쌓이면 Phase로, 단발이면 spec-x로 승격.
 > 이 섹션은 sdd가 건드리지 않습니다. 자유롭게 편집하세요.
 
+- [ ] **e2e 스위트 전체 skip 중** (2026-07-06) — Supabase 테스트 프로젝트(`cqhairjnsugkdyephzje`)가 장기 미사용으로 pause 되어 `apps/web/e2e/{auth,http-auth,org}.spec.ts` 전체를 `test.describe.skip` 처리(CI e2e job 실질 무력화). 원인: `createTestUser`(fixtures.ts)가 Supabase Admin API 의존 — 이 3개 파일이 e2e 폴더 전부. Supabase 대시보드에서 프로젝트 unpause 후 skip 제거 필요.
+
 #### 🔁 phase-26 회고 이월 (2026-06-25, ID 체계/public_id)
 
 - [ ] **sub 다형성 제거 / 경계 정규화**: provider verifier 가 providerUid→내부 id 해석해 `AuthenticatedUser.sub` 를 모드 무관 내부 id 로 통일, `listForProviderUid`/`listForUserId` 단일화 (ADR-0028 §4 후속). 성공기준 #3 의 미시행 부분.
