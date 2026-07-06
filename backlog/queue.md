@@ -196,6 +196,7 @@
 - [x] spec-x-web-drop-native-session-ui (완료)
 - [x] spec-x-native-list-orgs (완료)
 - **phase-26** — id-scheme-public-id — completed 2026-06-26
+- [x] spec-x-auth-sub-normalize (완료)
 <!-- sdd:done:end -->
 
 ---
