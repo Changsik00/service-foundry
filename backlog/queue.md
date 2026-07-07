@@ -8,12 +8,13 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
+- **phase-17** — 멀티테넌시 Foundation + 이메일 어댑터 (Spine) — 8 spec — 다음: spec-x-docs-refresh
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
+- [ ] spec-x-docs-refresh — docs-refresh
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox

@@ -55,13 +55,13 @@
 
 ### 4-1. 구현
 
-- [ ] `bash .harness-kit/bin/sdd archive --dry-run` 으로 대상 확인
-- [ ] `bash .harness-kit/bin/sdd archive` 실행 (완료 spec 33개 + phase-23~26 backlog 이동)
+- [x] `bash .harness-kit/bin/sdd archive --dry-run` 으로 대상 확인
+- [x] `bash .harness-kit/bin/sdd archive` 실행 (spec 30개 + spec-x 9개 + phase-23~26 backlog 5개 → `archive/`)
 
 ### 4-2. 검증
 
-- [ ] `bash .harness-kit/bin/sdd status` 재실행 — archive 진단 문구 소거/감소 확인
-- [ ] Commit: `chore(spec-x-docs-refresh): sdd archive 실행 — 완료 spec/phase 정리`
+- [x] `bash .harness-kit/bin/sdd status` 재실행 — archive 진단 문구 소거 확인 (완료)
+- [x] Commit: `chore(spec-x-docs-refresh): sdd archive 실행 — 완료 spec/phase 정리`
 
 ---
 
