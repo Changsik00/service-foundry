@@ -69,14 +69,14 @@
 
 ### 🚦 Pre-Push Quality Gate
 
-- [ ] 문서 전용 변경 — 코드 테스트 대상 없음 (§9.1 예외 적용)
-- [ ] `pnpm exec biome check README.md docs/index.md` (markdown 대상 아니면 skip 가능 — 확인 후 기재)
+- [x] 문서 전용 변경 — 코드 테스트 대상 없음 (§9.1 예외 적용)
+- [x] `pnpm exec biome check README.md docs/index.md` → "No files were processed"(biome.json에서 markdown 미대상) — 확인 완료, skip
 
 ### 📝 산출물 작성
 
-- [ ] **walkthrough.md 작성**
-- [ ] **pr_description.md 작성**
-- [ ] Commit: `docs(spec-x-docs-refresh): ship walkthrough and pr description`
+- [x] **walkthrough.md 작성**
+- [x] **pr_description.md 작성**
+- [x] Commit: `docs(spec-x-docs-refresh): ship walkthrough and pr description`
 
 ### 🚀 Push & PR
 
