@@ -80,5 +80,5 @@
 
 ### 🚀 Push & PR
 
-- [ ] `git push -u origin spec-x-docs-refresh`
-- [ ] PR 생성 (`gh pr create` 또는 `/hk-pr-gh`)
+- [x] `git push -u origin spec-x-docs-refresh`
+- [x] PR 생성 (`gh pr create` 또는 `/hk-pr-gh`) → #197
