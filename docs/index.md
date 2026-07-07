@@ -39,7 +39,7 @@ tags: [service-foundry, index, meta]
 
 ## Reference — 패키지
 
-### backend (core, 23)
+### backend (core, 26)
 - [[reference/packages/backend-auth-session|@repo/backend-auth-session]] — refresh 토큰 rotation/family reuse
 - [[reference/packages/backend-auth-jwt|@repo/backend-auth-jwt]] — EdDSA 토큰 + JWKS
 - [[reference/packages/backend-auth-password|@repo/backend-auth-password]] — argon2id 해싱
@@ -63,8 +63,11 @@ tags: [service-foundry, index, meta]
 - [[reference/packages/backend-storage|@repo/backend-storage]] — Storage 포트
 - [[reference/packages/backend-rate-limit|@repo/backend-rate-limit]] — 범용 RateLimiter 포트
 - [[reference/packages/backend-secrets|@repo/backend-secrets]] — SecretsProvider 포트
+- [[reference/packages/backend-id|@repo/backend-id]] — uuidv7 + public_id(prefix) 외부 식별자 유틸
+- [[reference/packages/backend-schema|@repo/backend-schema]] — Drizzle 도메인 스키마 SoT (org/membership/invitation 등)
+- [[reference/packages/backend-tenant|@repo/backend-tenant]] — RLS tenant 격리 primitives (AsyncLocalStorage → DB 세션변수)
 
-### nestjs (adapter, 8)
+### nestjs (adapter, 9)
 - [[reference/packages/nestjs-auth|@repo/nestjs-auth]] — AuthGuard/RolesGuard + 데코레이터
 - [[reference/packages/nestjs-auth-firebase|@repo/nestjs-auth-firebase]] — Firebase 토큰 검증 모듈 (AUTH_MODE=firebase)
 - [[reference/packages/nestjs-auth-supabase|@repo/nestjs-auth-supabase]] — Supabase 토큰 검증 모듈 (AUTH_MODE=supabase)
@@ -73,6 +76,7 @@ tags: [service-foundry, index, meta]
 - [[reference/packages/nestjs-logger|@repo/nestjs-logger]] — LoggerModule + interceptor
 - [[reference/packages/nestjs-security|@repo/nestjs-security]] — helmet/cors/throttler
 - [[reference/packages/nestjs-settings|@repo/nestjs-settings]] — SettingsModule
+- [[reference/packages/nestjs-tenant|@repo/nestjs-tenant]] — TenantContextInterceptor (backend-tenant NestJS 어댑터)
 
 ### frontend (8)
 - [[reference/packages/frontend-auth-react|@repo/frontend-auth-react]] — AuthProvider/useAuth + MFA·Passkey 훅

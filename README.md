@@ -24,25 +24,25 @@
 
 ## 무엇이 들어있나
 
-**앱 4개**
+**앱 3개**
 
 | app | 역할 | 스택 |
 |---|---|---|
 | [`apps/api`](./apps/api) | 인증/도메인 REST 백엔드 | NestJS 11 + Drizzle + PostgreSQL |
-| [`apps/web`](./apps/web) | SSR 웹 (메인) | Next.js 16 + React 19 |
+| [`apps/web`](./apps/web) | SSR 웹 (메인 콘솔) | Next.js 16 + React 19 |
 | [`apps/worker`](./apps/worker) | 비동기 작업 소비자 | BullMQ consumer |
 
 **패키지** (`packages/<category>/<pkg>`, import 는 `@repo/*` flat)
 
 | 카테고리 | 수 | 내용 |
 |---|---|---|
-| `backend/` | 22 | auth-* (session·jwt·oauth·mfa·passkey·password·rate-limit·audit) + database·queue·cache·outbox·idempotency·lifecycle·notification·observability·secrets·storage·… |
-| `nestjs/` | 6 | backend core 를 감싼 NestJS `@Module` 어댑터 |
-| `frontend/` | 7 | ui · http-client · auth-react · auth-firebase · auth-supabase · auth-testing |
+| `backend/` | 26 | auth-* (session·jwt·oauth·mfa·passkey·password·rate-limit·audit) + authz·tenant·schema·database·queue·cache·outbox·idempotency·lifecycle·notification·observability·secrets·storage·… |
+| `nestjs/` | 9 | backend core 를 감싼 NestJS `@Module` 어댑터 (tenant 포함) |
+| `frontend/` | 8 | ui · http-client · auth-react · auth-firebase · auth-supabase · auth-testing |
 | `shared/` | 6 | errors · utils(Result) · validation · contracts · auth-contracts · factory |
 | `config/` | 7 | typescript · vitest · biome · tsup · tailwind · depcruise · knip preset |
 
-**핵심 역량**: 인증 파운데이션(세션 rotation·JWT·OAuth·MFA·Passkey) · 관측성(OTel·Prometheus·Grafana) · 백엔드 포트(Queue·Cache·Outbox·Idempotency·Lifecycle) · CI/CD(검증 게이트 + changesets 릴리스 + GHCR docker).
+**핵심 역량**: 인증 파운데이션(세션 rotation·JWT·OAuth·MFA·Passkey) · 멀티테넌시(조직/멤버십/초대 + Postgres RLS 격리) · RBAC/ABAC 인가 · 데이터 UX(업로드·검색·페이지네이션·CSV export) · 어드민+빌링(감사로그·피처플래그·플랜) · public_id 외부 식별자 체계 · 관측성(OTel·Prometheus·Grafana) · 백엔드 포트(Queue·Cache·Outbox·Idempotency·Lifecycle) · CI/CD(검증 게이트 + changesets 릴리스 + GHCR docker + k8s 배포 예제).
 
 ---
 
