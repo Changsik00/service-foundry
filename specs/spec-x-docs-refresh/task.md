@@ -39,14 +39,15 @@
 
 ### 3-1. 구현
 
-- [ ] `docs/index.md` backend 섹션에 `@repo/backend-tenant`, `@repo/backend-schema` 1줄 항목 추가
-- [ ] `docs/index.md` nestjs 섹션에 `@repo/nestjs-tenant` 1줄 항목 추가
-- [ ] backend/nestjs 카테고리 개수 표기(`core, 23` 등) 실측치로 정정
+- [x] `docs/index.md` backend 섹션에 `@repo/backend-tenant`, `@repo/backend-schema` 1줄 항목 추가
+- [x] `docs/index.md` nestjs 섹션에 `@repo/nestjs-tenant` 1줄 항목 추가
+- [x] (범위 확장 발견) `@repo/backend-id` 도 누락 확인 — 동일하게 1줄 항목 추가 (uuidv7/public_id 유틸, spec.md 요구사항 4 취지에 포함)
+- [x] backend/nestjs 카테고리 개수 표기(`core, 23`→26 / `adapter, 8`→9) 실측치로 정정
 
 ### 3-2. 검증
 
-- [ ] `grep -c "backend-tenant\|backend-schema\|nestjs-tenant" docs/index.md` → 3 이상
-- [ ] Commit: `docs(spec-x-docs-refresh): docs/index.md 누락 패키지 reference 추가`
+- [x] `grep -c "backend-tenant\|backend-schema\|backend-id\|nestjs-tenant" docs/index.md` → 4 이상
+- [x] Commit: `docs(spec-x-docs-refresh): docs/index.md 누락 패키지 reference 추가`
 
 ---
 
