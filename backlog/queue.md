@@ -14,7 +14,6 @@
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
-- [ ] spec-x-docs-refresh — docs-refresh
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -200,6 +199,7 @@
 - [x] spec-x-native-list-orgs (완료)
 - **phase-26** — id-scheme-public-id — completed 2026-06-26
 - [x] spec-x-auth-sub-normalize (완료)
+- [x] spec-x-docs-refresh (완료)
 <!-- sdd:done:end -->
 
 ---
